@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,7 +14,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+import androidx.paging.PagedList;
 import androidx.paging.PagedListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -56,6 +59,11 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
 		this.onClickedFavoriteButtonListener = onClickedFavoriteButtonListener;
 		favoriteDisabledDrawable = ContextCompat.getDrawable(context, R.drawable.favorite_disabled);
 		favoriteEnabledDrawable = ContextCompat.getDrawable(context, R.drawable.favorite_enabled);
+	}
+
+	@Override
+	public void submitList(@Nullable @org.jetbrains.annotations.Nullable PagedList<PlaceDocuments> pagedList) {
+		super.submitList(pagedList);
 	}
 
 	class ItemViewHolder extends RecyclerView.ViewHolder {

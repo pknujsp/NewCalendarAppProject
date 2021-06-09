@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.RemoteException;
 import android.service.carrier.CarrierMessagingService;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +25,7 @@ import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
+import com.zerodsoft.scheduleweather.common.interfaces.OnProgressViewListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantListBinding;
 import com.zerodsoft.scheduleweather.event.foods.adapter.RestaurantListAdapter;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
@@ -31,6 +33,7 @@ import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
 import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationCloud;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
+import com.zerodsoft.scheduleweather.kakaoplace.viewmodel.KakaoRestaurantsViewModel;
 import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.PlacesViewModel;
@@ -43,7 +46,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 		, RestaurantListAdapter.OnContainsRestaurantListener {
 	protected FragmentRestaurantListBinding binding;
 	protected String query;
-	protected PlacesViewModel placesViewModel;
+	protected KakaoRestaurantsViewModel kakaoRestaurantsViewModel;
 	protected RestaurantListAdapter adapter;
 	protected RecyclerView.AdapterDataObserver adapterDataObserver;
 	protected FavoriteLocationViewModel favoriteRestaurantViewModel;
@@ -125,9 +128,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		binding.customProgressView.setContentView(binding.recyclerView);
-		binding.customProgressView.onSuccessfulProcessingData();
-
-		placesViewModel = new ViewModelProvider(this).get(PlacesViewModel.class);
+		kakaoRestaurantsViewModel = new ViewModelProvider(this).get(KakaoRestaurantsViewModel.class);
 
 		binding.recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext(), RecyclerView.VERTICAL, false));
 		binding.recyclerView.addItemDecoration(new DividerItemDecoration(view.getContext(), DividerItemDecoration.VERTICAL));
@@ -148,14 +149,8 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 				LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
 		placeParameter.setRadius(App.getPreference_key_radius_range());
 
-		placesViewModel.init(placeParameter, new OnProgressBarListener() {
-			@Override
-			public void setProgressBarVisibility(int visibility) {
-
-			}
-		});
-
-		placesViewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<PlaceDocuments>>() {
+		kakaoRestaurantsViewModel.init(placeParameter, (OnProgressViewListener) binding.customProgressView);
+		kakaoRestaurantsViewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<PlaceDocuments>>() {
 			boolean isFirst = true;
 
 			@Override
@@ -172,18 +167,15 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 							if (adapterDataObserver != null) {
 								adapterDataObserver.onItemRangeInserted(0, itemCount);
 							}
+							binding.customProgressView.onSuccessfulProcessingData();
 						}
-					});
-				} else {
-					if (adapter.getCurrentList().snapshot().isEmpty()) {
 
-					}
+					});
 				}
 			}
+
 		});
-
 	}
-
 
 	@Override
 	public void onClickedListItem(PlaceDocuments e, int position) {
@@ -218,7 +210,8 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 	}
 
 	@Override
-	public void onClickedFavoriteButton(KakaoLocalDocument kakaoLocalDocument, FavoriteLocationDTO favoriteLocationDTO, int groupPosition, int childPosition) {
+	public void onClickedFavoriteButton(KakaoLocalDocument kakaoLocalDocument, FavoriteLocationDTO favoriteLocationDTO,
+	                                    int groupPosition, int childPosition) {
 
 	}
 
