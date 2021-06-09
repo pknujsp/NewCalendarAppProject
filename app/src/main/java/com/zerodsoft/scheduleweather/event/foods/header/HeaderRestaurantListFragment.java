@@ -6,6 +6,8 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -54,6 +56,12 @@ public class HeaderRestaurantListFragment extends Fragment {
 
 	private int viewPagerVisibility = View.VISIBLE;
 
+	private View.OnClickListener viewChangeBtnClickedListener;
+
+	public void setViewChangeBtnClickedListener(View.OnClickListener viewChangeBtnClickedListener) {
+		this.viewChangeBtnClickedListener = viewChangeBtnClickedListener;
+	}
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -100,7 +108,9 @@ public class HeaderRestaurantListFragment extends Fragment {
 		binding.tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
 			@Override
 			public void onTabSelected(TabLayout.Tab tab) {
-				iSetFoodMenuPoiItems.onChangeFoodMenu();
+				if (viewPagerVisibility == View.GONE) {
+					iSetFoodMenuPoiItems.onChangeFoodMenu();
+				}
 			}
 
 			@Override
@@ -118,15 +128,24 @@ public class HeaderRestaurantListFragment extends Fragment {
 
 			@Override
 			public void onClick(View view) {
+				viewChangeBtnClickedListener.onClick(null);
 				viewPagerVisibility = (viewPagerVisibility == View.VISIBLE) ? View.GONE : View.VISIBLE;
 				binding.viewChangeBtn.setText(viewPagerVisibility == View.GONE ? R.string.open_list : R.string.open_map);
 				iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.CONTENT, viewPagerVisibility);
 
+				FragmentManager fragmentManager = getParentFragmentManager();
+
 				if (viewPagerVisibility == View.GONE) {
 					iSetFoodMenuPoiItems.onChangeFoodMenu();
+
+					Fragment contentFragment = fragmentManager.findFragmentById(R.id.content_fragment_container);
+					fragmentManager.beginTransaction().hide(contentFragment)
+							.addToBackStack(getString(R.string.tag_showing_restaurant_list_on_map)).commit();
 				} else {
 					bottomSheetController.setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
+					fragmentManager.popBackStackImmediate();
 				}
+
 			}
 		});
 

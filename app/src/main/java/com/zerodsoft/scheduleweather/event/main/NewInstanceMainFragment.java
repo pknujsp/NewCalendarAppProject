@@ -752,10 +752,11 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		restaurantItemGetter.getRestaurants(new DbQueryCallback<List<PlaceDocuments>>() {
 			@Override
 			public void onResultSuccessful(List<PlaceDocuments> placeDocuments) {
+				createPoiItems(placeDocuments, MarkerType.RESTAURANT);
+
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						createPoiItems(placeDocuments, MarkerType.RESTAURANT);
 						showPoiItems(MarkerType.RESTAURANT);
 					}
 				});
