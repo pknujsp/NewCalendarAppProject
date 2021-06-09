@@ -36,7 +36,6 @@ import android.provider.Settings;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -168,7 +167,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	final public Map<BottomSheetType, LinearLayout> bottomSheetViewMap = new HashMap<>();
 	final public Map<BottomSheetType, OnHiddenFragmentListener> hiddenFragmentListenerMap = new HashMap<>();
 
-	final public Map<MarkerType, List<Marker>> markerMap = new HashMap<>();
+	final public Map<MarkerType, List<Marker>> markersMap = new HashMap<>();
+	final public Map<MarkerType, Marker> markerMap = new HashMap<>();
 	final public Map<MarkerType, LocationItemViewPagerAdapter> viewPagerAdapterMap = new HashMap<>();
 
 	private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
@@ -797,7 +797,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	private void onClickedMarkerByTouch(MarkerType markerType, Marker marker) {
 		//poiitem을 직접 선택한 경우 호출
 		setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
-		selectedPoiItemIndex = markerMap.get(markerType).indexOf(marker);
+		selectedPoiItemIndex = markersMap.get(markerType).indexOf(marker);
 
 		CameraUpdate cameraUpdate = CameraUpdate.scrollTo(marker.getPosition());
 		cameraUpdate.animate(CameraAnimation.Easing, 200);
@@ -814,8 +814,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 	@Override
 	public void createPoiItems(List<? extends KakaoLocalDocument> kakaoLocalDocuments, MarkerType markerType) {
-		if (!markerMap.containsKey(markerType)) {
-			markerMap.put(markerType, new ArrayList<>());
+		if (!markersMap.containsKey(markerType)) {
+			markersMap.put(markerType, new ArrayList<>());
 		} else {
 			removePoiItems(markerType);
 		}
@@ -863,7 +863,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		marker.setOnClickListener(markerOnClickListener);
 
 		marker.setTag(markerType);
-		markerMap.get(markerType).add(marker);
+		markersMap.get(markerType).add(marker);
 	}
 
 
@@ -918,17 +918,17 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 	@Override
 	public void removePoiItem(MarkerType markerType, int index) {
-		if (markerMap.containsKey(markerType)) {
-			markerMap.get(markerType).get(index).setMap(null);
-			markerMap.get(markerType).remove(index);
+		if (markersMap.containsKey(markerType)) {
+			markersMap.get(markerType).get(index).setMap(null);
+			markersMap.get(markerType).remove(index);
 		}
 	}
 
 	@Override
 	public void removePoiItems(MarkerType... markerTypes) {
 		for (MarkerType markerType : markerTypes) {
-			if (markerMap.containsKey(markerType)) {
-				List<Marker> markerList = markerMap.get(markerType);
+			if (markersMap.containsKey(markerType)) {
+				List<Marker> markerList = markersMap.get(markerType);
 				for (Marker marker : markerList) {
 					marker.setMap(null);
 				}
@@ -941,9 +941,9 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 	@Override
 	public void removeAllPoiItems() {
-		Set<MarkerType> keySet = markerMap.keySet();
+		Set<MarkerType> keySet = markersMap.keySet();
 		for (MarkerType markerType : keySet) {
-			List<Marker> markerList = markerMap.get(markerType);
+			List<Marker> markerList = markersMap.get(markerType);
 			for (Marker marker : markerList) {
 				marker.setMap(null);
 			}
@@ -955,7 +955,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 	@Override
 	public void showPoiItems(MarkerType... markerTypes) {
-		List<Marker> markerList = markerMap.get(markerTypes[0]);
+		List<Marker> markerList = markersMap.get(markerTypes[0]);
 
 		if (!markerList.isEmpty()) {
 			List<LatLng> latLngList = new ArrayList<>();
@@ -977,7 +977,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 	@Override
 	public int getPoiItemSize(MarkerType... markerTypes) {
-		return markerMap.get(markerTypes[0]).size();
+		return markersMap.get(markerTypes[0]).size();
 	}
 
 	@Override
@@ -1032,14 +1032,14 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		//bottomsheet가 아닌 list에서 아이템을 선택한 경우 호출
 		//adapter -> poiitem생성 -> select poiitem -> bottomsheet열고 정보 표시
 		setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
-		markerMap.get(markerType).get(index).performClick();
+		markersMap.get(markerType).get(index).performClick();
 	}
 
 	@Override
 	public void onPOIItemSelectedByBottomSheet(int index, MarkerType markerType) {
 		//bottomsheet에서 스크롤 하는 경우 호출
 		selectedPoiItemIndex = index;
-		Marker marker = markerMap.get(markerType).get(index);
+		Marker marker = markersMap.get(markerType).get(index);
 
 		CameraUpdate cameraUpdate = CameraUpdate.scrollTo(marker.getPosition());
 		cameraUpdate.animate(CameraAnimation.Easing, 150);
@@ -1100,8 +1100,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 					(LocationSearchResultFragment) fragmentManager.findFragmentByTag(LocationSearchResultFragment.TAG);
 			locationSearchResultFragment.searchLocation(query);
 		} else {
-			if (!markerMap.containsKey(MarkerType.SEARCH_RESULT)) {
-				markerMap.put(MarkerType.SEARCH_RESULT, new ArrayList<>());
+			if (!markersMap.containsKey(MarkerType.SEARCH_RESULT)) {
+				markersMap.put(MarkerType.SEARCH_RESULT, new ArrayList<>());
 			}
 
 			MapHeaderSearchFragment mapHeaderSearchFragment = (MapHeaderSearchFragment) fragmentManager.findFragmentByTag(MapHeaderSearchFragment.TAG);
@@ -1369,9 +1369,9 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	private void showAddressOfSelectedLocation(LatLng latLng) {
 		//주소 표시
 		//removePoiItems(MarkerType.LONG_CLICKED_MAP);
-		if (markerMap.containsKey(MarkerType.LONG_CLICKED_MAP)) {
-			if (markerMap.get(MarkerType.LONG_CLICKED_MAP).size() > 0) {
-				markerMap.get(MarkerType.LONG_CLICKED_MAP).get(0).performClick();
+		if (markersMap.containsKey(MarkerType.LONG_CLICKED_MAP)) {
+			if (markersMap.get(MarkerType.LONG_CLICKED_MAP).size() > 0) {
+				markersMap.get(MarkerType.LONG_CLICKED_MAP).get(0).performClick();
 			}
 		}
 		Marker markerOfSelectedLocation = new Marker(latLng);
@@ -1395,17 +1395,17 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			}
 		});
 
-		if (!markerMap.containsKey(MarkerType.LONG_CLICKED_MAP)) {
-			markerMap.put(MarkerType.LONG_CLICKED_MAP, new ArrayList<>());
+		if (!markersMap.containsKey(MarkerType.LONG_CLICKED_MAP)) {
+			markersMap.put(MarkerType.LONG_CLICKED_MAP, new ArrayList<>());
 		}
-		markerMap.get(MarkerType.LONG_CLICKED_MAP).add(markerOfSelectedLocation);
+		markersMap.get(MarkerType.LONG_CLICKED_MAP).add(markerOfSelectedLocation);
 
 		OnLongClickMapLocationItemAdapter adapter = (OnLongClickMapLocationItemAdapter) viewPagerAdapterMap.get(MarkerType.LONG_CLICKED_MAP);
 		adapter.setLatitude(String.valueOf(latLng.latitude));
 		adapter.setLongitude(String.valueOf(latLng.longitude));
 		adapter.notifyDataSetChanged();
 
-		onClickedMarkerByTouch(MarkerType.LONG_CLICKED_MAP, markerMap.get(MarkerType.LONG_CLICKED_MAP).get(0));
+		onClickedMarkerByTouch(MarkerType.LONG_CLICKED_MAP, markersMap.get(MarkerType.LONG_CLICKED_MAP).get(0));
 	}
 
 	@Override
@@ -1431,8 +1431,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		adapter.setFavoriteLocationList(favoriteLocationList);
 		setLocationItemViewPagerAdapter(adapter, MarkerType.FAVORITE);
 
-		if (!markerMap.containsKey(MarkerType.FAVORITE)) {
-			markerMap.put(MarkerType.FAVORITE, new ArrayList<>());
+		if (!markersMap.containsKey(MarkerType.FAVORITE)) {
+			markersMap.put(MarkerType.FAVORITE, new ArrayList<>());
 		} else {
 			removePoiItems(MarkerType.FAVORITE);
 		}
@@ -1485,13 +1485,13 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		marker.setForceShowIcon(true);
 
 		marker.setTag(MarkerType.FAVORITE);
-		markerMap.get(MarkerType.FAVORITE).add(marker);
+		markersMap.get(MarkerType.FAVORITE).add(marker);
 	}
 
 	@Override
 	public void showPoiItems(MarkerType markerType, boolean isShow) {
-		if (markerMap.containsKey(markerType)) {
-			List<Marker> markers = markerMap.get(markerType);
+		if (markersMap.containsKey(markerType)) {
+			List<Marker> markers = markersMap.get(markerType);
 			for (Marker marker : markers) {
 				marker.setMap(isShow ? naverMap : null);
 			}

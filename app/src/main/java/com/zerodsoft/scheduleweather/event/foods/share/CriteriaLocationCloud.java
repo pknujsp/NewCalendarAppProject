@@ -1,17 +1,17 @@
 package com.zerodsoft.scheduleweather.event.foods.share;
 
-import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
-
 public class CriteriaLocationCloud {
 	private static String latitude;
 	private static String longitude;
+	private static String name;
 
 	private CriteriaLocationCloud() {
 	}
 
-	public static void setCoordinate(String latitude, String longitude) {
+	public static void setCoordinate(String latitude, String longitude, String name) {
 		CriteriaLocationCloud.latitude = latitude;
 		CriteriaLocationCloud.longitude = longitude;
+		CriteriaLocationCloud.name = name;
 	}
 
 
@@ -21,5 +21,9 @@ public class CriteriaLocationCloud {
 
 	public static String getLongitude() {
 		return longitude;
+	}
+
+	public static String getName() {
+		return name;
 	}
 }

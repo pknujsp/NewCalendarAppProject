@@ -8,6 +8,8 @@ import java.io.Serializable;
 public interface ISetFoodMenuPoiItems extends Serializable {
 	void createRestaurantPoiItems(NewInstanceMainFragment.RestaurantsGetter restaurantsGetter, OnExtraListDataListener<Integer> onExtraListDataListener);
 
+	void createCriteriaLocationMarker(String name, String latitude, String longitude);
+
 	void removeRestaurantPoiItems();
 
 	void onChangeFoodMenu();

@@ -52,9 +52,12 @@ public class RestaurantFragment extends Fragment implements IOnSetView {
 	private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
 		@Override
 		public void handleOnBackPressed() {
-			FragmentManager fragmentManager = getChildFragmentManager().getPrimaryNavigationFragment().getChildFragmentManager();
+			Fragment primaryNavFragment = getChildFragmentManager().getPrimaryNavigationFragment();
+			FragmentManager fragmentManager = primaryNavFragment.getChildFragmentManager();
 			if (!fragmentManager.popBackStackImmediate()) {
 				getParentFragmentManager().popBackStack();
+
+				//java.lang.NullPointerException: Attempt to read from field 'androidx.fragment.app.FragmentManager androidx.fragment.app.Fragment.mFragmentManager' on a null object reference
 			}
 		}
 	};

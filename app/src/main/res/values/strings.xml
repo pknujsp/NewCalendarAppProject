@@ -568,4 +568,6 @@
     <string name="tag_restaurant_criteria_location_settings_fragment">tag_restaurant_criteria_location_settings_fragment</string>
     <string name="tag_restaurant_search_history_fragment">tag_restaurant_search_history_fragment</string>
     <string name="tag_showing_restaurant_list_on_map">tag_showing_restaurant_list_on_map</string>
+    <string name="tag_header_food_menu_list_fragment">tag_header_food_menu_list_fragment</string>
+    <string name="criteria_location">기준 위치</string>
 </resources>

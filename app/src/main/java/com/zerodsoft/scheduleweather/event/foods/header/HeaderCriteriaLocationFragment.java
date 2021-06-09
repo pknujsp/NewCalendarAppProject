@@ -292,7 +292,9 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 	private void setCriteria(CriteriaLocationType criteriaLocationType) {
 		switch (criteriaLocationType) {
 			case TYPE_SELECTED_LOCATION: {
-				CriteriaLocationCloud.setCoordinate(criteriaLocationDTO.getLatitude(), criteriaLocationDTO.getLongitude());
+				CriteriaLocationCloud.setCoordinate(
+						criteriaLocationDTO.getLatitude(),
+						criteriaLocationDTO.getLongitude(), criteriaLocationDTO.getLocTitleName());
 
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
@@ -329,7 +331,7 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 								String.valueOf(mapCenterPoint.longitude));
 
 						criteriaLocationDTO = locationDTO;
-						CriteriaLocationCloud.setCoordinate(criteriaLocationDTO.getLatitude(), criteriaLocationDTO.getLongitude());
+						CriteriaLocationCloud.setCoordinate(criteriaLocationDTO.getLatitude(), criteriaLocationDTO.getLongitude(), criteriaLocationDTO.getLocTitleName());
 
 						requireActivity().runOnUiThread(new Runnable() {
 							@Override
@@ -372,7 +374,7 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 											foodCriteriaLocationSearchHistoryResultDto.getLatitude(), foodCriteriaLocationSearchHistoryResultDto.getLongitude());
 
 									criteriaLocationDTO = locationDTO;
-									CriteriaLocationCloud.setCoordinate(criteriaLocationDTO.getLatitude(), criteriaLocationDTO.getLongitude());
+									CriteriaLocationCloud.setCoordinate(criteriaLocationDTO.getLatitude(), criteriaLocationDTO.getLongitude(), criteriaLocationDTO.getLocTitleName());
 
 									requireActivity().runOnUiThread(new Runnable() {
 										@Override
@@ -486,7 +488,7 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 						locationDtoByGps.getLongitude());
 
 				criteriaLocationDTO = locationDTO;
-				CriteriaLocationCloud.setCoordinate(criteriaLocationDTO.getLatitude(), criteriaLocationDTO.getLongitude());
+				CriteriaLocationCloud.setCoordinate(criteriaLocationDTO.getLatitude(), criteriaLocationDTO.getLongitude(), criteriaLocationDTO.getLocTitleName());
 
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override

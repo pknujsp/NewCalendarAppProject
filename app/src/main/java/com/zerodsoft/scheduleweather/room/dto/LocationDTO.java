@@ -203,6 +203,11 @@ public class LocationDTO implements Parcelable, Cloneable {
 		return locationType;
 	}
 
+	public String getLocTitleName() {
+		return locationType == LocationType.PLACE ?
+				placeName : addressName;
+	}
+
 	public boolean isEmpty() {
 		return latitude == null;
 	}

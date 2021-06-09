@@ -7,7 +7,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -30,6 +29,7 @@ import com.zerodsoft.scheduleweather.event.foods.dto.FoodCategoryItem;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.ISetFoodMenuPoiItems;
 import com.zerodsoft.scheduleweather.event.foods.main.RestaurantListTabFragment;
+import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationCloud;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
@@ -104,6 +104,8 @@ public class HeaderRestaurantListFragment extends Fragment {
 		RestaurantListTabFragment listTabFragment =
 				(RestaurantListTabFragment) getParentFragmentManager().findFragmentByTag(getString(R.string.tag_restaurant_list_tab_fragment));
 		iSetFoodMenuPoiItems.createRestaurantPoiItems(listTabFragment, listTabFragment);
+		iSetFoodMenuPoiItems.createCriteriaLocationMarker(CriteriaLocationCloud.getName(), CriteriaLocationCloud.getLatitude(),
+				CriteriaLocationCloud.getLongitude());
 
 		binding.tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
 			@Override
@@ -128,24 +130,8 @@ public class HeaderRestaurantListFragment extends Fragment {
 
 			@Override
 			public void onClick(View view) {
-				viewChangeBtnClickedListener.onClick(null);
 				viewPagerVisibility = (viewPagerVisibility == View.VISIBLE) ? View.GONE : View.VISIBLE;
-				binding.viewChangeBtn.setText(viewPagerVisibility == View.GONE ? R.string.open_list : R.string.open_map);
-				iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.CONTENT, viewPagerVisibility);
-
-				FragmentManager fragmentManager = getParentFragmentManager();
-
-				if (viewPagerVisibility == View.GONE) {
-					iSetFoodMenuPoiItems.onChangeFoodMenu();
-
-					Fragment contentFragment = fragmentManager.findFragmentById(R.id.content_fragment_container);
-					fragmentManager.beginTransaction().hide(contentFragment)
-							.addToBackStack(getString(R.string.tag_showing_restaurant_list_on_map)).commit();
-				} else {
-					bottomSheetController.setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
-					fragmentManager.popBackStackImmediate();
-				}
-
+				onClickedChangeBtn();
 			}
 		});
 
@@ -199,15 +185,39 @@ public class HeaderRestaurantListFragment extends Fragment {
 
 	}
 
+	public void onClickedChangeBtn() {
+		FragmentManager fragmentManager = getParentFragmentManager();
+
+		if (viewPagerVisibility == View.GONE) {
+			setTextOfChangeBtn(viewPagerVisibility);
+			iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.CONTENT, viewPagerVisibility);
+
+			iSetFoodMenuPoiItems.onChangeFoodMenu();
+
+			Fragment contentFragment = fragmentManager.findFragmentById(R.id.content_fragment_container);
+			fragmentManager.beginTransaction().hide(contentFragment)
+					.addToBackStack(getString(R.string.tag_showing_restaurant_list_on_map)).commit();
+		} else {
+			fragmentManager.popBackStackImmediate();
+		}
+	}
+
+	public void setTextOfChangeBtn(int visibility) {
+		binding.viewChangeBtn.setText(visibility == View.GONE ? R.string.open_list : R.string.open_map);
+	}
+
+	public void popedBackStack() {
+		viewPagerVisibility = View.VISIBLE;
+		bottomSheetController.setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
+		iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.CONTENT, viewPagerVisibility);
+		setTextOfChangeBtn(viewPagerVisibility);
+	}
+
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		iOnSetView.setFragmentContainerHeight((int) getResources().getDimension(R.dimen.restaurant_header_height));
 		iSetFoodMenuPoiItems.removeRestaurantPoiItems();
-
-		if (viewPagerVisibility == View.GONE) {
-			iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.CONTENT, View.VISIBLE);
-		}
+		iOnSetView.setFragmentContainerHeight((int) getResources().getDimension(R.dimen.restaurant_header_height));
 	}
 
 	private void setupTabCustomView(List<FoodCategoryItem> foodCategoryItemList) {

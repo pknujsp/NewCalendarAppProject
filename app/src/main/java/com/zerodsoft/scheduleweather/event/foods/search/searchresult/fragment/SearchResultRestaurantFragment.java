@@ -18,6 +18,7 @@ import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.databinding.FragmentSearchResultRestaurantBinding;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
 import com.zerodsoft.scheduleweather.event.foods.main.RestaurantListFragment;
+import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationCloud;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.SearchHistoryViewModel;
@@ -80,7 +81,10 @@ public class SearchResultRestaurantFragment extends Fragment {
 		RestaurantListFragment restaurantListFragment = new RestaurantListFragment();
 		Bundle bundle = new Bundle();
 		bundle.putString("query", query);
+		bundle.putString("criteriaLatitude", CriteriaLocationCloud.getLatitude());
+		bundle.putString("criteriaLongitude", CriteriaLocationCloud.getLongitude());
 		restaurantListFragment.setArguments(bundle);
+
 		getChildFragmentManager().beginTransaction().add(binding.fragmentContainer.getId(), restaurantListFragment,
 				getString(R.string.tag_place_info_web_fragment)).commit();
 

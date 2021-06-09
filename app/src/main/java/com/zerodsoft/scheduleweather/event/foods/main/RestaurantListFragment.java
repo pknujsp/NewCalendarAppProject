@@ -53,6 +53,9 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 	protected RestaurantSharedViewModel sharedViewModel;
 	protected IOnSetView iOnSetView;
 
+	protected String criteriaLatitude;
+	protected String criteriaLongitude;
+
 	public void setAdapterDataObserver(RecyclerView.AdapterDataObserver adapterDataObserver) {
 		this.adapterDataObserver = adapterDataObserver;
 	}
@@ -64,6 +67,8 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 
 		Bundle bundle = getArguments();
 		query = bundle.getString("query");
+		criteriaLatitude = bundle.getString("criteriaLatitude");
+		criteriaLongitude = bundle.getString("criteriaLongitude");
 
 		favoriteRestaurantViewModel = new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
 		sharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
@@ -144,10 +149,10 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 		this.query = query;
 
 		final LocalApiPlaceParameter placeParameter = LocalParameterUtil.getPlaceParameter(query,
-				CriteriaLocationCloud.getLatitude(), CriteriaLocationCloud.getLongitude(),
+				criteriaLatitude, criteriaLongitude,
 				LocalApiPlaceParameter.DEFAULT_SIZE, LocalApiPlaceParameter.DEFAULT_PAGE,
 				LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
-		placeParameter.setRadius(App.getPreference_key_radius_range());
+		placeParameter.setRadius("20000");
 
 		kakaoRestaurantsViewModel.init(placeParameter, (OnProgressViewListener) binding.customProgressView);
 		kakaoRestaurantsViewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<PlaceDocuments>>() {
@@ -189,7 +194,6 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 
 			Fragment parentFragment = getParentFragment();
 			FragmentManager fragmentManager = parentFragment.getParentFragmentManager();
-			// restaurant list tab fragment
 
 			fragmentManager.beginTransaction().hide(parentFragment)
 					.add(R.id.content_fragment_container, placeInfoWebFragment, tag)

@@ -13,7 +13,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.DataProcessingCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
@@ -29,7 +28,6 @@ import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 import com.zerodsoft.scheduleweather.event.main.NewInstanceMainFragment;
-import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener;
 import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
@@ -99,13 +97,6 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 	public void onDestroy() {
 		super.onDestroy();
 		iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.HEADER, View.VISIBLE);
-		FragmentManager fragmentManager = getParentFragmentManager();
-
-		Fragment criteriaHeaderFragment =
-				fragmentManager.findFragmentByTag(getString(R.string.tag_restaurant_header_criteria_location_fragment));
-		fragmentManager.beginTransaction().remove(headerRestaurantListFragment)
-				.show(criteriaHeaderFragment).commit();
-
 		getParentFragmentManager().unregisterFragmentLifecycleCallbacks(fragmentLifecycleCallbacks);
 	}
 
@@ -149,7 +140,7 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 		headerRestaurantListFragment.setArguments(bundle);
 
 		getParentFragmentManager().beginTransaction()
-				.add(R.id.header_fragment_container, headerRestaurantListFragment).commit();
+				.add(R.id.header_fragment_container, headerRestaurantListFragment,getString(R.string.tag_header_food_menu_list_fragment)).commit();
 	}
 
 	@Override
@@ -211,13 +202,17 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 		if (hidden) {
 
 		} else {
-
 		}
 	}
 
 	@Override
 	public void onHiddenChanged(boolean hidden) {
 		super.onHiddenChanged(hidden);
+		if (hidden) {
+
+		} else {
+			headerRestaurantListFragment.popedBackStack();
+		}
 	}
 
 
