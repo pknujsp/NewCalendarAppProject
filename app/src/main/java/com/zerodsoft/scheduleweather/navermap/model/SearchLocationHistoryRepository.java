@@ -46,13 +46,12 @@ public class SearchLocationHistoryRepository implements SearchHistoryQuery {
 	}
 
 	@Override
-	public void select(Integer type, CarrierMessagingService.ResultCallback<List<SearchHistoryDTO>> callback) {
+	public void select(Integer type, DbQueryCallback<List<SearchHistoryDTO>> callback) {
 		App.executorService.execute(new Runnable() {
-			@SneakyThrows
 			@Override
 			public void run() {
 				List<SearchHistoryDTO> list = dao.select(type);
-				callback.onReceiveResult(list);
+				callback.processResult(list);
 			}
 		});
 	}
@@ -70,13 +69,11 @@ public class SearchLocationHistoryRepository implements SearchHistoryQuery {
 	}
 
 	@Override
-	public void delete(int id, CarrierMessagingService.ResultCallback<Boolean> callback) {
+	public void delete(int id) {
 		App.executorService.execute(new Runnable() {
-			@SneakyThrows
 			@Override
 			public void run() {
 				dao.delete(id);
-				callback.onReceiveResult(true);
 				onRemovedHistoryDTOMutableLiveData.postValue(id);
 			}
 		});

@@ -9,13 +9,7 @@
         android:layout_height="match_parent"
         android:paddingTop="10dp">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/categories_recyclerview"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:orientation="horizontal"
-            tools:listitem="@layout/search_category_recyclerview_item" />
+
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/search_history_recyclerview"

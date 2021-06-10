@@ -41,7 +41,7 @@ public class SearchHistoryViewModel extends AndroidViewModel implements SearchHi
 	}
 
 	@Override
-	public void select(Integer type, CarrierMessagingService.ResultCallback<List<SearchHistoryDTO>> callback) {
+	public void select(Integer type, DbQueryCallback<List<SearchHistoryDTO>> callback) {
 		repository.select(type, callback);
 	}
 
@@ -51,8 +51,8 @@ public class SearchHistoryViewModel extends AndroidViewModel implements SearchHi
 	}
 
 	@Override
-	public void delete(int id, CarrierMessagingService.ResultCallback<Boolean> callback) {
-		repository.delete(id, callback);
+	public void delete(int id) {
+		repository.delete(id);
 	}
 
 	@Override

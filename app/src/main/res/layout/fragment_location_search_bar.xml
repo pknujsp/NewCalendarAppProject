@@ -3,29 +3,46 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="@dimen/map_header_bar_height"
-        android:paddingLeft="12dp"
-        android:paddingRight="12dp">
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-        <ImageButton
-            android:id="@+id/view_type_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginRight="8dp"
-            android:background="@color/transparent"
-            android:src="@drawable/map_icon" />
-
-        <com.zerodsoft.scheduleweather.common.view.CustomSearchView
-            android:id="@+id/search_view"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_centerVertical="true"
-            android:layout_toRightOf="@id/view_type_button"
-            app:backBtnVisibility="visible"
-            app:hint="@string/hint_request_input_address_or_place" />
+            android:layout_height="@dimen/map_header_bar_height"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp">
 
-    </RelativeLayout>
+            <ImageButton
+                android:id="@+id/view_type_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="8dp"
+                android:background="@color/transparent"
+                android:src="@drawable/map_icon" />
+
+            <com.zerodsoft.scheduleweather.common.view.CustomSearchView
+                android:id="@+id/search_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_centerVertical="true"
+                android:layout_toRightOf="@id/view_type_button"
+                app:backBtnVisibility="visible"
+                app:hint="@string/hint_request_input_address_or_place" />
+
+        </RelativeLayout>
+
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/categories_recyclerview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            tools:listitem="@layout/search_category_recyclerview_item" />
+
+    </LinearLayout>
+
+
 </layout>

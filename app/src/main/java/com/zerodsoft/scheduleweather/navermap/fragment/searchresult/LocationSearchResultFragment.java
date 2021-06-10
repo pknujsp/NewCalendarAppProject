@@ -43,263 +43,203 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LocationSearchResultFragment extends Fragment implements IndicatorCreater, OnClickedLocListItem, OnBackPressedCallbackController,
-        OnExtraListDataListener<LocationType>
-{
-    public static final String TAG = "LocationSearchResultFragment";
-    private FragmentSearchResultListBinding binding;
+		OnExtraListDataListener<LocationType> {
+	public static final String TAG = "LocationSearchResultFragment";
+	private FragmentSearchResultListBinding binding;
 
-    private SearchResultListAdapter searchResultListAdapter;
+	private SearchResultListAdapter searchResultListAdapter;
 
-    private final String SEARCH_WORD;
+	private String query;
 
-    private OnPageCallback onPageCallback;
-    private IMapPoint iMapPoint;
-    private IMapData iMapData;
-    private PoiItemOnClickListener poiItemOnClickListener;
-    private SearchBarController searchBarController;
-    private SearchFragmentController searchFragmentController;
-    private BottomSheetController bottomSheetController;
+	private OnPageCallback onPageCallback;
+	private IMapPoint iMapPoint;
+	private IMapData iMapData;
+	private PoiItemOnClickListener poiItemOnClickListener;
+	private SearchBarController searchBarController;
+	private SearchFragmentController searchFragmentController;
+	private BottomSheetController bottomSheetController;
 
-    private OnExtraListDataListener<LocationType> placesOnExtraListDataListener;
-    private OnExtraListDataListener<LocationType> addressesOnExtraListDataListener;
+	private OnExtraListDataListener<LocationType> placesOnExtraListDataListener;
+	private OnExtraListDataListener<LocationType> addressesOnExtraListDataListener;
 
-    public OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true)
-    {
-        @Override
-        public void handleOnBackPressed()
-        {
-            if (bottomSheetController.getStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION) == BottomSheetBehavior.STATE_EXPANDED)
-            {
-                // list인 경우
-                getParentFragmentManager().popBackStackImmediate();
-                searchFragmentController.closeSearchFragments(LocationSearchResultFragment.TAG);
-            } else
-            {
-                // map인 경우
-                searchBarController.changeViewTypeImg(SearchBarController.MAP);
-                bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_EXPANDED);
-                bottomSheetController.setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
-            }
-        }
-    };
+	public OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+		@Override
+		public void handleOnBackPressed() {
+			if (bottomSheetController.getStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION) == BottomSheetBehavior.STATE_EXPANDED) {
+				// list인 경우
+				getParentFragmentManager().popBackStackImmediate();
+				searchFragmentController.closeSearchFragments(LocationSearchResultFragment.TAG);
+			} else {
+				// map인 경우
+				searchBarController.changeViewTypeImg(SearchBarController.MAP);
+				bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_EXPANDED);
+				bottomSheetController.setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
+			}
+		}
+	};
 
-    @Override
-    public void onAttach(@NonNull Context context)
-    {
-        super.onAttach(context);
-        addOnBackPressedCallback();
-    }
+	@Override
+	public void onAttach(@NonNull Context context) {
+		super.onAttach(context);
+		addOnBackPressedCallback();
+	}
 
 
-    @Override
-    public void setIndicator(int fragmentSize)
-    {
-        binding.viewpagerIndicator.createDot(0, fragmentSize);
-    }
-
-    public LocationSearchResultFragment(String searchWord, Fragment fragment, SearchBarController searchBarController)
-    {
-        this.SEARCH_WORD = searchWord;
-        this.iMapPoint = (IMapPoint) fragment;
-        this.iMapData = (IMapData) fragment;
-        this.poiItemOnClickListener = (PoiItemOnClickListener) fragment;
-        this.searchFragmentController = (SearchFragmentController) fragment;
-        this.searchBarController = searchBarController;
-        this.bottomSheetController = (BottomSheetController) fragment;
-    }
+	@Override
+	public void setIndicator(int fragmentSize) {
+		binding.viewpagerIndicator.createDot(0, fragmentSize);
+	}
 
 
-    @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
-        super.onCreate(savedInstanceState);
-    }
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState)
-    {
-        binding = FragmentSearchResultListBinding.inflate(inflater);
-        return binding.getRoot();
-    }
+		query = getArguments().getString("query");
+	}
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
-    {
-        super.onViewCreated(view, savedInstanceState);
-        searchLocation(SEARCH_WORD);
-    }
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+	                         Bundle savedInstanceState) {
+		binding = FragmentSearchResultListBinding.inflate(inflater);
+		return binding.getRoot();
+	}
 
-    public void searchLocation(String searchWord)
-    {
-        final LocalApiPlaceParameter addressParameter = LocalParameterUtil.getAddressParameter(searchWord, "1"
-                , LocalApiPlaceParameter.DEFAULT_PAGE);
-        final LocalApiPlaceParameter placeParameter = LocalParameterUtil.getPlaceParameter(searchWord, null, null,
-                "1", LocalApiPlaceParameter.DEFAULT_PAGE, LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
+	@Override
+	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+		searchLocation(query);
+	}
 
-        // 주소, 주소 & 장소, 장소, 검색 결과없음 인 경우
-        SearchResultChecker.checkExisting(addressParameter, placeParameter, new CheckerCallback<DataWrapper<KakaoLocalResponse>>()
-        {
-            @Override
-            public void onResult()
-            {
-                // 오류 여부 확인
-                for (DataWrapper<KakaoLocalResponse> response : list)
-                {
-                    if (response.getException() != null)
-                    {
-                        // error, exception
-                        binding.listViewpager.removeAllViews();
-                        binding.errorText.setText(getContext().getString(R.string.error) + ", (" + response.getException().getMessage() + ")");
-                        binding.errorText.setVisibility(View.VISIBLE);
-                        return;
-                    }
-                }
+	public void searchLocation(String query) {
+		this.query = query;
 
-                // 오류 없으면 진행
-                int totalResultCount = 0;
+		final LocalApiPlaceParameter addressParameter = LocalParameterUtil.getAddressParameter(query, "1"
+				, LocalApiPlaceParameter.DEFAULT_PAGE);
+		final LocalApiPlaceParameter placeParameter = LocalParameterUtil.getPlaceParameter(query, null, null,
+				"1", LocalApiPlaceParameter.DEFAULT_PAGE, LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
 
-                for (DataWrapper<KakaoLocalResponse> response : list)
-                {
-                    if (response.getData() instanceof AddressKakaoLocalResponse)
-                    {
-                        totalResultCount += response.getData().size();
-                    } else if (response.getData() instanceof PlaceKakaoLocalResponse)
-                    {
-                        totalResultCount += response.getData().size();
-                    }
-                }
+		// 주소, 주소 & 장소, 장소, 검색 결과없음 인 경우
+		SearchResultChecker.checkExisting(addressParameter, placeParameter, new CheckerCallback<DataWrapper<KakaoLocalResponse>>() {
+			@Override
+			public void onResult() {
+				// 오류 여부 확인
+				for (DataWrapper<KakaoLocalResponse> response : list) {
+					if (response.getException() != null) {
+						// error, exception
+						binding.listViewpager.removeAllViews();
+						return;
+					}
+				}
 
-                searchBarController.setViewTypeVisibility(View.VISIBLE);
+				// 오류 없으면 진행
+				int totalResultCount = 0;
 
-                if (totalResultCount == 0)
-                {
-                    // 검색 결과 없음
-                    binding.listViewpager.removeAllViews();
-                    binding.errorText.setText(getContext().getString(R.string.not_founded_search_result));
-                    binding.errorText.setVisibility(View.VISIBLE);
-                    // searchview클릭 후 재검색 시 search fragment로 이동
-                } else
-                {
-                    List<Fragment> fragments = new ArrayList<>();
+				for (DataWrapper<KakaoLocalResponse> response : list) {
+					if (response.getData() instanceof AddressKakaoLocalResponse) {
+						totalResultCount += response.getData().size();
+					} else if (response.getData() instanceof PlaceKakaoLocalResponse) {
+						totalResultCount += response.getData().size();
+					}
+				}
 
-                    for (DataWrapper<KakaoLocalResponse> response : list)
-                    {
-                        if (response.getData() instanceof PlaceKakaoLocalResponse)
-                        {
-                            PlaceKakaoLocalResponse placeKakaoLocalResponse = (PlaceKakaoLocalResponse) response.getData();
+				if (totalResultCount == 0) {
+					// 검색 결과 없음
+					binding.listViewpager.removeAllViews();
+					binding.errorText.setText(getContext().getString(R.string.not_founded_search_result));
+					binding.errorText.setVisibility(View.VISIBLE);
+					// searchview클릭 후 재검색 시 search fragment로 이동
+				} else {
+					List<Fragment> fragments = new ArrayList<>();
 
-                            if (!placeKakaoLocalResponse.getPlaceDocuments().isEmpty())
-                            {
-                                SearchResultPlaceListFragment searchResultPlaceListFragment = new SearchResultPlaceListFragment(iMapPoint, searchWord, iMapData, LocationSearchResultFragment.this);
-                                placesOnExtraListDataListener = searchResultPlaceListFragment;
-                                fragments.add(searchResultPlaceListFragment);
-                            }
-                        } else if (response.getData() instanceof AddressKakaoLocalResponse)
-                        {
-                            AddressKakaoLocalResponse addressKakaoLocalResponse = (AddressKakaoLocalResponse) response.getData();
+					for (DataWrapper<KakaoLocalResponse> response : list) {
+						if (response.getData() instanceof PlaceKakaoLocalResponse) {
+							PlaceKakaoLocalResponse placeKakaoLocalResponse = (PlaceKakaoLocalResponse) response.getData();
 
-                            if (!addressKakaoLocalResponse.getAddressResponseDocumentsList().isEmpty())
-                            {
-                                SearchResultAddressListFragment addressesListFragment = new SearchResultAddressListFragment(searchWord, iMapData, LocationSearchResultFragment.this);
-                                addressesOnExtraListDataListener = addressesListFragment;
-                                fragments.add(addressesListFragment);
-                            }
-                        }
-                    }
+							if (!placeKakaoLocalResponse.getPlaceDocuments().isEmpty()) {
+								SearchResultPlaceListFragment searchResultPlaceListFragment = new SearchResultPlaceListFragment(iMapPoint, query, iMapData, LocationSearchResultFragment.this);
+								placesOnExtraListDataListener = searchResultPlaceListFragment;
+								fragments.add(searchResultPlaceListFragment);
+							}
+						} else if (response.getData() instanceof AddressKakaoLocalResponse) {
+							AddressKakaoLocalResponse addressKakaoLocalResponse = (AddressKakaoLocalResponse) response.getData();
 
-                    searchResultListAdapter = new SearchResultListAdapter(LocationSearchResultFragment.this);
-                    searchResultListAdapter.setFragments(fragments);
+							if (!addressKakaoLocalResponse.getAddressResponseDocumentsList().isEmpty()) {
+								SearchResultAddressListFragment addressesListFragment = new SearchResultAddressListFragment(query, iMapData, LocationSearchResultFragment.this);
+								addressesOnExtraListDataListener = addressesListFragment;
+								fragments.add(addressesListFragment);
+							}
+						}
+					}
 
-                    onPageCallback = new OnPageCallback();
-                    binding.listViewpager.registerOnPageChangeCallback(onPageCallback);
-                    binding.listViewpager.setAdapter(searchResultListAdapter);
+					searchResultListAdapter = new SearchResultListAdapter(LocationSearchResultFragment.this);
+					searchResultListAdapter.setFragments(fragments);
 
-                    binding.viewpagerIndicator.createDot(0, fragments.size());
-                }
-            }
-        });
-    }
+					onPageCallback = new OnPageCallback();
+					binding.listViewpager.registerOnPageChangeCallback(onPageCallback);
+					binding.listViewpager.setAdapter(searchResultListAdapter);
 
-    @Override
-    public void onStart()
-    {
-        super.onStart();
-    }
-
-    @Override
-    public void onDetach()
-    {
-        super.onDetach();
-        removeOnBackPressedCallback();
-    }
-
-    @Override
-    public void onClickedLocItem(int index)
-    {
-        bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_COLLAPSED);
-        poiItemOnClickListener.onPOIItemSelectedByList(index, MarkerType.SEARCH_RESULT);
-        searchBarController.changeViewTypeImg(SearchBarController.LIST);
-    }
-
-    @Override
-    public void loadExtraListData(LocationType e, RecyclerView.AdapterDataObserver adapterDataObserver)
-    {
+					binding.viewpagerIndicator.createDot(0, fragments.size());
+				}
+			}
+		});
+	}
 
 
-    }
+	@Override
+	public void onClickedLocItem(int index) {
+		bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_COLLAPSED);
+		poiItemOnClickListener.onPOIItemSelectedByList(index, MarkerType.SEARCH_RESULT);
+		searchBarController.changeViewTypeImg(SearchBarController.LIST);
+	}
 
-    @Override
-    public void loadExtraListData(RecyclerView.AdapterDataObserver adapterDataObserver)
-    {
-        Fragment curFragment = searchResultListAdapter.getFragment(binding.listViewpager.getCurrentItem());
-
-        if (curFragment instanceof SearchResultAddressListFragment)
-        {
-            addressesOnExtraListDataListener.loadExtraListData(adapterDataObserver);
-        } else if (curFragment instanceof SearchResultPlaceListFragment)
-        {
-            placesOnExtraListDataListener.loadExtraListData(adapterDataObserver);
-        }
-    }
-
-    class OnPageCallback extends ViewPager2.OnPageChangeCallback
-    {
-        public int lastPosition = 0;
-
-        @Override
-        public void onPageSelected(int position)
-        {
-            super.onPageSelected(position);
-            if (lastPosition != position)
-            {
-                lastPosition = position;
-                binding.viewpagerIndicator.selectDot(position);
-
-                Fragment curFragment = searchResultListAdapter.getFragment(position);
-
-                if (curFragment instanceof SearchResultAddressListFragment)
-                {
-                    ((SearchResultAddressListFragment) curFragment).onChangedPage();
-                } else if (curFragment instanceof SearchResultPlaceListFragment)
-                {
-                    ((SearchResultPlaceListFragment) curFragment).onChangedPage();
-                }
-            }
-        }
-    }
+	@Override
+	public void loadExtraListData(LocationType e, RecyclerView.AdapterDataObserver adapterDataObserver) {
 
 
-    @Override
-    public void addOnBackPressedCallback()
-    {
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-    }
+	}
 
-    @Override
-    public void removeOnBackPressedCallback()
-    {
-        onBackPressedCallback.remove();
-    }
+	@Override
+	public void loadExtraListData(RecyclerView.AdapterDataObserver adapterDataObserver) {
+		Fragment curFragment = searchResultListAdapter.getFragment(binding.listViewpager.getCurrentItem());
+
+		if (curFragment instanceof SearchResultAddressListFragment) {
+			addressesOnExtraListDataListener.loadExtraListData(adapterDataObserver);
+		} else if (curFragment instanceof SearchResultPlaceListFragment) {
+			placesOnExtraListDataListener.loadExtraListData(adapterDataObserver);
+		}
+	}
+
+	class OnPageCallback extends ViewPager2.OnPageChangeCallback {
+		public int lastPosition = 0;
+
+		@Override
+		public void onPageSelected(int position) {
+			super.onPageSelected(position);
+			if (lastPosition != position) {
+				lastPosition = position;
+				binding.viewpagerIndicator.selectDot(position);
+
+				Fragment curFragment = searchResultListAdapter.getFragment(position);
+
+				if (curFragment instanceof SearchResultAddressListFragment) {
+					((SearchResultAddressListFragment) curFragment).onChangedPage();
+				} else if (curFragment instanceof SearchResultPlaceListFragment) {
+					((SearchResultPlaceListFragment) curFragment).onChangedPage();
+				}
+			}
+		}
+	}
+
+
+	@Override
+	public void addOnBackPressedCallback() {
+		requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+	}
+
+	@Override
+	public void removeOnBackPressedCallback() {
+		onBackPressedCallback.remove();
+	}
 
 }

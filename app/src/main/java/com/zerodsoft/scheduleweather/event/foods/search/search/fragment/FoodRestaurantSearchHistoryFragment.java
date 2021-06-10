@@ -160,22 +160,7 @@ public class FoodRestaurantSearchHistoryFragment extends Fragment implements OnC
 
 	@Override
 	public void deleteListItem(SearchHistoryDTO e, int position) {
-		searchHistoryViewModel.delete(e.getId(), new CarrierMessagingService.ResultCallback<Boolean>() {
-			@Override
-			public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException {
-				getActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						if (aBoolean) {
-							adapter.getHistoryList().remove(position);
-							adapter.notifyItemRemoved(position);
-						}
-					}
-
-				});
-
-			}
-		});
+		searchHistoryViewModel.delete(e.getId());
 	}
 
 }

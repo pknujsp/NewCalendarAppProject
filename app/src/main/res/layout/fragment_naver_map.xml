@@ -35,7 +35,7 @@
                 <androidx.fragment.app.FragmentContainerView
                     android:id="@+id/header_fragment_container"
                     android:layout_width="match_parent"
-                    android:layout_height="@dimen/map_header_bar_height"
+                    android:layout_height="wrap_content"
                     android:layout_marginLeft="28dp"
                     android:layout_marginRight="28dp"
                     android:background="@drawable/map_view_background"

@@ -11,11 +11,11 @@ public interface SearchHistoryQuery
 {
     void insert(Integer type, String value);
 
-    void select(Integer type, CarrierMessagingService.ResultCallback<List<SearchHistoryDTO>> callback);
+    void select(Integer type, DbQueryCallback<List<SearchHistoryDTO>> callback);
 
     void select(Integer type, String value, CarrierMessagingService.ResultCallback<SearchHistoryDTO> callback);
 
-    void delete(int id, CarrierMessagingService.ResultCallback<Boolean> callback);
+    void delete(int id);
 
     void delete(Integer type, String value, CarrierMessagingService.ResultCallback<Boolean> callback);
 

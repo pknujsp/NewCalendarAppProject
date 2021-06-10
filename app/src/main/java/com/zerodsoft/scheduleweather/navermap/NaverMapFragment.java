@@ -69,7 +69,6 @@ import com.zerodsoft.scheduleweather.common.classes.AppPermission;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.common.interfaces.OnHiddenFragmentListener;
-import com.zerodsoft.scheduleweather.databinding.FragmentLocationHeaderBarBinding;
 import com.zerodsoft.scheduleweather.databinding.FragmentNaverMapBinding;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
@@ -123,7 +122,7 @@ import java.util.Set;
 
 public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IMapPoint, IMapData, INetwork, OnClickedPlacesListListener, PlacesItemBottomSheetButtonOnClickListener,
 		PoiItemOnClickListener<Marker>, OnClickedBottomSheetListener,
-		MapHeaderSearchFragment.LocationSearchListener, SearchFragmentController, BuildingLocationSelectorController,
+		SearchFragmentController, BuildingLocationSelectorController,
 		BuildingFragmentController, BuildingListFragment.OnSearchRadiusChangeListener, NaverMap.OnMapClickListener,
 		NaverMap.OnCameraIdleListener, CameraUpdate.FinishCallback, NaverMap.OnLocationChangeListener, OnBackPressedCallbackController,
 		FragmentManager.OnBackStackChangedListener, BottomSheetController, NaverMap.OnMapLongClickListener,
@@ -151,7 +150,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	public ImageButton gpsButton;
 	public ImageButton buildingButton;
 	public ImageButton favoriteLocationsButton;
-	public View searchHeaderBar;
 
 	public int selectedPoiItemIndex;
 
@@ -350,23 +348,32 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			}
 		});
 
-		searchHeaderBar = binding.headerFragmentContainer;
-		searchHeaderBar.setOnClickListener(new View.OnClickListener() {
+		binding.headerFragmentContainer.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				//expand search location bottomsheet
-				FragmentManager fragmentManager = getChildFragmentManager();
-				BottomSheetBehavior locationSearchBottomSheetBehavior = bottomSheetBehaviorMap.get(BottomSheetType.SEARCH_LOCATION);
+				if (getChildFragmentManager().findFragmentByTag(getString(R.string.tag_map_search_main_fragment)) != null) {
+					//expand search location bottomsheet
+					collapseAllExpandedBottomSheets();
 
-				if (locationSearchBottomSheetBehavior.getState() != BottomSheetBehavior.STATE_EXPANDED &&
-						fragmentManager.findFragmentByTag(LocationSearchResultFragment.TAG) == null) {
-					LocationSearchFragment locationSearchFragment = new LocationSearchFragment(NaverMapFragment.this);
+					FragmentManager childFragmentManager = getChildFragmentManager();
+					int backStackCount = childFragmentManager.getBackStackEntryCount();
+					for (int count = 0; count < backStackCount; count++) {
+						childFragmentManager.popBackStackImmediate();
+					}
+
+					binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.GONE);
+					binding.naverMapButtonsLayout.buildingButton.setVisibility(View.GONE);
+
+					LocationSearchFragment locationSearchFragment =
+							new LocationSearchFragment();
 					MapHeaderSearchFragment mapHeaderSearchFragment = new MapHeaderSearchFragment();
 
-					fragmentManager.beginTransaction().replace(binding.headerFragmentContainer.getId(), mapHeaderSearchFragment)
+					final String tag = getString(R.string.tag_location_search_fragment);
+
+					childFragmentManager.beginTransaction().replace(binding.headerFragmentContainer.getId(), mapHeaderSearchFragment)
 							.add(binding.locationSearchBottomSheet.searchFragmentContainer.getId(), locationSearchFragment,
-									LocationSearchFragment.TAG)
-							.addToBackStack(LocationSearchFragment.TAG)
+									tag)
+							.addToBackStack(tag)
 							.commit();
 
 					setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_EXPANDED);
@@ -1063,6 +1070,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 	}
 
+	@Override
 	public BottomSheetBehavior getBottomSheetBehavior(BottomSheetType bottomSheetType) {
 		return bottomSheetBehaviorMap.get(bottomSheetType);
 	}
@@ -1083,7 +1091,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	}
 
 	@Override
-	public void searchLocation(String query) {
+	public void search(String query) {
 		FragmentManager fragmentManager = getChildFragmentManager();
 
 		if (fragmentManager.findFragmentByTag(LocationSearchResultFragment.TAG)
@@ -1307,14 +1315,18 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		locationOverlay.setPosition(latLng);
 	}
 
+	@Override
 	public List<BottomSheetBehavior> getBottomSheetBehaviorOfExpanded(BottomSheetBehavior currentBottomSheetBehavior) {
 		Set<BottomSheetType> keySet = bottomSheetBehaviorMap.keySet();
 		List<BottomSheetBehavior> bottomSheetBehaviors = new ArrayList<>();
 
 		for (BottomSheetType bottomSheetType : keySet) {
 			if (bottomSheetBehaviorMap.get(bottomSheetType).getState() == BottomSheetBehavior.STATE_EXPANDED) {
-				if (!bottomSheetBehaviorMap.get(bottomSheetType).equals(currentBottomSheetBehavior)) {
-					bottomSheetBehaviors.add(bottomSheetBehaviorMap.get(bottomSheetType));
+
+				if (currentBottomSheetBehavior != null) {
+					if (!bottomSheetBehaviorMap.get(bottomSheetType).equals(currentBottomSheetBehavior)) {
+						bottomSheetBehaviors.add(bottomSheetBehaviorMap.get(bottomSheetType));
+					}
 				}
 			}
 		}
@@ -1322,6 +1334,16 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		return bottomSheetBehaviors;
 	}
 
+	@Override
+	public void collapseAllExpandedBottomSheets() {
+		Set<BottomSheetType> keySet = bottomSheetBehaviorMap.keySet();
+
+		for (BottomSheetType bottomSheetType : keySet) {
+			if (bottomSheetBehaviorMap.get(bottomSheetType).getState() == BottomSheetBehavior.STATE_EXPANDED) {
+				bottomSheetBehaviorMap.get(bottomSheetType).setState(BottomSheetBehavior.STATE_COLLAPSED);
+			}
+		}
+	}
 
 	@Override
 	public void onBackStackChanged() {

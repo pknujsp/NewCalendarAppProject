@@ -570,4 +570,7 @@
     <string name="tag_showing_restaurant_list_on_map">tag_showing_restaurant_list_on_map</string>
     <string name="tag_header_food_menu_list_fragment">tag_header_food_menu_list_fragment</string>
     <string name="criteria_location">기준 위치</string>
+    <string name="tag_location_search_result_fragment">tag_location_search_result_fragment</string>
+    <string name="tag_location_search_fragment">tag_location_search_fragment</string>
+    <string name="tag_map_search_main_fragment">tag_map_search_main_fragment</string>
 </resources>

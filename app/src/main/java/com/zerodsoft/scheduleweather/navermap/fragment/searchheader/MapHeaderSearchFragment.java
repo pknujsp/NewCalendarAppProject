@@ -12,41 +12,106 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
+import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
+import com.zerodsoft.scheduleweather.common.interfaces.OnSearchListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentLocationSearchBarBinding;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.MarkerType;
+import com.zerodsoft.scheduleweather.navermap.fragment.search.adapter.PlaceCategoriesAdapter;
+import com.zerodsoft.scheduleweather.navermap.fragment.searchresult.LocationSearchResultFragment;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
-import com.zerodsoft.scheduleweather.navermap.interfaces.SearchFragmentController;
+import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
+import com.zerodsoft.scheduleweather.navermap.viewmodel.MapSharedViewModel;
+import com.zerodsoft.scheduleweather.navermap.viewmodel.SearchHistoryViewModel;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
+import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;
 
-public class MapHeaderSearchFragment extends Fragment implements SearchBarController {
-	public static final String TAG = "MapHeaderSearchFragment";
+import org.jetbrains.annotations.NotNull;
+
+public class MapHeaderSearchFragment extends Fragment {
 	private FragmentLocationSearchBarBinding binding;
 
-	private final LocationSearchListener locationSearchListener;
-	private final SearchFragmentController searchFragmentController;
-	private final IMapData iMapData;
-	private final BottomSheetController bottomSheetController;
-	private SearchHistoryDataController<SearchHistoryDTO> searchHistoryDataController;
+	private SearchHistoryViewModel searchHistoryViewModel;
+	private MapSharedViewModel mapSharedViewModel;
+	private PlaceCategoriesAdapter categoriesAdapter;
+	private BottomSheetController bottomSheetController;
+	private IMapData iMapData;
+
 
 	private Drawable mapDrawable;
 	private Drawable listDrawable;
 
-	public MapHeaderSearchFragment(Fragment fragment) {
-		this.locationSearchListener = (LocationSearchListener) fragment;
-		this.searchFragmentController = (SearchFragmentController) fragment;
-		this.bottomSheetController = (BottomSheetController) fragment;
-		this.iMapData = (IMapData) fragment;
-	}
+	private final OnClickedListItem<PlaceCategoryDTO> onClickedListItemOnPlaceCategory = new OnClickedListItem<PlaceCategoryDTO>() {
+		@Override
+		public void onClickedListItem(PlaceCategoryDTO e, int position) {
+
+		}
+
+		@Override
+		public void deleteListItem(PlaceCategoryDTO e, int position) {
+
+		}
+	};
+
+	private final FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks = new FragmentManager.FragmentLifecycleCallbacks() {
+		@Override
+		public void onFragmentCreated(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+			super.onFragmentCreated(fm, f, savedInstanceState);
+			if (f instanceof LocationSearchResultFragment) {
+				binding.viewTypeButton.setVisibility(View.VISIBLE);
+			}
+		}
+
+		@Override
+		public void onFragmentDestroyed(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
+			super.onFragmentDestroyed(fm, f);
+			if (f instanceof LocationSearchResultFragment) {
+				binding.viewTypeButton.setVisibility(View.GONE);
+			}
+		}
+	};
+
+	private BottomSheetBehavior.BottomSheetCallback searchLocationBottomSheetCallback = new BottomSheetBehavior.BottomSheetCallback() {
+		@Override
+		public void onStateChanged(@NonNull @NotNull View bottomSheet, int newState) {
+			switch (newState) {
+				case BottomSheetBehavior.STATE_EXPANDED:
+					binding.viewTypeButton.setImageDrawable(mapDrawable);
+					break;
+				case BottomSheetBehavior.STATE_COLLAPSED:
+					binding.viewTypeButton.setImageDrawable(listDrawable);
+					break;
+			}
+		}
+
+		@Override
+		public void onSlide(@NonNull @NotNull View bottomSheet, float slideOffset) {
+
+		}
+	};
 
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		getParentFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false);
+
+		Fragment parentFragment = getParentFragment();
+		searchHistoryViewModel = new ViewModelProvider(parentFragment).get(SearchHistoryViewModel.class);
+		mapSharedViewModel = new ViewModelProvider(parentFragment).get(MapSharedViewModel.class);
+
+		iMapData = mapSharedViewModel.getiMapData();
+		bottomSheetController = mapSharedViewModel.getBottomSheetController();
+		bottomSheetController.getBottomSheetBehavior(BottomSheetType.LOCATION_ITEM).addBottomSheetCallback(searchLocationBottomSheetCallback);
 	}
 
 	@Nullable
@@ -59,6 +124,11 @@ public class MapHeaderSearchFragment extends Fragment implements SearchBarContro
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+
+		binding.categoriesRecyclerview.setLayoutManager(new LinearLayoutManager(getActivity(), RecyclerView.HORIZONTAL, false));
+
+		categoriesAdapter = new PlaceCategoriesAdapter(onClickedListItemOnPlaceCategory);
+		binding.categoriesRecyclerview.setAdapter(categoriesAdapter);
 
 		binding.searchView.setOnBackClickListener(new View.OnClickListener() {
 			@Override
@@ -80,11 +150,7 @@ public class MapHeaderSearchFragment extends Fragment implements SearchBarContro
 			public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
 				if (keyCode == KeyEvent.KEYCODE_ENTER && keyEvent.getAction() == KeyEvent.ACTION_DOWN) {
 					//검색
-					binding.viewTypeButton.setVisibility(View.VISIBLE);
-
-					String query = binding.searchView.getQuery();
-					locationSearchListener.searchLocation(query);
-					searchHistoryDataController.insertValueToHistory(query);
+					search(binding.searchView.getQuery());
 					return true;
 				}
 				return false;
@@ -95,7 +161,7 @@ public class MapHeaderSearchFragment extends Fragment implements SearchBarContro
 			@Override
 			public boolean onQueryTextSubmit(String query) {
 				if (!query.isEmpty()) {
-					setQuery(query, true);
+					search(query);
 					return true;
 				}
 				return false;
@@ -113,23 +179,58 @@ public class MapHeaderSearchFragment extends Fragment implements SearchBarContro
 		listDrawable = ContextCompat.getDrawable(getContext(), R.drawable.list_icon);
 	}
 
-	public FragmentLocationSearchBarBinding getBinding() {
-		return binding;
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		bottomSheetController.getBottomSheetBehavior(BottomSheetType.LOCATION_ITEM).removeBottomSheetCallback(searchLocationBottomSheetCallback);
+		getParentFragmentManager().unregisterFragmentLifecycleCallbacks(fragmentLifecycleCallbacks);
 	}
 
 
-	public void setQuery(String query, boolean submit) {
-		if (KakaoLocalApiCategoryUtil.isCategory(query)) {
-			binding.searchView.setQuery(KakaoLocalApiCategoryUtil.getDefaultDescription(query), false);
-		} else {
-			binding.searchView.setQuery(query, false);
-		}
+	public void search(String query) {
+		searchHistoryViewModel.contains(SearchHistoryDTO.LOCATION_SEARCH, query, new DbQueryCallback<Boolean>() {
+			@Override
+			public void onResultSuccessful(Boolean isDuplicate) {
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						if (!isDuplicate) {
+							searchHistoryViewModel.insert(SearchHistoryDTO.LOCATION_SEARCH, query);
+						}
+						// location search fragment is added?
+						FragmentManager parentFragmentManager = getParentFragmentManager();
+						if (parentFragmentManager.findFragmentByTag(getString(R.string.tag_location_search_result_fragment)) == null) {
+							LocationSearchResultFragment locationSearchResultFragment = new LocationSearchResultFragment();
+							Bundle bundle = new Bundle();
+							bundle.putString("query", query);
 
-		if (submit) {
-			locationSearchListener.searchLocation(query);
-		} else {
+							locationSearchResultFragment.setArguments(bundle);
 
-		}
+							parentFragmentManager.beginTransaction()
+									.hide(parentFragmentManager.findFragmentByTag(getString(R.string.tag_location_search_fragment)))
+									.add(R.id.search_fragment_container, locationSearchResultFragment, getString(R.string.tag_location_search_result_fragment))
+									.addToBackStack(getString(R.string.tag_location_search_result_fragment)).commit();
+						} else {
+							// added
+							iMapData.removePoiItems(MarkerType.SEARCH_RESULT);
+							LocationSearchResultFragment locationSearchResultFragment =
+									(LocationSearchResultFragment) parentFragmentManager.findFragmentByTag(getString(R.string.tag_location_search_result_fragment));
+
+							if (locationSearchResultFragment.isHidden()) {
+								parentFragmentManager.popBackStackImmediate();
+							}
+							locationSearchResultFragment.searchLocation(query);
+						}
+					}
+				});
+
+			}
+
+			@Override
+			public void onResultNoData() {
+
+			}
+		});
 	}
 
 	@Override
@@ -170,9 +271,5 @@ public class MapHeaderSearchFragment extends Fragment implements SearchBarContro
 		binding.viewTypeButton.setVisibility(visibility);
 	}
 
-
-	public interface LocationSearchListener {
-		void searchLocation(String query);
-	}
 
 }
