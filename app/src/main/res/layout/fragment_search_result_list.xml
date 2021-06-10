@@ -3,35 +3,38 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <FrameLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <androidx.viewpager2.widget.ViewPager2
-            android:id="@+id/list_viewpager"
+        <FrameLayout
+            android:id="@+id/content_layout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal" />
+            android:layout_height="match_parent">
 
-        <com.zerodsoft.scheduleweather.etc.ViewPagerIndicator
-            android:id="@+id/viewpager_indicator"
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/list_viewpager"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal" />
+
+            <com.zerodsoft.scheduleweather.etc.ViewPagerIndicator
+                android:id="@+id/viewpager_indicator"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|center_horizontal"
+                android:layout_marginBottom="24dp"
+                android:gravity="center"
+                app:IndicatorSelectedDotDrawable="@drawable/selected_dot_indicator"
+                app:IndicatorUnselectedDotDrawable="@drawable/unselected_dot_indicator" />
+
+        </FrameLayout>
+
+        <com.zerodsoft.scheduleweather.common.view.CustomProgressView
+            android:id="@+id/custom_progress_view"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|center_horizontal"
-            android:layout_marginBottom="24dp"
-            android:gravity="center"
-            app:IndicatorSelectedDotDrawable="@drawable/selected_dot_indicator"
-            app:IndicatorUnselectedDotDrawable="@drawable/unselected_dot_indicator" />
-
-        <TextView
-            android:id="@+id/error_text"
-            style="@style/TextAppearance.MaterialComponents.Headline6"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:visibility="visible" />
-
-    </FrameLayout>
+            android:layout_height="wrap_content" />
+    </LinearLayout>
 
 </layout>

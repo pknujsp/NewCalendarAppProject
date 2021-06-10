@@ -17,12 +17,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.naver.maps.map.overlay.Marker;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.common.interfaces.OnSearchListener;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
+import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.fragment.search.adapter.SearchLocationHistoryAdapter;
+import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.navermap.fragment.search.adapter.PlaceCategoriesAdapter;
@@ -35,15 +38,13 @@ import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;
 
 import java.util.List;
 
-public class LocationSearchFragment extends Fragment implements OnSearchListener {
+public class LocationSearchFragment extends Fragment {
 	private FragmentSearchBinding binding;
 
 	private SearchLocationHistoryAdapter searchLocationHistoryAdapter;
 	private SearchHistoryViewModel searchHistoryViewModel;
 
-	private IMapPoint iMapPoint;
-	private IMapData iMapData;
-	private SearchFragmentController searchFragmentController;
+	private BottomSheetController bottomSheetController;
 	private MapSharedViewModel mapSharedViewModel;
 
 	private final OnClickedListItem<SearchHistoryDTO> searchHistoryDTOOnClickedListItem = new OnClickedListItem<SearchHistoryDTO>() {
@@ -64,12 +65,14 @@ public class LocationSearchFragment extends Fragment implements OnSearchListener
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mapSharedViewModel = new ViewModelProvider(getParentFragment()).get(MapSharedViewModel.class);
+		bottomSheetController = mapSharedViewModel.getBottomSheetController();
 		searchHistoryViewModel = new ViewModelProvider(getParentFragment()).get(SearchHistoryViewModel.class);
 
 		searchHistoryViewModel.getOnAddedHistoryDTOMutableLiveData().observe(this, new Observer<SearchHistoryDTO>() {
 			@Override
 			public void onChanged(SearchHistoryDTO searchHistoryDTO) {
-
+				searchLocationHistoryAdapter.getHistoryList().add(searchHistoryDTO);
+				searchLocationHistoryAdapter.notifyItemInserted(searchLocationHistoryAdapter.getItemCount() - 1);
 			}
 		});
 
@@ -114,7 +117,8 @@ public class LocationSearchFragment extends Fragment implements OnSearchListener
 	}
 
 	@Override
-	public void onSearch(String query) {
-
+	public void onDestroy() {
+		super.onDestroy();
+		bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_COLLAPSED);
 	}
 }

@@ -74,5 +74,6 @@
     <dimen name="current_time_line_view_text_height">11sp</dimen>
     <dimen name="restaurant_header_height">72dp</dimen>
     <dimen name="restaurant_list_header_height">90dp</dimen>
-    <dimen name="header_fragment_height" >72dp</dimen>
+    <dimen name="header_fragment_height">72dp</dimen>
+    <dimen name="map_header_search_bar_height">90dp</dimen>
 </resources>

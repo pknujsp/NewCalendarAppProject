@@ -27,7 +27,7 @@ import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
 
-public class AddressesListFragment extends Fragment implements OnProgressBarListener
+public class AddressesListFragment extends Fragment
 {
     private AddressViewModel viewModel;
     private AddressesListAdapter adapter;
@@ -77,12 +77,11 @@ public class AddressesListFragment extends Fragment implements OnProgressBarList
 
         if (KakaoLocalApiCategoryUtil.isCategory(searchWord))
         {
-            binding.progressBar.setVisibility(View.GONE);
         } else
         {
             adapter = new AddressesListAdapter(onClickedLocationItem);
             binding.searchResultRecyclerview.setAdapter(adapter);
-            viewModel.init(addressParameter, this);
+            viewModel.init(addressParameter);
             viewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<AddressResponseDocuments>>()
             {
                 @Override
@@ -94,16 +93,4 @@ public class AddressesListFragment extends Fragment implements OnProgressBarList
         }
     }
 
-    @Override
-    public void setProgressBarVisibility(int visibility)
-    {
-        getActivity().runOnUiThread(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                binding.progressBar.setVisibility(visibility);
-            }
-        });
-    }
 }

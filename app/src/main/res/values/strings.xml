@@ -554,6 +554,7 @@
     <string name="selected_map_center_point_because_not_selected_custom_criteria_location">검색 기준 위치가 선택되지 않아, 지도 중심 좌표로 기준 설정 됩니다</string>
 
     <string name="loading_criteria_location">기준 주소 로딩</string>
+    <string name="failed_catch_current_location">현재위치 파악실패</string>
 
     <!-- fragmentTags -->
     <string name="tag_place_info_web_fragment">tag_place_info_web_fragment</string>
@@ -573,4 +574,6 @@
     <string name="tag_location_search_result_fragment">tag_location_search_result_fragment</string>
     <string name="tag_location_search_fragment">tag_location_search_fragment</string>
     <string name="tag_map_search_main_fragment">tag_map_search_main_fragment</string>
+    <string name="tag_hide_location_search_result_fragment">tag_hide_location_search_result_fragment</string>
+    <string name="tag_map_header_search_fragment">tag_map_header_search_fragment</string>
 </resources>

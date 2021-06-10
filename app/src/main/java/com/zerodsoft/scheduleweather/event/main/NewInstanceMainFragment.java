@@ -625,7 +625,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 			@Override
 			public void onClick(View view) {
 				if (bottomSheetBehaviorMap.get(BottomSheetType.SELECTED_PLACE_CATEGORY).getState() != BottomSheetBehavior.STATE_EXPANDED) {
-					onCalledBottomSheet(BottomSheetBehavior.STATE_EXPANDED, bottomSheetBehaviorMap.get(BottomSheetType.SELECTED_PLACE_CATEGORY));
+					setStateOfBottomSheet(BottomSheetType.SELECTED_PLACE_CATEGORY, BottomSheetBehavior.STATE_EXPANDED);
 					PlacesOfSelectedCategoriesFragment placesOfSelectedCategoriesFragment = (PlacesOfSelectedCategoriesFragment) bottomSheetFragmentMap.get(BottomSheetType.SELECTED_PLACE_CATEGORY);
 
 					getChildFragmentManager().beginTransaction()
@@ -685,12 +685,9 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
            poiitem이 선택된 경우 해제하고, poiitem을 새로 생성한 뒤 poiitem전체가 보이도록 설정
              */
 			if (isChecked) {
-				if (getChildFragmentManager().findFragmentByTag(MapHeaderSearchFragment.TAG) != null) {
-					if (getChildFragmentManager().findFragmentByTag(MapHeaderSearchFragment.TAG).isVisible()) {
-						closeSearchFragments();
-					}
+				if (getChildFragmentManager().findFragmentByTag(getString(R.string.tag_map_header_search_fragment)) != null) {
+					getChildFragmentManager().popBackStackImmediate();
 				}
-
 				setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(getContext(), MarkerType.SELECTED_PLACE_CATEGORY), MarkerType.SELECTED_PLACE_CATEGORY);
 
 				PlaceCategoryDTO placeCategory = ((PlaceCategoryChipViewHolder) compoundButton.getTag()).placeCategory;

@@ -16,6 +16,7 @@
             app:hint="@string/hint_request_input_address_or_place" />
 
         <FrameLayout
+            android:id="@+id/content_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
@@ -35,16 +36,13 @@
                 app:IndicatorSelectedDotDrawable="@drawable/selected_dot_indicator"
                 app:IndicatorUnselectedDotDrawable="@drawable/unselected_dot_indicator" />
 
-            <TextView
-                android:id="@+id/error_text"
-                style="@style/TextAppearance.MaterialComponents.Headline6"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:visibility="visible" />
 
         </FrameLayout>
+
+        <com.zerodsoft.scheduleweather.common.view.CustomProgressView
+            android:id="@+id/custom_progress_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
     </LinearLayout>
 

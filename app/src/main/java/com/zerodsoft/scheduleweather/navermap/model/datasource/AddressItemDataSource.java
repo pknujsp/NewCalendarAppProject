@@ -21,95 +21,72 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class AddressItemDataSource extends PositionalDataSource<AddressResponseDocuments>
-{
-    private Querys querys;
-    private AddressResponseMeta addressMeta;
-    private LocalApiPlaceParameter localApiPlaceParameter;
-    private OnProgressBarListener onProgressBarListener;
+public class AddressItemDataSource extends PositionalDataSource<AddressResponseDocuments> {
+	private Querys querys;
+	private AddressResponseMeta addressMeta;
+	private LocalApiPlaceParameter localApiPlaceParameter;
 
-    public AddressItemDataSource(LocalApiPlaceParameter localApiParameter, OnProgressBarListener onProgressBarListener)
-    {
-        this.localApiPlaceParameter = localApiParameter;
-        this.onProgressBarListener = onProgressBarListener;
-    }
+	public AddressItemDataSource(LocalApiPlaceParameter localApiParameter) {
+		this.localApiPlaceParameter = localApiParameter;
+	}
 
-    @Override
-    public void loadInitial(@NonNull LoadInitialParams params, @NonNull LoadInitialCallback<AddressResponseDocuments> callback)
-    {
-        onProgressBarListener.setProgressBarVisibility(View.VISIBLE);
-        querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.KAKAO);
-        Map<String, String> queryMap = localApiPlaceParameter.getParameterMap();
-        Call<AddressKakaoLocalResponse> call = querys.getAddress(queryMap);
+	@Override
+	public void loadInitial(@NonNull LoadInitialParams params, @NonNull LoadInitialCallback<AddressResponseDocuments> callback) {
+		querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.KAKAO);
+		Map<String, String> queryMap = localApiPlaceParameter.getParameterMap();
+		Call<AddressKakaoLocalResponse> call = querys.getAddress(queryMap);
 
-        call.enqueue(new Callback<AddressKakaoLocalResponse>()
-        {
-            @Override
-            public void onResponse(Call<AddressKakaoLocalResponse> call, Response<AddressKakaoLocalResponse> response)
-            {
-                List<AddressResponseDocuments> addressDocuments = null;
+		call.enqueue(new Callback<AddressKakaoLocalResponse>() {
+			@Override
+			public void onResponse(Call<AddressKakaoLocalResponse> call, Response<AddressKakaoLocalResponse> response) {
+				List<AddressResponseDocuments> addressDocuments = null;
 
-                if (response.body() == null)
-                {
-                    addressDocuments = new ArrayList<>();
-                    addressMeta = new AddressResponseMeta();
-                } else
-                {
-                    addressDocuments = response.body().getAddressResponseDocumentsList();
-                    addressMeta = response.body().getAddressResponseMeta();
-                }
-                callback.onResult(addressDocuments, 0, addressDocuments.size());
-                onProgressBarListener.setProgressBarVisibility(View.GONE);
-            }
+				if (response.body() == null) {
+					addressDocuments = new ArrayList<>();
+					addressMeta = new AddressResponseMeta();
+				} else {
+					addressDocuments = response.body().getAddressResponseDocumentsList();
+					addressMeta = response.body().getAddressResponseMeta();
+				}
+				callback.onResult(addressDocuments, 0, addressDocuments.size());
+			}
 
-            @Override
-            public void onFailure(Call<AddressKakaoLocalResponse> call, Throwable t)
-            {
-                List<AddressResponseDocuments> addressDocuments = new ArrayList<>();
-                addressMeta = new AddressResponseMeta();
-                callback.onResult(addressDocuments, 0, addressDocuments.size());
-                onProgressBarListener.setProgressBarVisibility(View.GONE);
-            }
-        });
-    }
+			@Override
+			public void onFailure(Call<AddressKakaoLocalResponse> call, Throwable t) {
+				List<AddressResponseDocuments> addressDocuments = new ArrayList<>();
+				addressMeta = new AddressResponseMeta();
+				callback.onResult(addressDocuments, 0, addressDocuments.size());
+			}
+		});
+	}
 
-    @Override
-    public void loadRange(@NonNull LoadRangeParams params, @NonNull LoadRangeCallback<AddressResponseDocuments> callback)
-    {
-        onProgressBarListener.setProgressBarVisibility(View.VISIBLE);
-        querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.KAKAO);
+	@Override
+	public void loadRange(@NonNull LoadRangeParams params, @NonNull LoadRangeCallback<AddressResponseDocuments> callback) {
+		querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.KAKAO);
 
-        if (!addressMeta.isEnd())
-        {
-            localApiPlaceParameter.setPage(Integer.toString(Integer.parseInt(localApiPlaceParameter.getPage()) + 1));
-            Map<String, String> queryMap = localApiPlaceParameter.getParameterMap();
-            Call<AddressKakaoLocalResponse> call = querys.getAddress(queryMap);
+		if (!addressMeta.isEnd()) {
+			localApiPlaceParameter.setPage(Integer.toString(Integer.parseInt(localApiPlaceParameter.getPage()) + 1));
+			Map<String, String> queryMap = localApiPlaceParameter.getParameterMap();
+			Call<AddressKakaoLocalResponse> call = querys.getAddress(queryMap);
 
-            call.enqueue(new Callback<AddressKakaoLocalResponse>()
-            {
-                @Override
-                public void onResponse(Call<AddressKakaoLocalResponse> call, Response<AddressKakaoLocalResponse> response)
-                {
-                    List<AddressResponseDocuments> addressDocuments = response.body().getAddressResponseDocumentsList();
-                    addressMeta = response.body().getAddressResponseMeta();
-                    callback.onResult(addressDocuments);
-                    onProgressBarListener.setProgressBarVisibility(View.GONE);
+			call.enqueue(new Callback<AddressKakaoLocalResponse>() {
+				@Override
+				public void onResponse(Call<AddressKakaoLocalResponse> call, Response<AddressKakaoLocalResponse> response) {
+					List<AddressResponseDocuments> addressDocuments = response.body().getAddressResponseDocumentsList();
+					addressMeta = response.body().getAddressResponseMeta();
+					callback.onResult(addressDocuments);
 
-                }
+				}
 
-                @Override
-                public void onFailure(Call<AddressKakaoLocalResponse> call, Throwable t)
-                {
-                    List<AddressResponseDocuments> addressDocuments = new ArrayList<>();
-                    callback.onResult(addressDocuments);
-                    onProgressBarListener.setProgressBarVisibility(View.GONE);
+				@Override
+				public void onFailure(Call<AddressKakaoLocalResponse> call, Throwable t) {
+					List<AddressResponseDocuments> addressDocuments = new ArrayList<>();
+					callback.onResult(addressDocuments);
 
-                }
-            });
-        } else
-        {
-            callback.onResult(new ArrayList<AddressResponseDocuments>(0));
-            onProgressBarListener.setProgressBarVisibility(View.GONE);
-        }
-    }
+				}
+			});
+		} else {
+			callback.onResult(new ArrayList<AddressResponseDocuments>(0));
+		}
+	}
 }

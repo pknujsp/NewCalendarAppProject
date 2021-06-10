@@ -16,160 +16,109 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
+import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.FragmentLocationSearchResultBinding;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.navermap.LocationItemViewPagerAdapter;
-import com.zerodsoft.scheduleweather.navermap.interfaces.OnClickedLocListItem;
-import com.zerodsoft.scheduleweather.navermap.fragment.searchresult.interfaces.IViewPager;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.navermap.fragment.searchresult.adapter.AddressesAdapter;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.AddressViewModel;
 import com.zerodsoft.scheduleweather.navermap.MarkerType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener;
+import com.zerodsoft.scheduleweather.navermap.viewmodel.MapSharedViewModel;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
 
-public class SearchResultAddressListFragment extends Fragment implements IViewPager, OnProgressBarListener, OnExtraListDataListener<LocationType>
-{
-    private FragmentLocationSearchResultBinding binding;
+public class SearchResultAddressListFragment extends Fragment implements OnExtraListDataListener<LocationType> {
+	private final String QUERY;
+	private final OnClickedListItem<AddressResponseDocuments> addressResponseDocumentsOnClickedListItem;
 
-    private AddressViewModel viewModel;
-    private AddressesAdapter adapter;
+	private FragmentLocationSearchResultBinding binding;
 
-    private final IMapData iMapData;
-    private final OnClickedLocListItem onClickedLocListItem;
-    private final String SEARCH_WORD;
+	private AddressViewModel addressViewModel;
+	private AddressesAdapter adapter;
+	private MapSharedViewModel mapSharedViewModel;
 
-    public SearchResultAddressListFragment(String searchWord, IMapData iMapData, OnClickedLocListItem onClickedLocListItem)
-    {
-        this.SEARCH_WORD = searchWord;
-        this.iMapData = iMapData;
-        this.onClickedLocListItem = onClickedLocListItem;
-    }
+	private IMapData iMapData;
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState)
-    {
-        super.onCreate(savedInstanceState);
-    }
+	public SearchResultAddressListFragment(String query, OnClickedListItem<AddressResponseDocuments> addressResponseDocumentsOnClickedListItem) {
+		this.QUERY = query;
+		this.addressResponseDocumentsOnClickedListItem = addressResponseDocumentsOnClickedListItem;
+	}
 
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
-    {
-        binding = FragmentLocationSearchResultBinding.inflate(inflater);
-        return binding.getRoot();
-    }
+	@Override
+	public void onCreate(@Nullable Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		mapSharedViewModel = new ViewModelProvider(getParentFragment().getParentFragment()).get(MapSharedViewModel.class);
+		iMapData = mapSharedViewModel.getiMapData();
+	}
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
-    {
-        super.onViewCreated(view, savedInstanceState);
+	@Nullable
+	@Override
+	public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+		binding = FragmentLocationSearchResultBinding.inflate(inflater);
+		return binding.getRoot();
+	}
 
-        binding.mapSearchResultHeader.setVisibility(View.GONE);
-        binding.searchResultType.setText(getString(R.string.result_address));
+	@Override
+	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
 
-        binding.searchResultRecyclerview.setLayoutManager(new LinearLayoutManager(view.getContext(), RecyclerView.VERTICAL, false));
-        binding.searchResultRecyclerview.addItemDecoration(new DividerItemDecoration(view.getContext(), DividerItemDecoration.VERTICAL));
-        viewModel = new ViewModelProvider(this).get(AddressViewModel.class);
+		binding.mapSearchResultHeader.setVisibility(View.GONE);
+		binding.searchResultType.setText(getString(R.string.result_address));
 
-        onChangedPage();
-        requestAddresses(SEARCH_WORD);
-    }
+		binding.searchResultRecyclerview.setLayoutManager(new LinearLayoutManager(view.getContext(), RecyclerView.VERTICAL, false));
+		binding.searchResultRecyclerview.addItemDecoration(new DividerItemDecoration(view.getContext(), DividerItemDecoration.VERTICAL));
+		addressViewModel = new ViewModelProvider(this).get(AddressViewModel.class);
 
-    private void requestAddresses(String searchWord)
-    {
-        LocalApiPlaceParameter parameter = LocalParameterUtil.getAddressParameter(searchWord, LocalApiPlaceParameter.DEFAULT_SIZE
-                , LocalApiPlaceParameter.DEFAULT_PAGE);
+		adapter = new AddressesAdapter(getContext(), addressResponseDocumentsOnClickedListItem);
+		adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+			@Override
+			public void onItemRangeInserted(int positionStart, int itemCount) {
+				super.onItemRangeInserted(positionStart, itemCount);
 
-        adapter = new AddressesAdapter(getContext(), iMapData, onClickedLocListItem);
-        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver()
-        {
-            @Override
-            public void onItemRangeInserted(int positionStart, int itemCount)
-            {
-                super.onItemRangeInserted(positionStart, itemCount);
+				if (positionStart > 0) {
+					iMapData.addPoiItems(adapter.getCurrentList().snapshot(), MarkerType.SEARCH_RESULT_ADDRESS);
+				} else {
+					if (itemCount > 0) {
+						iMapData.setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(getContext(),
+								MarkerType.SEARCH_RESULT_ADDRESS), MarkerType.SEARCH_RESULT_ADDRESS);
+						iMapData.createPoiItems(adapter.getCurrentList().snapshot(), MarkerType.SEARCH_RESULT_ADDRESS);
+					}
+				}
+			}
+		});
+		binding.searchResultRecyclerview.setAdapter(adapter);
+		LocalApiPlaceParameter parameter = LocalParameterUtil.getAddressParameter(QUERY, LocalApiPlaceParameter.DEFAULT_SIZE
+				, LocalApiPlaceParameter.DEFAULT_PAGE);
 
-                if (positionStart > 0)
-                {
-                    iMapData.addPoiItems(adapter.getCurrentList().snapshot(), MarkerType.SEARCH_RESULT);
-                } else
-                {
-                    if (itemCount > 0)
-                    {
-                        iMapData.createPoiItems(adapter.getCurrentList().snapshot(), MarkerType.SEARCH_RESULT);
-                    }
-                }
-            }
-        });
+		addressViewModel.init(parameter);
+		addressViewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<AddressResponseDocuments>>() {
+			@Override
+			public void onChanged(PagedList<AddressResponseDocuments> addressResponseDocuments) {
+				adapter.submitList(addressResponseDocuments);
+			}
+		});
+	}
 
-        binding.searchResultRecyclerview.setAdapter(adapter);
 
-        viewModel.init(parameter, this);
-        viewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<AddressResponseDocuments>>()
-        {
-            @Override
-            public void onChanged(PagedList<AddressResponseDocuments> addressResponseDocuments)
-            {
-                adapter.submitList(addressResponseDocuments);
-            }
-        });
+	@Override
+	public void loadExtraListData(LocationType e, RecyclerView.AdapterDataObserver adapterDataObserver) {
 
-    }
+	}
 
-    /*
-    viewpager의 페이지가 변경된 경우 호출
-     */
-    @Override
-    public void onChangedPage()
-    {
-        iMapData.setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(getContext(), MarkerType.SEARCH_RESULT), MarkerType.SEARCH_RESULT);
+	@Override
+	public void loadExtraListData(RecyclerView.AdapterDataObserver adapterDataObserver) {
+		adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+			@Override
+			public void onItemRangeInserted(int positionStart, int itemCount) {
+				super.onItemRangeInserted(positionStart, itemCount);
+				adapterDataObserver.onItemRangeInserted(positionStart, itemCount);
+				adapter.unregisterAdapterDataObserver(this);
+			}
+		});
+		binding.searchResultRecyclerview.scrollBy(0, 10000);
+	}
 
-        int poiItemSize = iMapData.getPoiItemSize(MarkerType.SEARCH_RESULT);
-        if (poiItemSize > 0 && adapter != null)
-        {
-            if (adapter.getItemCount() > 0)
-            {
-                iMapData.removePoiItems(MarkerType.SEARCH_RESULT);
-                iMapData.createPoiItems(adapter.getCurrentList().snapshot(), MarkerType.SEARCH_RESULT);
-            }
-        }
-    }
-
-    @Override
-    public void setProgressBarVisibility(int visibility)
-    {
-        requireActivity().runOnUiThread(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                binding.progressBar.setVisibility(visibility);
-            }
-        });
-    }
-
-    @Override
-    public void loadExtraListData(LocationType e, RecyclerView.AdapterDataObserver adapterDataObserver)
-    {
-
-    }
-
-    @Override
-    public void loadExtraListData(RecyclerView.AdapterDataObserver adapterDataObserver)
-    {
-        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver()
-        {
-            @Override
-            public void onItemRangeInserted(int positionStart, int itemCount)
-            {
-                super.onItemRangeInserted(positionStart, itemCount);
-                adapterDataObserver.onItemRangeInserted(positionStart, itemCount);
-                adapter.unregisterAdapterDataObserver(this);
-            }
-        });
-        binding.searchResultRecyclerview.scrollBy(0, 10000);
-    }
 }

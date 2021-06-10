@@ -14,20 +14,18 @@ public class PlaceItemDataSourceFactory extends DataSource.Factory<Integer, Plac
     private PlaceItemDataSource dataSource;
     private MutableLiveData<PlaceItemDataSource> liveData;
     private LocalApiPlaceParameter placeParameter;
-    private OnProgressBarListener onProgressBarListener;
 
-    public PlaceItemDataSourceFactory(LocalApiPlaceParameter placeParameter, OnProgressBarListener onProgressBarListener)
+    public PlaceItemDataSourceFactory(LocalApiPlaceParameter placeParameter)
     {
         liveData = new MutableLiveData<>();
         this.placeParameter = placeParameter;
-        this.onProgressBarListener = onProgressBarListener;
     }
 
     @NonNull
     @Override
     public DataSource<Integer, PlaceDocuments> create()
     {
-        dataSource = new PlaceItemDataSource(placeParameter, onProgressBarListener);
+        dataSource = new PlaceItemDataSource(placeParameter);
         liveData.postValue(dataSource);
         return dataSource;
     }

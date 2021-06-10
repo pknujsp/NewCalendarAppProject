@@ -1,21 +1,15 @@
 package com.zerodsoft.scheduleweather.navermap.model;
 
-import com.google.gson.JsonObject;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
-import com.zerodsoft.scheduleweather.navermap.model.callback.CheckerCallback;
-import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.HttpCommunicationClient;
 import com.zerodsoft.scheduleweather.retrofit.Querys;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.MidLandFcstParameter;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.MidTaParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressKakaoLocalResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceKakaoLocalResponse;
-import com.zerodsoft.scheduleweather.utility.ClockUtil;
-import com.zerodsoft.scheduleweather.weather.mid.MidFcstRoot;
 
-import java.util.Calendar;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import retrofit2.Call;
@@ -26,7 +20,7 @@ public class SearchResultChecker {
 	private SearchResultChecker() {
 	}
 
-	public static void checkAddress(LocalApiPlaceParameter localApiPlaceParameter, CheckerCallback<DataWrapper<KakaoLocalResponse>> callback) {
+	public static void checkAddress(LocalApiPlaceParameter localApiPlaceParameter, JsonDownloader<KakaoLocalResponse> callback) {
 		Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.KAKAO);
 		Map<String, String> queryMap = localApiPlaceParameter.getParameterMap();
 		Call<AddressKakaoLocalResponse> call = querys.getAddress(queryMap);
@@ -34,34 +28,17 @@ public class SearchResultChecker {
 		call.enqueue(new Callback<AddressKakaoLocalResponse>() {
 			@Override
 			public void onResponse(Call<AddressKakaoLocalResponse> call, Response<AddressKakaoLocalResponse> response) {
-				DataWrapper<KakaoLocalResponse> dataWrapper = null;
-
-				if (response.body() == null) {
-					dataWrapper = new DataWrapper<>(new NullPointerException());
-				} else {
-					dataWrapper = new DataWrapper<>(response.body());
-				}
-
-				callback.add(dataWrapper);
-				if (callback.getResponseCount() == callback.getTotalRequestCount()) {
-					callback.onResult();
-				}
+				callback.processResult(response);
 			}
 
 			@Override
 			public void onFailure(Call<AddressKakaoLocalResponse> call, Throwable t) {
-				Exception exception = new Exception(t);
-				DataWrapper<KakaoLocalResponse> dataWrapper = new DataWrapper<>(exception);
-
-				callback.add(dataWrapper);
-				if (callback.getResponseCount() == callback.getTotalRequestCount()) {
-					callback.onResult();
-				}
+				callback.processResult(t);
 			}
 		});
 	}
 
-	public static void checkPlace(LocalApiPlaceParameter localApiPlaceParameter, CheckerCallback<DataWrapper<KakaoLocalResponse>> callback) {
+	public static void checkPlace(LocalApiPlaceParameter localApiPlaceParameter, JsonDownloader<KakaoLocalResponse> callback) {
 		Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.KAKAO);
 		Map<String, String> queryMap = localApiPlaceParameter.getParameterMap();
 		Call<PlaceKakaoLocalResponse> call = null;
@@ -75,40 +52,53 @@ public class SearchResultChecker {
 		call.enqueue(new Callback<PlaceKakaoLocalResponse>() {
 			@Override
 			public void onResponse(Call<PlaceKakaoLocalResponse> call, Response<PlaceKakaoLocalResponse> response) {
-				DataWrapper<KakaoLocalResponse> dataWrapper = null;
-
-				if (response.body() == null) {
-					dataWrapper = new DataWrapper<>(new NullPointerException());
-				} else {
-					dataWrapper = new DataWrapper<>(response.body());
-				}
-
-				callback.add(dataWrapper);
-				if (callback.getResponseCount() == callback.getTotalRequestCount()) {
-					callback.onResult();
-				}
+				callback.processResult(response);
 			}
 
 			@Override
 			public void onFailure(Call<PlaceKakaoLocalResponse> call, Throwable t) {
-				Exception exception = new Exception(t);
-				DataWrapper<KakaoLocalResponse> dataWrapper = new DataWrapper<>(exception);
-
-				callback.add(dataWrapper);
-				if (callback.getResponseCount() == callback.getTotalRequestCount()) {
-					callback.onResult();
-				}
+				callback.processResult(t);
 			}
 		});
 	}
 
 
 	public static void checkExisting(LocalApiPlaceParameter addressParameter, LocalApiPlaceParameter placeParameter
-			, CheckerCallback<DataWrapper<KakaoLocalResponse>> callback) {
-		callback.setTotalRequestCount(2);
+			, JsonDownloader<List<KakaoLocalResponse>> callback) {
 
-		checkAddress(addressParameter, callback);
-		checkPlace(placeParameter, callback);
+		final int requestCount = 2;
+		JsonDownloader<KakaoLocalResponse> primaryCallback = new JsonDownloader<KakaoLocalResponse>() {
+			int responseCount = 0;
+			List<KakaoLocalResponse> kakaoLocalResponseList = new ArrayList<>();
+			List<Exception> exceptionList = new ArrayList<>();
+
+			@Override
+			public void onResponseSuccessful(KakaoLocalResponse result) {
+				++responseCount;
+				kakaoLocalResponseList.add(result);
+				onCompleted();
+			}
+
+			@Override
+			public void onResponseFailed(Exception e) {
+				++responseCount;
+				exceptionList.add(e);
+				onCompleted();
+			}
+
+			private void onCompleted() {
+				if (requestCount == responseCount) {
+					if (!exceptionList.isEmpty()) {
+						callback.onResponseFailed(new Exception());
+					} else {
+						callback.onResponseSuccessful(kakaoLocalResponseList);
+					}
+				}
+			}
+		};
+
+		checkAddress(addressParameter, primaryCallback);
+		checkPlace(placeParameter, primaryCallback);
 	}
-	
+
 }

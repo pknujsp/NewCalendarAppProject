@@ -17,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.FragmentFoodRestaurantSearchHistoryBinding;
 import com.zerodsoft.scheduleweather.etc.CustomRecyclerViewItemDecoration;
@@ -131,16 +132,21 @@ public class FoodRestaurantSearchHistoryFragment extends Fragment implements OnC
 
 		binding.searchHistoryRecyclerView.setAdapter(adapter);
 
-		searchHistoryViewModel.select(SearchHistoryDTO.FOOD_RESTAURANT_SEARCH, new CarrierMessagingService.ResultCallback<List<SearchHistoryDTO>>() {
+		searchHistoryViewModel.select(SearchHistoryDTO.FOOD_RESTAURANT_SEARCH, new DbQueryCallback<List<SearchHistoryDTO>>() {
 			@Override
-			public void onReceiveResult(@NonNull List<SearchHistoryDTO> searchHistoryDTOS) throws RemoteException {
+			public void onResultSuccessful(List<SearchHistoryDTO> result) {
 				getActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						adapter.setHistoryList(searchHistoryDTOS);
+						adapter.setHistoryList(result);
 						adapter.notifyDataSetChanged();
 					}
 				});
+			}
+
+			@Override
+			public void onResultNoData() {
+
 			}
 		});
 

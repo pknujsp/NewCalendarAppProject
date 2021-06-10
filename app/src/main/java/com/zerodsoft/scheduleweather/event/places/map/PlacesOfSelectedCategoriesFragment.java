@@ -236,7 +236,7 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 							itemRecyclerView.setAdapter(adapter);
 
 							PlacesViewModel viewModel = new ViewModelProvider(getActivity()).get(PlacesViewModel.class);
-							viewModel.init(placeParameter, PlacesOfSelectedCategoriesFragment.this);
+							viewModel.init(placeParameter);
 							viewModel.getPagedListMutableLiveData().observe(getActivity(), new Observer<PagedList<PlaceDocuments>>() {
 								@Override
 								public void onChanged(PagedList<PlaceDocuments> placeDocuments) {

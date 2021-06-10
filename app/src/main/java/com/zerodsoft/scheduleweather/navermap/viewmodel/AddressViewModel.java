@@ -26,9 +26,9 @@ public class AddressViewModel extends ViewModel
     {
     }
 
-    public void init(LocalApiPlaceParameter addressParameter, OnProgressBarListener onProgressBarListener)
+    public void init(LocalApiPlaceParameter addressParameter)
     {
-        dataSourceFactory = new AddressItemDataSourceFactory(addressParameter, onProgressBarListener);
+        dataSourceFactory = new AddressItemDataSourceFactory(addressParameter);
         dataSourceMutableLiveData = dataSourceFactory.getLiveData();
 
         PagedList.Config config = (new PagedList.Config.Builder())

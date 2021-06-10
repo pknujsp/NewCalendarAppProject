@@ -128,7 +128,7 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 				@Override
 				public void onGlobalLayout() {
 					binding.locationSearchBottomSheet.searchFragmentContainer.getViewTreeObserver().removeOnGlobalLayoutListener(searchBottomSheetFragmentOnGlobalLayoutListener);
-					((MapHeaderSearchFragment) getChildFragmentManager().findFragmentByTag(MapHeaderSearchFragment.TAG)).setQuery(locationNameInEvent, true);
+					((MapHeaderSearchFragment) getChildFragmentManager().findFragmentByTag(getString(R.string.tag_map_header_search_fragment))).setQuery(locationNameInEvent, true);
 				}
 			};
 

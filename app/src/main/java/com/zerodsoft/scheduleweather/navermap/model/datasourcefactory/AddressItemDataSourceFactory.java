@@ -14,20 +14,18 @@ public class AddressItemDataSourceFactory extends DataSource.Factory<Integer, Ad
     private AddressItemDataSource dataSource;
     private MutableLiveData<AddressItemDataSource> liveData;
     private LocalApiPlaceParameter addressParameter;
-    private OnProgressBarListener onProgressBarListener;
 
-    public AddressItemDataSourceFactory(LocalApiPlaceParameter addressParameter, OnProgressBarListener onProgressBarListener)
+    public AddressItemDataSourceFactory(LocalApiPlaceParameter addressParameter )
     {
         liveData = new MutableLiveData<>();
         this.addressParameter = addressParameter;
-        this.onProgressBarListener = onProgressBarListener;
     }
 
     @NonNull
     @Override
     public DataSource<Integer, AddressResponseDocuments> create()
     {
-        dataSource = new AddressItemDataSource(addressParameter, onProgressBarListener);
+        dataSource = new AddressItemDataSource(addressParameter);
         liveData.postValue(dataSource);
         return dataSource;
     }

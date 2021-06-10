@@ -122,7 +122,7 @@ import java.util.Set;
 
 public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IMapPoint, IMapData, INetwork, OnClickedPlacesListListener, PlacesItemBottomSheetButtonOnClickListener,
 		PoiItemOnClickListener<Marker>, OnClickedBottomSheetListener,
-		SearchFragmentController, BuildingLocationSelectorController,
+		BuildingLocationSelectorController,
 		BuildingFragmentController, BuildingListFragment.OnSearchRadiusChangeListener, NaverMap.OnMapClickListener,
 		NaverMap.OnCameraIdleListener, CameraUpdate.FinishCallback, NaverMap.OnLocationChangeListener, OnBackPressedCallbackController,
 		FragmentManager.OnBackStackChangedListener, BottomSheetController, NaverMap.OnMapLongClickListener,
@@ -130,8 +130,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	public static final int PERMISSION_REQUEST_CODE = 100;
 	public static final int REQUEST_CODE_LOCATION = 10000;
 	public static final int BUILDING_RANGE_OVERLAY_TAG = 1500;
-
-	private static final String TAG = "NaverMapFragment";
 
 	private FusedLocationSource fusedLocationSource;
 	private LocationManager locationManager;
@@ -179,12 +177,19 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		@Override
 		public void onFragmentCreated(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 			super.onFragmentCreated(fm, f, savedInstanceState);
-			if (f instanceof)
+			if (f instanceof MapHeaderSearchFragment) {
+				binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.GONE);
+				binding.naverMapButtonsLayout.buildingButton.setVisibility(View.GONE);
+			}
 		}
 
 		@Override
 		public void onFragmentDestroyed(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
 			super.onFragmentDestroyed(fm, f);
+			if (f instanceof MapHeaderSearchFragment) {
+				binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.VISIBLE);
+				binding.naverMapButtonsLayout.buildingButton.setVisibility(View.VISIBLE);
+			}
 		}
 	};
 
@@ -196,7 +201,10 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	};
 
 	public void onBackPressedCallback() {
-		requireActivity().finish();
+		FragmentManager fragmentManager = getChildFragmentManager();
+		if (!fragmentManager.popBackStackImmediate()) {
+			requireActivity().finish();
+		}
 	}
 
 	@Override
@@ -302,7 +310,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			@Override
 			public void onGlobalLayout() {
 				//search bottom sheet 크기 조정
-				final int headerBarHeight = (int) getResources().getDimension(R.dimen.map_header_bar_height);
+				final int headerBarHeight = (int) getResources().getDimension(R.dimen.map_header_search_bar_height);
 				final int headerBarTopMargin = (int) getResources().getDimension(R.dimen.map_header_bar_top_margin);
 				final int headerBarMargin = (int) (headerBarTopMargin * 1.5f);
 
@@ -361,16 +369,14 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 						childFragmentManager.popBackStackImmediate();
 					}
 
-					binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.GONE);
-					binding.naverMapButtonsLayout.buildingButton.setVisibility(View.GONE);
-
 					LocationSearchFragment locationSearchFragment =
 							new LocationSearchFragment();
 					MapHeaderSearchFragment mapHeaderSearchFragment = new MapHeaderSearchFragment();
 
 					final String tag = getString(R.string.tag_location_search_fragment);
 
-					childFragmentManager.beginTransaction().replace(binding.headerFragmentContainer.getId(), mapHeaderSearchFragment)
+					childFragmentManager.beginTransaction().replace(binding.headerFragmentContainer.getId(), mapHeaderSearchFragment,
+							getString(R.string.tag_map_header_search_fragment))
 							.add(binding.locationSearchBottomSheet.searchFragmentContainer.getId(), locationSearchFragment,
 									tag)
 							.addToBackStack(tag)
@@ -476,9 +482,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 		bottomSheetViewMap.put(BottomSheetType.SEARCH_LOCATION, locationSearchBottomSheet);
 		bottomSheetBehaviorMap.put(BottomSheetType.SEARCH_LOCATION, locationSearchBottomSheetBehavior);
-
 		getChildFragmentManager().beginTransaction()
-				.add(binding.headerFragmentContainer.getId(), new MapHeaderMainFragment(), MapHeaderMainFragment.TAG)
+				.add(binding.headerFragmentContainer.getId(), new MapHeaderMainFragment(), getString(R.string.tag_map_search_main_fragment))
 				.commit();
 	}
 
@@ -571,7 +576,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	public void onPageSelectedLocationItemBottomSheetViewPager(int position, MarkerType markerType) {
 		switch (markerType) {
 			case SEARCH_RESULT: {
-				LocationSearchResultFragment locationSearchResultFragment = (LocationSearchResultFragment) getChildFragmentManager().findFragmentByTag(LocationSearchResultFragment.TAG);
+				LocationSearchResultFragment locationSearchResultFragment =
+						(LocationSearchResultFragment) getChildFragmentManager().findFragmentByTag(getString(R.string.tag_location_search_result_fragment));
 				if (locationSearchResultFragment != null) {
 					if (locationSearchResultFragment.isVisible()) {
 						locationSearchResultFragment.loadExtraListData(new RecyclerView.AdapterDataObserver() {
@@ -1091,73 +1097,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	}
 
 	@Override
-	public void search(String query) {
-		FragmentManager fragmentManager = getChildFragmentManager();
-
-		if (fragmentManager.findFragmentByTag(LocationSearchResultFragment.TAG)
-				!= null) {
-			if (bottomSheetBehaviorMap.get(BottomSheetType.LOCATION_ITEM).getState() != BottomSheetBehavior.STATE_COLLAPSED) {
-				bottomSheetBehaviorMap.get(BottomSheetType.LOCATION_ITEM).setState(BottomSheetBehavior.STATE_COLLAPSED);
-			}
-			removePoiItems(MarkerType.SEARCH_RESULT);
-
-			LocationSearchResultFragment locationSearchResultFragment =
-					(LocationSearchResultFragment) fragmentManager.findFragmentByTag(LocationSearchResultFragment.TAG);
-			locationSearchResultFragment.searchLocation(query);
-		} else {
-			if (!markersMap.containsKey(MarkerType.SEARCH_RESULT)) {
-				markersMap.put(MarkerType.SEARCH_RESULT, new ArrayList<>());
-			}
-
-			MapHeaderSearchFragment mapHeaderSearchFragment = (MapHeaderSearchFragment) fragmentManager.findFragmentByTag(MapHeaderSearchFragment.TAG);
-			mapHeaderSearchFragment.setViewTypeVisibility(View.VISIBLE);
-			LocationSearchResultFragment locationSearchResultFragment = new LocationSearchResultFragment(query, this, mapHeaderSearchFragment);
-
-			fragmentManager.beginTransaction().add(binding.locationSearchBottomSheet.searchFragmentContainer.getId()
-					, locationSearchResultFragment, LocationSearchResultFragment.TAG).hide(bottomSheetFragmentMap.get(BottomSheetType.SEARCH_LOCATION))
-					.addToBackStack(LocationSearchResultFragment.TAG)
-					.commit();
-		}
-	}
-
-	@Override
-	public void closeSearchFragments() {
-		FragmentManager fragmentManager = getChildFragmentManager();
-
-		if (fragmentManager.findFragmentByTag(LocationSearchResultFragment.TAG) != null) {
-			fragmentManager.popBackStackImmediate(LocationSearchFragment.TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-			closeSearchFragments(LocationSearchResultFragment.TAG);
-		}
-		fragmentManager.popBackStackImmediate(LocationSearchFragment.TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-		closeSearchFragments(LocationSearchFragment.TAG);
-	}
-
-	/**
-	 * current fragment tag마다 별도로 동작
-	 */
-	@Override
-	public void closeSearchFragments(String currentFragmentTag) {
-		FragmentManager fragmentManager = getChildFragmentManager();
-		MapHeaderSearchFragment mapHeaderSearchFragment = (MapHeaderSearchFragment) fragmentManager.findFragmentByTag(MapHeaderSearchFragment.TAG);
-
-		if (currentFragmentTag.equals(LocationSearchFragment.TAG)) {
-			if (bottomSheetBehaviorMap.get(BottomSheetType.SEARCH_LOCATION).getState() != BottomSheetBehavior.STATE_COLLAPSED) {
-				bottomSheetBehaviorMap.get(BottomSheetType.SEARCH_LOCATION).setState(BottomSheetBehavior.STATE_COLLAPSED);
-			}
-
-			binding.headerFragmentContainer.setClickable(true);
-		} else if (currentFragmentTag.equals(LocationSearchResultFragment.TAG)) {
-			removePoiItems(MarkerType.SEARCH_RESULT);
-			mapHeaderSearchFragment.resetState();
-
-			if (bottomSheetBehaviorMap.get(BottomSheetType.LOCATION_ITEM).getState() != BottomSheetBehavior.STATE_COLLAPSED) {
-				bottomSheetBehaviorMap.get(BottomSheetType.LOCATION_ITEM).setState(BottomSheetBehavior.STATE_COLLAPSED);
-			}
-
-		}
-	}
-
-	@Override
 	public void removeBuildingLocationSelector() {
 		if (binding.naverMapViewLayout.findViewWithTag("BUILDING_SELECTOR") != null) {
 			buildingButton.setImageDrawable(getContext().getDrawable(R.drawable.building_black));
@@ -1207,7 +1146,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 							.commit();
 
 					bottomSheetFragmentMap.put(BottomSheetType.BUILDING, buildingListFragment);
-					onCalledBottomSheet(BottomSheetBehavior.STATE_EXPANDED, bottomSheetBehaviorMap.get(BottomSheetType.BUILDING));
+					setStateOfBottomSheet(BottomSheetType.BUILDING, BottomSheetBehavior.STATE_EXPANDED);
 				}
 			});
 		} else {
@@ -1421,7 +1360,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		FavoriteLocationFragment favoriteLocationFragment = (FavoriteLocationFragment) bottomSheetFragmentMap.get(BottomSheetType.FAVORITE_LOCATIONS);
 		favoriteLocationFragment.setLatLngOnCurrentLocation(naverMap.getCameraPosition().target);
 
-		onCalledBottomSheet(BottomSheetBehavior.STATE_EXPANDED, bottomSheetBehaviorMap.get(BottomSheetType.FAVORITE_LOCATIONS));
+		setStateOfBottomSheet(BottomSheetType.FAVORITE_LOCATIONS, BottomSheetBehavior.STATE_EXPANDED);
+
 		getChildFragmentManager().beginTransaction().show(favoriteLocationFragment).addToBackStack(FavoriteLocationFragment.TAG).commit();
 	}
 

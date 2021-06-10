@@ -11,18 +11,18 @@ import androidx.viewpager2.widget.ViewPager2;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.SearchView;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.databinding.FragmentLocationSearchDialogBinding;
 import com.zerodsoft.scheduleweather.event.foods.searchlocation.interfaces.OnClickedLocationItem;
 import com.zerodsoft.scheduleweather.event.foods.searchlocation.interfaces.OnSelectedNewLocation;
+import com.zerodsoft.scheduleweather.navermap.fragment.searchresult.SearchResultAddressListFragment;
+import com.zerodsoft.scheduleweather.navermap.fragment.searchresult.SearchResultPlaceListFragment;
 import com.zerodsoft.scheduleweather.navermap.fragment.searchresult.adapter.SearchResultListAdapter;
 import com.zerodsoft.scheduleweather.navermap.fragment.searchresult.interfaces.IndicatorCreater;
 import com.zerodsoft.scheduleweather.navermap.model.SearchResultChecker;
-import com.zerodsoft.scheduleweather.navermap.model.callback.CheckerCallback;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
-import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalResponse;
@@ -41,7 +41,7 @@ public class LocationSearchDialogFragment extends DialogFragment implements Indi
 	private FragmentLocationSearchDialogBinding binding;
 	private SearchResultListAdapter searchResultListAdapter;
 	private OnPageCallback onPageCallback;
-	private String searchWord;
+	private String query;
 
 	public LocationSearchDialogFragment(OnSelectedNewLocation onSelectedNewLocation) {
 		this.onSelectedNewLocation = onSelectedNewLocation;
@@ -53,7 +53,7 @@ public class LocationSearchDialogFragment extends DialogFragment implements Indi
 		setStyle(STYLE_NO_TITLE, R.style.AppTheme_FullScreenDialog);
 
 		Bundle bundle = getArguments();
-		searchWord = bundle.getString("searchWord");
+		query = bundle.getString("searchWord");
 	}
 
 	@Override
@@ -72,6 +72,8 @@ public class LocationSearchDialogFragment extends DialogFragment implements Indi
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+
+		binding.customProgressView.setContentView(binding.contentLayout);
 		binding.searchView.setOnQueryTextListener(new androidx.appcompat.widget.SearchView.OnQueryTextListener() {
 			@Override
 			public boolean onQueryTextSubmit(String query) {
@@ -88,17 +90,65 @@ public class LocationSearchDialogFragment extends DialogFragment implements Indi
 				return false;
 			}
 		});
-		binding.searchView.setQuery(searchWord, true);
+		binding.searchView.setQuery(query, true);
 	}
 
 
-	private void search(String searchWord) {
-		final LocalApiPlaceParameter addressParameter = LocalParameterUtil.getAddressParameter(searchWord, LocalApiPlaceParameter.DEFAULT_SIZE
-				, LocalApiPlaceParameter.DEFAULT_PAGE);
-		final LocalApiPlaceParameter placeParameter = LocalParameterUtil.getPlaceParameter(searchWord, null, null,
-				LocalApiPlaceParameter.DEFAULT_SIZE, LocalApiPlaceParameter.DEFAULT_PAGE, LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
-
+	private void search(String query) {
 		// 주소, 주소 & 장소, 장소, 검색 결과없음 인 경우
+
+		final LocalApiPlaceParameter addressParameter = LocalParameterUtil.getAddressParameter(query, "1"
+				, LocalApiPlaceParameter.DEFAULT_PAGE);
+		final LocalApiPlaceParameter placeParameter = LocalParameterUtil.getPlaceParameter(query, null, null,
+				"1", LocalApiPlaceParameter.DEFAULT_PAGE, LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
+
+		SearchResultChecker.checkExisting(addressParameter, placeParameter, new JsonDownloader<List<KakaoLocalResponse>>() {
+			@Override
+			public void onResponseSuccessful(List<KakaoLocalResponse> resultList) {
+
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						binding.customProgressView.onSuccessfulProcessingData();
+						List<Fragment> fragments = new ArrayList<>();
+
+						for (KakaoLocalResponse kakaoLocalResponse : resultList) {
+							if (kakaoLocalResponse.isEmpty()) {
+								continue;
+							}
+
+							if (kakaoLocalResponse instanceof PlaceKakaoLocalResponse) {
+								fragments.add(new PlacesListFragment(LocationSearchDialogFragment.this, LocationSearchDialogFragment.this.query));
+							} else if (kakaoLocalResponse instanceof AddressKakaoLocalResponse) {
+								fragments.add(new AddressesListFragment(LocationSearchDialogFragment.this, query));
+							}
+						}
+						onPageCallback = new OnPageCallback();
+						binding.listViewpager.registerOnPageChangeCallback(onPageCallback);
+						searchResultListAdapter.setFragments(fragments);
+						binding.customProgressView.onSuccessfulProcessingData();
+						searchResultListAdapter.notifyDataSetChanged();
+
+						binding.viewpagerIndicator.createDot(0, fragments.size());
+					}
+				});
+			}
+
+			@Override
+			public void onResponseFailed(Exception e) {
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						binding.customProgressView.onFailedProcessingData(getString(R.string.not_founded_search_result));
+						binding.listViewpager.unregisterOnPageChangeCallback(onPageCallback);
+						searchResultListAdapter.setFragments(new ArrayList<>());
+						searchResultListAdapter.notifyDataSetChanged();
+					}
+				});
+			}
+		});
+
+		/*
 		SearchResultChecker.checkExisting(addressParameter, placeParameter, new CheckerCallback<DataWrapper<KakaoLocalResponse>>() {
 			@Override
 			public void onResult() {
@@ -157,6 +207,8 @@ public class LocationSearchDialogFragment extends DialogFragment implements Indi
 				}
 			}
 		});
+
+		 */
 	}
 
 	@Override

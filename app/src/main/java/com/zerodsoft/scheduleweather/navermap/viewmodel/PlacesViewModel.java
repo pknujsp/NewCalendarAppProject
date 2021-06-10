@@ -27,8 +27,8 @@ public class PlacesViewModel extends ViewModel {
 		pagedListLiveData = new MutableLiveData<>();
 	}
 
-	public void init(LocalApiPlaceParameter placeParameter, OnProgressBarListener onProgressBarListener) {
-		dataSourceFactory = new PlaceItemDataSourceFactory(placeParameter, onProgressBarListener);
+	public void init(LocalApiPlaceParameter placeParameter) {
+		dataSourceFactory = new PlaceItemDataSourceFactory(placeParameter);
 		dataSourceMutableLiveData = dataSourceFactory.getLiveData();
 
 		config = (new PagedList.Config.Builder())

@@ -2,6 +2,8 @@ package com.zerodsoft.scheduleweather.navermap;
 
 public enum MarkerType {
 	SEARCH_RESULT,
+	SEARCH_RESULT_ADDRESS,
+	SEARCH_RESULT_PLACE,
 	BUILDING,
 	RESTAURANT,
 	SELECTED_PLACE_CATEGORY,
