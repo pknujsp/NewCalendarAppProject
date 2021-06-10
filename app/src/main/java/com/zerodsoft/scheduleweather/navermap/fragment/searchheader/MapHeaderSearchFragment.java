@@ -106,7 +106,7 @@ public class MapHeaderSearchFragment extends Fragment {
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		getParentFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false);
+		getParentFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, true);
 
 		Fragment parentFragment = getParentFragment();
 		searchHistoryViewModel = new ViewModelProvider(parentFragment).get(SearchHistoryViewModel.class);
@@ -114,7 +114,7 @@ public class MapHeaderSearchFragment extends Fragment {
 
 		iMapData = mapSharedViewModel.getiMapData();
 		bottomSheetController = mapSharedViewModel.getBottomSheetController();
-		bottomSheetController.getBottomSheetBehavior(BottomSheetType.LOCATION_ITEM).addBottomSheetCallback(searchLocationBottomSheetCallback);
+		bottomSheetController.getBottomSheetBehavior(BottomSheetType.SEARCH_LOCATION).addBottomSheetCallback(searchLocationBottomSheetCallback);
 	}
 
 	@Nullable
@@ -144,11 +144,11 @@ public class MapHeaderSearchFragment extends Fragment {
 			@Override
 			public void onClick(View view) {
 				FragmentManager parentFragmentManager = getParentFragmentManager();
-				if (bottomSheetController.getStateOfBottomSheet(BottomSheetType.LOCATION_ITEM) == BottomSheetBehavior.STATE_EXPANDED) {
-					//장소/주소중 현재 상태로 선택
-					LocationSearchResultFragment locationSearchResultFragment =
-							((LocationSearchResultFragment) parentFragmentManager.findFragmentByTag(getString(R.string.tag_location_search_result_fragment)));
+				LocationSearchResultFragment locationSearchResultFragment =
+						((LocationSearchResultFragment) parentFragmentManager.findFragmentByTag(getString(R.string.tag_location_search_result_fragment)));
 
+				if (locationSearchResultFragment.isVisible()) {
+					//장소/주소중 현재 상태로 선택
 					KakaoLocalApiResultType currentResultType = locationSearchResultFragment.getCurrentListType();
 
 					if (currentResultType == KakaoLocalApiResultType.ADDRESS) {
@@ -157,7 +157,6 @@ public class MapHeaderSearchFragment extends Fragment {
 						iMapData.showPoiItems(MarkerType.SEARCH_RESULT_PLACE);
 					}
 
-					bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_COLLAPSED);
 					parentFragmentManager.beginTransaction().hide(locationSearchResultFragment)
 							.addToBackStack(getString(R.string.tag_hide_location_search_result_fragment)).commit();
 				} else {

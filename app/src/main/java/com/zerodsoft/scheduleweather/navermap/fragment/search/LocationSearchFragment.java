@@ -19,12 +19,14 @@ import android.view.ViewGroup;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.naver.maps.map.overlay.Marker;
+import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.common.interfaces.OnSearchListener;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.fragment.search.adapter.SearchLocationHistoryAdapter;
+import com.zerodsoft.scheduleweather.navermap.fragment.searchheader.MapHeaderSearchFragment;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
@@ -50,7 +52,7 @@ public class LocationSearchFragment extends Fragment {
 	private final OnClickedListItem<SearchHistoryDTO> searchHistoryDTOOnClickedListItem = new OnClickedListItem<SearchHistoryDTO>() {
 		@Override
 		public void onClickedListItem(SearchHistoryDTO e, int position) {
-
+			((MapHeaderSearchFragment) getParentFragmentManager().findFragmentByTag(getString(R.string.tag_map_header_search_fragment))).setQuery(e.getValue(), true);
 		}
 
 		@Override

@@ -178,6 +178,11 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		public void onFragmentCreated(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 			super.onFragmentCreated(fm, f, savedInstanceState);
 			if (f instanceof MapHeaderSearchFragment) {
+				binding.headerFragmentContainer.getLayoutParams().height =
+						(int) getResources().getDimension(R.dimen.map_header_search_bar_height);
+				binding.headerFragmentContainer.requestLayout();
+				binding.headerFragmentContainer.invalidate();
+
 				binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.GONE);
 				binding.naverMapButtonsLayout.buildingButton.setVisibility(View.GONE);
 			}
@@ -187,6 +192,11 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		public void onFragmentDestroyed(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
 			super.onFragmentDestroyed(fm, f);
 			if (f instanceof MapHeaderSearchFragment) {
+				binding.headerFragmentContainer.getLayoutParams().height =
+						(int) getResources().getDimension(R.dimen.map_header_bar_height);
+				binding.headerFragmentContainer.requestLayout();
+				binding.headerFragmentContainer.invalidate();
+
 				binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.VISIBLE);
 				binding.naverMapButtonsLayout.buildingButton.setVisibility(View.VISIBLE);
 			}
@@ -468,17 +478,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		BottomSheetBehavior locationSearchBottomSheetBehavior = BottomSheetBehavior.from(locationSearchBottomSheet);
 		locationSearchBottomSheetBehavior.setDraggable(false);
 		locationSearchBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-		locationSearchBottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
-			@Override
-			public void onStateChanged(@NonNull View bottomSheet, int newState) {
-
-			}
-
-			@Override
-			public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-
-			}
-		});
 
 		bottomSheetViewMap.put(BottomSheetType.SEARCH_LOCATION, locationSearchBottomSheet);
 		bottomSheetBehaviorMap.put(BottomSheetType.SEARCH_LOCATION, locationSearchBottomSheetBehavior);

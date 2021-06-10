@@ -75,5 +75,7 @@
     <dimen name="restaurant_header_height">72dp</dimen>
     <dimen name="restaurant_list_header_height">90dp</dimen>
     <dimen name="header_fragment_height">72dp</dimen>
-    <dimen name="map_header_search_bar_height">90dp</dimen>
+    <dimen name="map_header_search_bar_height">84dp</dimen>
+    <dimen name="map_header_search_view_height">48dp</dimen>
+    <dimen name="location_category_item_height" >36dp</dimen>
 </resources>

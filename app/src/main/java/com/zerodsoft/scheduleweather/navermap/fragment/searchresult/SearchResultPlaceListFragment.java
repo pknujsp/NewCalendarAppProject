@@ -116,7 +116,8 @@ public class SearchResultPlaceListFragment extends Fragment implements OnExtraLi
 			public void onClick(View view) {
 				currentSearchMapPointCriteria = LocalApiPlaceParameter.SEARCH_CRITERIA_MAP_POINT_MAP_CENTER;
 				replaceButtonStyle();
-				requestPlacesByGps(QUERY);
+				requestPlaces(QUERY);
+
 			}
 		});
 
@@ -125,12 +126,11 @@ public class SearchResultPlaceListFragment extends Fragment implements OnExtraLi
 			public void onClick(View view) {
 				currentSearchMapPointCriteria = LocalApiPlaceParameter.SEARCH_CRITERIA_MAP_POINT_CURRENT_LOCATION;
 				replaceButtonStyle();
-				requestPlaces(QUERY);
+				requestPlacesByGps(QUERY);
 			}
 		});
 
 
-		binding.searchResultRecyclerview.setAdapter(adapter);
 		requestPlaces(QUERY);
 	}
 
@@ -235,6 +235,7 @@ public class SearchResultPlaceListFragment extends Fragment implements OnExtraLi
 				}
 			}
 		});
+		binding.searchResultRecyclerview.setAdapter(adapter);
 
 		viewModel.init(parameter);
 		viewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<PlaceDocuments>>() {

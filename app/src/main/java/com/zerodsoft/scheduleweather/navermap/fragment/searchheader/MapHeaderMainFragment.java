@@ -25,9 +25,7 @@ import com.zerodsoft.scheduleweather.navermap.viewmodel.MapSharedViewModel;
 import org.jetbrains.annotations.NotNull;
 
 public class MapHeaderMainFragment extends Fragment {
-	public static final String TAG = "MapHeaderMainFragment";
 	private FragmentLocationHeaderBarBinding binding;
-
 
 
 	@Override

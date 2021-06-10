@@ -2,11 +2,19 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="@dimen/map_header_bar_height"
         android:gravity="center_vertical"
-        android:paddingLeft="8dp"
-        android:text="@string/hint_search_place_or_address" />
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:paddingLeft="8dp"
+            android:text="@string/hint_search_place_or_address" />
+    </LinearLayout>
+
 
 </layout>
