@@ -1,7 +1,6 @@
 package com.zerodsoft.scheduleweather.event.foods.favorite.restaurant;
 
 import android.app.Application;
-import android.service.carrier.CarrierMessagingService;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -41,7 +40,7 @@ public class FavoriteLocationViewModel extends AndroidViewModel implements Favor
 	}
 
 	@Override
-	public void insert(FavoriteLocationDTO favoriteLocationDTO, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback) {
+	public void insert(FavoriteLocationDTO favoriteLocationDTO, DbQueryCallback<FavoriteLocationDTO> callback) {
 		restaurantRepository.insert(favoriteLocationDTO, callback);
 	}
 
@@ -56,17 +55,17 @@ public class FavoriteLocationViewModel extends AndroidViewModel implements Favor
 	}
 
 	@Override
-	public void delete(Integer id, CarrierMessagingService.ResultCallback<Boolean> callback) {
+	public void delete(Integer id, DbQueryCallback<Boolean> callback) {
 		restaurantRepository.delete(id, callback);
 	}
 
 	@Override
-	public void deleteAll(Integer type, CarrierMessagingService.ResultCallback<Boolean> callback) {
+	public void deleteAll(Integer type, DbQueryCallback<Boolean> callback) {
 		restaurantRepository.deleteAll(type, callback);
 	}
 
 	@Override
-	public void deleteAll(CarrierMessagingService.ResultCallback<Boolean> callback) {
+	public void deleteAll(DbQueryCallback<Boolean> callback) {
 		restaurantRepository.deleteAll(callback);
 	}
 

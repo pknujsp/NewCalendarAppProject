@@ -31,7 +31,7 @@ import com.zerodsoft.scheduleweather.navermap.LocationItemViewPagerAdapter;
 import com.zerodsoft.scheduleweather.navermap.MarkerType;
 import com.zerodsoft.scheduleweather.navermap.NaverMapFragment;
 import com.zerodsoft.scheduleweather.navermap.searchheader.MapHeaderSearchFragment;
-import com.zerodsoft.scheduleweather.navermap.model.CoordToAddressUtil;
+import com.zerodsoft.scheduleweather.navermap.model.CoordToAddressUtilByKakao;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
@@ -136,21 +136,22 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 				LocalApiPlaceParameter parameter =
 						LocalParameterUtil.getCoordToAddressParameter(Double.parseDouble(selectedLocationDTOInEvent.getLatitude()),
 								Double.parseDouble(selectedLocationDTOInEvent.getLongitude()));
-				CoordToAddressUtil.coordToAddress(parameter, new CarrierMessagingService.ResultCallback<DataWrapper<CoordToAddress>>() {
+				CoordToAddressUtilByKakao.coordToAddress(parameter, new JsonDownloader<CoordToAddress>() {
 					@Override
-					public void onReceiveResult(@NonNull DataWrapper<CoordToAddress> coordToAddressDataWrapper) throws RemoteException {
-						if (coordToAddressDataWrapper.getException() == null) {
-							CoordToAddress coordToAddress = coordToAddressDataWrapper.getData();
-							CoordToAddressDocuments coordToAddressDocuments = coordToAddress.getCoordToAddressDocuments().get(0);
-							coordToAddressDocuments.getCoordToAddressAddress().setLatitude(selectedLocationDTOInEvent.getLatitude());
-							coordToAddressDocuments.getCoordToAddressAddress().setLongitude(selectedLocationDTOInEvent.getLongitude());
+					public void onResponseSuccessful(CoordToAddress result) {
+						CoordToAddressDocuments coordToAddressDocuments = result.getCoordToAddressDocuments().get(0);
+						coordToAddressDocuments.getCoordToAddressAddress().setLatitude(selectedLocationDTOInEvent.getLatitude());
+						coordToAddressDocuments.getCoordToAddressAddress().setLongitude(selectedLocationDTOInEvent.getLongitude());
 
-							setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(getContext(), MarkerType.SELECTED_ADDRESS_IN_EVENT), MarkerType.SELECTED_ADDRESS_IN_EVENT);
-							createPoiItems(Collections.singletonList(coordToAddressDocuments), MarkerType.SELECTED_ADDRESS_IN_EVENT);
-							onPOIItemSelectedByList(0, MarkerType.SELECTED_ADDRESS_IN_EVENT);
-						} else {
-							// exception(error)
-						}
+						setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(getContext(), MarkerType.SELECTED_ADDRESS_IN_EVENT), MarkerType.SELECTED_ADDRESS_IN_EVENT);
+						createPoiItems(Collections.singletonList(coordToAddressDocuments), MarkerType.SELECTED_ADDRESS_IN_EVENT);
+						onPOIItemSelectedByList(0, MarkerType.SELECTED_ADDRESS_IN_EVENT);
+
+					}
+
+					@Override
+					public void onResponseFailed(Exception e) {
+
 					}
 				});
 

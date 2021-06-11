@@ -39,7 +39,7 @@ import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationH
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
-import com.zerodsoft.scheduleweather.navermap.model.CoordToAddressUtil;
+import com.zerodsoft.scheduleweather.navermap.model.CoordToAddressUtilByKakao;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
@@ -320,7 +320,7 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 				LocalApiPlaceParameter localApiPlaceParameter = LocalParameterUtil.getCoordToAddressParameter(mapCenterPoint.latitude,
 						mapCenterPoint.longitude);
 
-				CoordToAddressUtil.coordToAddress(localApiPlaceParameter, new JsonDownloader<CoordToAddress>() {
+				CoordToAddressUtilByKakao.coordToAddress(localApiPlaceParameter, new JsonDownloader<CoordToAddress>() {
 					@Override
 					public void onResponseSuccessful(CoordToAddress result) {
 						LocationDTO locationDTO = new LocationDTO();
@@ -477,7 +477,7 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 				LocalParameterUtil.getCoordToAddressParameter(Double.parseDouble(locationDtoByGps.getLatitude()),
 						Double.parseDouble(locationDtoByGps.getLongitude()));
 
-		CoordToAddressUtil.coordToAddress(localApiPlaceParameter, new JsonDownloader<CoordToAddress>() {
+		CoordToAddressUtilByKakao.coordToAddress(localApiPlaceParameter, new JsonDownloader<CoordToAddress>() {
 			@Override
 			public void onResponseSuccessful(CoordToAddress result) {
 				LocationDTO locationDTO = new LocationDTO();

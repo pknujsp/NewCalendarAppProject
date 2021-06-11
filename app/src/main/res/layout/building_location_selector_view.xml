@@ -5,32 +5,24 @@
     android:layout_gravity="center"
     android:background="@color/transparent">
 
-    <RelativeLayout
-        android:id="@+id/selector_layout"
+
+    <View
+        android:id="@+id/selector_image"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_centerInParent="true"
+        android:background="@drawable/building_location_selector"
+        android:scaleX="2"
+        android:scaleY="2" />
+
+    <Button
+        android:id="@+id/search_buildings_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:background="@drawable/building_location_selector_background"
-        android:padding="36dp">
+        android:layout_below="@id/selector_image"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="30dp"
+        android:text="@string/search_buildings" />
 
-        <View
-            android:id="@+id/selector_image"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_centerInParent="true"
-            android:background="@drawable/building_location_selector"
-            android:scaleX="2"
-            android:scaleY="2" />
-
-        <Button
-            android:id="@+id/search_buildings_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/selector_image"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="50dp"
-            android:text="@string/search_buildings" />
-
-    </RelativeLayout>
 
 </RelativeLayout>

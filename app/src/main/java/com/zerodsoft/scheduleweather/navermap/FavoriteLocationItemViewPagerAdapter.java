@@ -12,7 +12,7 @@ import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.event.common.interfaces.ILocationDao;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnClickedBottomSheetListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.PlacesItemBottomSheetButtonOnClickListener;
-import com.zerodsoft.scheduleweather.navermap.model.CoordToAddressUtil;
+import com.zerodsoft.scheduleweather.navermap.model.CoordToAddressUtilByKakao;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
@@ -97,7 +97,7 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
 					// 주소 검색 순서 : 좌표로 주소 변환
 					LocalApiPlaceParameter parameter = LocalParameterUtil.getCoordToAddressParameter
 							(Double.parseDouble(favoriteLocationDTO.getLatitude()), Double.parseDouble(favoriteLocationDTO.getLongitude()));
-					CoordToAddressUtil.coordToAddress(parameter, new JsonDownloader<CoordToAddress>() {
+					CoordToAddressUtilByKakao.coordToAddress(parameter, new JsonDownloader<CoordToAddress>() {
 						@Override
 						public void onResponseSuccessful(CoordToAddress result) {
 							CoordToAddressDocuments coordToAddressDocuments = result.getCoordToAddressDocuments().get(0);

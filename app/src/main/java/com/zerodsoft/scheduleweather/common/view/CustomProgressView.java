@@ -6,6 +6,7 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -13,7 +14,9 @@ import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnProgressViewListener;
 
-public class CustomProgressView extends RelativeLayout implements OnProgressViewListener {
+import javax.annotation.Nonnull;
+
+public class CustomProgressView extends LinearLayout implements OnProgressViewListener {
 	private TextView progressStatusTextView;
 	private CircularProgressIndicator progressView;
 	private View contentView;
@@ -39,6 +42,10 @@ public class CustomProgressView extends RelativeLayout implements OnProgressView
 	}
 
 	private void init() {
+		setOrientation(VERTICAL);
+		final int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, getResources().getDisplayMetrics());
+		setPadding(0, padding, 0, padding);
+
 		progressStatusTextView = new TextView(getContext());
 		progressStatusTextView.setGravity(Gravity.CENTER);
 		progressStatusTextView.setText(null);
@@ -48,15 +55,15 @@ public class CustomProgressView extends RelativeLayout implements OnProgressView
 		progressView = new CircularProgressIndicator(getContext());
 		progressView.setIndeterminate(true);
 
-		RelativeLayout.LayoutParams statusTextViewLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+		LinearLayout.LayoutParams statusTextViewLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
 				ViewGroup.LayoutParams.WRAP_CONTENT);
-		statusTextViewLayoutParams.addRule(CENTER_IN_PARENT, TRUE);
+		statusTextViewLayoutParams.gravity = Gravity.CENTER;
 
-		RelativeLayout.LayoutParams progressViewLayoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+		LinearLayout.LayoutParams progressViewLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
 				ViewGroup.LayoutParams.WRAP_CONTENT);
-		progressViewLayoutParams.rightMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f,
+		progressViewLayoutParams.topMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f,
 				getResources().getDisplayMetrics());
-		progressViewLayoutParams.addRule(LEFT_OF, progressStatusTextView.getId());
+		progressViewLayoutParams.gravity = Gravity.CENTER;
 
 		progressStatusTextView.setLayoutParams(statusTextViewLayoutParams);
 		progressView.setLayoutParams(progressViewLayoutParams);
@@ -73,44 +80,35 @@ public class CustomProgressView extends RelativeLayout implements OnProgressView
 	public void onSuccessfulProcessingData() {
 		progressStatusTextView.setVisibility(View.GONE);
 		progressView.setVisibility(View.GONE);
-		if (contentView != null) {
-			contentView.setVisibility(View.VISIBLE);
-		}
+		contentView.setVisibility(View.VISIBLE);
 		setVisibility(View.GONE);
 	}
 
 	@Override
-	public void onFailedProcessingData(String text) {
+	public void onFailedProcessingData(@Nonnull String text) {
 		progressStatusTextView.setVisibility(View.VISIBLE);
 		progressView.setVisibility(View.GONE);
-
-		if (contentView != null) {
-			contentView.setVisibility(View.GONE);
-		}
+		contentView.setVisibility(View.GONE);
 		setVisibility(View.VISIBLE);
 
-		if (text != null) {
-			progressStatusTextView.setText(text);
-		} else {
-			progressStatusTextView.setText(R.string.error);
-		}
+		progressStatusTextView.setText(text);
 	}
 
 	@Override
 	public void onStartedProcessingData(String statusText) {
-		progressStatusTextView.setVisibility(View.VISIBLE);
-
-		if (contentView != null) {
-			contentView.setVisibility(View.GONE);
-		}
 		progressView.setVisibility(View.VISIBLE);
+		progressStatusTextView.setVisibility(View.VISIBLE);
+		progressStatusTextView.setText(statusText);
+		contentView.setVisibility(View.GONE);
 		setVisibility(View.VISIBLE);
-
-		if (statusText != null) {
-			progressStatusTextView.setText(statusText);
-		} else {
-			progressStatusTextView.setText("");
-		}
 	}
 
+	@Override
+	public void onStartedProcessingData() {
+		progressView.setVisibility(View.VISIBLE);
+		progressStatusTextView.setVisibility(View.GONE);
+		progressStatusTextView.setText("");
+		contentView.setVisibility(View.GONE);
+		setVisibility(View.VISIBLE);
+	}
 }

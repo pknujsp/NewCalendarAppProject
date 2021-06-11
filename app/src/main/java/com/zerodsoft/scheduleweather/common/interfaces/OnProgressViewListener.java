@@ -10,4 +10,6 @@ public interface OnProgressViewListener {
 	void onFailedProcessingData(String text);
 
 	void onStartedProcessingData(String statusText);
+
+	void onStartedProcessingData();
 }

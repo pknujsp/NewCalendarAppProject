@@ -43,6 +43,7 @@ import com.zerodsoft.scheduleweather.navermap.MarkerType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
+import com.zerodsoft.scheduleweather.navermap.viewmodel.MapSharedViewModel;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
 
@@ -57,16 +58,15 @@ import java.util.Set;
 
 import lombok.SneakyThrows;
 
-public class FavoriteLocationFragment extends Fragment implements OnBackPressedCallbackController, OnClickedFavoriteItem, FavoriteLocationQuery
+public class FavoriteLocationFragment extends Fragment implements OnClickedFavoriteItem, FavoriteLocationQuery
 		, SharedPreferences.OnSharedPreferenceChangeListener {
 	private FragmentFavoriteLocationBinding binding;
-	public static final String TAG = "FavoriteLocationFragment";
 
 	private final FavoriteLocationsListener favoriteLocationsListener;
-	private final PoiItemOnClickListener poiItemOnClickListener;
-	private final OnBackPressedCallbackController mainFragmentOnBackPressedCallbackController;
-	private final BottomSheetController bottomSheetController;
-	private final IMapData iMapData;
+	private PoiItemOnClickListener poiItemOnClickListener;
+	private BottomSheetController bottomSheetController;
+	private IMapData iMapData;
+	private MapSharedViewModel mapSharedViewModel;
 
 	private LatLng latLngOnCurrentLocation;
 
@@ -78,46 +78,14 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
 
 	private Set<FavoriteLocationDTO> checkedFavoriteLocationSet = new HashSet<>();
 
-	public FavoriteLocationFragment(FavoriteLocationsListener favoriteLocationsListener, OnBackPressedCallbackController onBackPressedCallbackController
-			, BottomSheetController bottomSheetController
-			, PoiItemOnClickListener poiItemOnClickListener, IMapData iMapData) {
-		this.mainFragmentOnBackPressedCallbackController = onBackPressedCallbackController;
-		this.bottomSheetController = bottomSheetController;
+	public FavoriteLocationFragment(FavoriteLocationsListener favoriteLocationsListener) {
 		this.favoriteLocationsListener = favoriteLocationsListener;
-		this.poiItemOnClickListener = poiItemOnClickListener;
-		this.iMapData = iMapData;
 	}
 
 	public void setLatLngOnCurrentLocation(LatLng latLngOnCurrentLocation) {
 		this.latLngOnCurrentLocation = latLngOnCurrentLocation;
 	}
 
-	public OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
-		@Override
-		public void handleOnBackPressed() {
-			getParentFragmentManager().popBackStack();
-		}
-	};
-
-	@Override
-	public void onHiddenChanged(boolean hidden) {
-		super.onHiddenChanged(hidden);
-
-		if (hidden) {
-			removeOnBackPressedCallback();
-			if (getParentFragmentManager().getBackStackEntryCount() == 0) {
-				mainFragmentOnBackPressedCallbackController.addOnBackPressedCallback();
-			}
-			bottomSheetController.setStateOfBottomSheet(BottomSheetType.FAVORITE_LOCATIONS, BottomSheetBehavior.STATE_COLLAPSED);
-		} else {
-			refresh();
-			addOnBackPressedCallback();
-			if (getParentFragmentManager().getBackStackEntryCount() == 0) {
-				mainFragmentOnBackPressedCallbackController.removeOnBackPressedCallback();
-			}
-			bottomSheetController.setStateOfBottomSheet(BottomSheetType.FAVORITE_LOCATIONS, BottomSheetBehavior.STATE_EXPANDED);
-		}
-	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -125,6 +93,11 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
 
 		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
 		sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+
+		mapSharedViewModel = new ViewModelProvider(getParentFragment()).get(MapSharedViewModel.class);
+		iMapData = mapSharedViewModel.getiMapData();
+		bottomSheetController = mapSharedViewModel.getBottomSheetController();
+		poiItemOnClickListener = mapSharedViewModel.getPoiItemOnClickListener();
 	}
 
 	@Override
@@ -137,8 +110,6 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-
-		binding.errorText.setVisibility(View.GONE);
 		binding.deleteFavoriteLocations.setVisibility(View.GONE);
 
 		spinnerAdapter = ArrayAdapter.createFromResource(getContext(),
@@ -174,16 +145,13 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
 			@Override
 			public void onItemRangeInserted(int positionStart, int itemCount) {
 				super.onItemRangeInserted(positionStart, itemCount);
-				if (binding.errorText.getVisibility() == View.VISIBLE) {
-					binding.errorText.setVisibility(View.GONE);
-				}
+
 			}
 
 			@Override
 			public void onItemRangeRemoved(int positionStart, int itemCount) {
 				super.onItemRangeRemoved(positionStart, itemCount);
 				if (favoriteLocationAdapter.getItemCount() == 0) {
-					binding.errorText.setVisibility(View.VISIBLE);
 				}
 			}
 		});
@@ -200,7 +168,7 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
 					binding.deleteFavoriteLocations.setVisibility(View.VISIBLE);
 					favoriteLocationAdapter.setCheckBoxVisibility(View.VISIBLE);
 				} else {
-					binding.editButton.setTextColor(ContextCompat.getColor(getContext(), R.color.gray_500));
+					binding.editButton.setTextColor(ContextCompat.getColor(getContext(), R.color.gray_600));
 					binding.deleteFavoriteLocations.setVisibility(View.GONE);
 					favoriteLocationAdapter.setCheckBoxVisibility(View.GONE);
 				}
@@ -221,9 +189,14 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
 					for (FavoriteLocationDTO favoriteLocationDTO : checkedFavoriteLocationSet) {
 						indexInListList.add(currentList.indexOf(favoriteLocationDTO));
 
-						delete(favoriteLocationDTO.getId(), new CarrierMessagingService.ResultCallback<Boolean>() {
+						delete(favoriteLocationDTO.getId(), new DbQueryCallback<Boolean>() {
 							@Override
-							public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException {
+							public void onResultSuccessful(Boolean result) {
+
+							}
+
+							@Override
+							public void onResultNoData() {
 
 							}
 						});
@@ -256,9 +229,7 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
 					@Override
 					public void run() {
 						if (list.isEmpty()) {
-							binding.errorText.setVisibility(View.VISIBLE);
 						} else {
-							binding.errorText.setVisibility(View.GONE);
 						}
 						favoriteLocationsListener.createFavoriteLocationsPoiItems(list);
 						iMapData.showPoiItems(MarkerType.FAVORITE, App.isPreference_key_show_favorite_locations_markers_on_map());
@@ -315,9 +286,7 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
 						@Override
 						public void run() {
 							if (favoriteLocationAdapter.getItemCount() == 0) {
-								binding.errorText.setVisibility(View.VISIBLE);
 							} else {
-								binding.errorText.setVisibility(View.GONE);
 							}
 							favoriteLocationAdapter.notifyDataSetChanged();
 						}
@@ -342,20 +311,10 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
 	}
 
 	@Override
-	public void addOnBackPressedCallback() {
-		requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-	}
-
-	@Override
-	public void removeOnBackPressedCallback() {
-		onBackPressedCallback.remove();
-	}
-
-	@Override
 	public void onClickedListItem(FavoriteLocationDTO e, int position) {
 		//맵에서 마커 클릭 후, 아이템 정보 바텀시트 보여주고 프래그먼트 바텀 시트 닫음
 		poiItemOnClickListener.onPOIItemSelectedByList(position, MarkerType.FAVORITE);
-		onBackPressedCallback.handleOnBackPressed();
+		getParentFragmentManager().popBackStackImmediate();
 	}
 
 	@Override
@@ -374,9 +333,9 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
 			public boolean onMenuItemClick(MenuItem menuItem) {
 				switch (menuItem.getItemId()) {
 					case R.id.delete_favorite_location:
-						delete(e.getId(), new CarrierMessagingService.ResultCallback<Boolean>() {
+						delete(e.getId(), new DbQueryCallback<Boolean>() {
 							@Override
-							public void onReceiveResult(@NonNull Boolean isDeleted) throws RemoteException {
+							public void onResultSuccessful(Boolean result) {
 								requireActivity().runOnUiThread(new Runnable() {
 									@Override
 									public void run() {
@@ -384,6 +343,11 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
 										favoriteLocationAdapter.notifyItemRemoved(index);
 									}
 								});
+							}
+
+							@Override
+							public void onResultNoData() {
+
 							}
 						});
 						break;
@@ -433,18 +397,23 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
 	}
 
 	@Override
-	public void insert(FavoriteLocationDTO favoriteLocationDTO, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback) {
-		favoriteLocationViewModel.insert(favoriteLocationDTO, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>() {
+	public void insert(FavoriteLocationDTO favoriteLocationDTO, DbQueryCallback<FavoriteLocationDTO> callback) {
+		favoriteLocationViewModel.insert(favoriteLocationDTO, new DbQueryCallback<FavoriteLocationDTO>() {
 			@Override
-			public void onReceiveResult(@NonNull FavoriteLocationDTO insertedFavoriteLocationDTO) throws RemoteException {
+			public void onResultSuccessful(FavoriteLocationDTO result) {
 				requireActivity().runOnUiThread(new Runnable() {
 					@SneakyThrows
 					@Override
 					public void run() {
-						callback.onReceiveResult(insertedFavoriteLocationDTO);
-						favoriteLocationsListener.addFavoriteLocationsPoiItem(insertedFavoriteLocationDTO);
+						callback.processResult(result);
+						favoriteLocationsListener.addFavoriteLocationsPoiItem(result);
 					}
 				});
+			}
+
+			@Override
+			public void onResultNoData() {
+
 			}
 		});
 	}
@@ -496,21 +465,25 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
 	}
 
 	@Override
-	public void delete(Integer id, CarrierMessagingService.ResultCallback<Boolean> callback) {
+	public void delete(Integer id, DbQueryCallback<Boolean> callback) {
 		favoriteLocationViewModel.select(null, id, new DbQueryCallback<FavoriteLocationDTO>() {
 			@Override
-			public void onResultSuccessful(FavoriteLocationDTO result) {
-				favoriteLocationViewModel.delete(id, new CarrierMessagingService.ResultCallback<Boolean>() {
+			public void onResultSuccessful(FavoriteLocationDTO favoriteLocationDTO) {
+				favoriteLocationViewModel.delete(id, new DbQueryCallback<Boolean>() {
 					@Override
-					public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException {
+					public void onResultSuccessful(Boolean result) {
 						requireActivity().runOnUiThread(new Runnable() {
-							@SneakyThrows
 							@Override
 							public void run() {
-								callback.onReceiveResult(aBoolean);
-								favoriteLocationsListener.removeFavoriteLocationsPoiItem(result);
+								callback.processResult(result);
+								favoriteLocationsListener.removeFavoriteLocationsPoiItem(favoriteLocationDTO);
 							}
 						});
+					}
+
+					@Override
+					public void onResultNoData() {
+
 					}
 				});
 			}
@@ -525,23 +498,27 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
 	}
 
 	@Override
-	public void deleteAll(Integer type, CarrierMessagingService.ResultCallback<Boolean> callback) {
-		favoriteLocationViewModel.deleteAll(type, new CarrierMessagingService.ResultCallback<Boolean>() {
+	public void deleteAll(Integer type, DbQueryCallback<Boolean> callback) {
+		favoriteLocationViewModel.deleteAll(type, new DbQueryCallback<Boolean>() {
 			@Override
-			public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException {
+			public void onResultSuccessful(Boolean result) {
 				requireActivity().runOnUiThread(new Runnable() {
-					@SneakyThrows
 					@Override
 					public void run() {
-						callback.onReceiveResult(aBoolean);
+						callback.processResult(result);
 					}
 				});
+			}
+
+			@Override
+			public void onResultNoData() {
+
 			}
 		});
 	}
 
 	@Override
-	public void deleteAll(CarrierMessagingService.ResultCallback<Boolean> callback) {
+	public void deleteAll(DbQueryCallback<Boolean> callback) {
 
 	}
 

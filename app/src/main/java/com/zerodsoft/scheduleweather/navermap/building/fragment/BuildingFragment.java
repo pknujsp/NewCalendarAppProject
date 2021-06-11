@@ -45,24 +45,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class BuildingFragment extends Fragment implements  BuildingFloorListAdapter.OnClickDownloadListener {
+public class BuildingFragment extends Fragment implements BuildingFloorListAdapter.OnClickDownloadListener {
+	private static final int SCROLLING_TOP = -1;
+	private static final int SCROLLING_BOTTOM = 1;
+	private final SgisBuildingDownloader sgisBuildingDownloader = new SgisBuildingDownloader();
+
 	private FragmentBuildingBinding binding;
 	private BuildingAreaItem buildingAreaItem;
 	private BuildingFloorListAdapter buildingFloorListAdapter;
-	private static final int SCROLLING_TOP = -1;
-	private static final int SCROLLING_BOTTOM = 1;
-	private final BuildingFragmentController buildingFragmentController;
-	private final SgisBuildingDownloader sgisBuildingDownloader = new SgisBuildingDownloader();
-
-	public BuildingFragment(BuildingFragmentController buildingFragmentController) {
-		this.buildingFragmentController = buildingFragmentController;
-	}
 
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
 		buildingAreaItem = getArguments().getParcelable("building");
 	}
 
@@ -78,8 +73,6 @@ public class BuildingFragment extends Fragment implements  BuildingFloorListAdap
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		binding.errorText.setVisibility(View.GONE);
-		binding.progressBar.setVisibility(View.VISIBLE);
 		binding.buildingInfoLayout.getRoot().setVisibility(View.GONE);
 		binding.buildingFloorInfoLayout.getRoot().setVisibility(View.GONE);
 
@@ -99,8 +92,6 @@ public class BuildingFragment extends Fragment implements  BuildingFloorListAdap
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						binding.progressBar.setVisibility(View.GONE);
-
 						setBuildingInfo(result);
 						binding.buildingInfoLayout.getRoot().setVisibility(View.VISIBLE);
 						binding.buildingFloorInfoLayout.getRoot().setVisibility(View.VISIBLE);
@@ -110,13 +101,6 @@ public class BuildingFragment extends Fragment implements  BuildingFloorListAdap
 
 			@Override
 			public void onResponseFailed(Exception e) {
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						binding.progressBar.setVisibility(View.GONE);
-						binding.errorText.setVisibility(View.VISIBLE);
-					}
-				});
 			}
 		});
 

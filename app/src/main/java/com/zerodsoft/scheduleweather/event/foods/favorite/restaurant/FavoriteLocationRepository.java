@@ -1,7 +1,6 @@
 package com.zerodsoft.scheduleweather.event.foods.favorite.restaurant;
 
 import android.content.Context;
-import android.service.carrier.CarrierMessagingService;
 
 import androidx.lifecycle.MutableLiveData;
 
@@ -33,15 +32,14 @@ class FavoriteLocationRepository implements FavoriteLocationQuery {
 	}
 
 	@Override
-	public void insert(FavoriteLocationDTO favoriteLocationDTO, CarrierMessagingService.ResultCallback<FavoriteLocationDTO> callback) {
+	public void insert(FavoriteLocationDTO favoriteLocationDTO, DbQueryCallback<FavoriteLocationDTO> callback) {
 		new Thread(new Runnable() {
-			@SneakyThrows
 			@Override
 			public void run() {
 				long id = dao.insert(favoriteLocationDTO);
 				int type = favoriteLocationDTO.getType();
 				FavoriteLocationDTO favoriteLocationDTO = dao.select(type, (int) id);
-				callback.onReceiveResult(favoriteLocationDTO);
+				callback.processResult(favoriteLocationDTO);
 				addedFavoriteLocationMutableLiveData.postValue(favoriteLocationDTO);
 			}
 		}).start();
@@ -55,7 +53,6 @@ class FavoriteLocationRepository implements FavoriteLocationQuery {
 	@Override
 	public void select(Integer type, DbQueryCallback<List<FavoriteLocationDTO>> callback) {
 		new Thread(new Runnable() {
-			@SneakyThrows
 			@Override
 			public void run() {
 				List<FavoriteLocationDTO> list = dao.select(type);
@@ -67,7 +64,6 @@ class FavoriteLocationRepository implements FavoriteLocationQuery {
 	@Override
 	public void select(Integer type, Integer id, DbQueryCallback<FavoriteLocationDTO> callback) {
 		new Thread(new Runnable() {
-			@SneakyThrows
 			@Override
 			public void run() {
 				FavoriteLocationDTO favoriteLocationDTO = dao.select(type, id);
@@ -77,38 +73,35 @@ class FavoriteLocationRepository implements FavoriteLocationQuery {
 	}
 
 	@Override
-	public void delete(Integer id, CarrierMessagingService.ResultCallback<Boolean> callback) {
+	public void delete(Integer id, DbQueryCallback<Boolean> callback) {
 		new Thread(new Runnable() {
-			@SneakyThrows
 			@Override
 			public void run() {
 				dao.delete(id);
-				callback.onReceiveResult(true);
+				callback.processResult(true);
 				removedFavoriteLocationMutableLiveData.postValue(id);
 			}
 		}).start();
 	}
 
 	@Override
-	public void deleteAll(Integer type, CarrierMessagingService.ResultCallback<Boolean> callback) {
+	public void deleteAll(Integer type, DbQueryCallback<Boolean> callback) {
 		new Thread(new Runnable() {
-			@SneakyThrows
 			@Override
 			public void run() {
 				dao.deleteAll(type);
-				callback.onReceiveResult(true);
+				callback.processResult(true);
 			}
 		}).start();
 	}
 
 	@Override
-	public void deleteAll(CarrierMessagingService.ResultCallback<Boolean> callback) {
+	public void deleteAll(DbQueryCallback<Boolean> callback) {
 		new Thread(new Runnable() {
-			@SneakyThrows
 			@Override
 			public void run() {
 				dao.deleteAll();
-				callback.onReceiveResult(true);
+				callback.processResult(true);
 			}
 		}).start();
 	}
