@@ -78,10 +78,10 @@ import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListe
 import com.zerodsoft.scheduleweather.navermap.building.fragment.BuildingFragment;
 import com.zerodsoft.scheduleweather.navermap.building.fragment.BuildingListFragment;
 import com.zerodsoft.scheduleweather.navermap.favorite.FavoriteLocationFragment;
-import com.zerodsoft.scheduleweather.navermap.fragment.search.LocationSearchFragment;
-import com.zerodsoft.scheduleweather.navermap.fragment.searchheader.MapHeaderMainFragment;
-import com.zerodsoft.scheduleweather.navermap.fragment.searchheader.MapHeaderSearchFragment;
-import com.zerodsoft.scheduleweather.navermap.fragment.searchresult.LocationSearchResultFragment;
+import com.zerodsoft.scheduleweather.navermap.search.LocationSearchFragment;
+import com.zerodsoft.scheduleweather.navermap.searchheader.MapHeaderMainFragment;
+import com.zerodsoft.scheduleweather.navermap.searchheader.MapHeaderSearchFragment;
+import com.zerodsoft.scheduleweather.navermap.searchresult.LocationSearchResultFragment;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BuildingFragmentController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BuildingLocationSelectorController;
@@ -92,7 +92,6 @@ import com.zerodsoft.scheduleweather.navermap.interfaces.INetwork;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnClickedBottomSheetListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnCoordToAddressListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.PlacesItemBottomSheetButtonOnClickListener;
-import com.zerodsoft.scheduleweather.navermap.interfaces.SearchFragmentController;
 import com.zerodsoft.scheduleweather.navermap.model.CoordToAddressUtil;
 import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebDialogFragment;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
@@ -121,7 +120,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IMapPoint, IMapData, INetwork, OnClickedPlacesListListener, PlacesItemBottomSheetButtonOnClickListener,
-		PoiItemOnClickListener<Marker>, OnClickedBottomSheetListener,
+		PoiItemOnClickListener, OnClickedBottomSheetListener,
 		BuildingLocationSelectorController,
 		BuildingFragmentController, BuildingListFragment.OnSearchRadiusChangeListener, NaverMap.OnMapClickListener,
 		NaverMap.OnCameraIdleListener, CameraUpdate.FinishCallback, NaverMap.OnLocationChangeListener, OnBackPressedCallbackController,
@@ -264,6 +263,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		mapSharedViewModel.setBottomSheetController(this);
 		mapSharedViewModel.setiMapData(this);
 		mapSharedViewModel.setiMapPoint(this);
+		mapSharedViewModel.setPoiItemOnClickListener(this);
 
 		networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback() {
 			@Override
@@ -574,23 +574,29 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 	public void onPageSelectedLocationItemBottomSheetViewPager(int position, MarkerType markerType) {
 		switch (markerType) {
-			case SEARCH_RESULT: {
-				LocationSearchResultFragment locationSearchResultFragment =
+			case SEARCH_RESULT_ADDRESS:
+				LocationSearchResultFragment locationSearchResultFragmentForAddress =
 						(LocationSearchResultFragment) getChildFragmentManager().findFragmentByTag(getString(R.string.tag_location_search_result_fragment));
-				if (locationSearchResultFragment != null) {
-					if (locationSearchResultFragment.isVisible()) {
-						locationSearchResultFragment.loadExtraListData(new RecyclerView.AdapterDataObserver() {
-							@Override
-							public void onItemRangeInserted(int positionStart, int itemCount) {
-								super.onItemRangeInserted(positionStart, itemCount);
-							}
-
-						});
-						return;
+				locationSearchResultFragmentForAddress.loadExtraListData(new RecyclerView.AdapterDataObserver() {
+					@Override
+					public void onItemRangeInserted(int positionStart, int itemCount) {
+						super.onItemRangeInserted(positionStart, itemCount);
 					}
-				}
-				break;
-			}
+				});
+				return;
+
+			case SEARCH_RESULT_PLACE:
+				LocationSearchResultFragment locationSearchResultFragmentForPlace =
+						(LocationSearchResultFragment) getChildFragmentManager().findFragmentByTag(getString(R.string.tag_location_search_result_fragment));
+				locationSearchResultFragmentForPlace.loadExtraListData(new RecyclerView.AdapterDataObserver() {
+					@Override
+					public void onItemRangeInserted(int positionStart, int itemCount) {
+						super.onItemRangeInserted(positionStart, itemCount);
+					}
+				});
+				return;
+
+
 		}
 
 
@@ -1032,11 +1038,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	}
 
 	@Override
-	public void onPOIItemSelectedByTouch(Marker e) {
-
-	}
-
-	@Override
 	public void onPOIItemSelectedByList(int index, MarkerType markerType) {
 		//bottomsheet가 아닌 list에서 아이템을 선택한 경우 호출
 		//adapter -> poiitem생성 -> select poiitem -> bottomsheet열고 정보 표시
@@ -1123,7 +1124,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 				public void onClick(View view) {
 					//빌딩 목록 바텀 시트 열기
 					//map center point를 좌표로 지정
-					setBuildingBottomSheetHeight(BuildingListFragment.TAG);
+					setBuildingBottomSheetHeight(getString(R.string.tag_building_list_fragment));
 					removeBuildingLocationSelector();
 
 					drawSearchRadiusCircle();
@@ -1136,12 +1137,12 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 					bundle.putString("centerLatitude", centerLatitude);
 					bundle.putString("centerLongitude", centerLongitude);
 
-					BuildingListFragment buildingListFragment = new BuildingListFragment(NaverMapFragment.this, NaverMapFragment.this);
+					BuildingListFragment buildingListFragment = new BuildingListFragment(NaverMapFragment.this);
 					buildingListFragment.setArguments(bundle);
 
 					getChildFragmentManager().beginTransaction().add(binding.buildingBottomSheet.buildingFragmentContainer.getId(), buildingListFragment,
-							BuildingListFragment.TAG)
-							.addToBackStack(BuildingListFragment.TAG)
+							getString(R.string.tag_building_list_fragment))
+							.addToBackStack(getString(R.string.tag_building_list_fragment))
 							.commit();
 
 					bottomSheetFragmentMap.put(BottomSheetType.BUILDING, buildingListFragment);
@@ -1157,7 +1158,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 	@Override
 	public void closeBuildingFragments(String currentFragmentTag) {
-		if (currentFragmentTag.equals(BuildingListFragment.TAG)) {
+		if (currentFragmentTag.equals(getString(R.string.tag_building_list_fragment))) {
 			setStateOfBottomSheet(BottomSheetType.BUILDING, BottomSheetBehavior.STATE_COLLAPSED);
 			bottomSheetFragmentMap.remove(BottomSheetType.BUILDING);
 
@@ -1165,8 +1166,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 				buildingRangeCircleOverlay.setMap(null);
 				buildingRangeCircleOverlay = null;
 			}
-		} else if (currentFragmentTag.equals(BuildingFragment.TAG)) {
-			setBuildingBottomSheetHeight(BuildingListFragment.TAG);
+		} else if (currentFragmentTag.equals(getString(R.string.tag_building_info_fragment))) {
+			setBuildingBottomSheetHeight(getString(R.string.tag_building_list_fragment));
 			setStateOfBottomSheet(BottomSheetType.BUILDING, BottomSheetBehavior.STATE_EXPANDED);
 		}
 	}
@@ -1175,7 +1176,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		removeBuildingLocationSelector();
 
 		if (getStateOfBottomSheet(BottomSheetType.BUILDING) != BottomSheetBehavior.STATE_COLLAPSED) {
-			setBuildingBottomSheetHeight(BuildingListFragment.TAG);
+			setBuildingBottomSheetHeight(getString(R.string.tag_building_list_fragment));
 			FragmentManager fragmentManager = getChildFragmentManager();
 
 			setStateOfBottomSheet(BottomSheetType.BUILDING, BottomSheetBehavior.STATE_COLLAPSED);
@@ -1185,7 +1186,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 				buildingRangeCircleOverlay = null;
 			}
 
-			if (fragmentManager.findFragmentByTag(BuildingFragment.TAG) != null) {
+			if (fragmentManager.findFragmentByTag(getString(R.string.tag_building_info_fragment)) != null) {
 				fragmentManager.popBackStackImmediate();
 			}
 			fragmentManager.popBackStackImmediate();
@@ -1214,9 +1215,9 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		BuildingBottomSheetHeightViewHolder buildingBottomSheetHeightViewHolder
 				= (BuildingBottomSheetHeightViewHolder) bottomSheetViewMap.get(BottomSheetType.BUILDING).getTag();
 
-		if (fragmentTag.equals(BuildingListFragment.TAG)) {
+		if (fragmentTag.equals(getString(R.string.tag_building_list_fragment))) {
 			bottomSheetViewMap.get(BottomSheetType.BUILDING).getLayoutParams().height = buildingBottomSheetHeightViewHolder.listHeight;
-		} else if (fragmentTag.equals(BuildingFragment.TAG)) {
+		} else if (fragmentTag.equals(getString(R.string.tag_building_info_fragment))) {
 			bottomSheetViewMap.get(BottomSheetType.BUILDING).getLayoutParams().height = buildingBottomSheetHeightViewHolder.infoHeight;
 		}
 

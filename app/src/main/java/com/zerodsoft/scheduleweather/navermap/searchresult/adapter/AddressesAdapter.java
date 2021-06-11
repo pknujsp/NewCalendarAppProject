@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.navermap.fragment.searchresult.adapter;
+package com.zerodsoft.scheduleweather.navermap.searchresult.adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -14,8 +14,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
-import com.zerodsoft.scheduleweather.navermap.interfaces.OnClickedLocListItem;
-import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.navermap.callback.AddressItemCallback;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
 

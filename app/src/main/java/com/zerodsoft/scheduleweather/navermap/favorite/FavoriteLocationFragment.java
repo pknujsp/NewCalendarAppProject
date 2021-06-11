@@ -31,7 +31,6 @@ import android.widget.Toast;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.naver.maps.geometry.LatLng;
-import com.naver.maps.map.overlay.Marker;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
@@ -64,7 +63,7 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
 	public static final String TAG = "FavoriteLocationFragment";
 
 	private final FavoriteLocationsListener favoriteLocationsListener;
-	private final PoiItemOnClickListener<Marker> poiItemOnClickListener;
+	private final PoiItemOnClickListener poiItemOnClickListener;
 	private final OnBackPressedCallbackController mainFragmentOnBackPressedCallbackController;
 	private final BottomSheetController bottomSheetController;
 	private final IMapData iMapData;
@@ -81,7 +80,7 @@ public class FavoriteLocationFragment extends Fragment implements OnBackPressedC
 
 	public FavoriteLocationFragment(FavoriteLocationsListener favoriteLocationsListener, OnBackPressedCallbackController onBackPressedCallbackController
 			, BottomSheetController bottomSheetController
-			, PoiItemOnClickListener<Marker> poiItemOnClickListener, IMapData iMapData) {
+			, PoiItemOnClickListener poiItemOnClickListener, IMapData iMapData) {
 		this.mainFragmentOnBackPressedCallbackController = onBackPressedCallbackController;
 		this.bottomSheetController = bottomSheetController;
 		this.favoriteLocationsListener = favoriteLocationsListener;

@@ -1,9 +1,7 @@
-package com.zerodsoft.scheduleweather.navermap.fragment.searchresult;
+package com.zerodsoft.scheduleweather.navermap.searchresult;
 
-import android.content.Context;
 import android.os.Bundle;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -18,7 +16,6 @@ import android.view.ViewGroup;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.common.enums.KakaoLocalApiResultType;
-import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.FragmentSearchResultListBinding;
 import com.zerodsoft.scheduleweather.etc.LocationType;
@@ -26,19 +23,14 @@ import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListe
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.MarkerType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
-import com.zerodsoft.scheduleweather.navermap.interfaces.OnClickedLocListItem;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
-import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
-import com.zerodsoft.scheduleweather.navermap.fragment.searchresult.adapter.SearchResultListAdapter;
-import com.zerodsoft.scheduleweather.navermap.fragment.searchresult.interfaces.IndicatorCreater;
+import com.zerodsoft.scheduleweather.navermap.searchresult.adapter.SearchResultListAdapter;
+import com.zerodsoft.scheduleweather.navermap.searchresult.interfaces.IndicatorCreater;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.navermap.interfaces.SearchFragmentController;
 import com.zerodsoft.scheduleweather.navermap.model.SearchResultChecker;
-import com.zerodsoft.scheduleweather.navermap.model.callback.CheckerCallback;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.MapSharedViewModel;
-import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressKakaoLocalResponse;
@@ -62,6 +54,7 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
 	private MapSharedViewModel mapSharedViewModel;
 	private IMapData iMapData;
 	private BottomSheetController bottomSheetController;
+	private PoiItemOnClickListener poiItemOnClickListener;
 
 
 	@Override
@@ -77,6 +70,7 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
 		mapSharedViewModel = new ViewModelProvider(getParentFragment()).get(MapSharedViewModel.class);
 		iMapData = mapSharedViewModel.getiMapData();
 		bottomSheetController = mapSharedViewModel.getBottomSheetController();
+		poiItemOnClickListener = mapSharedViewModel.getPoiItemOnClickListener();
 	}
 
 	@Override
@@ -92,7 +86,10 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
 		binding.customProgressView.setContentView(binding.contentLayout);
 
 		searchResultListAdapter = new SearchResultListAdapter(LocationSearchResultFragment.this);
+		onPageCallback = new OnPageCallback();
+		binding.listViewpager.registerOnPageChangeCallback(onPageCallback);
 		binding.listViewpager.setAdapter(searchResultListAdapter);
+
 		searchLocation(query);
 	}
 
@@ -107,33 +104,31 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
 		SearchResultChecker.checkExisting(addressParameter, placeParameter, new JsonDownloader<List<KakaoLocalResponse>>() {
 			@Override
 			public void onResponseSuccessful(List<KakaoLocalResponse> resultList) {
+				List<Fragment> fragments = new ArrayList<>();
+
+				for (KakaoLocalResponse kakaoLocalResponse : resultList) {
+					if (kakaoLocalResponse.isEmpty()) {
+						continue;
+					}
+
+					if (kakaoLocalResponse instanceof PlaceKakaoLocalResponse) {
+						SearchResultPlaceListFragment searchResultPlaceListFragment = new SearchResultPlaceListFragment(query, placeDocumentsOnClickedListItem);
+						placesOnExtraListDataListener = searchResultPlaceListFragment;
+						fragments.add(searchResultPlaceListFragment);
+					} else if (kakaoLocalResponse instanceof AddressKakaoLocalResponse) {
+						SearchResultAddressListFragment addressesListFragment = new SearchResultAddressListFragment(query, addressResponseDocumentsOnClickedListItem);
+						addressesOnExtraListDataListener = addressesListFragment;
+						fragments.add(addressesListFragment);
+					}
+				}
 
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
 						binding.customProgressView.onSuccessfulProcessingData();
-						List<Fragment> fragments = new ArrayList<>();
 
-						for (KakaoLocalResponse kakaoLocalResponse : resultList) {
-							if (kakaoLocalResponse.isEmpty()) {
-								continue;
-							}
-
-							if (kakaoLocalResponse instanceof PlaceKakaoLocalResponse) {
-								SearchResultPlaceListFragment searchResultPlaceListFragment = new SearchResultPlaceListFragment(query, placeDocumentsOnClickedListItem);
-								placesOnExtraListDataListener = searchResultPlaceListFragment;
-								fragments.add(searchResultPlaceListFragment);
-							} else if (kakaoLocalResponse instanceof AddressKakaoLocalResponse) {
-								SearchResultAddressListFragment addressesListFragment = new SearchResultAddressListFragment(query, addressResponseDocumentsOnClickedListItem);
-								addressesOnExtraListDataListener = addressesListFragment;
-								fragments.add(addressesListFragment);
-							}
-						}
-						onPageCallback = new OnPageCallback();
-						binding.listViewpager.registerOnPageChangeCallback(onPageCallback);
+						onPageCallback.lastPosition = 0;
 						searchResultListAdapter.setFragments(fragments);
-
-						binding.customProgressView.onSuccessfulProcessingData();
 						searchResultListAdapter.notifyDataSetChanged();
 
 						binding.viewpagerIndicator.createDot(0, fragments.size());
@@ -171,13 +166,14 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
 
 	@Override
 	public void loadExtraListData(RecyclerView.AdapterDataObserver adapterDataObserver) {
-		Fragment curFragment = searchResultListAdapter.getFragment(binding.listViewpager.getCurrentItem());
+		KakaoLocalApiResultType currentResultType = getCurrentListType();
 
-		if (curFragment instanceof SearchResultAddressListFragment) {
+		if (currentResultType == KakaoLocalApiResultType.ADDRESS) {
 			addressesOnExtraListDataListener.loadExtraListData(adapterDataObserver);
-		} else if (curFragment instanceof SearchResultPlaceListFragment) {
+		} else {
 			placesOnExtraListDataListener.loadExtraListData(adapterDataObserver);
 		}
+
 	}
 
 	public KakaoLocalApiResultType getCurrentListType() {
@@ -208,6 +204,7 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
 		@Override
 		public void onClickedListItem(PlaceDocuments e, int position) {
 			iMapData.showPoiItems(MarkerType.SEARCH_RESULT_PLACE);
+			poiItemOnClickListener.onPOIItemSelectedByList(position, MarkerType.SEARCH_RESULT_PLACE);
 			bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_COLLAPSED);
 			showMap();
 		}
@@ -222,6 +219,7 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
 		@Override
 		public void onClickedListItem(AddressResponseDocuments e, int position) {
 			iMapData.showPoiItems(MarkerType.SEARCH_RESULT_ADDRESS);
+			poiItemOnClickListener.onPOIItemSelectedByList(position, MarkerType.SEARCH_RESULT_ADDRESS);
 			bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_COLLAPSED);
 			showMap();
 		}

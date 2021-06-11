@@ -45,8 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class BuildingFragment extends Fragment implements OnBackPressedCallbackController, BuildingFloorListAdapter.OnClickDownloadListener {
-	public static final String TAG = "BuildingFragment";
+public class BuildingFragment extends Fragment implements  BuildingFloorListAdapter.OnClickDownloadListener {
 	private FragmentBuildingBinding binding;
 	private BuildingAreaItem buildingAreaItem;
 	private BuildingFloorListAdapter buildingFloorListAdapter;
@@ -55,29 +54,10 @@ public class BuildingFragment extends Fragment implements OnBackPressedCallbackC
 	private final BuildingFragmentController buildingFragmentController;
 	private final SgisBuildingDownloader sgisBuildingDownloader = new SgisBuildingDownloader();
 
-	private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
-		@Override
-		public void handleOnBackPressed() {
-			getParentFragmentManager().popBackStack();
-			buildingFragmentController.closeBuildingFragments(TAG);
-		}
-	};
-
 	public BuildingFragment(BuildingFragmentController buildingFragmentController) {
 		this.buildingFragmentController = buildingFragmentController;
 	}
 
-	@Override
-	public void onAttach(@NonNull Context context) {
-		super.onAttach(context);
-		addOnBackPressedCallback();
-	}
-
-	@Override
-	public void onDetach() {
-		super.onDetach();
-		removeOnBackPressedCallback();
-	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -202,16 +182,6 @@ public class BuildingFragment extends Fragment implements OnBackPressedCallbackC
 		binding.buildingInfoLayout.buildingHighestFloor.setText("");
 		binding.buildingInfoLayout.buildingLowestFloor.setText("");
 
-	}
-
-	@Override
-	public void addOnBackPressedCallback() {
-		getActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-	}
-
-	@Override
-	public void removeOnBackPressedCallback() {
-		onBackPressedCallback.remove();
 	}
 
 	@Override

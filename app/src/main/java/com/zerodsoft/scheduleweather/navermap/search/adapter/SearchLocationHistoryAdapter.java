@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.navermap.fragment.search.adapter;
+package com.zerodsoft.scheduleweather.navermap.search.adapter;
 
 import android.view.LayoutInflater;
 import android.view.View;

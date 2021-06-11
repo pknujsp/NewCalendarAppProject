@@ -5,7 +5,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bottomsheet_background"
+    android:clickable="true"
+    android:focusable="false"
     android:orientation="vertical"
+    android:paddingTop="16dp"
     app:behavior_hideable="false"
     app:behavior_peekHeight="0dp"
     app:layout_behavior="@string/bottom_sheet_behavior">

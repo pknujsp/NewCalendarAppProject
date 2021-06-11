@@ -6,16 +6,12 @@
     <RelativeLayout
         android:id="@+id/fragment_search"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingTop="10dp">
-
-
+        android:layout_height="match_parent">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/search_history_recyclerview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/categories_recyclerview"
             android:layout_alignParentBottom="true"
             android:orientation="vertical"
             tools:listitem="@layout/search_history_item" />

@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.navermap.fragment.search.adapter;
+package com.zerodsoft.scheduleweather.navermap.search.adapter;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,10 +10,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
-import com.zerodsoft.scheduleweather.navermap.interfaces.OnSelectedMapCategory;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
-import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;
 
 import java.util.List;
 

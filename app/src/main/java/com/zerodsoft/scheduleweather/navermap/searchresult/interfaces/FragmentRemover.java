@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.navermap.fragment.searchresult.interfaces;
+package com.zerodsoft.scheduleweather.navermap.searchresult.interfaces;
 
 import androidx.fragment.app.Fragment;
 

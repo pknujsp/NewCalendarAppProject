@@ -576,4 +576,6 @@
     <string name="tag_map_search_main_fragment">tag_map_search_main_fragment</string>
     <string name="tag_hide_location_search_result_fragment">tag_hide_location_search_result_fragment</string>
     <string name="tag_map_header_search_fragment">tag_map_header_search_fragment</string>
+    <string name="tag_building_list_fragment">tag_building_list_fragment</string>
+    <string name="tag_building_info_fragment">tag_building_info_fragment</string>
 </resources>

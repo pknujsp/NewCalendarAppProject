@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.navermap.fragment.searchheader;
+package com.zerodsoft.scheduleweather.navermap.searchheader;
 
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -22,17 +22,15 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.enums.KakaoLocalApiResultType;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
-import com.zerodsoft.scheduleweather.common.interfaces.OnSearchListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentLocationSearchBarBinding;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.MarkerType;
-import com.zerodsoft.scheduleweather.navermap.fragment.search.adapter.PlaceCategoriesAdapter;
-import com.zerodsoft.scheduleweather.navermap.fragment.searchresult.LocationSearchResultFragment;
-import com.zerodsoft.scheduleweather.navermap.fragment.searchresult.SearchResultAddressListFragment;
-import com.zerodsoft.scheduleweather.navermap.fragment.searchresult.SearchResultPlaceListFragment;
+import com.zerodsoft.scheduleweather.navermap.search.adapter.PlaceCategoriesAdapter;
+import com.zerodsoft.scheduleweather.navermap.searchresult.LocationSearchResultFragment;
+import com.zerodsoft.scheduleweather.navermap.searchresult.SearchResultAddressListFragment;
+import com.zerodsoft.scheduleweather.navermap.searchresult.SearchResultPlaceListFragment;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
-import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.MapSharedViewModel;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.SearchHistoryViewModel;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
@@ -226,8 +224,11 @@ public class MapHeaderSearchFragment extends Fragment {
 	public void search(String query) {
 		// location search fragment is added?
 		FragmentManager parentFragmentManager = getParentFragmentManager();
-		if (parentFragmentManager.findFragmentByTag(getString(R.string.tag_location_search_result_fragment)) == null) {
-			LocationSearchResultFragment locationSearchResultFragment = new LocationSearchResultFragment();
+		LocationSearchResultFragment locationSearchResultFragment =
+				(LocationSearchResultFragment) parentFragmentManager.findFragmentByTag(getString(R.string.tag_location_search_result_fragment));
+
+		if (locationSearchResultFragment == null) {
+			locationSearchResultFragment = new LocationSearchResultFragment();
 			Bundle bundle = new Bundle();
 			bundle.putString("query", query);
 
@@ -240,9 +241,6 @@ public class MapHeaderSearchFragment extends Fragment {
 		} else {
 			// added
 			iMapData.removePoiItems(MarkerType.SEARCH_RESULT_ADDRESS, MarkerType.SEARCH_RESULT_PLACE);
-			LocationSearchResultFragment locationSearchResultFragment =
-					(LocationSearchResultFragment) parentFragmentManager.findFragmentByTag(getString(R.string.tag_location_search_result_fragment));
-
 			if (locationSearchResultFragment.isHidden()) {
 				parentFragmentManager.popBackStackImmediate();
 			}

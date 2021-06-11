@@ -30,7 +30,7 @@ import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.LocationItemViewPagerAdapter;
 import com.zerodsoft.scheduleweather.navermap.MarkerType;
 import com.zerodsoft.scheduleweather.navermap.NaverMapFragment;
-import com.zerodsoft.scheduleweather.navermap.fragment.searchheader.MapHeaderSearchFragment;
+import com.zerodsoft.scheduleweather.navermap.searchheader.MapHeaderSearchFragment;
 import com.zerodsoft.scheduleweather.navermap.model.CoordToAddressUtil;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
@@ -55,11 +55,6 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 	private LocationDTO selectedLocationDTOInMap;
 	private String locationNameInEvent;
 	private final Marker selectedLocationMarker = new Marker();
-
-	@Override
-	public void onBackPressedCallback() {
-		finishActivity();
-	}
 
 	private void finishActivity() {
 		requireActivity().setResult(resultCode, requireActivity().getIntent());
@@ -251,6 +246,7 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 		resultCode = LocationIntentCode.RESULT_CODE_REMOVED_LOCATION.value();
 
 		Toast.makeText(getContext(), R.string.canceled_location, Toast.LENGTH_SHORT).show();
+		finishActivity();
 	}
 
 	@Override
