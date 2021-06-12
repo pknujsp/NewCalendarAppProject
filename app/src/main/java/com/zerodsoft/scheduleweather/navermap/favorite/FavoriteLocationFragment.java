@@ -60,9 +60,9 @@ import lombok.SneakyThrows;
 
 public class FavoriteLocationFragment extends Fragment implements OnClickedFavoriteItem, FavoriteLocationQuery
 		, SharedPreferences.OnSharedPreferenceChangeListener {
-	private FragmentFavoriteLocationBinding binding;
-
 	private final FavoriteLocationsListener favoriteLocationsListener;
+
+	private FragmentFavoriteLocationBinding binding;
 	private PoiItemOnClickListener poiItemOnClickListener;
 	private BottomSheetController bottomSheetController;
 	private IMapData iMapData;
@@ -98,6 +98,7 @@ public class FavoriteLocationFragment extends Fragment implements OnClickedFavor
 		iMapData = mapSharedViewModel.getiMapData();
 		bottomSheetController = mapSharedViewModel.getBottomSheetController();
 		poiItemOnClickListener = mapSharedViewModel.getPoiItemOnClickListener();
+		favoriteLocationViewModel = new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
 	}
 
 	@Override
@@ -121,7 +122,6 @@ public class FavoriteLocationFragment extends Fragment implements OnClickedFavor
 
 		boolean showFavoriteLocationsMarkersOnMap = App.isPreference_key_show_favorite_locations_markers_on_map();
 		binding.switchShowFavoriteLocationsMarkerOnMap.setChecked(showFavoriteLocationsMarkersOnMap);
-
 		binding.switchShowFavoriteLocationsMarkerOnMap.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 			@Override
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -134,7 +134,6 @@ public class FavoriteLocationFragment extends Fragment implements OnClickedFavor
 			}
 		});
 
-		favoriteLocationViewModel = new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
 		binding.favoriteLocationRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
 		binding.favoriteLocationRecyclerView.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
 

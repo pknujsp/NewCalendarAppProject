@@ -26,6 +26,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.CompositePageTransformer;
@@ -68,11 +69,13 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.classes.AppPermission;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.common.interfaces.OnHiddenFragmentListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentNaverMapBinding;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
+import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
 import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
@@ -84,7 +87,6 @@ import com.zerodsoft.scheduleweather.navermap.searchheader.MapHeaderMainFragment
 import com.zerodsoft.scheduleweather.navermap.searchheader.MapHeaderSearchFragment;
 import com.zerodsoft.scheduleweather.navermap.searchresult.LocationSearchResultFragment;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
-import com.zerodsoft.scheduleweather.navermap.interfaces.BuildingLocationSelectorController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
@@ -139,6 +141,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	public LocationViewModel locationViewModel;
 	public SearchHistoryViewModel searchHistoryViewModel;
 	public MapSharedViewModel mapSharedViewModel;
+	public FavoriteLocationViewModel favoriteLocationViewModel;
 
 	public ImageButton zoomInButton;
 	public ImageButton zoomOutButton;
@@ -285,6 +288,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		mapSharedViewModel.setiMapData(this);
 		mapSharedViewModel.setiMapPoint(this);
 		mapSharedViewModel.setPoiItemOnClickListener(this);
+
+		favoriteLocationViewModel = new ViewModelProvider(this).get(FavoriteLocationViewModel.class);
 
 		networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback() {
 			@Override
@@ -755,13 +760,12 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		naverMap.setOnMapLongClickListener(this);
 		naverMap.getUiSettings().setZoomControlEnabled(false);
 
-		addFavoriteLocationsFragment();
-
 		LocationOverlay locationOverlay = naverMap.getLocationOverlay();
 		locationOverlay.setVisible(false);
 
+		addFavoriteLocationsFragment();
 		setCurrentAddress();
-
+		loadFavoriteLocations();
 	}
 
 	private final ActivityResultLauncher<Intent> requestOnGpsLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
@@ -1386,13 +1390,13 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	}
 
 	@Override
-	public void removeFavoriteLocationsPoiItem(FavoriteLocationDTO favoriteLocationDTO) {
+	public void removeFavoriteLocationsPoiItem(int id) {
 		FavoriteLocationItemViewPagerAdapter adapter = (FavoriteLocationItemViewPagerAdapter) viewPagerAdapterMap.get(MarkerType.FAVORITE);
 		int indexOfList = 0;
 		List<FavoriteLocationDTO> favoriteLocationDTOListInAdapter = adapter.getFavoriteLocationList();
 
 		for (; indexOfList < favoriteLocationDTOListInAdapter.size(); indexOfList++) {
-			if (favoriteLocationDTO.getId().equals(favoriteLocationDTOListInAdapter.get(indexOfList).getId())) {
+			if (id.getId().equals(favoriteLocationDTOListInAdapter.get(indexOfList).getId())) {
 				break;
 			}
 		}
@@ -1451,6 +1455,44 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 					}
 				});
+			}
+		});
+	}
+
+	public void loadFavoriteLocations() {
+		favoriteLocationViewModel.select(FavoriteLocationDTO.ONLY_FOR_MAP, new DbQueryCallback<List<FavoriteLocationDTO>>() {
+			@Override
+			public void onResultSuccessful(List<FavoriteLocationDTO> list) {
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						if (list.isEmpty()) {
+
+						} else {
+						}
+						createFavoriteLocationsPoiItems(list);
+						showPoiItems(MarkerType.FAVORITE, App.isPreference_key_show_favorite_locations_markers_on_map());
+					}
+				});
+			}
+
+			@Override
+			public void onResultNoData() {
+
+			}
+		});
+
+		favoriteLocationViewModel.getRemovedFavoriteLocationMutableLiveData().observe(this, new Observer<Integer>() {
+			@Override
+			public void onChanged(Integer integer) {
+				removeFavoriteLocationsPoiItem();
+			}
+		});
+
+		favoriteLocationViewModel.getAddedFavoriteLocationMutableLiveData().observe(this, new Observer<FavoriteLocationDTO>() {
+			@Override
+			public void onChanged(FavoriteLocationDTO favoriteLocationDTO) {
+
 			}
 		});
 	}

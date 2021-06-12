@@ -30,7 +30,7 @@ public class FavoriteLocationViewModel extends AndroidViewModel implements Favor
 		return addedFavoriteLocationMutableLiveData;
 	}
 
-	public MutableLiveData<Integer> getRemovedFavoriteLocationMutableLiveData() {
+	public LiveData<Integer> getRemovedFavoriteLocationMutableLiveData() {
 		return removedFavoriteLocationMutableLiveData;
 	}
 

@@ -12,5 +12,5 @@ public interface FavoriteLocationsListener extends Serializable {
 
 	void addFavoriteLocationsPoiItem(FavoriteLocationDTO favoriteLocationDTO);
 
-	void removeFavoriteLocationsPoiItem(FavoriteLocationDTO favoriteLocationDTO);
+	void removeFavoriteLocationsPoiItem(int id);
 }
