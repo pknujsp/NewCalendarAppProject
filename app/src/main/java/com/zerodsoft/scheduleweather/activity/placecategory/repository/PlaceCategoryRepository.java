@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.activity.placecategory.interfaces.IPlaceCategory;
 import com.zerodsoft.scheduleweather.activity.placecategory.model.PlaceCategoryData;
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.room.dao.CustomPlaceCategoryDAO;
 import com.zerodsoft.scheduleweather.room.dto.CustomPlaceCategoryDTO;
@@ -269,11 +270,10 @@ public class PlaceCategoryRepository implements IPlaceCategory
     }
 
     @Override
-    public void selectConvertedSelected(CarrierMessagingService.ResultCallback<List<PlaceCategoryDTO>> callback)
+    public void selectConvertedSelected(DbQueryCallback<List<PlaceCategoryDTO>> callback)
     {
         App.executorService.execute(new Runnable()
         {
-            @SneakyThrows
             @Override
             public void run()
             {
@@ -301,7 +301,7 @@ public class PlaceCategoryRepository implements IPlaceCategory
                     categories.add(placeCategoryDTO);
                 }
 
-                callback.onReceiveResult(categories);
+                callback.processResult(categories);
             }
         });
     }

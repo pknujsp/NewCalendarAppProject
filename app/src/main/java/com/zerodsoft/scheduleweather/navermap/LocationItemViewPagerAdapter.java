@@ -29,7 +29,6 @@ import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
 import java.util.List;
 
 public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationItemViewPagerAdapter.PlaceItemInMapViewHolder> {
-	public static final String TAG = "LocationItemViewPagerAdapter";
 	protected SparseArray<KakaoLocalDocument> placeDocumentsSparseArr = new SparseArray<>();
 	protected PlaceDocuments placeDocuments;
 	protected AddressResponseDocuments addressDocuments;
@@ -46,7 +45,6 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
 
 	protected final Drawable favoriteEnabledDrawable;
 	protected final Drawable favoriteDisabledDrawable;
-
 	protected final MarkerType MARKER_TYPE;
 
 	public LocationItemViewPagerAdapter(Context context, MarkerType MARKER_TYPE) {
@@ -171,10 +169,15 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
 								@Override
 								public void onResultSuccessful(FavoriteLocationDTO result) {
 
-									favoriteLocationQuery.delete(favoriteLocationId, new CarrierMessagingService.ResultCallback<Boolean>() {
+									favoriteLocationQuery.delete(result, new DbQueryCallback<Boolean>() {
 										@Override
-										public void onReceiveResult(@NonNull Boolean isDeleted) throws RemoteException {
+										public void onResultSuccessful(Boolean result) {
 											binding.addToFavoritePlaceitemButton.setImageDrawable(favoriteDisabledDrawable);
+										}
+
+										@Override
+										public void onResultNoData() {
+
 										}
 									});
 
@@ -182,11 +185,16 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
 
 								@Override
 								public void onResultNoData() {
-									favoriteLocationQuery.insert(newFavoriteLocationDTO, new CarrierMessagingService.ResultCallback<FavoriteLocationDTO>() {
+									favoriteLocationQuery.insert(newFavoriteLocationDTO, new DbQueryCallback<FavoriteLocationDTO>() {
 										@Override
-										public void onReceiveResult(@NonNull FavoriteLocationDTO insertedFavoriteLocationDTO) throws RemoteException {
-											favoriteLocationId = insertedFavoriteLocationDTO.getId();
+										public void onResultSuccessful(FavoriteLocationDTO addedFavoriteLocationDto) {
+											favoriteLocationId = addedFavoriteLocationDto.getId();
 											binding.addToFavoritePlaceitemButton.setImageDrawable(favoriteEnabledDrawable);
+										}
+
+										@Override
+										public void onResultNoData() {
+
 										}
 									});
 								}

@@ -20,6 +20,7 @@ import android.widget.RelativeLayout;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.common.interfaces.OnHiddenFragmentListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantMainTransactionBinding;
 import com.zerodsoft.scheduleweather.event.foods.favorite.RestaurantFavoritesHostFragment;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.ISetFoodMenuPoiItems;
@@ -27,7 +28,6 @@ import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
 import com.zerodsoft.scheduleweather.event.foods.main.RestaurantMainHostFragment;
 import com.zerodsoft.scheduleweather.event.foods.search.RestaurantSearchHostFragment;
 import com.zerodsoft.scheduleweather.event.foods.settings.RestaurantSettingsHostFragment;
-import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
@@ -37,44 +37,27 @@ import org.jetbrains.annotations.NotNull;
 
 
 public class RestaurantFragment extends Fragment implements IOnSetView {
-	public static final String TAG = "RestaurantFragment";
-	private FragmentRestaurantMainTransactionBinding binding;
-
 	private final int CALENDAR_ID;
 	private final long INSTANCE_ID;
 	private final long EVENT_ID;
 
 	private final ISetFoodMenuPoiItems ISetFoodMenuPoiItems;
 	private final IMapPoint iMapPoint;
+	private OnHiddenFragmentListener onHiddenFragmentListener;
 
+	private FragmentRestaurantMainTransactionBinding binding;
 	private RestaurantSharedViewModel restaurantSharedViewModel;
-
-	private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
-		@Override
-		public void handleOnBackPressed() {
-			Fragment primaryNavFragment = getChildFragmentManager().getPrimaryNavigationFragment();
-			FragmentManager fragmentManager = primaryNavFragment.getChildFragmentManager();
-			if (!fragmentManager.popBackStackImmediate()) {
-				getParentFragmentManager().popBackStack();
-
-				//java.lang.NullPointerException: Attempt to read from field 'androidx.fragment.app.FragmentManager androidx.fragment.app.Fragment.mFragmentManager' on a null object reference
-			}
-		}
-	};
 
 
 	public RestaurantFragment(IMapPoint iMapPoint
 			, ISetFoodMenuPoiItems ISetFoodMenuPoiItems
-			, int CALENDAR_ID, long INSTANCE_ID, long EVENT_ID) {
+			, OnHiddenFragmentListener onHiddenFragmentListener, int CALENDAR_ID, long INSTANCE_ID, long EVENT_ID) {
 		this.iMapPoint = iMapPoint;
 		this.ISetFoodMenuPoiItems = ISetFoodMenuPoiItems;
+		this.onHiddenFragmentListener = onHiddenFragmentListener;
 		this.CALENDAR_ID = CALENDAR_ID;
 		this.INSTANCE_ID = INSTANCE_ID;
 		this.EVENT_ID = EVENT_ID;
-	}
-
-	public FragmentRestaurantMainTransactionBinding getBinding() {
-		return binding;
 	}
 
 	@Override
@@ -88,14 +71,12 @@ public class RestaurantFragment extends Fragment implements IOnSetView {
 		super.onCreate(savedInstanceState);
 
 		restaurantSharedViewModel =
-				new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
+				new ViewModelProvider(this).get(RestaurantSharedViewModel.class);
 		restaurantSharedViewModel.setISetFoodMenuPoiItems(ISetFoodMenuPoiItems);
-		restaurantSharedViewModel.setiMapPoint(iMapPoint);
 		restaurantSharedViewModel.setEventId(EVENT_ID);
 
-		new ViewModelProvider(requireActivity()).get(FoodCriteriaLocationInfoViewModel.class);
-		new ViewModelProvider(requireActivity()).get(FoodCriteriaLocationHistoryViewModel.class);
-		new ViewModelProvider(requireActivity()).get(CustomFoodMenuViewModel.class);
+		new ViewModelProvider(this).get(FoodCriteriaLocationInfoViewModel.class);
+		new ViewModelProvider(this).get(FoodCriteriaLocationHistoryViewModel.class);
 	}
 
 	@Override
@@ -162,13 +143,6 @@ public class RestaurantFragment extends Fragment implements IOnSetView {
 	};
 
 	@Override
-	public void onDestroy() {
-		super.onDestroy();
-		onBackPressedCallback.remove();
-	}
-
-
-	@Override
 	public void setFragmentContainerVisibility(ViewType viewType, int visibility) {
 		switch (viewType) {
 			case CONTENT:
@@ -191,4 +165,28 @@ public class RestaurantFragment extends Fragment implements IOnSetView {
 
 	}
 
+	private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+		@Override
+		public void handleOnBackPressed() {
+			Fragment primaryNavFragment = getChildFragmentManager().getPrimaryNavigationFragment();
+			FragmentManager fragmentManager = primaryNavFragment.getChildFragmentManager();
+			if (!fragmentManager.popBackStackImmediate()) {
+				getParentFragmentManager().popBackStack();
+				//java.lang.NullPointerException: Attempt to read from field 'androidx.fragment.app.FragmentManager androidx.fragment.app.Fragment.mFragmentManager' on a null object reference
+			}
+		}
+	};
+
+	@Override
+	public void onHiddenChanged(boolean hidden) {
+		super.onHiddenChanged(hidden);
+		onHiddenFragmentListener.onHiddenChangedFragment(hidden);
+
+		if (hidden) {
+			onBackPressedCallback.remove();
+		} else {
+			requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+		}
+
+	}
 }

@@ -60,12 +60,12 @@ public class RestaurantCriteriaLocationSettingsFragment extends Fragment impleme
 		super.onCreate(savedInstanceState);
 		iOnSetView = (IOnSetView) getParentFragment();
 
-		sharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
+		sharedViewModel = new ViewModelProvider(getParentFragment().getParentFragment()).get(RestaurantSharedViewModel.class);
 		eventId = sharedViewModel.getEventId();
 
 		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
-		foodCriteriaLocationInfoViewModel = new ViewModelProvider(requireActivity()).get(FoodCriteriaLocationInfoViewModel.class);
-		foodCriteriaLocationSearchHistoryViewModel = new ViewModelProvider(requireActivity()).get(FoodCriteriaLocationHistoryViewModel.class);
+		foodCriteriaLocationInfoViewModel = new ViewModelProvider(getParentFragment().getParentFragment()).get(FoodCriteriaLocationInfoViewModel.class);
+		foodCriteriaLocationSearchHistoryViewModel = new ViewModelProvider(getParentFragment().getParentFragment()).get(FoodCriteriaLocationHistoryViewModel.class);
 	}
 
 	@Override

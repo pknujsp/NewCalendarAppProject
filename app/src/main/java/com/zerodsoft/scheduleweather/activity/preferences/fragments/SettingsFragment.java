@@ -134,12 +134,12 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 									}
 
 									case 1: {
-										favoriteLocationViewModel.deleteAll(FavoriteLocationDTO.ADDRESS, new CarrierMessagingService.ResultCallback<Boolean>() {
+										favoriteLocationViewModel.deleteAll(FavoriteLocationDTO.ADDRESS, new DbQueryCallback<Boolean>() {
 											@Override
-											public void onReceiveResult(@NonNull Boolean result) throws RemoteException {
-												favoriteLocationViewModel.deleteAll(FavoriteLocationDTO.PLACE, new CarrierMessagingService.ResultCallback<Boolean>() {
+											public void onResultSuccessful(Boolean result) {
+												favoriteLocationViewModel.deleteAll(FavoriteLocationDTO.PLACE, new DbQueryCallback<Boolean>() {
 													@Override
-													public void onReceiveResult(@NonNull Boolean result) throws RemoteException {
+													public void onResultSuccessful(Boolean result) {
 														requireActivity().runOnUiThread(new Runnable() {
 															@Override
 															public void run() {
@@ -147,22 +147,37 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 															}
 														});
 													}
+
+													@Override
+													public void onResultNoData() {
+
+													}
 												});
+											}
+
+											@Override
+											public void onResultNoData() {
+
 											}
 										});
 										break;
 									}
 
 									case 2: {
-										favoriteLocationViewModel.deleteAll(FavoriteLocationDTO.RESTAURANT, new CarrierMessagingService.ResultCallback<Boolean>() {
+										favoriteLocationViewModel.deleteAll(FavoriteLocationDTO.RESTAURANT, new DbQueryCallback<Boolean>() {
 											@Override
-											public void onReceiveResult(@NonNull Boolean result) throws RemoteException {
+											public void onResultSuccessful(Boolean result) {
 												requireActivity().runOnUiThread(new Runnable() {
 													@Override
 													public void run() {
 														Toast.makeText(getContext(), R.string.deleted_all_favorite_restaurants, Toast.LENGTH_SHORT).show();
 													}
 												});
+											}
+
+											@Override
+											public void onResultNoData() {
+
 											}
 										});
 										break;

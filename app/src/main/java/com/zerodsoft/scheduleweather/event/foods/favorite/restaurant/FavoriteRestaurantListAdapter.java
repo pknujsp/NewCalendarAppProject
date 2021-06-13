@@ -14,33 +14,51 @@ import androidx.core.content.ContextCompat;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.ICalendarCheckBox;
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
+import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
+import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 class FavoriteRestaurantListAdapter extends BaseExpandableListAdapter {
 	private Context context;
 	private ArrayMap<String, List<PlaceDocuments>> restaurantListMap = new ArrayMap<>();
 	private LayoutInflater layoutInflater;
+	private FavoriteLocationQuery favoriteLocationQuery;
+	private Set<String> placeIdSet = new HashSet<>();
 
 	private GroupViewHolder groupViewHolder;
 	private ChildViewHolder childViewHolder;
 	private OnClickedListItem<PlaceDocuments> onClickedListItem;
-	private OnClickedFavoriteButtonListener onClickedFavoriteButtonListener;
 
-	public FavoriteRestaurantListAdapter(Context context, OnClickedFavoriteButtonListener onClickedFavoriteButtonListener, OnClickedListItem<PlaceDocuments> onClickedListItem
-			, ArrayMap<String, List<PlaceDocuments>> restaurantListMap) {
+	public FavoriteRestaurantListAdapter(Context context, OnClickedListItem<PlaceDocuments> onClickedListItem
+			, FavoriteLocationQuery favoriteLocationQuery) {
 		this.context = context;
-		this.onClickedFavoriteButtonListener = onClickedFavoriteButtonListener;
 		this.onClickedListItem = onClickedListItem;
-		this.restaurantListMap = restaurantListMap;
 		this.layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		this.favoriteLocationQuery = favoriteLocationQuery;
 	}
 
-	public void setRestaurantListMap(ArrayMap<String, List<PlaceDocuments>> restaurantListMap) {
-		this.restaurantListMap = restaurantListMap;
+
+	public void setPlaceIdSet() {
+		Set<String> keySet = restaurantListMap.keySet();
+		for (String key : keySet) {
+			List<PlaceDocuments> placeDocumentsList = restaurantListMap.get(key);
+			for (PlaceDocuments placeDocument : placeDocumentsList) {
+				placeIdSet.add(placeDocument.getId());
+			}
+		}
+	}
+
+	public Set<String> getPlaceIdSet() {
+		return placeIdSet;
 	}
 
 	public ArrayMap<String, List<PlaceDocuments>> getRestaurantListMap() {
@@ -136,8 +154,21 @@ class FavoriteRestaurantListAdapter extends BaseExpandableListAdapter {
 		childViewHolder.favoriteButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				onClickedFavoriteButtonListener.onClickedFavoriteButton(restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition), null,
-						groupPosition, childPosition);
+				PlaceDocuments placeDocument = restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition);
+				favoriteLocationQuery.contains(placeDocument.getId(), placeDocument.getAddressName(), placeDocument.getY(), placeDocument.getX()
+						, new DbQueryCallback<FavoriteLocationDTO>() {
+							@Override
+							public void onResultSuccessful(FavoriteLocationDTO result) {
+								favoriteLocationQuery.delete(result, null);
+							}
+
+							@Override
+							public void onResultNoData() {
+								FavoriteLocationDTO favoriteLocationDTO = new FavoriteLocationDTO();
+								favoriteLocationDTO.setRestaurantData(placeDocument);
+								favoriteLocationQuery.insert(favoriteLocationDTO, null);
+							}
+						});
 			}
 		});
 

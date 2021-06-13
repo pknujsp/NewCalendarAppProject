@@ -32,38 +32,42 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.kakaoplace.menuinfo.
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.kakaoplace.menuinfo.MenuItem;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
+import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, RestaurantListAdapter.ItemViewHolder> {
 	private final OnClickedListItem<PlaceDocuments> onClickedListItem;
-	private final OnClickedFavoriteButtonListener onClickedFavoriteButtonListener;
+	private final FavoriteLocationQuery favoriteLocationQuery;
 
 	private SparseArray<KakaoPlaceJsonRoot> kakaoPlacesArr = new SparseArray<>();
 	private SparseArray<Bitmap> restaurantImagesArr = new SparseArray<>();
-	private OnContainsRestaurantListener onContainsRestaurantListener;
+	private Map<String, Integer> restaurantPlaceIdMap = new HashMap<>();
 
 	private final Drawable favoriteDisabledDrawable;
 	private final Drawable favoriteEnabledDrawable;
 
 	private Context context;
 
-	public RestaurantListAdapter(Context context, OnContainsRestaurantListener onContainsRestaurantListener, OnClickedListItem<PlaceDocuments> onClickedListItem, OnClickedFavoriteButtonListener onClickedFavoriteButtonListener) {
+	public RestaurantListAdapter(Context context,
+	                             OnClickedListItem<PlaceDocuments> onClickedListItem, FavoriteLocationQuery favoriteLocationQuery) {
 		super(new PlaceItemCallback());
 		this.context = context;
-		this.onContainsRestaurantListener = onContainsRestaurantListener;
 		this.onClickedListItem = onClickedListItem;
-		this.onClickedFavoriteButtonListener = onClickedFavoriteButtonListener;
+		this.favoriteLocationQuery = favoriteLocationQuery;
 		favoriteDisabledDrawable = ContextCompat.getDrawable(context, R.drawable.favorite_disabled);
 		favoriteEnabledDrawable = ContextCompat.getDrawable(context, R.drawable.favorite_enabled);
 	}
 
-	@Override
-	public void submitList(@Nullable @org.jetbrains.annotations.Nullable PagedList<PlaceDocuments> pagedList) {
-		super.submitList(pagedList);
+	public int getItemPosition(String placeId) throws Exception {
+		return restaurantPlaceIdMap.get(placeId);
 	}
 
 	class ItemViewHolder extends RecyclerView.ViewHolder {
@@ -74,7 +78,6 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
 		private ImageView favoriteButton;
 		private LinearLayout restaurantReviewLayout;
 
-		private FavoriteLocationDTO favoriteLocationDTO;
 
 		public ItemViewHolder(View view) {
 			super(view);
@@ -93,6 +96,7 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
 		}
 
 		public void bind(PlaceDocuments item) {
+			restaurantPlaceIdMap.put(item.getId(), getBindingAdapterPosition());
 			restaurantName.setText(item.getPlaceName());
 
             /*
@@ -126,22 +130,34 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
 			favoriteButton.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View view) {
-					onClickedFavoriteButtonListener.onClickedFavoriteButton(item, favoriteLocationDTO, getBindingAdapterPosition());
+					favoriteLocationQuery.contains(item.getId(), item.getAddressName(), item.getY(), item.getX(), new DbQueryCallback<FavoriteLocationDTO>() {
+						@Override
+						public void onResultSuccessful(FavoriteLocationDTO result) {
+							favoriteLocationQuery.delete(result, null);
+						}
+
+						@Override
+						public void onResultNoData() {
+							FavoriteLocationDTO newFavoriteLocationDTO = new FavoriteLocationDTO();
+							newFavoriteLocationDTO.setRestaurantData(item);
+							favoriteLocationQuery.insert(newFavoriteLocationDTO, null);
+						}
+					});
 				}
 			});
 
-			onContainsRestaurantListener.contains(item.getId(), new DbQueryCallback<FavoriteLocationDTO>() {
-				@Override
-				public void onResultSuccessful(FavoriteLocationDTO result) {
-					favoriteLocationDTO = result;
-					favoriteButton.setImageDrawable(favoriteEnabledDrawable);
-				}
+			favoriteLocationQuery.contains(item.getId(), item.getAddressName(), item.getY(), item.getX(),
+					new DbQueryCallback<FavoriteLocationDTO>() {
+						@Override
+						public void onResultSuccessful(FavoriteLocationDTO result) {
+							favoriteButton.setImageDrawable(favoriteEnabledDrawable);
+						}
 
-				@Override
-				public void onResultNoData() {
-					favoriteButton.setImageDrawable(favoriteDisabledDrawable);
-				}
-			});
+						@Override
+						public void onResultNoData() {
+							favoriteButton.setImageDrawable(favoriteDisabledDrawable);
+						}
+					});
 
 		}
 
@@ -269,9 +285,5 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
 	public void onViewRecycled(@NonNull ItemViewHolder holder) {
 		super.onViewRecycled(holder);
 		holder.clearData();
-	}
-
-	public interface OnContainsRestaurantListener {
-		void contains(String placeId, DbQueryCallback<FavoriteLocationDTO> callback);
 	}
 }

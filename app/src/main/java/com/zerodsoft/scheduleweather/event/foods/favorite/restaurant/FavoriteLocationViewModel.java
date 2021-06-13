@@ -11,12 +11,14 @@ import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.List;
 
 public class FavoriteLocationViewModel extends AndroidViewModel implements FavoriteLocationQuery {
 	private FavoriteLocationRepository restaurantRepository;
 	private MutableLiveData<FavoriteLocationDTO> addedFavoriteLocationMutableLiveData;
-	private MutableLiveData<Integer> removedFavoriteLocationMutableLiveData;
+	private MutableLiveData<FavoriteLocationDTO> removedFavoriteLocationMutableLiveData;
 
 	public FavoriteLocationViewModel(@NonNull Application application) {
 		super(application);
@@ -30,17 +32,12 @@ public class FavoriteLocationViewModel extends AndroidViewModel implements Favor
 		return addedFavoriteLocationMutableLiveData;
 	}
 
-	public LiveData<Integer> getRemovedFavoriteLocationMutableLiveData() {
+	public LiveData<FavoriteLocationDTO> getRemovedFavoriteLocationMutableLiveData() {
 		return removedFavoriteLocationMutableLiveData;
 	}
 
 	@Override
-	public void addFavoriteLocation(FavoriteLocationDTO favoriteLocationDTO) {
-		restaurantRepository.addFavoriteLocation(favoriteLocationDTO);
-	}
-
-	@Override
-	public void insert(FavoriteLocationDTO favoriteLocationDTO, DbQueryCallback<FavoriteLocationDTO> callback) {
+	public void insert(FavoriteLocationDTO favoriteLocationDTO, @Nullable DbQueryCallback<FavoriteLocationDTO> callback) {
 		restaurantRepository.insert(favoriteLocationDTO, callback);
 	}
 
@@ -55,17 +52,17 @@ public class FavoriteLocationViewModel extends AndroidViewModel implements Favor
 	}
 
 	@Override
-	public void delete(Integer id, DbQueryCallback<Boolean> callback) {
-		restaurantRepository.delete(id, callback);
+	public void delete(FavoriteLocationDTO favoriteLocationDTO, @Nullable DbQueryCallback<Boolean> callback) {
+		restaurantRepository.delete(favoriteLocationDTO, callback);
 	}
 
 	@Override
-	public void deleteAll(Integer type, DbQueryCallback<Boolean> callback) {
+	public void deleteAll(Integer type, @Nullable DbQueryCallback<Boolean> callback) {
 		restaurantRepository.deleteAll(type, callback);
 	}
 
 	@Override
-	public void deleteAll(DbQueryCallback<Boolean> callback) {
+	public void deleteAll(@Nullable DbQueryCallback<Boolean> callback) {
 		restaurantRepository.deleteAll(callback);
 	}
 

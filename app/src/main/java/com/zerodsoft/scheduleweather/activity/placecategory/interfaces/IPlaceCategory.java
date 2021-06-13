@@ -3,6 +3,7 @@ package com.zerodsoft.scheduleweather.activity.placecategory.interfaces;
 import android.service.carrier.CarrierMessagingService;
 
 import com.zerodsoft.scheduleweather.activity.placecategory.model.PlaceCategoryData;
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.room.dto.CustomPlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.SelectedPlaceCategoryDTO;
@@ -39,5 +40,5 @@ public interface IPlaceCategory
 
     void updateSelected(String currentCode, String code, CarrierMessagingService.ResultCallback<SelectedPlaceCategoryDTO> callback);
 
-    void selectConvertedSelected(CarrierMessagingService.ResultCallback<List<PlaceCategoryDTO>> callback);
+    void selectConvertedSelected(DbQueryCallback<List<PlaceCategoryDTO>> callback);
 }

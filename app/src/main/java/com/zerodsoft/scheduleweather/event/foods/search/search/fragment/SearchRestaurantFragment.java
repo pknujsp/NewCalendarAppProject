@@ -31,7 +31,6 @@ import org.jetbrains.annotations.NotNull;
 
 public class SearchRestaurantFragment extends Fragment implements OnClickedListItem<SearchHistoryDTO>,
 		OnClickedRestaurantItem, OnHiddenFragmentListener {
-	public static final String TAG = "SearchRestaurantFragment";
 	private FragmentSearchRestaurantBinding binding;
 	private RestaurantSharedViewModel restaurantSharedViewModel;
 	private FoodRestaurantSearchHistoryFragment foodRestaurantSearchHistoryFragment;
@@ -63,7 +62,7 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		getParentFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, true);
-		restaurantSharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
+		restaurantSharedViewModel = new ViewModelProvider(getParentFragment().getParentFragment()).get(RestaurantSharedViewModel.class);
 		searchHistoryViewModel = new ViewModelProvider(getParentFragment()).get(SearchHistoryViewModel.class);
 
 		iOnSetView = (IOnSetView) getParentFragment();

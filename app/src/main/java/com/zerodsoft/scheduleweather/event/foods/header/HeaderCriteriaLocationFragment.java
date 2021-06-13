@@ -41,6 +41,7 @@ import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewM
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.navermap.model.CoordToAddressUtilByKakao;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
+import com.zerodsoft.scheduleweather.navermap.viewmodel.MapSharedViewModel;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddressDocuments;
@@ -56,7 +57,8 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 	private LocationViewModel locationViewModel;
 	private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
 	private FoodCriteriaLocationHistoryViewModel foodCriteriaLocationSearchHistoryViewModel;
-	private RestaurantSharedViewModel sharedViewModel;
+	private RestaurantSharedViewModel restaurantSharedViewModel;
+	private MapSharedViewModel mapSharedViewModel;
 
 	private FoodCriteriaLocationInfoDTO savedFoodCriteriaLocationInfoDTO;
 
@@ -95,14 +97,17 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 
 		getParentFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, true);
 
-		sharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
+		restaurantSharedViewModel = new ViewModelProvider(getParentFragment().getParentFragment()).get(RestaurantSharedViewModel.class);
 		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
+		mapSharedViewModel =
+				new ViewModelProvider(getParentFragment().getParentFragment().getParentFragment()).get(MapSharedViewModel.class);
+		iMapPoint = mapSharedViewModel.getiMapPoint();
 
-		foodCriteriaLocationInfoViewModel = new ViewModelProvider(requireActivity()).get(FoodCriteriaLocationInfoViewModel.class);
-		foodCriteriaLocationSearchHistoryViewModel = new ViewModelProvider(requireActivity()).get(FoodCriteriaLocationHistoryViewModel.class);
+		foodCriteriaLocationInfoViewModel = new ViewModelProvider(getParentFragment().getParentFragment()).get(FoodCriteriaLocationInfoViewModel.class);
+		foodCriteriaLocationSearchHistoryViewModel =
+				new ViewModelProvider(getParentFragment().getParentFragment()).get(FoodCriteriaLocationHistoryViewModel.class);
 
-		eventId = sharedViewModel.getEventId();
-		iMapPoint = sharedViewModel.getiMapPoint();
+		eventId = restaurantSharedViewModel.getEventId();
 
 		foodCriteriaLocationInfoViewModel.getOnRefreshCriteriaLocationLiveData().observe(this,
 				new Observer<FoodCriteriaLocationInfoDTO>() {

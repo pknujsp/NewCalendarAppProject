@@ -28,7 +28,6 @@ import com.zerodsoft.scheduleweather.room.dto.CustomFoodMenuDTO;
 import java.util.List;
 
 public class CustomFoodMenuSettingsFragment extends Fragment implements OnClickedListItem<CustomFoodMenuDTO> {
-	public static final String TAG = "CustomFoodMenuSettingsFragment";
 	private FragmentCustomFoodMenuSettingsBinding binding;
 	private CustomFoodMenuAdapter adapter;
 	private CustomFoodMenuViewModel viewModel;
@@ -39,12 +38,11 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		viewModel = new ViewModelProvider(requireActivity()).get(CustomFoodMenuViewModel.class);
+		viewModel = new ViewModelProvider(this).get(CustomFoodMenuViewModel.class);
 		restaurantSharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
 
 		iOnSetView = (IOnSetView) getParentFragment();
 		iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.HEADER, View.GONE);
-
 	}
 
 	@Override

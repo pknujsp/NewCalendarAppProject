@@ -2,8 +2,7 @@ package com.zerodsoft.scheduleweather.event.places.map;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.RemoteException;
-import android.service.carrier.CarrierMessagingService;
+import android.util.ArrayMap;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,7 +11,6 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -23,22 +21,20 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.activity.placecategory.viewmodel.PlaceCategoryViewModel;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
-import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
-import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
+import com.zerodsoft.scheduleweather.common.interfaces.OnHiddenFragmentListener;
 import com.zerodsoft.scheduleweather.databinding.PlacelistFragmentBinding;
 import com.zerodsoft.scheduleweather.etc.CustomRecyclerViewItemDecoration;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.places.adapter.PlaceItemsAdapters;
 import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceItemsGetter;
-import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
+import com.zerodsoft.scheduleweather.navermap.viewmodel.MapSharedViewModel;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.PlacesViewModel;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
@@ -47,18 +43,15 @@ import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 
 import java.text.DecimalFormat;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-public class PlacesOfSelectedCategoriesFragment extends Fragment implements PlaceItemsGetter, OnProgressBarListener, OnExtraListDataListener<PlaceCategoryDTO>
-		, OnBackPressedCallbackController {
-	public static final String TAG = "PlacesOfSelectedCategoriesFragment";
+public class PlacesOfSelectedCategoriesFragment extends Fragment implements PlaceItemsGetter, OnExtraListDataListener<String> {
+	private final long EVENT_ID;
+	private final OnClickedPlacesListListener onClickedPlacesListListener;
+
 	private DecimalFormat decimalFormat = new DecimalFormat("#.#");
-
-	private final BottomSheetController bottomSheetController;
-	private final OnBackPressedCallbackController mainFragmentOnBackPressedCallbackController;
-	private final PlaceCategoryChipsViewController placeCategoryChipsViewController;
+	private BottomSheetController bottomSheetController;
+	private OnHiddenFragmentListener onHiddenFragmentListener;
 
 	private PlacelistFragmentBinding binding;
 	private List<PlaceCategoryDTO> placeCategoryList;
@@ -66,55 +59,29 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 
 	private PlaceCategoryViewModel placeCategoryViewModel;
 	private LocationViewModel locationViewModel;
+	private MapSharedViewModel mapSharedViewModel;
 
-	private final int CALENDAR_ID;
-	private final long EVENT_ID;
-	private final OnClickedPlacesListListener onClickedPlacesListListener;
+	private ArrayMap<String, PlaceItemsAdapters> adaptersMap = new ArrayMap<>();
+	private ArrayMap<String, RecyclerView> listMap = new ArrayMap<>();
 
-	private Map<String, PlaceItemsAdapters> adaptersMap = new HashMap<>();
-	private Map<String, RecyclerView> listMap = new HashMap<>();
 
-	private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
-		@Override
-		public void handleOnBackPressed() {
-			getParentFragmentManager().popBackStackImmediate();
-		}
-	};
-
-	public PlacesOfSelectedCategoriesFragment(int CALENDAR_ID, long EVENT_ID, OnClickedPlacesListListener onClickedPlacesListListener, BottomSheetController bottomSheetController,
-	                                          OnBackPressedCallbackController mainFragmentOnBackPressedCallbackController,
-	                                          PlaceCategoryChipsViewController placeCategoryChipsViewController) {
-		this.CALENDAR_ID = CALENDAR_ID;
+	public PlacesOfSelectedCategoriesFragment(long EVENT_ID, OnClickedPlacesListListener onClickedPlacesListListener,
+	                                          OnHiddenFragmentListener onHiddenFragmentListener) {
 		this.EVENT_ID = EVENT_ID;
 		this.onClickedPlacesListListener = onClickedPlacesListListener;
-		this.bottomSheetController = bottomSheetController;
-		this.mainFragmentOnBackPressedCallbackController = mainFragmentOnBackPressedCallbackController;
-		this.placeCategoryChipsViewController = placeCategoryChipsViewController;
+		this.onHiddenFragmentListener = onHiddenFragmentListener;
 	}
 
-	@Override
-	public void onHiddenChanged(boolean hidden) {
-		super.onHiddenChanged(hidden);
-		if (hidden) {
-			removeOnBackPressedCallback();
-			if (getParentFragmentManager().getBackStackEntryCount() == 0) {
-				mainFragmentOnBackPressedCallbackController.addOnBackPressedCallback();
-			}
-			bottomSheetController.setStateOfBottomSheet(BottomSheetType.SELECTED_PLACE_CATEGORY, BottomSheetBehavior.STATE_COLLAPSED);
-		} else {
-			addOnBackPressedCallback();
-			if (getParentFragmentManager().getBackStackEntryCount() == 0) {
-				mainFragmentOnBackPressedCallbackController.removeOnBackPressedCallback();
-			}
-			bottomSheetController.setStateOfBottomSheet(BottomSheetType.SELECTED_PLACE_CATEGORY, BottomSheetBehavior.STATE_EXPANDED);
-		}
-	}
 
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		placeCategoryChipsViewController.createPlaceCategoryListChips();
+		mapSharedViewModel = new ViewModelProvider(getParentFragment()).get(MapSharedViewModel.class);
+		bottomSheetController = mapSharedViewModel.getBottomSheetController();
+
+		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
+		placeCategoryViewModel = new ViewModelProvider(getParentFragment()).get(PlaceCategoryViewModel.class);
 	}
 
 	@Nullable
@@ -125,14 +92,21 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 	}
 
 	@Override
+	public void onHiddenChanged(boolean hidden) {
+		super.onHiddenChanged(hidden);
+		onHiddenFragmentListener.onHiddenChangedFragment(hidden);
+		if (hidden) {
+
+		} else {
+
+		}
+	}
+
+	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
-		placeCategoryViewModel = new ViewModelProvider(this).get(PlaceCategoryViewModel.class);
-
-		binding.errorText.setVisibility(View.GONE);
-		initLocation();
-		makeCategoryListView();
+		binding.customProgressView.setContentView(binding.categoryViewlist);
+		binding.customProgressView.onStartedProcessingData();
 
 		binding.radiusSeekbarLayout.setVisibility(View.GONE);
 		DecimalFormat decimalFormat = new DecimalFormat("#.#");
@@ -167,22 +141,11 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 		});
 
 		setSearchRadius();
-	}
-
-
-	private void initLocation() {
 		locationViewModel.getLocation(EVENT_ID, new DbQueryCallback<LocationDTO>() {
 			@Override
 			public void onResultSuccessful(LocationDTO locationResultDto) {
-				if (!locationResultDto.isEmpty()) {
-					selectedLocationDto = locationResultDto;
-					requireActivity().runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							binding.addressName.setText(selectedLocationDto.getAddressName());
-						}
-					});
-				}
+				selectedLocationDto = locationResultDto;
+				makeCategoryListView();
 			}
 
 			@Override
@@ -192,24 +155,27 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 		});
 	}
 
+
 	private void setSearchRadius() {
 		float value = Math.round((Float.parseFloat(App.getPreference_key_radius_range()) / 1000f) * 10) / 10f;
 		binding.searchRadius.setText(getString(R.string.search_radius) + " " + decimalFormat.format(value) + "km");
 	}
 
 	public void makeCategoryListView() {
-		placeCategoryViewModel.selectConvertedSelected(new CarrierMessagingService.ResultCallback<List<PlaceCategoryDTO>>() {
+		placeCategoryViewModel.selectConvertedSelected(new DbQueryCallback<List<PlaceCategoryDTO>>() {
 			@Override
-			public void onReceiveResult(@NonNull List<PlaceCategoryDTO> placeCategoryDTOS) throws RemoteException {
-				placeCategoryList = placeCategoryDTOS;
+			public void onResultSuccessful(List<PlaceCategoryDTO> savedPlaceCategoriesList) {
+				placeCategoryList = savedPlaceCategoriesList;
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
+						binding.addressName.setText(selectedLocationDto.getAddressName());
+
 						if (placeCategoryList.isEmpty()) {
-							binding.errorText.setVisibility(View.VISIBLE);
+							binding.customProgressView.onFailedProcessingData(getString(R.string.not_selected_place_category));
 							return;
 						} else {
-							binding.errorText.setVisibility(View.GONE);
+							binding.customProgressView.onSuccessfulProcessingData();
 						}
 
 						binding.categoryViewlist.removeAllViews();
@@ -217,6 +183,7 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 						listMap.clear();
 
 						LayoutInflater layoutInflater = getLayoutInflater();
+						final String rangeRadius = App.getPreference_key_radius_range();
 
 						for (PlaceCategoryDTO placeCategory : placeCategoryList) {
 							LinearLayout categoryView = (LinearLayout) layoutInflater.inflate(R.layout.place_category_view, null);
@@ -230,21 +197,22 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 							LocalApiPlaceParameter placeParameter = LocalParameterUtil.getPlaceParameter(placeCategory.getCode(), String.valueOf(selectedLocationDto.getLatitude()),
 									String.valueOf(selectedLocationDto.getLongitude()), LocalApiPlaceParameter.DEFAULT_SIZE, LocalApiPlaceParameter.DEFAULT_PAGE,
 									LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
-							placeParameter.setRadius(App.getPreference_key_radius_range());
+							placeParameter.setRadius(rangeRadius);
 
 							PlaceItemsAdapters adapter = new PlaceItemsAdapters(onClickedPlacesListListener, placeCategory);
 							itemRecyclerView.setAdapter(adapter);
 
-							PlacesViewModel viewModel = new ViewModelProvider(getActivity()).get(PlacesViewModel.class);
+							PlacesViewModel viewModel =
+									new ViewModelProvider(PlacesOfSelectedCategoriesFragment.this).get(PlacesViewModel.class);
 							viewModel.init(placeParameter);
-							viewModel.getPagedListMutableLiveData().observe(getActivity(), new Observer<PagedList<PlaceDocuments>>() {
-								@Override
-								public void onChanged(PagedList<PlaceDocuments> placeDocuments) {
-									//카테고리 뷰 어댑터에 데이터 삽입
-									adapter.submitList(placeDocuments);
-								}
-							});
-
+							viewModel.getPagedListMutableLiveData().observe(PlacesOfSelectedCategoriesFragment.this.getViewLifecycleOwner(),
+									new Observer<PagedList<PlaceDocuments>>() {
+										@Override
+										public void onChanged(PagedList<PlaceDocuments> placeDocuments) {
+											//카테고리 뷰 어댑터에 데이터 삽입
+											adapter.submitList(placeDocuments);
+										}
+									});
 
 							((Button) categoryView.findViewById(R.id.map_category_more)).setOnClickListener(new View.OnClickListener() {
 								@Override
@@ -253,7 +221,6 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 								}
 							});
 
-							placeCategoryChipsViewController.setPlaceCategoryChips(placeCategoryList);
 							adaptersMap.put(placeCategory.getCode(), adapter);
 							listMap.put(placeCategory.getCode(), itemRecyclerView);
 							binding.categoryViewlist.addView(categoryView);
@@ -261,47 +228,43 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 					}
 				});
 			}
-		});
-	}
 
-	@Override
-	public List<PlaceDocuments> getPlaceItems(PlaceCategoryDTO placeCategoryDTO) {
-		return adaptersMap.get(placeCategoryDTO.getCode()).getCurrentList().snapshot();
-	}
-
-	@Override
-	public void setProgressBarVisibility(int visibility) {
-
-	}
-
-	@Override
-	public void loadExtraListData(PlaceCategoryDTO e, RecyclerView.AdapterDataObserver adapterDataObserver) {
-		adaptersMap.get(e.getCode()).registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
 			@Override
-			public void onItemRangeInserted(int positionStart, int itemCount) {
-				super.onItemRangeInserted(positionStart, itemCount);
-				adapterDataObserver.onItemRangeInserted(positionStart, itemCount);
-				adaptersMap.get(e.getCode()).unregisterAdapterDataObserver(this);
+			public void onResultNoData() {
+
 			}
 		});
+	}
 
-		RecyclerView recyclerView = listMap.get(e.getCode());
+	@Override
+	public void getPlaces(DbQueryCallback<List<PlaceDocuments>> callback, String categoryCode) {
+		requireActivity().runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				callback.processResult(adaptersMap.get(categoryCode).getCurrentList().snapshot());
+			}
+		});
+	}
+
+	@Override
+	public void loadExtraListData(String placeCategoryCode, RecyclerView.AdapterDataObserver adapterDataObserver) {
+		PlaceItemsAdapters adapter = adaptersMap.get(placeCategoryCode);
+		adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+			@Override
+			public void onItemRangeInserted(int positionStart, int itemCount) {
+				adapterDataObserver.onItemRangeInserted(positionStart, itemCount);
+				adapter.unregisterAdapterDataObserver(this);
+			}
+
+		});
+
+		RecyclerView recyclerView = listMap.get(placeCategoryCode);
 		recyclerView.scrollBy(100000, 0);
 	}
 
 	@Override
 	public void loadExtraListData(RecyclerView.AdapterDataObserver adapterDataObserver) {
 
-	}
-
-	@Override
-	public void addOnBackPressedCallback() {
-		requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-	}
-
-	@Override
-	public void removeOnBackPressedCallback() {
-		onBackPressedCallback.remove();
 	}
 
 	public interface PlaceCategoryChipsViewController {
@@ -311,8 +274,6 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 
 		void setPlaceCategoryChips(List<PlaceCategoryDTO> placeCategoryList);
 
-		void addListChip();
-
-		void addSettingsChip();
+		void addDefaultChips();
 	}
 }

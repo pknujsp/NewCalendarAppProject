@@ -5,12 +5,12 @@
     style="@style/Widget.MaterialComponents.CardView"
     android:layout_width="@dimen/place_item_cardview_width"
     android:layout_height="@dimen/place_item_cardview_height"
-    android:layout_margin="7dp"
     android:clickable="true"
     android:foreground="?attr/selectableItemBackground"
     app:cardBackgroundColor="@color/white"
-    app:cardCornerRadius="@dimen/place_item_cardview_corner_radius"
-    app:cardElevation="6dp">
+    app:cardCornerRadius="@dimen/corner_radius"
+    app:cardElevation="4dp"
+    app:cardUseCompatPadding="true">
 
     <RelativeLayout
         android:id="@+id/map_place_item_rows"
@@ -26,7 +26,7 @@
             android:layout_marginBottom="4dp"
             android:ellipsize="marquee"
             android:singleLine="true"
-            android:text="XX편의점"
+            android:text="placeName"
             android:textColor="@color/black"
             android:textSize="14sp" />
 
@@ -38,7 +38,7 @@
             android:layout_marginBottom="8dp"
             android:ellipsize="marquee"
             android:singleLine="true"
-            android:text="XX도 XX시 XX동 111-1"
+            android:text="addressName"
             android:textColor="@color/gray_600"
             android:textSize="12sp" />
 
@@ -49,7 +49,7 @@
             android:layout_below="@id/place_item_address"
             android:ellipsize="marquee"
             android:singleLine="true"
-            android:text="편의점"
+            android:text="placeCategory"
             android:textColor="@color/black"
             android:textSize="12sp" />
 
@@ -59,7 +59,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:gravity="right"
-            android:text="100M"
+            android:text="distance"
             android:textColor="@color/gray_600"
             android:textSize="11sp" />
 

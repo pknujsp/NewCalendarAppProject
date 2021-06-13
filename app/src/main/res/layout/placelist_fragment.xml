@@ -6,6 +6,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:overScrollMode="never"
+        android:paddingTop="@dimen/corner_radius"
         android:scrollbarFadeDuration="10000"
         android:scrollbarSize="4dp"
         android:scrollbarStyle="insideOverlay"
@@ -20,7 +21,8 @@
                 android:id="@+id/location_info_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="12dp">
+                android:paddingLeft="12dp"
+                android:paddingRight="12dp">
 
                 <LinearLayout
                     android:id="@+id/location_name_layout"
@@ -84,18 +86,16 @@
 
             </RelativeLayout>
 
-            <TextView
-                android:id="@+id/error_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="@string/not_selected_place_category" />
-
             <LinearLayout
                 android:id="@+id/category_viewlist"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:orientation="vertical" />
+
+            <com.zerodsoft.scheduleweather.common.view.CustomProgressView
+                android:id="@+id/custom_progress_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
 
         </LinearLayout>
 

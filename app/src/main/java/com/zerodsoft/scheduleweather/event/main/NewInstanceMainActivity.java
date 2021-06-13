@@ -44,13 +44,11 @@ public class NewInstanceMainActivity extends AppCompatActivity {
 			end = bundle.getLong(CalendarContract.Instances.END);
 		}
 
-		new ViewModelProvider(this).get(FavoriteLocationViewModel.class);
-		new ViewModelProvider(this).get(MapSharedViewModel.class);
-
 		NewInstanceMainFragment newInstanceMainFragment = new NewInstanceMainFragment(calendarId, eventId, instanceId, begin, end);
 		newInstanceMainFragment.setPlaceBottomSheetSelectBtnVisibility(View.GONE);
 		newInstanceMainFragment.setPlaceBottomSheetUnSelectBtnVisibility(View.GONE);
-		getSupportFragmentManager().beginTransaction().add(binding.fragmentContainer.getId(), newInstanceMainFragment, NewInstanceMainFragment.TAG).commitNow();
+		getSupportFragmentManager().beginTransaction().add(binding.fragmentContainer.getId(), newInstanceMainFragment,
+				getString(R.string.tag_instance_main_fragment)).commitNow();
 	}
 
 	@Override

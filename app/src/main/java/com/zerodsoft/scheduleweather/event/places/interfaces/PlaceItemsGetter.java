@@ -1,11 +1,11 @@
 package com.zerodsoft.scheduleweather.event.places.interfaces;
 
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
-import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 
 import java.util.List;
 
 public interface PlaceItemsGetter
 {
-    List<PlaceDocuments> getPlaceItems(PlaceCategoryDTO placeCategoryDTO);
+    public void getPlaces(DbQueryCallback<List<PlaceDocuments>> callback, String categoryCode);
 }

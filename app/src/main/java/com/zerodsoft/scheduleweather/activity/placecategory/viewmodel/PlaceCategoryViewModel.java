@@ -5,12 +5,12 @@ import android.service.carrier.CarrierMessagingService;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.zerodsoft.scheduleweather.activity.placecategory.interfaces.IPlaceCategory;
 import com.zerodsoft.scheduleweather.activity.placecategory.model.PlaceCategoryData;
 import com.zerodsoft.scheduleweather.activity.placecategory.repository.PlaceCategoryRepository;
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.room.dto.CustomPlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.SelectedPlaceCategoryDTO;
@@ -101,7 +101,7 @@ public class PlaceCategoryViewModel extends AndroidViewModel implements IPlaceCa
     }
 
     @Override
-    public void selectConvertedSelected(CarrierMessagingService.ResultCallback<List<PlaceCategoryDTO>> callback)
+    public void selectConvertedSelected(DbQueryCallback<List<PlaceCategoryDTO>> callback)
     {
         repository.selectConvertedSelected(callback);
     }

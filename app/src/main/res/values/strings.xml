@@ -580,4 +580,6 @@
     <string name="tag_building_info_fragment">tag_building_info_fragment</string>
     <string name="tag_building_selector">tag_building_selector</string>
     <string name="tag_favorite_locations_fragment">tag_favorite_locations_fragment</string>
+    <string name="tag_instance_main_fragment">tag_instance_main_fragment</string>
+    <string name="tag_places_of_selected_categories_fragment">tag_places_of_selected_categories_fragment</string>
 </resources>

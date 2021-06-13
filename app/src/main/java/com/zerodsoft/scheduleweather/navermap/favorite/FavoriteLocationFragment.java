@@ -5,20 +5,18 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.os.RemoteException;
-import android.service.carrier.CarrierMessagingService;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -34,15 +32,14 @@ import com.naver.maps.geometry.LatLng;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
-import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
 import com.zerodsoft.scheduleweather.databinding.FragmentFavoriteLocationBinding;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.MarkerType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
-import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
+import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.MapSharedViewModel;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
@@ -58,14 +55,13 @@ import java.util.Set;
 
 import lombok.SneakyThrows;
 
-public class FavoriteLocationFragment extends Fragment implements OnClickedFavoriteItem, FavoriteLocationQuery
+public class FavoriteLocationFragment extends Fragment implements OnClickedFavoriteItem
 		, SharedPreferences.OnSharedPreferenceChangeListener {
-	private final FavoriteLocationsListener favoriteLocationsListener;
-
 	private FragmentFavoriteLocationBinding binding;
 	private PoiItemOnClickListener poiItemOnClickListener;
 	private BottomSheetController bottomSheetController;
 	private IMapData iMapData;
+	private IMapPoint iMapPoint;
 	private MapSharedViewModel mapSharedViewModel;
 
 	private LatLng latLngOnCurrentLocation;
@@ -78,14 +74,25 @@ public class FavoriteLocationFragment extends Fragment implements OnClickedFavor
 
 	private Set<FavoriteLocationDTO> checkedFavoriteLocationSet = new HashSet<>();
 
-	public FavoriteLocationFragment(FavoriteLocationsListener favoriteLocationsListener) {
-		this.favoriteLocationsListener = favoriteLocationsListener;
-	}
+	@Override
+	public void onHiddenChanged(boolean hidden) {
+		super.onHiddenChanged(hidden);
+		if (hidden) {
+			bottomSheetController.setStateOfBottomSheet(BottomSheetType.FAVORITE_LOCATIONS, BottomSheetBehavior.STATE_COLLAPSED);
+		} else {
+			LatLng newLatLngOnCurrentLocation = iMapPoint.getMapCenterPoint();
+			if (!latLngOnCurrentLocation.equals(newLatLngOnCurrentLocation)) {
+				latLngOnCurrentLocation = newLatLngOnCurrentLocation;
+				List<FavoriteLocationDTO> list = favoriteLocationAdapter.getList();
 
-	public void setLatLngOnCurrentLocation(LatLng latLngOnCurrentLocation) {
-		this.latLngOnCurrentLocation = latLngOnCurrentLocation;
-	}
+				calcDistance(list);
+				sort(list);
 
+				favoriteLocationAdapter.setList(list);
+				favoriteLocationAdapter.notifyDataSetChanged();
+			}
+		}
+	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -98,7 +105,43 @@ public class FavoriteLocationFragment extends Fragment implements OnClickedFavor
 		iMapData = mapSharedViewModel.getiMapData();
 		bottomSheetController = mapSharedViewModel.getBottomSheetController();
 		poiItemOnClickListener = mapSharedViewModel.getPoiItemOnClickListener();
-		favoriteLocationViewModel = new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
+		iMapPoint = mapSharedViewModel.getiMapPoint();
+
+		favoriteLocationViewModel = new ViewModelProvider(getParentFragment()).get(FavoriteLocationViewModel.class);
+		latLngOnCurrentLocation = iMapPoint.getMapCenterPoint();
+
+		favoriteLocationViewModel.getAddedFavoriteLocationMutableLiveData().observe(this, new Observer<FavoriteLocationDTO>() {
+			@Override
+			public void onChanged(FavoriteLocationDTO addedFavoriteLocationDTO) {
+				if (addedFavoriteLocationDTO.getType() != FavoriteLocationDTO.RESTAURANT) {
+					List<FavoriteLocationDTO> list = favoriteLocationAdapter.getList();
+					list.add(addedFavoriteLocationDTO);
+
+					calcDistance(list);
+					sort(list);
+
+					favoriteLocationAdapter.notifyDataSetChanged();
+				}
+			}
+		});
+
+		favoriteLocationViewModel.getRemovedFavoriteLocationMutableLiveData().observe(this, new Observer<FavoriteLocationDTO>() {
+			@Override
+			public void onChanged(FavoriteLocationDTO favoriteLocationDTO) {
+				List<FavoriteLocationDTO> list = favoriteLocationAdapter.getList();
+
+				int indexOfList = 0;
+				int listSize = list.size();
+				for (; indexOfList < listSize; indexOfList++) {
+					if (list.get(indexOfList).getId().equals(favoriteLocationDTO.getId())) {
+						list.remove(indexOfList);
+						break;
+					}
+				}
+
+				favoriteLocationAdapter.notifyItemRemoved(indexOfList);
+			}
+		});
 	}
 
 	@Override
@@ -112,6 +155,7 @@ public class FavoriteLocationFragment extends Fragment implements OnClickedFavor
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		binding.deleteFavoriteLocations.setVisibility(View.GONE);
+		binding.customProgressView.setContentView(binding.favoriteLocationRecyclerView);
 
 		spinnerAdapter = ArrayAdapter.createFromResource(getContext(),
 				R.array.favorite_locations_sort_spinner, android.R.layout.simple_spinner_item);
@@ -144,13 +188,26 @@ public class FavoriteLocationFragment extends Fragment implements OnClickedFavor
 			@Override
 			public void onItemRangeInserted(int positionStart, int itemCount) {
 				super.onItemRangeInserted(positionStart, itemCount);
-
+				if (positionStart == 0 && itemCount > 0) {
+					binding.customProgressView.onSuccessfulProcessingData();
+				}
 			}
 
 			@Override
 			public void onItemRangeRemoved(int positionStart, int itemCount) {
 				super.onItemRangeRemoved(positionStart, itemCount);
 				if (favoriteLocationAdapter.getItemCount() == 0) {
+					binding.customProgressView.onFailedProcessingData(getString(R.string.empty_favorite_locations_list));
+				}
+			}
+
+			@Override
+			public void onChanged() {
+				super.onChanged();
+				if (favoriteLocationAdapter.getItemCount() == 0) {
+					binding.customProgressView.onFailedProcessingData(getString(R.string.empty_favorite_locations_list));
+				} else {
+					binding.customProgressView.onSuccessfulProcessingData();
 				}
 			}
 		});
@@ -182,32 +239,10 @@ public class FavoriteLocationFragment extends Fragment implements OnClickedFavor
 				if (checkedFavoriteLocationSet.isEmpty()) {
 					Toast.makeText(getContext(), R.string.not_checked_favorite_locations, Toast.LENGTH_SHORT).show();
 				} else {
-					List<Integer> indexInListList = new ArrayList<>();
-					List<FavoriteLocationDTO> currentList = favoriteLocationAdapter.getList();
-
 					for (FavoriteLocationDTO favoriteLocationDTO : checkedFavoriteLocationSet) {
-						indexInListList.add(currentList.indexOf(favoriteLocationDTO));
-
-						delete(favoriteLocationDTO.getId(), new DbQueryCallback<Boolean>() {
-							@Override
-							public void onResultSuccessful(Boolean result) {
-
-							}
-
-							@Override
-							public void onResultNoData() {
-
-							}
-						});
+						favoriteLocationViewModel.delete(favoriteLocationDTO, null);
 					}
 
-					Collections.sort(indexInListList, Comparator.reverseOrder());
-					for (int index : indexInListList) {
-						currentList.remove(index);
-					}
-
-					favoriteLocationAdapter.setList(currentList);
-					favoriteLocationAdapter.notifyDataSetChanged();
 					binding.editButton.callOnClick();
 				}
 			}
@@ -217,6 +252,8 @@ public class FavoriteLocationFragment extends Fragment implements OnClickedFavor
 	}
 
 	private void setFavoriteLocationList() {
+		binding.customProgressView.onStartedProcessingData();
+
 		favoriteLocationViewModel.select(FavoriteLocationDTO.ONLY_FOR_MAP, new DbQueryCallback<List<FavoriteLocationDTO>>() {
 			@Override
 			public void onResultSuccessful(List<FavoriteLocationDTO> list) {
@@ -227,11 +264,6 @@ public class FavoriteLocationFragment extends Fragment implements OnClickedFavor
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						if (list.isEmpty()) {
-						} else {
-						}
-						favoriteLocationsListener.createFavoriteLocationsPoiItems(list);
-						iMapData.showPoiItems(MarkerType.FAVORITE, App.isPreference_key_show_favorite_locations_markers_on_map());
 						favoriteLocationAdapter.notifyDataSetChanged();
 					}
 				});
@@ -239,7 +271,12 @@ public class FavoriteLocationFragment extends Fragment implements OnClickedFavor
 
 			@Override
 			public void onResultNoData() {
-
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						binding.customProgressView.onFailedProcessingData(getString(R.string.empty_favorite_locations_list));
+					}
+				});
 			}
 		});
 	}
@@ -255,63 +292,13 @@ public class FavoriteLocationFragment extends Fragment implements OnClickedFavor
 		}
 	}
 
-	public void refresh() {
-		//추가,삭제 된 경우만 동작시킨다
-		favoriteLocationViewModel.select(FavoriteLocationDTO.ONLY_FOR_MAP, new DbQueryCallback<List<FavoriteLocationDTO>>() {
-			@Override
-			public void onResultSuccessful(List<FavoriteLocationDTO> newList) {
-				Set<FavoriteLocationDTO> currentSet = new HashSet<>(favoriteLocationAdapter.getList());
-				Set<FavoriteLocationDTO> newSet = new HashSet<>(newList);
-
-				Set<FavoriteLocationDTO> addedSet = new HashSet<>(newSet);
-				Set<FavoriteLocationDTO> removedSet = new HashSet<>(currentSet);
-
-				addedSet.removeAll(currentSet);
-				removedSet.removeAll(newSet);
-
-				if (!addedSet.isEmpty() || !removedSet.isEmpty()) {
-					if (!addedSet.isEmpty()) {
-						favoriteLocationAdapter.getList().addAll(addedSet);
-					}
-
-					if (!removedSet.isEmpty()) {
-						favoriteLocationAdapter.getList().removeAll(removedSet);
-					}
-
-					calcDistance(favoriteLocationAdapter.getList());
-					sort(favoriteLocationAdapter.getList());
-
-					requireActivity().runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							if (favoriteLocationAdapter.getItemCount() == 0) {
-							} else {
-							}
-							favoriteLocationAdapter.notifyDataSetChanged();
-						}
-					});
-				} else {
-					calcDistance(favoriteLocationAdapter.getList());
-					sort(favoriteLocationAdapter.getList());
-					requireActivity().runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							favoriteLocationAdapter.notifyDataSetChanged();
-						}
-					});
-				}
-			}
-
-			@Override
-			public void onResultNoData() {
-
-			}
-		});
-	}
 
 	@Override
 	public void onClickedListItem(FavoriteLocationDTO e, int position) {
 		//맵에서 마커 클릭 후, 아이템 정보 바텀시트 보여주고 프래그먼트 바텀 시트 닫음
+		if (!binding.switchShowFavoriteLocationsMarkerOnMap.isChecked()) {
+			binding.switchShowFavoriteLocationsMarkerOnMap.setChecked(true);
+		}
 		poiItemOnClickListener.onPOIItemSelectedByList(position, MarkerType.FAVORITE);
 		getParentFragmentManager().popBackStackImmediate();
 	}
@@ -332,23 +319,7 @@ public class FavoriteLocationFragment extends Fragment implements OnClickedFavor
 			public boolean onMenuItemClick(MenuItem menuItem) {
 				switch (menuItem.getItemId()) {
 					case R.id.delete_favorite_location:
-						delete(e.getId(), new DbQueryCallback<Boolean>() {
-							@Override
-							public void onResultSuccessful(Boolean result) {
-								requireActivity().runOnUiThread(new Runnable() {
-									@Override
-									public void run() {
-										favoriteLocationAdapter.getList().remove(index);
-										favoriteLocationAdapter.notifyItemRemoved(index);
-									}
-								});
-							}
-
-							@Override
-							public void onResultNoData() {
-
-							}
-						});
+						favoriteLocationViewModel.delete(e, null);
 						break;
 				}
 				return true;
@@ -393,152 +364,6 @@ public class FavoriteLocationFragment extends Fragment implements OnClickedFavor
 				list.addAll(sortedListMap.get(type));
 			}
 		}
-	}
-
-	@Override
-	public void insert(FavoriteLocationDTO favoriteLocationDTO, DbQueryCallback<FavoriteLocationDTO> callback) {
-		favoriteLocationViewModel.insert(favoriteLocationDTO, new DbQueryCallback<FavoriteLocationDTO>() {
-			@Override
-			public void onResultSuccessful(FavoriteLocationDTO result) {
-				requireActivity().runOnUiThread(new Runnable() {
-					@SneakyThrows
-					@Override
-					public void run() {
-						callback.processResult(result);
-						favoriteLocationsListener.addFavoriteLocationsPoiItem(result);
-					}
-				});
-			}
-
-			@Override
-			public void onResultNoData() {
-
-			}
-		});
-	}
-
-	@Override
-	public void addFavoriteLocation(FavoriteLocationDTO favoriteLocationDTO) {
-
-	}
-
-	@Override
-	public void select(Integer type, DbQueryCallback<List<FavoriteLocationDTO>> callback) {
-		favoriteLocationViewModel.select(type, new DbQueryCallback<List<FavoriteLocationDTO>>() {
-			@Override
-			public void onResultSuccessful(List<FavoriteLocationDTO> result) {
-				requireActivity().runOnUiThread(new Runnable() {
-					@SneakyThrows
-					@Override
-					public void run() {
-						callback.processResult(result);
-					}
-				});
-			}
-
-			@Override
-			public void onResultNoData() {
-
-			}
-		});
-	}
-
-	@Override
-	public void select(Integer type, Integer id, DbQueryCallback<FavoriteLocationDTO> callback) {
-		favoriteLocationViewModel.select(type, id, new DbQueryCallback<FavoriteLocationDTO>() {
-			@Override
-			public void onResultSuccessful(FavoriteLocationDTO result) {
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						callback.processResult(result);
-					}
-				});
-			}
-
-			@Override
-			public void onResultNoData() {
-
-			}
-		});
-	}
-
-	@Override
-	public void delete(Integer id, DbQueryCallback<Boolean> callback) {
-		favoriteLocationViewModel.select(null, id, new DbQueryCallback<FavoriteLocationDTO>() {
-			@Override
-			public void onResultSuccessful(FavoriteLocationDTO favoriteLocationDTO) {
-				favoriteLocationViewModel.delete(id, new DbQueryCallback<Boolean>() {
-					@Override
-					public void onResultSuccessful(Boolean result) {
-						requireActivity().runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								callback.processResult(result);
-								favoriteLocationsListener.removeFavoriteLocationsPoiItem(favoriteLocationDTO);
-							}
-						});
-					}
-
-					@Override
-					public void onResultNoData() {
-
-					}
-				});
-			}
-
-			@Override
-			public void onResultNoData() {
-
-			}
-		});
-
-
-	}
-
-	@Override
-	public void deleteAll(Integer type, DbQueryCallback<Boolean> callback) {
-		favoriteLocationViewModel.deleteAll(type, new DbQueryCallback<Boolean>() {
-			@Override
-			public void onResultSuccessful(Boolean result) {
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						callback.processResult(result);
-					}
-				});
-			}
-
-			@Override
-			public void onResultNoData() {
-
-			}
-		});
-	}
-
-	@Override
-	public void deleteAll(DbQueryCallback<Boolean> callback) {
-
-	}
-
-	@Override
-	public void contains(String placeId, String address, String latitude, String longitude, DbQueryCallback<FavoriteLocationDTO> callback) {
-		favoriteLocationViewModel.contains(placeId, address, latitude, longitude, new DbQueryCallback<FavoriteLocationDTO>() {
-			@Override
-			public void onResultSuccessful(FavoriteLocationDTO result) {
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						callback.processResult(result);
-					}
-				});
-			}
-
-			@Override
-			public void onResultNoData() {
-
-			}
-		});
 	}
 
 	@Override

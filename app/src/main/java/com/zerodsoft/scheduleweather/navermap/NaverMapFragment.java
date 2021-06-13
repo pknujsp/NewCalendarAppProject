@@ -71,7 +71,6 @@ import com.zerodsoft.scheduleweather.common.classes.AppPermission;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
-import com.zerodsoft.scheduleweather.common.interfaces.OnHiddenFragmentListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentNaverMapBinding;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
@@ -87,7 +86,6 @@ import com.zerodsoft.scheduleweather.navermap.searchheader.MapHeaderMainFragment
 import com.zerodsoft.scheduleweather.navermap.searchheader.MapHeaderSearchFragment;
 import com.zerodsoft.scheduleweather.navermap.searchresult.LocationSearchResultFragment;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
-import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.navermap.interfaces.INetwork;
@@ -110,6 +108,7 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.address.reverse
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
+import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
 import com.zerodsoft.scheduleweather.sgis.SgisAddress;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
@@ -121,12 +120,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IMapPoint, IMapData, INetwork, OnClickedPlacesListListener, PlacesItemBottomSheetButtonOnClickListener,
+public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IMapPoint, IMapData, INetwork, PlacesItemBottomSheetButtonOnClickListener,
 		PoiItemOnClickListener, OnClickedBottomSheetListener,
 		NaverMap.OnMapClickListener,
 		NaverMap.OnCameraIdleListener, CameraUpdate.FinishCallback, NaverMap.OnLocationChangeListener, OnBackPressedCallbackController,
 		FragmentManager.OnBackStackChangedListener, BottomSheetController, NaverMap.OnMapLongClickListener,
-		OnClickedFavoriteButtonListener, FavoriteLocationsListener, OnCoordToAddressListener {
+		OnClickedFavoriteButtonListener, OnCoordToAddressListener {
 	public static final int PERMISSION_REQUEST_CODE = 100;
 	public static final int REQUEST_CODE_LOCATION = 10000;
 	public static final int BUILDING_RANGE_OVERLAY_TAG = 1500;
@@ -156,7 +155,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	public int placeBottomSheetSelectBtnVisibility = View.GONE;
 	public int placeBottomSheetUnSelectBtnVisibility = View.GONE;
 
-
 	private Integer markerWidth;
 	private Integer markerHeight;
 	private Integer favoriteMarkerSize;
@@ -166,7 +164,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	final public Map<BottomSheetType, BottomSheetBehavior> bottomSheetBehaviorMap = new HashMap<>();
 	final public Map<BottomSheetType, Fragment> bottomSheetFragmentMap = new HashMap<>();
 	final public Map<BottomSheetType, LinearLayout> bottomSheetViewMap = new HashMap<>();
-	final public Map<BottomSheetType, OnHiddenFragmentListener> hiddenFragmentListenerMap = new HashMap<>();
 
 	final public Map<MarkerType, List<Marker>> markersMap = new HashMap<>();
 	final public Map<MarkerType, Marker> markerMap = new HashMap<>();
@@ -426,7 +423,29 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		favoriteLocationsButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				showFavoriteLocationsBottomSheet();
+				FragmentManager fragmentManager = getChildFragmentManager();
+
+				if (bottomSheetFragmentMap.containsKey(BottomSheetType.FAVORITE_LOCATIONS)) {
+					Fragment favoriteLocationFragment = bottomSheetFragmentMap.get(BottomSheetType.FAVORITE_LOCATIONS);
+
+					if (favoriteLocationFragment.isVisible()) {
+						fragmentManager.popBackStackImmediate();
+					} else {
+						fragmentManager.beginTransaction().show(favoriteLocationFragment).addToBackStack(getString(R.string.tag_favorite_locations_fragment)).commit();
+						setStateOfBottomSheet(BottomSheetType.FAVORITE_LOCATIONS, BottomSheetBehavior.STATE_EXPANDED);
+					}
+				} else {
+					FavoriteLocationFragment favoriteLocationFragment
+							= new FavoriteLocationFragment();
+					bottomSheetFragmentMap.put(BottomSheetType.FAVORITE_LOCATIONS, favoriteLocationFragment);
+
+					fragmentManager.beginTransaction()
+							.add(binding.favoriteLocationsBottomSheet.fragmentContainerView.getId()
+									, favoriteLocationFragment, getString(R.string.tag_favorite_locations_fragment))
+							.commitNow();
+					fragmentManager.beginTransaction().show(favoriteLocationFragment).addToBackStack(getString(R.string.tag_favorite_locations_fragment)).commit();
+					setStateOfBottomSheet(BottomSheetType.FAVORITE_LOCATIONS, BottomSheetBehavior.STATE_EXPANDED);
+				}
 			}
 		});
 
@@ -618,20 +637,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		bottomSheetBehaviorMap.put(BottomSheetType.FAVORITE_LOCATIONS, favoriteLocationsBottomSheetBehavior);
 	}
 
-	public void addFavoriteLocationsFragment() {
-		FavoriteLocationFragment favoriteLocationFragment
-				= new FavoriteLocationFragment(this);
-		favoriteLocationFragment.setLatLngOnCurrentLocation(naverMap.getCameraPosition().target);
-
-		getChildFragmentManager().beginTransaction()
-				.add(binding.favoriteLocationsBottomSheet.fragmentContainerView.getId()
-						, favoriteLocationFragment, getString(R.string.tag_favorite_locations_fragment))
-				.hide(favoriteLocationFragment)
-				.addToBackStack(getString(R.string.tag_favorite_locations_fragment))
-				.commit();
-
-		bottomSheetFragmentMap.put(BottomSheetType.FAVORITE_LOCATIONS, favoriteLocationFragment);
-	}
 
 	public void onPageSelectedLocationItemBottomSheetViewPager(int position, MarkerType markerType) {
 		switch (markerType) {
@@ -763,7 +768,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		LocationOverlay locationOverlay = naverMap.getLocationOverlay();
 		locationOverlay.setVisible(false);
 
-		addFavoriteLocationsFragment();
 		setCurrentAddress();
 		loadFavoriteLocations();
 	}
@@ -1044,11 +1048,48 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		return markersMap.get(markerTypes[0]).size();
 	}
 
+	private final FavoriteLocationQuery favoriteLocationQuery = new FavoriteLocationQuery() {
+		@Override
+		public void insert(FavoriteLocationDTO favoriteLocationDTO, DbQueryCallback<FavoriteLocationDTO> callback) {
+			favoriteLocationViewModel.insert(favoriteLocationDTO, callback);
+		}
+
+		@Override
+		public void select(Integer type, DbQueryCallback<List<FavoriteLocationDTO>> callback) {
+
+		}
+
+		@Override
+		public void select(Integer type, Integer id, DbQueryCallback<FavoriteLocationDTO> callback) {
+
+		}
+
+		@Override
+		public void delete(FavoriteLocationDTO favoriteLocationDTO, DbQueryCallback<Boolean> callback) {
+			favoriteLocationViewModel.delete(favoriteLocationDTO, callback);
+		}
+
+		@Override
+		public void deleteAll(Integer type, DbQueryCallback<Boolean> callback) {
+
+		}
+
+		@Override
+		public void deleteAll(DbQueryCallback<Boolean> callback) {
+
+		}
+
+		@Override
+		public void contains(String placeId, String address, String latitude, String longitude, DbQueryCallback<FavoriteLocationDTO> callback) {
+			favoriteLocationViewModel.contains(placeId, address, latitude, longitude, callback);
+		}
+	};
+
 	@Override
 	public void setLocationItemViewPagerAdapter(LocationItemViewPagerAdapter adapter, MarkerType markerType) {
 		viewPagerAdapterMap.put(markerType, adapter);
 
-		adapter.setFavoriteLocationQuery(((FavoriteLocationFragment) bottomSheetFragmentMap.get(BottomSheetType.FAVORITE_LOCATIONS)));
+		adapter.setFavoriteLocationQuery(favoriteLocationQuery);
 		adapter.setPlacesItemBottomSheetButtonOnClickListener(this);
 		adapter.setOnClickedBottomSheetListener(this);
 		adapter.setVisibleSelectBtn(placeBottomSheetSelectBtnVisibility);
@@ -1103,16 +1144,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		CameraUpdate cameraUpdate = CameraUpdate.scrollTo(marker.getPosition());
 		cameraUpdate.animate(CameraAnimation.Easing, 150);
 		naverMap.moveCamera(cameraUpdate);
-	}
-
-	@Override
-	public void onClickedItemInList(PlaceCategoryDTO placeCategory, int index) {
-
-	}
-
-	@Override
-	public void onClickedMoreInList(PlaceCategoryDTO placeCategory) {
-
 	}
 
 	@Override
@@ -1351,77 +1382,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	public void onClickedFavoriteButton(KakaoLocalDocument kakaoLocalDocument, FavoriteLocationDTO favoriteLocationDTO, int position) {
 	}
 
-	public void showFavoriteLocationsBottomSheet() {
-		FavoriteLocationFragment favoriteLocationFragment = (FavoriteLocationFragment) bottomSheetFragmentMap.get(BottomSheetType.FAVORITE_LOCATIONS);
-		favoriteLocationFragment.setLatLngOnCurrentLocation(naverMap.getCameraPosition().target);
-
-		setStateOfBottomSheet(BottomSheetType.FAVORITE_LOCATIONS, BottomSheetBehavior.STATE_EXPANDED);
-
-		getChildFragmentManager().beginTransaction().show(favoriteLocationFragment).addToBackStack(getString(R.string.tag_favorite_locations_fragment)).commit();
-	}
-
-	@Override
-	public void createFavoriteLocationsPoiItems(List<FavoriteLocationDTO> favoriteLocationList) {
-		FavoriteLocationItemViewPagerAdapter adapter = new FavoriteLocationItemViewPagerAdapter(getContext(), locationViewModel);
-		adapter.setFavoriteLocationList(favoriteLocationList);
-		setLocationItemViewPagerAdapter(adapter, MarkerType.FAVORITE);
-
-		if (!markersMap.containsKey(MarkerType.FAVORITE)) {
-			markersMap.put(MarkerType.FAVORITE, new ArrayList<>());
-		} else {
-			removePoiItems(MarkerType.FAVORITE);
-		}
-
-		if (favoriteLocationList.isEmpty()) {
-			return;
-		}
-
-		for (FavoriteLocationDTO favoriteLocationDTO : favoriteLocationList) {
-			createFavoriteLocationsPoiItem(favoriteLocationDTO, Double.parseDouble(favoriteLocationDTO.getLatitude()), Double.parseDouble(favoriteLocationDTO.getLongitude()));
-		}
-	}
-
-	@Override
-	public void addFavoriteLocationsPoiItem(FavoriteLocationDTO favoriteLocationDTO) {
-		FavoriteLocationItemViewPagerAdapter adapter = (FavoriteLocationItemViewPagerAdapter) viewPagerAdapterMap.get(MarkerType.FAVORITE);
-		adapter.getFavoriteLocationList().add(favoriteLocationDTO);
-		adapter.notifyDataSetChanged();
-		createFavoriteLocationsPoiItem(favoriteLocationDTO, Double.parseDouble(favoriteLocationDTO.getLatitude()), Double.parseDouble(favoriteLocationDTO.getLongitude()));
-	}
-
-	@Override
-	public void removeFavoriteLocationsPoiItem(int id) {
-		FavoriteLocationItemViewPagerAdapter adapter = (FavoriteLocationItemViewPagerAdapter) viewPagerAdapterMap.get(MarkerType.FAVORITE);
-		int indexOfList = 0;
-		List<FavoriteLocationDTO> favoriteLocationDTOListInAdapter = adapter.getFavoriteLocationList();
-
-		for (; indexOfList < favoriteLocationDTOListInAdapter.size(); indexOfList++) {
-			if (id.getId().equals(favoriteLocationDTOListInAdapter.get(indexOfList).getId())) {
-				break;
-			}
-		}
-
-		setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
-		removePoiItem(MarkerType.FAVORITE, indexOfList);
-
-		adapter.getFavoriteLocationList().remove(indexOfList);
-		adapter.notifyDataSetChanged();
-	}
-
-	@Override
-	public void createFavoriteLocationsPoiItem(FavoriteLocationDTO favoriteLocationDTO, double latitude, double longitude) {
-		Marker marker = new Marker();
-		marker.setWidth(favoriteMarkerSize);
-		marker.setHeight(favoriteMarkerSize);
-		marker.setPosition(new LatLng(latitude, longitude));
-		marker.setMap(naverMap);
-		marker.setIcon(OverlayImage.fromResource(R.drawable.favorite_icon));
-		marker.setOnClickListener(markerOnClickListener);
-		marker.setForceShowIcon(true);
-
-		marker.setTag(MarkerType.FAVORITE);
-		markersMap.get(MarkerType.FAVORITE).add(marker);
-	}
 
 	@Override
 	public void showPoiItems(MarkerType markerType, boolean isShow) {
@@ -1482,19 +1442,82 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			}
 		});
 
-		favoriteLocationViewModel.getRemovedFavoriteLocationMutableLiveData().observe(this, new Observer<Integer>() {
+		favoriteLocationViewModel.getRemovedFavoriteLocationMutableLiveData().observe(this, new Observer<FavoriteLocationDTO>() {
 			@Override
-			public void onChanged(Integer integer) {
-				removeFavoriteLocationsPoiItem();
+			public void onChanged(FavoriteLocationDTO favoriteLocationDTO) {
+				removeFavoriteLocationsPoiItem(favoriteLocationDTO.getId());
 			}
 		});
 
 		favoriteLocationViewModel.getAddedFavoriteLocationMutableLiveData().observe(this, new Observer<FavoriteLocationDTO>() {
 			@Override
 			public void onChanged(FavoriteLocationDTO favoriteLocationDTO) {
-
+				addFavoriteLocationsPoiItem(favoriteLocationDTO);
 			}
 		});
+	}
+
+	public void createFavoriteLocationsPoiItems(List<FavoriteLocationDTO> favoriteLocationList) {
+		FavoriteLocationItemViewPagerAdapter adapter = new FavoriteLocationItemViewPagerAdapter(getContext(), locationViewModel);
+		adapter.setFavoriteLocationList(favoriteLocationList);
+		setLocationItemViewPagerAdapter(adapter, MarkerType.FAVORITE);
+
+		if (!markersMap.containsKey(MarkerType.FAVORITE)) {
+			markersMap.put(MarkerType.FAVORITE, new ArrayList<>());
+		} else {
+			removePoiItems(MarkerType.FAVORITE);
+		}
+
+		if (favoriteLocationList.isEmpty()) {
+			return;
+		}
+
+		for (FavoriteLocationDTO favoriteLocationDTO : favoriteLocationList) {
+			createFavoriteLocationsPoiItem(favoriteLocationDTO);
+		}
+	}
+
+
+	protected void addFavoriteLocationsPoiItem(FavoriteLocationDTO favoriteLocationDTO) {
+		FavoriteLocationItemViewPagerAdapter adapter = (FavoriteLocationItemViewPagerAdapter) viewPagerAdapterMap.get(MarkerType.FAVORITE);
+		adapter.getFavoriteLocationList().add(favoriteLocationDTO);
+		adapter.notifyDataSetChanged();
+		createFavoriteLocationsPoiItem(favoriteLocationDTO);
+	}
+
+
+	protected void removeFavoriteLocationsPoiItem(int removedId) {
+		setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
+
+		FavoriteLocationItemViewPagerAdapter adapter = (FavoriteLocationItemViewPagerAdapter) viewPagerAdapterMap.get(MarkerType.FAVORITE);
+		List<FavoriteLocationDTO> favoriteLocationDTOListInAdapter = adapter.getFavoriteLocationList();
+
+		int indexOfList = 0;
+		for (; indexOfList < favoriteLocationDTOListInAdapter.size(); indexOfList++) {
+			if (removedId == favoriteLocationDTOListInAdapter.get(indexOfList).getId()) {
+				break;
+			}
+		}
+
+		removePoiItem(MarkerType.FAVORITE, indexOfList);
+		adapter.getFavoriteLocationList().remove(indexOfList);
+		adapter.notifyDataSetChanged();
+	}
+
+
+	protected void createFavoriteLocationsPoiItem(FavoriteLocationDTO favoriteLocationDTO) {
+		Marker marker = new Marker();
+		marker.setWidth(favoriteMarkerSize);
+		marker.setHeight(favoriteMarkerSize);
+		marker.setPosition(new LatLng(Double.parseDouble(favoriteLocationDTO.getLatitude())
+				, Double.parseDouble(favoriteLocationDTO.getLongitude())));
+		marker.setMap(naverMap);
+		marker.setIcon(OverlayImage.fromResource(R.drawable.favorite_icon));
+		marker.setOnClickListener(markerOnClickListener);
+		marker.setForceShowIcon(true);
+
+		marker.setTag(MarkerType.FAVORITE);
+		markersMap.get(MarkerType.FAVORITE).add(marker);
 	}
 
 

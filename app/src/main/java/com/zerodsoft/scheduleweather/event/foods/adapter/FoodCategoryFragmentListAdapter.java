@@ -7,11 +7,8 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 import com.zerodsoft.scheduleweather.event.foods.dto.FoodCategoryItem;
-import com.zerodsoft.scheduleweather.event.foods.main.RestaurantListTabFragment;
 import com.zerodsoft.scheduleweather.event.foods.main.RestaurantListFragment;
 import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationCloud;
-import com.zerodsoft.scheduleweather.navermap.interfaces.FavoriteLocationsListener;
-import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
 
 import java.util.ArrayList;
 import java.util.List;

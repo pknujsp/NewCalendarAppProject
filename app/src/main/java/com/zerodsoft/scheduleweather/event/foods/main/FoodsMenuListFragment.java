@@ -30,7 +30,6 @@ import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedCategoryItem;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
-import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.room.dto.CustomFoodMenuDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
@@ -41,15 +40,13 @@ import java.util.List;
 
 public class FoodsMenuListFragment extends Fragment implements OnClickedCategoryItem, OnClickedListItem<FoodCategoryItem>,
 		IRefreshView {
-	public static final String TAG = "FoodsMenuListFragment";
 	private final int COLUMN_COUNT = 5;
 	private Long eventId;
 
 	private FragmentFoodMenusBinding binding;
-	private IMapPoint iMapPoint;
 
 	private CustomFoodMenuViewModel customFoodCategoryViewModel;
-	private RestaurantSharedViewModel sharedViewModel;
+	private RestaurantSharedViewModel restaurantSharedViewModel;
 	private HeaderCriteriaLocationFragment headerCriteriaLocationFragment;
 
 	private FoodCategoryAdapter foodCategoryAdapter;
@@ -78,11 +75,10 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 
 		getParentFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false);
 
-		sharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
-		customFoodCategoryViewModel = new ViewModelProvider(requireActivity()).get(CustomFoodMenuViewModel.class);
+		restaurantSharedViewModel = new ViewModelProvider(getParentFragment().getParentFragment()).get(RestaurantSharedViewModel.class);
+		customFoodCategoryViewModel = new ViewModelProvider(this).get(CustomFoodMenuViewModel.class);
 
-		eventId = sharedViewModel.getEventId();
-		iMapPoint = sharedViewModel.getiMapPoint();
+		eventId = restaurantSharedViewModel.getEventId();
 
 		iOnSetView = (IOnSetView) getParentFragment();
 		iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.HEADER, View.VISIBLE);
@@ -198,7 +194,7 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 			CustomFoodMenuSettingsFragment customFoodMenuSettingsFragment = new CustomFoodMenuSettingsFragment();
 			tag = getString(R.string.tag_custom_food_menu_settings_fragment);
 
-			fragmentTransaction.add(R.id.content_fragment_container, customFoodMenuSettingsFragment, tag);
+			fragmentTransaction.hide(this).add(R.id.content_fragment_container, customFoodMenuSettingsFragment, tag);
 		} else {
 			tag = getString(R.string.tag_restaurant_list_tab_fragment);
 
@@ -207,7 +203,7 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 			bundle.putInt("firstSelectedFoodMenuIndex", position);
 			restaurantListTabFragment.setArguments(bundle);
 
-			fragmentTransaction.add(R.id.content_fragment_container, restaurantListTabFragment, tag);
+			fragmentTransaction.hide(this).add(R.id.content_fragment_container, restaurantListTabFragment, tag);
 
 			getParentFragmentManager().beginTransaction()
 					.hide(headerCriteriaLocationFragment).commit();
@@ -224,5 +220,15 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 	@Override
 	public void refreshView() {
 
+	}
+
+	@Override
+	public void onHiddenChanged(boolean hidden) {
+		super.onHiddenChanged(hidden);
+		if (hidden) {
+
+		} else {
+			setCategories();
+		}
 	}
 }
