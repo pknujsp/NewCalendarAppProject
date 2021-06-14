@@ -155,17 +155,17 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 
 	private final FavoriteLocationQuery favoriteLocationQuery = new FavoriteLocationQuery() {
 		@Override
-		public void insert(FavoriteLocationDTO favoriteLocationDTO, DbQueryCallback<FavoriteLocationDTO> callback) {
-			favoriteRestaurantViewModel.insert(favoriteLocationDTO, callback);
+		public void addNewFavoriteLocation(FavoriteLocationDTO favoriteLocationDTO, DbQueryCallback<FavoriteLocationDTO> callback) {
+			favoriteRestaurantViewModel.addNewFavoriteLocation(favoriteLocationDTO, callback);
 		}
 
 		@Override
-		public void select(Integer type, DbQueryCallback<List<FavoriteLocationDTO>> callback) {
+		public void getFavoriteLocations(Integer type, DbQueryCallback<List<FavoriteLocationDTO>> callback) {
 
 		}
 
 		@Override
-		public void select(Integer type, Integer id, DbQueryCallback<FavoriteLocationDTO> callback) {
+		public void getFavoriteLocation(Integer id, DbQueryCallback<FavoriteLocationDTO> callback) {
 
 		}
 
@@ -185,8 +185,8 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 		}
 
 		@Override
-		public void contains(String placeId, String address, String latitude, String longitude, DbQueryCallback<FavoriteLocationDTO> callback) {
-			favoriteRestaurantViewModel.contains(placeId, address, latitude, longitude, new DbQueryCallback<FavoriteLocationDTO>() {
+		public void contains(String placeId, String latitude, String longitude, DbQueryCallback<FavoriteLocationDTO> callback) {
+			favoriteRestaurantViewModel.contains(placeId, latitude, longitude, new DbQueryCallback<FavoriteLocationDTO>() {
 				@Override
 				public void onResultSuccessful(FavoriteLocationDTO result) {
 					requireActivity().runOnUiThread(new Runnable() {

@@ -37,18 +37,18 @@ public class FavoriteLocationViewModel extends AndroidViewModel implements Favor
 	}
 
 	@Override
-	public void insert(FavoriteLocationDTO favoriteLocationDTO, @Nullable DbQueryCallback<FavoriteLocationDTO> callback) {
-		restaurantRepository.insert(favoriteLocationDTO, callback);
+	public void addNewFavoriteLocation(FavoriteLocationDTO favoriteLocationDTO, @Nullable DbQueryCallback<FavoriteLocationDTO> callback) {
+		restaurantRepository.addNewFavoriteLocation(favoriteLocationDTO, callback);
 	}
 
 	@Override
-	public void select(Integer type, DbQueryCallback<List<FavoriteLocationDTO>> callback) {
-		restaurantRepository.select(type, callback);
+	public void getFavoriteLocations(Integer type, DbQueryCallback<List<FavoriteLocationDTO>> callback) {
+		restaurantRepository.getFavoriteLocations(type, callback);
 	}
 
 	@Override
-	public void select(Integer type, Integer id, DbQueryCallback<FavoriteLocationDTO> callback) {
-		restaurantRepository.select(type, id, callback);
+	public void getFavoriteLocation(Integer id, DbQueryCallback<FavoriteLocationDTO> callback) {
+		restaurantRepository.getFavoriteLocation(id, callback);
 	}
 
 	@Override
@@ -67,7 +67,7 @@ public class FavoriteLocationViewModel extends AndroidViewModel implements Favor
 	}
 
 	@Override
-	public void contains(String placeId, String address, String latitude, String longitude, DbQueryCallback<FavoriteLocationDTO> callback) {
-		restaurantRepository.contains(placeId, address, latitude, longitude, callback);
+	public void contains(String placeId, String latitude, String longitude, DbQueryCallback<FavoriteLocationDTO> callback) {
+		restaurantRepository.contains(placeId, latitude, longitude, callback);
 	}
 }

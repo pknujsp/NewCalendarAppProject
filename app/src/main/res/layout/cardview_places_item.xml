@@ -103,10 +103,12 @@
 
             </RelativeLayout>
 
+            <com.zerodsoft.scheduleweather.common.view.CustomProgressView
+                android:id="@+id/custom_progress_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
         </androidx.cardview.widget.CardView>
 
-        <include
-            android:id="@+id/location_item_progress_layout"
-            layout="@layout/data_progress_view" />
     </FrameLayout>
 </layout>

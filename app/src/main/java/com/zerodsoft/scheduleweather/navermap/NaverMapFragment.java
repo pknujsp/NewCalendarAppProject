@@ -76,7 +76,6 @@ import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
-import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
 import com.zerodsoft.scheduleweather.navermap.building.fragment.BuildingFragment;
 import com.zerodsoft.scheduleweather.navermap.building.fragment.BuildingListFragment;
@@ -107,7 +106,6 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.Pl
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.address.reversegeocoding.ReverseGeoCodingResponse;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
-import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
 import com.zerodsoft.scheduleweather.sgis.SgisAddress;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
@@ -868,7 +866,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		selectedPoiItemIndex = markersMap.get(markerType).indexOf(marker);
 
 		CameraUpdate cameraUpdate = CameraUpdate.scrollTo(marker.getPosition());
-		cameraUpdate.animate(CameraAnimation.Easing, 200);
+		cameraUpdate.animate(CameraAnimation.Easing, 150);
 		naverMap.moveCamera(cameraUpdate);
 		//open bottomsheet and show selected item data
 
@@ -1050,17 +1048,17 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 	private final FavoriteLocationQuery favoriteLocationQuery = new FavoriteLocationQuery() {
 		@Override
-		public void insert(FavoriteLocationDTO favoriteLocationDTO, DbQueryCallback<FavoriteLocationDTO> callback) {
-			favoriteLocationViewModel.insert(favoriteLocationDTO, callback);
+		public void addNewFavoriteLocation(FavoriteLocationDTO favoriteLocationDTO, DbQueryCallback<FavoriteLocationDTO> callback) {
+			favoriteLocationViewModel.addNewFavoriteLocation(favoriteLocationDTO, callback);
 		}
 
 		@Override
-		public void select(Integer type, DbQueryCallback<List<FavoriteLocationDTO>> callback) {
+		public void getFavoriteLocations(Integer type, DbQueryCallback<List<FavoriteLocationDTO>> callback) {
 
 		}
 
 		@Override
-		public void select(Integer type, Integer id, DbQueryCallback<FavoriteLocationDTO> callback) {
+		public void getFavoriteLocation(Integer id, DbQueryCallback<FavoriteLocationDTO> callback) {
 
 		}
 
@@ -1080,8 +1078,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		}
 
 		@Override
-		public void contains(String placeId, String address, String latitude, String longitude, DbQueryCallback<FavoriteLocationDTO> callback) {
-			favoriteLocationViewModel.contains(placeId, address, latitude, longitude, callback);
+		public void contains(String placeId, String latitude, String longitude, DbQueryCallback<FavoriteLocationDTO> callback) {
+			favoriteLocationViewModel.contains(placeId, latitude, longitude, callback);
 		}
 	};
 
@@ -1170,7 +1168,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			bundle.putString("placeId", ((PlaceDocuments) kakaoLocalDocument).getId());
 			placeInfoWebDialogFragment.setArguments(bundle);
 
-			placeInfoWebDialogFragment.show(getChildFragmentManager(), PlaceInfoWebDialogFragment.TAG);
+			placeInfoWebDialogFragment.show(getChildFragmentManager(), getString(R.string.tag_place_info_web_dialog_fragment));
 		} else {
 
 		}
@@ -1420,7 +1418,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	}
 
 	public void loadFavoriteLocations() {
-		favoriteLocationViewModel.select(FavoriteLocationDTO.ONLY_FOR_MAP, new DbQueryCallback<List<FavoriteLocationDTO>>() {
+		favoriteLocationViewModel.getFavoriteLocations(FavoriteLocationDTO.ONLY_FOR_MAP, new DbQueryCallback<List<FavoriteLocationDTO>>() {
 			@Override
 			public void onResultSuccessful(List<FavoriteLocationDTO> list) {
 				requireActivity().runOnUiThread(new Runnable() {

@@ -10,8 +10,6 @@ import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
-import android.os.RemoteException;
-import android.service.carrier.CarrierMessagingService;
 import android.util.ArrayMap;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,14 +23,10 @@ import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.FragmentFavoriteRestaurantBinding;
 import com.zerodsoft.scheduleweather.event.foods.favorite.RestaurantFavoritesHostFragment;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
-import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.kakaoplace.retrofit.KakaoPlaceDownloader;
-import com.zerodsoft.scheduleweather.navermap.viewmodel.MapSharedViewModel;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceKakaoLocalResponse;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
@@ -40,10 +34,8 @@ import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 public class FavoriteRestaurantFragment extends Fragment implements OnClickedListItem<PlaceDocuments> {
@@ -202,7 +194,7 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 
 	private void downloadPlaceDocuments() {
 		binding.customProgressView.onStartedProcessingData();
-		favoriteRestaurantViewModel.select(FavoriteLocationDTO.RESTAURANT, new DbQueryCallback<List<FavoriteLocationDTO>>() {
+		favoriteRestaurantViewModel.getFavoriteLocations(FavoriteLocationDTO.RESTAURANT, new DbQueryCallback<List<FavoriteLocationDTO>>() {
 			int responseCount;
 
 			@Override
@@ -322,7 +314,7 @@ public class FavoriteRestaurantFragment extends Fragment implements OnClickedLis
 		//restaurantId비교
 		//바뀐 부분만 수정
 		binding.customProgressView.onStartedProcessingData();
-		favoriteRestaurantViewModel.select(FavoriteLocationDTO.RESTAURANT, new DbQueryCallback<List<FavoriteLocationDTO>>() {
+		favoriteRestaurantViewModel.getFavoriteLocations(FavoriteLocationDTO.RESTAURANT, new DbQueryCallback<List<FavoriteLocationDTO>>() {
 			int responseCount;
 
 			@Override

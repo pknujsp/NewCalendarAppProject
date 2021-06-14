@@ -13,18 +13,14 @@ import android.widget.TextView;
 import androidx.core.content.ContextCompat;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.calendarview.interfaces.ICalendarCheckBox;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 class FavoriteRestaurantListAdapter extends BaseExpandableListAdapter {
@@ -155,7 +151,7 @@ class FavoriteRestaurantListAdapter extends BaseExpandableListAdapter {
 			@Override
 			public void onClick(View view) {
 				PlaceDocuments placeDocument = restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition);
-				favoriteLocationQuery.contains(placeDocument.getId(), placeDocument.getAddressName(), placeDocument.getY(), placeDocument.getX()
+				favoriteLocationQuery.contains(placeDocument.getId(), placeDocument.getY(), placeDocument.getX()
 						, new DbQueryCallback<FavoriteLocationDTO>() {
 							@Override
 							public void onResultSuccessful(FavoriteLocationDTO result) {
@@ -166,7 +162,7 @@ class FavoriteRestaurantListAdapter extends BaseExpandableListAdapter {
 							public void onResultNoData() {
 								FavoriteLocationDTO favoriteLocationDTO = new FavoriteLocationDTO();
 								favoriteLocationDTO.setRestaurantData(placeDocument);
-								favoriteLocationQuery.insert(favoriteLocationDTO, null);
+								favoriteLocationQuery.addNewFavoriteLocation(favoriteLocationDTO, null);
 							}
 						});
 			}

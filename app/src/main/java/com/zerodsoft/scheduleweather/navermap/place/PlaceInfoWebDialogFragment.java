@@ -24,10 +24,8 @@ import com.zerodsoft.scheduleweather.databinding.PlaceInfoDialogFragmentBinding;
 import org.jetbrains.annotations.NotNull;
 
 public class PlaceInfoWebDialogFragment extends DialogFragment {
-	public static final String TAG = "PlaceInfoFragment";
 	private PlaceInfoDialogFragmentBinding binding;
 	private PlaceInfoWebFragment placeInfoWebFragment;
-	private String placeId;
 
 	public PlaceInfoWebDialogFragment() {
 	}
@@ -35,8 +33,6 @@ public class PlaceInfoWebDialogFragment extends DialogFragment {
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		Bundle bundle = getArguments();
-		placeId = bundle.getString("placeId");
 	}
 
 	@Nullable
@@ -54,22 +50,8 @@ public class PlaceInfoWebDialogFragment extends DialogFragment {
 		FragmentManager fragmentManager = getChildFragmentManager();
 
 		placeInfoWebFragment = new PlaceInfoWebFragment();
-		fragmentManager.beginTransaction().add(binding.fragmentContainer.getId(), placeInfoWebFragment, "PlaceInfoWebFragment").commit();
-
-		getDialog().setOnKeyListener(new DialogInterface.OnKeyListener() {
-			@Override
-			public boolean onKey(DialogInterface dialogInterface, int keyCode, KeyEvent keyEvent) {
-				if (keyCode == KeyEvent.KEYCODE_BACK && keyEvent.getAction() == KeyEvent.ACTION_UP) {
-					if (placeInfoWebFragment.webCanGoBack()) {
-						placeInfoWebFragment.webGoBack();
-					} else {
-						dismiss();
-					}
-					return true;
-				}
-				return true;
-			}
-		});
+		placeInfoWebFragment.setArguments(getArguments());
+		fragmentManager.beginTransaction().add(binding.fragmentContainer.getId(), placeInfoWebFragment, getString(R.string.tag_place_info_web_fragment)).commit();
 	}
 
 	@Override

@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,9 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
-import androidx.paging.PagedList;
 import androidx.paging.PagedListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -25,7 +22,6 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
 import com.zerodsoft.scheduleweather.navermap.callback.PlaceItemCallback;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.kakaoplace.KakaoPlaceJsonRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.kakaoplace.menuinfo.MenuInfo;
@@ -33,8 +29,6 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.kakaoplace.menuinfo.
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
-
-import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -130,7 +124,7 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
 			favoriteButton.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View view) {
-					favoriteLocationQuery.contains(item.getId(), item.getAddressName(), item.getY(), item.getX(), new DbQueryCallback<FavoriteLocationDTO>() {
+					favoriteLocationQuery.contains(item.getId(), item.getY(), item.getX(), new DbQueryCallback<FavoriteLocationDTO>() {
 						@Override
 						public void onResultSuccessful(FavoriteLocationDTO result) {
 							favoriteLocationQuery.delete(result, null);
@@ -140,13 +134,13 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
 						public void onResultNoData() {
 							FavoriteLocationDTO newFavoriteLocationDTO = new FavoriteLocationDTO();
 							newFavoriteLocationDTO.setRestaurantData(item);
-							favoriteLocationQuery.insert(newFavoriteLocationDTO, null);
+							favoriteLocationQuery.addNewFavoriteLocation(newFavoriteLocationDTO, null);
 						}
 					});
 				}
 			});
 
-			favoriteLocationQuery.contains(item.getId(), item.getAddressName(), item.getY(), item.getX(),
+			favoriteLocationQuery.contains(item.getId(), item.getY(), item.getX(),
 					new DbQueryCallback<FavoriteLocationDTO>() {
 						@Override
 						public void onResultSuccessful(FavoriteLocationDTO result) {

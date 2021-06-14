@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
+import com.zerodsoft.scheduleweather.common.view.CustomProgressView;
 import com.zerodsoft.scheduleweather.event.common.interfaces.ILocationDao;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnClickedBottomSheetListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.PlacesItemBottomSheetButtonOnClickListener;
@@ -31,8 +32,8 @@ import java.util.List;
 import java.util.Map;
 
 public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerAdapter {
-	private List<FavoriteLocationDTO> favoriteLocationList = new ArrayList<>();
 	private final ILocationDao iLocationDao;
+	private List<FavoriteLocationDTO> favoriteLocationList = new ArrayList<>();
 
 	private final Map<Integer, KakaoLocalDocument> kakaoLocalDocumentMap = new HashMap<>();
 
@@ -77,21 +78,26 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
 	}
 
 	class FavoriteLocationItemInMapViewHolder extends PlaceItemInMapViewHolder {
-		private ViewProgress viewProgress;
+		private CustomProgressView customProgressView;
 
 		public FavoriteLocationItemInMapViewHolder(@NonNull View view) {
 			super(view);
-			viewProgress = new ViewProgress(binding.placeItemCardviewInBottomsheet, binding.locationItemProgressLayout.progressBar
-					, binding.locationItemProgressLayout.progressStatusTextview, binding.locationItemProgressLayout.getRoot());
+			customProgressView = (CustomProgressView) view.findViewById(R.id.custom_progress_view);
+			customProgressView.setContentView(view.findViewById(R.id.map_place_item_rows));
+			customProgressView.onStartedProcessingData();
+		}
 
-			viewProgress.onStartedProcessingData();
+		@Override
+		protected void onClickedFavoriteBtn() {
+			placeDocumentsSparseArr.remove(getBindingAdapterPosition());
+			super.onClickedFavoriteBtn();
 		}
 
 		public void bind(FavoriteLocationDTO favoriteLocationDTO) {
 			final int position = getBindingAdapterPosition();
 
 			if (kakaoLocalDocumentMap.containsKey(favoriteLocationDTO.getId())) {
-				setDataView(placeDocumentsSparseArr.get(position));
+				setDataView(kakaoLocalDocumentMap.get(favoriteLocationDTO.getId()));
 			} else {
 				if (favoriteLocationDTO.getType() == FavoriteLocationDTO.ADDRESS) {
 					// 주소 검색 순서 : 좌표로 주소 변환
@@ -120,7 +126,7 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
 					LocalApiPlaceParameter parameter = LocalParameterUtil.getPlaceParameter(favoriteLocationDTO.getPlaceName(),
 							String.valueOf(favoriteLocationDTO.getLatitude()), String.valueOf(favoriteLocationDTO.getLongitude()), LocalApiPlaceParameter.DEFAULT_SIZE,
 							LocalApiPlaceParameter.DEFAULT_PAGE, LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
-					parameter.setRadius("50");
+					parameter.setRadius("30");
 
 					iLocationDao.getPlaceItem(parameter, favoriteLocationDTO.getPlaceId(), new JsonDownloader<PlaceKakaoLocalResponse>() {
 						@Override
@@ -145,7 +151,7 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
 		@Override
 		public void setDataView(KakaoLocalDocument kakaoLocalDocument) {
 			super.setDataView(kakaoLocalDocument);
-			viewProgress.onCompletedProcessingData(true);
+			customProgressView.onSuccessfulProcessingData();
 		}
 	}
 }

@@ -8,11 +8,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 public interface FavoriteLocationQuery {
-	void insert(FavoriteLocationDTO favoriteLocationDTO, @Nullable DbQueryCallback<FavoriteLocationDTO> callback);
+	void addNewFavoriteLocation(FavoriteLocationDTO favoriteLocationDTO, @Nullable DbQueryCallback<FavoriteLocationDTO> callback);
 
-	void select(Integer type, DbQueryCallback<List<FavoriteLocationDTO>> callback);
+	void getFavoriteLocations(Integer type, DbQueryCallback<List<FavoriteLocationDTO>> callback);
 
-	void select(Integer type, Integer id, DbQueryCallback<FavoriteLocationDTO> callback);
+	void getFavoriteLocation(Integer id, DbQueryCallback<FavoriteLocationDTO> callback);
 
 	void delete(FavoriteLocationDTO favoriteLocationDTO, @Nullable DbQueryCallback<Boolean> callback);
 
@@ -20,5 +20,5 @@ public interface FavoriteLocationQuery {
 
 	void deleteAll(@Nullable DbQueryCallback<Boolean> callback);
 
-	void contains(String placeId, String address, String latitude, String longitude, DbQueryCallback<FavoriteLocationDTO> callback);
+	void contains(String placeId, String latitude, String longitude, DbQueryCallback<FavoriteLocationDTO> callback);
 }

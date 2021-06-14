@@ -42,18 +42,14 @@ import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.MapSharedViewModel;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
-import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import lombok.SneakyThrows;
 
 public class FavoriteLocationFragment extends Fragment implements OnClickedFavoriteItem
 		, SharedPreferences.OnSharedPreferenceChangeListener {
@@ -254,7 +250,7 @@ public class FavoriteLocationFragment extends Fragment implements OnClickedFavor
 	private void setFavoriteLocationList() {
 		binding.customProgressView.onStartedProcessingData();
 
-		favoriteLocationViewModel.select(FavoriteLocationDTO.ONLY_FOR_MAP, new DbQueryCallback<List<FavoriteLocationDTO>>() {
+		favoriteLocationViewModel.getFavoriteLocations(FavoriteLocationDTO.ONLY_FOR_MAP, new DbQueryCallback<List<FavoriteLocationDTO>>() {
 			@Override
 			public void onResultSuccessful(List<FavoriteLocationDTO> list) {
 				calcDistance(list);

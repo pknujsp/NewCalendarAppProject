@@ -2,8 +2,6 @@ package com.zerodsoft.scheduleweather.navermap;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.os.RemoteException;
-import android.service.carrier.CarrierMessagingService;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -134,73 +132,7 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
 			binding.addToFavoritePlaceitemButton.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View view) {
-					FavoriteLocationDTO newFavoriteLocationDTO = new FavoriteLocationDTO();
-					KakaoLocalDocument data = placeDocumentsSparseArr.get(getBindingAdapterPosition());
-
-					if (data instanceof PlaceDocuments) {
-						placeDocuments = (PlaceDocuments) data;
-
-						newFavoriteLocationDTO.setType(LocationUtil.isRestaurant(placeDocuments.getCategoryName()) ? FavoriteLocationDTO.RESTAURANT : FavoriteLocationDTO.PLACE);
-						newFavoriteLocationDTO.setAddress(placeDocuments.getAddressName());
-						newFavoriteLocationDTO.setLongitude(String.valueOf(placeDocuments.getX()));
-						newFavoriteLocationDTO.setLatitude(String.valueOf(placeDocuments.getY()));
-						newFavoriteLocationDTO.setPlaceName(placeDocuments.getPlaceName());
-						newFavoriteLocationDTO.setPlaceId(placeDocuments.getId());
-					} else if (data instanceof AddressResponseDocuments) {
-						addressDocuments = (AddressResponseDocuments) data;
-
-						newFavoriteLocationDTO.setType(FavoriteLocationDTO.ADDRESS);
-						newFavoriteLocationDTO.setAddress(addressDocuments.getAddressName());
-						newFavoriteLocationDTO.setLatitude(String.valueOf(addressDocuments.getY()));
-						newFavoriteLocationDTO.setLongitude(String.valueOf(addressDocuments.getX()));
-					} else if (data instanceof CoordToAddressDocuments) {
-						coordToAddressDocuments = (CoordToAddressDocuments) data;
-
-						newFavoriteLocationDTO.setType(FavoriteLocationDTO.ADDRESS);
-						newFavoriteLocationDTO.setAddress(coordToAddressDocuments.getCoordToAddressAddress().getAddressName());
-						newFavoriteLocationDTO.setLatitude(coordToAddressDocuments.getCoordToAddressAddress().getLatitude());
-						newFavoriteLocationDTO.setLongitude(coordToAddressDocuments.getCoordToAddressAddress().getLongitude());
-					}
-					newFavoriteLocationDTO.setAddedDateTime(String.valueOf(System.currentTimeMillis()));
-
-					favoriteLocationQuery.contains(newFavoriteLocationDTO.getPlaceId()
-							, newFavoriteLocationDTO.getAddress(), newFavoriteLocationDTO.getLatitude(), newFavoriteLocationDTO.getLongitude()
-							, new DbQueryCallback<FavoriteLocationDTO>() {
-								@Override
-								public void onResultSuccessful(FavoriteLocationDTO result) {
-
-									favoriteLocationQuery.delete(result, new DbQueryCallback<Boolean>() {
-										@Override
-										public void onResultSuccessful(Boolean result) {
-											binding.addToFavoritePlaceitemButton.setImageDrawable(favoriteDisabledDrawable);
-										}
-
-										@Override
-										public void onResultNoData() {
-
-										}
-									});
-
-								}
-
-								@Override
-								public void onResultNoData() {
-									favoriteLocationQuery.insert(newFavoriteLocationDTO, new DbQueryCallback<FavoriteLocationDTO>() {
-										@Override
-										public void onResultSuccessful(FavoriteLocationDTO addedFavoriteLocationDto) {
-											favoriteLocationId = addedFavoriteLocationDto.getId();
-											binding.addToFavoritePlaceitemButton.setImageDrawable(favoriteEnabledDrawable);
-										}
-
-										@Override
-										public void onResultNoData() {
-
-										}
-									});
-								}
-							});
-
-
+					onClickedFavoriteBtn();
 				}
 			});
 		}
@@ -274,14 +206,14 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
 				if (kakaoLocalDocument instanceof PlaceDocuments) {
 					placeDocuments = (PlaceDocuments) kakaoLocalDocument;
 					address = placeDocuments.getAddressName();
-					longitude = String.valueOf(placeDocuments.getX());
-					latitude = String.valueOf(placeDocuments.getY());
+					longitude = placeDocuments.getX();
+					latitude = placeDocuments.getY();
 					placeId = placeDocuments.getId();
 				} else if (kakaoLocalDocument instanceof AddressResponseDocuments) {
 					addressDocuments = (AddressResponseDocuments) kakaoLocalDocument;
 					address = addressDocuments.getAddressName();
-					latitude = String.valueOf(addressDocuments.getY());
-					longitude = String.valueOf(addressDocuments.getX());
+					latitude = addressDocuments.getY();
+					longitude = addressDocuments.getX();
 				} else if (kakaoLocalDocument instanceof CoordToAddressDocuments) {
 					coordToAddressDocuments = (CoordToAddressDocuments) kakaoLocalDocument;
 					address = coordToAddressDocuments.getCoordToAddressAddress().getAddressName();
@@ -289,7 +221,7 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
 					longitude = coordToAddressDocuments.getCoordToAddressAddress().getLongitude();
 				}
 
-				favoriteLocationQuery.contains(placeId, address, latitude, longitude
+				favoriteLocationQuery.contains(placeId, latitude, longitude
 						, new DbQueryCallback<FavoriteLocationDTO>() {
 							@Override
 							public void onResultSuccessful(FavoriteLocationDTO result) {
@@ -303,6 +235,76 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
 							}
 						});
 			}
+
+
+		}
+
+		protected void onClickedFavoriteBtn() {
+			FavoriteLocationDTO newFavoriteLocationDTO = new FavoriteLocationDTO();
+			KakaoLocalDocument data = placeDocumentsSparseArr.get(getBindingAdapterPosition());
+
+			if (data instanceof PlaceDocuments) {
+				placeDocuments = (PlaceDocuments) data;
+
+				newFavoriteLocationDTO.setType(LocationUtil.isRestaurant(placeDocuments.getCategoryName()) ? FavoriteLocationDTO.RESTAURANT : FavoriteLocationDTO.PLACE);
+				newFavoriteLocationDTO.setAddress(placeDocuments.getAddressName());
+				newFavoriteLocationDTO.setLongitude(String.valueOf(placeDocuments.getX()));
+				newFavoriteLocationDTO.setLatitude(String.valueOf(placeDocuments.getY()));
+				newFavoriteLocationDTO.setPlaceName(placeDocuments.getPlaceName());
+				newFavoriteLocationDTO.setPlaceId(placeDocuments.getId());
+			} else if (data instanceof AddressResponseDocuments) {
+				addressDocuments = (AddressResponseDocuments) data;
+
+				newFavoriteLocationDTO.setType(FavoriteLocationDTO.ADDRESS);
+				newFavoriteLocationDTO.setAddress(addressDocuments.getAddressName());
+				newFavoriteLocationDTO.setLatitude(String.valueOf(addressDocuments.getY()));
+				newFavoriteLocationDTO.setLongitude(String.valueOf(addressDocuments.getX()));
+			} else if (data instanceof CoordToAddressDocuments) {
+				coordToAddressDocuments = (CoordToAddressDocuments) data;
+
+				newFavoriteLocationDTO.setType(FavoriteLocationDTO.ADDRESS);
+				newFavoriteLocationDTO.setAddress(coordToAddressDocuments.getCoordToAddressAddress().getAddressName());
+				newFavoriteLocationDTO.setLatitude(coordToAddressDocuments.getCoordToAddressAddress().getLatitude());
+				newFavoriteLocationDTO.setLongitude(coordToAddressDocuments.getCoordToAddressAddress().getLongitude());
+			}
+			newFavoriteLocationDTO.setAddedDateTime(String.valueOf(System.currentTimeMillis()));
+
+			favoriteLocationQuery.contains(newFavoriteLocationDTO.getPlaceId()
+					, newFavoriteLocationDTO.getLatitude(), newFavoriteLocationDTO.getLongitude()
+					, new DbQueryCallback<FavoriteLocationDTO>() {
+						@Override
+						public void onResultSuccessful(FavoriteLocationDTO result) {
+
+							favoriteLocationQuery.delete(result, new DbQueryCallback<Boolean>() {
+								@Override
+								public void onResultSuccessful(Boolean result) {
+									binding.addToFavoritePlaceitemButton.setImageDrawable(favoriteDisabledDrawable);
+								}
+
+								@Override
+								public void onResultNoData() {
+
+								}
+							});
+
+						}
+
+						@Override
+						public void onResultNoData() {
+							favoriteLocationQuery.addNewFavoriteLocation(newFavoriteLocationDTO, new DbQueryCallback<FavoriteLocationDTO>() {
+								@Override
+								public void onResultSuccessful(FavoriteLocationDTO addedFavoriteLocationDto) {
+									favoriteLocationId = addedFavoriteLocationDto.getId();
+									binding.addToFavoritePlaceitemButton.setImageDrawable(favoriteEnabledDrawable);
+								}
+
+								@Override
+								public void onResultNoData() {
+
+								}
+							});
+						}
+					});
 
 
 		}
