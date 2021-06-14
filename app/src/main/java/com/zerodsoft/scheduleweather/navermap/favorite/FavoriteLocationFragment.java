@@ -170,7 +170,7 @@ public class FavoriteLocationFragment extends Fragment implements OnClickedFavor
 				App.setPreference_key_show_favorite_locations_markers_on_map(isChecked);
 				editor.commit();
 
-				iMapData.showPoiItems(MarkerType.FAVORITE, isChecked);
+				iMapData.showMarkers(MarkerType.FAVORITE, isChecked);
 			}
 		});
 

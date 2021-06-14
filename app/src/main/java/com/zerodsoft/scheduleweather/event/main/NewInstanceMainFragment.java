@@ -766,8 +766,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 				placeItemsGetter.getPlaces(new DbQueryCallback<List<PlaceDocuments>>() {
 					@Override
 					public void onResultSuccessful(List<PlaceDocuments> result) {
-						createPoiItems(result, MarkerType.SELECTED_PLACE_CATEGORY);
-						showPoiItems(MarkerType.SELECTED_PLACE_CATEGORY);
+						createMarkers(result, MarkerType.SELECTED_PLACE_CATEGORY);
+						showMarkers(MarkerType.SELECTED_PLACE_CATEGORY);
 					}
 
 					@Override
@@ -778,7 +778,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 			} else if (placeCategoryChipGroup.getCheckedChipIds().isEmpty()
 					&& !markersMap.get(MarkerType.SELECTED_PLACE_CATEGORY)
 					.isEmpty()) {
-				removePoiItems(MarkerType.SELECTED_PLACE_CATEGORY);
+				removeMarkers(MarkerType.SELECTED_PLACE_CATEGORY);
 			}
 			setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
 		}
@@ -797,7 +797,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		restaurantItemGetter = null;
 		restaurantOnExtraListDataListener = null;
 		viewPagerAdapterMap.remove(MarkerType.RESTAURANT);
-		removePoiItems(MarkerType.RESTAURANT);
+		removeMarkers(MarkerType.RESTAURANT);
 
 		if (markerMap.containsKey(MarkerType.CRITERIA_LOCATION_FOR_RESTAURANTS)) {
 			markerMap.get(MarkerType.CRITERIA_LOCATION_FOR_RESTAURANTS).setMap(null);
@@ -835,11 +835,11 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		restaurantItemGetter.getRestaurants(new DbQueryCallback<List<PlaceDocuments>>() {
 			@Override
 			public void onResultSuccessful(List<PlaceDocuments> placeDocuments) {
-				createPoiItems(placeDocuments, MarkerType.RESTAURANT);
+				createMarkers(placeDocuments, MarkerType.RESTAURANT);
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						showPoiItems(MarkerType.RESTAURANT);
+						showMarkers(MarkerType.RESTAURANT);
 					}
 				});
 
@@ -865,7 +865,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 						placeItemsGetter.getPlaces(new DbQueryCallback<List<PlaceDocuments>>() {
 							@Override
 							public void onResultSuccessful(List<PlaceDocuments> placeDocuments) {
-								addPoiItems(placeDocuments, markerType);
+								addMarkers(placeDocuments, markerType);
 							}
 
 							@Override
@@ -888,7 +888,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 								requireActivity().runOnUiThread(new Runnable() {
 									@Override
 									public void run() {
-										addPoiItems(placeDocuments, markerType);
+										addMarkers(placeDocuments, markerType);
 									}
 								});
 							}
@@ -907,7 +907,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 
 	@Override
 	public void refreshView() {
-		removeAllPoiItems();
+		removeAllMarkers();
 		selectedLocationDtoInEvent = null;
 		if (selectedLocationInEventMarker != null) {
 			selectedLocationInEventMarker.setMap(null);

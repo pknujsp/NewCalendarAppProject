@@ -10,7 +10,6 @@ import androidx.annotation.NonNull;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnCoordToAddressListener;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddressDocuments;
 
 import org.jetbrains.annotations.NotNull;
@@ -64,8 +63,8 @@ public class OnLongClickMapLocationItemAdapter extends LocationItemViewPagerAdap
 				public void onResponseSuccessful(CoordToAddressDocuments result) {
 					result.getCoordToAddressAddress().setLatitude(latitude);
 					result.getCoordToAddressAddress().setLongitude(longitude);
-					placeDocumentsList.clear();
-					placeDocumentsList.add(0, result);
+					localDocumentsList.clear();
+					localDocumentsList.add(0, result);
 					OnLongClickMapLocationItemViewHolder.super.bind();
 				}
 

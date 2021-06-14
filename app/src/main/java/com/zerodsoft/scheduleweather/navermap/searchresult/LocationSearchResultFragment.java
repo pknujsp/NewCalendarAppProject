@@ -155,7 +155,7 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		iMapData.removePoiItems(MarkerType.SEARCH_RESULT_ADDRESS, MarkerType.SEARCH_RESULT_PLACE);
+		iMapData.removeMarkers(MarkerType.SEARCH_RESULT_ADDRESS, MarkerType.SEARCH_RESULT_PLACE);
 	}
 
 	@Override
@@ -203,7 +203,7 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
 	private final OnClickedListItem<PlaceDocuments> placeDocumentsOnClickedListItem = new OnClickedListItem<PlaceDocuments>() {
 		@Override
 		public void onClickedListItem(PlaceDocuments e, int position) {
-			iMapData.showPoiItems(MarkerType.SEARCH_RESULT_PLACE);
+			iMapData.showMarkers(MarkerType.SEARCH_RESULT_PLACE);
 			poiItemOnClickListener.onPOIItemSelectedByList(position, MarkerType.SEARCH_RESULT_PLACE);
 			bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_COLLAPSED);
 			showMap();
@@ -218,7 +218,7 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
 	private final OnClickedListItem<AddressResponseDocuments> addressResponseDocumentsOnClickedListItem = new OnClickedListItem<AddressResponseDocuments>() {
 		@Override
 		public void onClickedListItem(AddressResponseDocuments e, int position) {
-			iMapData.showPoiItems(MarkerType.SEARCH_RESULT_ADDRESS);
+			iMapData.showMarkers(MarkerType.SEARCH_RESULT_ADDRESS);
 			poiItemOnClickListener.onPOIItemSelectedByList(position, MarkerType.SEARCH_RESULT_ADDRESS);
 			bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_COLLAPSED);
 			showMap();

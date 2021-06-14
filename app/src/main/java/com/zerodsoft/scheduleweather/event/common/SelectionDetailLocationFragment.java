@@ -4,8 +4,6 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.RemoteException;
-import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,7 +31,6 @@ import com.zerodsoft.scheduleweather.navermap.NaverMapFragment;
 import com.zerodsoft.scheduleweather.navermap.searchheader.MapHeaderSearchFragment;
 import com.zerodsoft.scheduleweather.navermap.model.CoordToAddressUtilByKakao;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
-import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
@@ -144,7 +141,7 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 						coordToAddressDocuments.getCoordToAddressAddress().setLongitude(selectedLocationDTOInEvent.getLongitude());
 
 						setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(getContext(), MarkerType.SELECTED_ADDRESS_IN_EVENT), MarkerType.SELECTED_ADDRESS_IN_EVENT);
-						createPoiItems(Collections.singletonList(coordToAddressDocuments), MarkerType.SELECTED_ADDRESS_IN_EVENT);
+						createMarkers(Collections.singletonList(coordToAddressDocuments), MarkerType.SELECTED_ADDRESS_IN_EVENT);
 						onPOIItemSelectedByList(0, MarkerType.SELECTED_ADDRESS_IN_EVENT);
 
 					}
@@ -167,7 +164,7 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 					public void onResponseSuccessful(PlaceKakaoLocalResponse result) {
 						PlaceDocuments document = result.getPlaceDocuments().get(0);
 						setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(getContext(), MarkerType.SELECTED_PLACE_IN_EVENT), MarkerType.SELECTED_PLACE_IN_EVENT);
-						createPoiItems(Collections.singletonList(document), MarkerType.SELECTED_PLACE_IN_EVENT);
+						createMarkers(Collections.singletonList(document), MarkerType.SELECTED_PLACE_IN_EVENT);
 						onPOIItemSelectedByList(0, MarkerType.SELECTED_PLACE_IN_EVENT);
 					}
 
@@ -239,8 +236,8 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 
 	@Override
 	public void onRemovedLocation() {
-		deselectPoiItem();
-		removeAllPoiItems();
+		deselectMarker();
+		removeAllMarkers();
 		removeMarker();
 
 		bottomSheetBehaviorMap.get(BottomSheetType.LOCATION_ITEM).setState(BottomSheetBehavior.STATE_COLLAPSED);

@@ -9,28 +9,15 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
-import com.zerodsoft.scheduleweather.common.view.CustomProgressView;
-import com.zerodsoft.scheduleweather.event.common.interfaces.ILocationDao;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnClickedBottomSheetListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.PlacesItemBottomSheetButtonOnClickListener;
-import com.zerodsoft.scheduleweather.navermap.model.CoordToAddressUtilByKakao;
-import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddressDocuments;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceKakaoLocalResponse;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerAdapter {
 	private ArrayMap<FavoriteLocationDTO, KakaoLocalDocument> favoriteLocationsMap = new ArrayMap<>();
@@ -70,7 +57,7 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
 		this.favoriteLocationsMap.putAll(favoriteLocationsMap);
 		int size = favoriteLocationsMap.size();
 		for (int i = 0; i < size; i++) {
-			placeDocumentsList.add(favoriteLocationsMap.get(favoriteLocationsMap.keyAt(i)));
+			localDocumentsList.add(favoriteLocationsMap.get(favoriteLocationsMap.keyAt(i)));
 		}
 	}
 
@@ -120,7 +107,7 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
 		protected void onClickedFavoriteBtn() {
 			super.onClickedFavoriteBtn();
 			int position = getBindingAdapterPosition();
-			placeDocumentsList.remove(position);
+			localDocumentsList.remove(position);
 			favoriteLocationList.remove(position);
 			favoriteLocationsMap.removeAt(position);
 		}

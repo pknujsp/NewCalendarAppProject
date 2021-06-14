@@ -208,7 +208,7 @@ public class SearchResultPlaceListFragment extends Fragment implements OnExtraLi
 				LocalApiPlaceParameter.DEFAULT_PAGE, currentSearchSortTypeCriteria);
 
 		if (adapter != null) {
-			iMapData.removePoiItems(MarkerType.SEARCH_RESULT_PLACE);
+			iMapData.removeMarkers(MarkerType.SEARCH_RESULT_PLACE);
 		}
 
 		adapter = new PlacesAdapter(getContext(), placeDocumentsOnClickedListItem);
@@ -218,12 +218,12 @@ public class SearchResultPlaceListFragment extends Fragment implements OnExtraLi
 				super.onItemRangeInserted(positionStart, itemCount);
 
 				if (positionStart > 0) {
-					iMapData.addPoiItems(adapter.getCurrentList().snapshot(), MarkerType.SEARCH_RESULT_PLACE);
+					iMapData.addMarkers(adapter.getCurrentList().snapshot(), MarkerType.SEARCH_RESULT_PLACE);
 				} else {
 					if (itemCount > 0) {
 						iMapData.setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(getContext(),
 								MarkerType.SEARCH_RESULT_PLACE), MarkerType.SEARCH_RESULT_PLACE);
-						iMapData.createPoiItems(adapter.getCurrentList().snapshot(), MarkerType.SEARCH_RESULT_PLACE);
+						iMapData.createMarkers(adapter.getCurrentList().snapshot(), MarkerType.SEARCH_RESULT_PLACE);
 					}
 				}
 			}

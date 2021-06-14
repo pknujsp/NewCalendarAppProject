@@ -150,9 +150,9 @@ public class MapHeaderSearchFragment extends Fragment {
 					KakaoLocalApiResultType currentResultType = locationSearchResultFragment.getCurrentListType();
 
 					if (currentResultType == KakaoLocalApiResultType.ADDRESS) {
-						iMapData.showPoiItems(MarkerType.SEARCH_RESULT_ADDRESS);
+						iMapData.showMarkers(MarkerType.SEARCH_RESULT_ADDRESS);
 					} else {
-						iMapData.showPoiItems(MarkerType.SEARCH_RESULT_PLACE);
+						iMapData.showMarkers(MarkerType.SEARCH_RESULT_PLACE);
 					}
 
 					parentFragmentManager.beginTransaction().hide(locationSearchResultFragment)
@@ -240,7 +240,7 @@ public class MapHeaderSearchFragment extends Fragment {
 					.addToBackStack(getString(R.string.tag_location_search_result_fragment)).commit();
 		} else {
 			// added
-			iMapData.removePoiItems(MarkerType.SEARCH_RESULT_ADDRESS, MarkerType.SEARCH_RESULT_PLACE);
+			iMapData.removeMarkers(MarkerType.SEARCH_RESULT_ADDRESS, MarkerType.SEARCH_RESULT_PLACE);
 			if (locationSearchResultFragment.isHidden()) {
 				parentFragmentManager.popBackStackImmediate();
 			}

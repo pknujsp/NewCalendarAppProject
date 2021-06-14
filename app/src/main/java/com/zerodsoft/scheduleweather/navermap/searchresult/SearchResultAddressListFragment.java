@@ -79,12 +79,12 @@ public class SearchResultAddressListFragment extends Fragment implements OnExtra
 				super.onItemRangeInserted(positionStart, itemCount);
 
 				if (positionStart > 0) {
-					iMapData.addPoiItems(adapter.getCurrentList().snapshot(), MarkerType.SEARCH_RESULT_ADDRESS);
+					iMapData.addMarkers(adapter.getCurrentList().snapshot(), MarkerType.SEARCH_RESULT_ADDRESS);
 				} else {
 					if (itemCount > 0) {
 						iMapData.setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(getContext(),
 								MarkerType.SEARCH_RESULT_ADDRESS), MarkerType.SEARCH_RESULT_ADDRESS);
-						iMapData.createPoiItems(adapter.getCurrentList().snapshot(), MarkerType.SEARCH_RESULT_ADDRESS);
+						iMapData.createMarkers(adapter.getCurrentList().snapshot(), MarkerType.SEARCH_RESULT_ADDRESS);
 					}
 				}
 			}
