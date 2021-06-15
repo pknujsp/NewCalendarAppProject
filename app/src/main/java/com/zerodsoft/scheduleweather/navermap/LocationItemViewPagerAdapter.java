@@ -176,7 +176,7 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
 			binding.addToFavoritePlaceitemButton.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View view) {
-					onClickedFavoriteBtn();
+					onClickedFavoriteBtn(getBindingAdapterPosition());
 				}
 			});
 		}
@@ -190,49 +190,49 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
 			String itemPosition = (position + 1) + " / " + getItemCount();
 			binding.itemPosition.setText(itemPosition);
 
-			PlaceDocuments placeDocuments = null;
-			AddressResponseDocuments addressDocuments = null;
-			CoordToAddressDocuments coordToAddressDocuments = null;
+			PlaceDocuments placeDocument = null;
+			AddressResponseDocuments addressDocument = null;
+			CoordToAddressDocuments coordToAddressDocument = null;
 
 			final ViewHolderData viewHolderData = new ViewHolderData(kakaoLocalDocument);
 			binding.placeItemCardviewInBottomsheet.setTag(viewHolderData);
 
 			if (kakaoLocalDocument instanceof PlaceDocuments) {
-				placeDocuments = (PlaceDocuments) kakaoLocalDocument;
+				placeDocument = (PlaceDocuments) kakaoLocalDocument;
 
-				binding.placeLayout.placeItemName.setText(placeDocuments.getPlaceName());
-				binding.placeLayout.placeItemAddress.setText(placeDocuments.getAddressName());
-				binding.placeLayout.placeItemCategory.setText(placeDocuments.getCategoryName());
-				binding.placeItemDistance.setText(placeDocuments.getDistance() + "m");
+				binding.placeLayout.placeItemName.setText(placeDocument.getPlaceName());
+				binding.placeLayout.placeItemAddress.setText(placeDocument.getAddressName());
+				binding.placeLayout.placeItemCategory.setText(placeDocument.getCategoryName());
+				binding.placeItemDistance.setText(placeDocument.getDistance() + "m");
 
 				binding.placeLayout.getRoot().setVisibility(View.VISIBLE);
 				binding.addressLayout.getRoot().setVisibility(View.GONE);
 				binding.placeItemDistance.setVisibility(View.VISIBLE);
 			} else if (kakaoLocalDocument instanceof AddressResponseDocuments) {
-				addressDocuments = (AddressResponseDocuments) kakaoLocalDocument;
+				addressDocument = (AddressResponseDocuments) kakaoLocalDocument;
 
-				binding.addressLayout.addressName.setText(addressDocuments.getAddressName());
-				if (addressDocuments.getAddressResponseRoadAddress() != null) {
+				binding.addressLayout.addressName.setText(addressDocument.getAddressName());
+				if (addressDocument.getAddressResponseRoadAddress() != null) {
 					binding.addressLayout.anotherAddressType.setText(itemView.getContext().getString(R.string.road_addr));
-					binding.addressLayout.anotherAddressName.setText(addressDocuments.getAddressResponseRoadAddress().getAddressName());
-				} else if (addressDocuments.getAddressResponseAddress() != null) {
+					binding.addressLayout.anotherAddressName.setText(addressDocument.getAddressResponseRoadAddress().getAddressName());
+				} else if (addressDocument.getAddressResponseAddress() != null) {
 					binding.addressLayout.anotherAddressType.setText(itemView.getContext().getString(R.string.region_addr));
-					binding.addressLayout.anotherAddressName.setText(addressDocuments.getAddressResponseAddress().getAddressName());
+					binding.addressLayout.anotherAddressName.setText(addressDocument.getAddressResponseAddress().getAddressName());
 				}
 
 				binding.placeLayout.getRoot().setVisibility(View.GONE);
 				binding.addressLayout.getRoot().setVisibility(View.VISIBLE);
 				binding.placeItemDistance.setVisibility(View.GONE);
 			} else if (kakaoLocalDocument instanceof CoordToAddressDocuments) {
-				coordToAddressDocuments = (CoordToAddressDocuments) kakaoLocalDocument;
+				coordToAddressDocument = (CoordToAddressDocuments) kakaoLocalDocument;
 
-				binding.addressLayout.addressName.setText(coordToAddressDocuments.getCoordToAddressAddress().getAddressName());
-				if (coordToAddressDocuments.getCoordToAddressRoadAddress() != null) {
+				binding.addressLayout.addressName.setText(coordToAddressDocument.getCoordToAddressAddress().getAddressName());
+				if (coordToAddressDocument.getCoordToAddressRoadAddress() != null) {
 					binding.addressLayout.anotherAddressType.setText(itemView.getContext().getString(R.string.road_addr));
-					binding.addressLayout.anotherAddressName.setText(coordToAddressDocuments.getCoordToAddressRoadAddress().getAddressName());
-				} else if (coordToAddressDocuments.getCoordToAddressAddress() != null) {
+					binding.addressLayout.anotherAddressName.setText(coordToAddressDocument.getCoordToAddressRoadAddress().getAddressName());
+				} else if (coordToAddressDocument.getCoordToAddressAddress() != null) {
 					binding.addressLayout.anotherAddressType.setText(itemView.getContext().getString(R.string.region_addr));
-					binding.addressLayout.anotherAddressName.setText(coordToAddressDocuments.getCoordToAddressAddress().getAddressName());
+					binding.addressLayout.anotherAddressName.setText(coordToAddressDocument.getCoordToAddressAddress().getAddressName());
 				}
 
 				binding.placeLayout.getRoot().setVisibility(View.GONE);
@@ -250,15 +250,15 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
 				String longitude = null;
 
 				if (kakaoLocalDocument instanceof PlaceDocuments) {
-					longitude = placeDocuments.getX();
-					latitude = placeDocuments.getY();
-					placeId = placeDocuments.getId();
+					longitude = placeDocument.getX();
+					latitude = placeDocument.getY();
+					placeId = placeDocument.getId();
 				} else if (kakaoLocalDocument instanceof AddressResponseDocuments) {
-					latitude = addressDocuments.getY();
-					longitude = addressDocuments.getX();
+					latitude = addressDocument.getY();
+					longitude = addressDocument.getX();
 				} else if (kakaoLocalDocument instanceof CoordToAddressDocuments) {
-					latitude = coordToAddressDocuments.getCoordToAddressAddress().getLatitude();
-					longitude = coordToAddressDocuments.getCoordToAddressAddress().getLongitude();
+					latitude = coordToAddressDocument.getCoordToAddressAddress().getLatitude();
+					longitude = coordToAddressDocument.getCoordToAddressAddress().getLongitude();
 				}
 
 				favoriteLocationQuery.contains(placeId, latitude, longitude
@@ -279,9 +279,8 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
 			customProgressView.onSuccessfulProcessingData();
 		}
 
-		protected void onClickedFavoriteBtn() {
+		protected void processOnClickedFavoriteBtn(KakaoLocalDocument data) {
 			FavoriteLocationDTO newFavoriteLocationDTO = new FavoriteLocationDTO();
-			KakaoLocalDocument data = localDocumentsList.get(getBindingAdapterPosition());
 
 			if (data instanceof PlaceDocuments) {
 				PlaceDocuments placeDocuments = (PlaceDocuments) data;
@@ -345,6 +344,10 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
 							});
 						}
 					});
+		}
+
+		protected void onClickedFavoriteBtn(int position) {
+			processOnClickedFavoriteBtn(localDocumentsList.get(position));
 		}
 	}
 

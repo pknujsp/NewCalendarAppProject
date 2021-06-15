@@ -1,15 +1,16 @@
 package com.zerodsoft.scheduleweather.navermap.interfaces;
 
-import com.zerodsoft.scheduleweather.navermap.LocationItemViewPagerAdapter;
 import com.zerodsoft.scheduleweather.navermap.MarkerType;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
 public interface IMapData {
-	void createMarkers(List<? extends KakaoLocalDocument> kakaoLocalDocuments, MarkerType markerType);
+	void createMarkers(@NotNull List<? extends KakaoLocalDocument> kakaoLocalDocuments, @NotNull MarkerType markerType);
 
-	void addMarkers(List<? extends KakaoLocalDocument> kakaoLocalDocuments, MarkerType markerType);
+	void addExtraMarkers(@NotNull List<? extends KakaoLocalDocument> kakaoLocalDocuments, @NotNull MarkerType markerType);
 
 	void removeMarkers(MarkerType... markerTypes);
 
@@ -23,5 +24,4 @@ public interface IMapData {
 
 	void deselectMarker();
 
-	void setLocationItemViewPagerAdapter(LocationItemViewPagerAdapter adapter, MarkerType markerType);
 }

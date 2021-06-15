@@ -54,6 +54,9 @@ public class OnLongClickMapLocationItemAdapter extends LocationItemViewPagerAdap
 
 		public OnLongClickMapLocationItemViewHolder(@NonNull @NotNull View view) {
 			super(view);
+			binding.selectThisPlaceButton.setVisibility(View.GONE);
+			binding.unselectThisPlaceButton.setVisibility(View.GONE);
+			binding.itemPosition.setVisibility(View.GONE);
 		}
 
 		@Override
@@ -64,7 +67,8 @@ public class OnLongClickMapLocationItemAdapter extends LocationItemViewPagerAdap
 					result.getCoordToAddressAddress().setLatitude(latitude);
 					result.getCoordToAddressAddress().setLongitude(longitude);
 					localDocumentsList.clear();
-					localDocumentsList.add(0, result);
+					localDocumentsList.add(result);
+
 					OnLongClickMapLocationItemViewHolder.super.bind();
 				}
 

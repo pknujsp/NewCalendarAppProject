@@ -12,6 +12,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnClickedBottomSheetListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.PlacesItemBottomSheetButtonOnClickListener;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 
 import org.jetbrains.annotations.NotNull;
@@ -39,8 +40,9 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
 		favoriteLocationsMap.put(newFavoriteLocationDTO, null);
 	}
 
-	public int removeFavoriteLocation(FavoriteLocationDTO removedFavoriteLocationDTO) {
+	public void removeFavoriteLocation(FavoriteLocationDTO removedFavoriteLocationDTO) {
 		int index = 0;
+
 		for (FavoriteLocationDTO favoriteLocationDTO : favoriteLocationList) {
 			if (removedFavoriteLocationDTO.equals(favoriteLocationDTO)) {
 				favoriteLocationList.remove(index);
@@ -49,16 +51,11 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
 			}
 			index++;
 		}
-		return index;
 	}
 
 
 	public void setFavoriteLocationsMap(ArrayMap<FavoriteLocationDTO, KakaoLocalDocument> favoriteLocationsMap) {
 		this.favoriteLocationsMap.putAll(favoriteLocationsMap);
-		int size = favoriteLocationsMap.size();
-		for (int i = 0; i < size; i++) {
-			localDocumentsList.add(favoriteLocationsMap.get(favoriteLocationsMap.keyAt(i)));
-		}
 	}
 
 	public List<FavoriteLocationDTO> getFavoriteLocationList() {
@@ -90,6 +87,19 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
 		((FavoriteLocationItemInMapViewHolder) holder).bind();
 	}
 
+	public int getItemPosition(FavoriteLocationDTO favoriteLocationDTO) {
+		int position = 0;
+		final int id = favoriteLocationDTO.getId();
+
+		for (FavoriteLocationDTO favoriteLocation : favoriteLocationList) {
+			if (id == favoriteLocation.getId()) {
+				break;
+			}
+			position++;
+		}
+
+		return position;
+	}
 
 	@Override
 	public int getItemCount() {
@@ -104,10 +114,8 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
 		}
 
 		@Override
-		protected void onClickedFavoriteBtn() {
-			super.onClickedFavoriteBtn();
-			int position = getBindingAdapterPosition();
-			localDocumentsList.remove(position);
+		protected void onClickedFavoriteBtn(int position) {
+			processOnClickedFavoriteBtn(favoriteLocationsMap.get(favoriteLocationsMap.keyAt(position)));
 			favoriteLocationList.remove(position);
 			favoriteLocationsMap.removeAt(position);
 		}

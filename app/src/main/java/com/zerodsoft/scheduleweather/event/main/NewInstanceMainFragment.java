@@ -76,6 +76,7 @@ import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 import org.jetbrains.annotations.NotNull;
 import org.xmlpull.v1.XmlPullParser;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoodMenuPoiItems,
@@ -761,7 +762,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 					getChildFragmentManager().popBackStackImmediate();
 				}
 				selectedPlaceCategoryCode = ((PlaceCategoryChipViewHolder) compoundButton.getTag()).placeCategory.getCode();
-				setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(getContext(), MarkerType.SELECTED_PLACE_CATEGORY), MarkerType.SELECTED_PLACE_CATEGORY);
 
 				placeItemsGetter.getPlaces(new DbQueryCallback<List<PlaceDocuments>>() {
 					@Override
@@ -794,16 +794,16 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 
 	@Override
 	public void removeRestaurantPoiItems() {
+		setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
+
 		restaurantItemGetter = null;
 		restaurantOnExtraListDataListener = null;
+
 		viewPagerAdapterMap.remove(MarkerType.RESTAURANT);
 		removeMarkers(MarkerType.RESTAURANT);
+		removeMarkers(MarkerType.CRITERIA_LOCATION_FOR_RESTAURANTS);
 
-		if (markerMap.containsKey(MarkerType.CRITERIA_LOCATION_FOR_RESTAURANTS)) {
-			markerMap.get(MarkerType.CRITERIA_LOCATION_FOR_RESTAURANTS).setMap(null);
-		}
-		markerMap.remove(MarkerType.CRITERIA_LOCATION_FOR_RESTAURANTS);
-		setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
+		markersMap.get(MarkerType.CRITERIA_LOCATION_FOR_RESTAURANTS).clear();
 	}
 
 	@Override
@@ -823,22 +823,24 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		criteriaLocationForRestaurantsMarker.setSubCaptionText(getString(R.string.criteria_location));
 		criteriaLocationForRestaurantsMarker.setSubCaptionTextSize(11f);
 		criteriaLocationForRestaurantsMarker.setSubCaptionColor(Color.BLACK);
-		markerMap.put(MarkerType.CRITERIA_LOCATION_FOR_RESTAURANTS, criteriaLocationForRestaurantsMarker);
+
+		if (!markersMap.containsKey(MarkerType.CRITERIA_LOCATION_FOR_RESTAURANTS)) {
+			markersMap.put(MarkerType.CRITERIA_LOCATION_FOR_RESTAURANTS, new ArrayList<>());
+		}
+		markersMap.get(MarkerType.CRITERIA_LOCATION_FOR_RESTAURANTS).add(criteriaLocationForRestaurantsMarker);
 	}
 
 	@Override
 	public void onChangeFoodMenu() {
-		LocationItemViewPagerAdapter locationItemViewPagerAdapter = new LocationItemViewPagerAdapter(getContext(), MarkerType.RESTAURANT);
-		setLocationItemViewPagerAdapter(locationItemViewPagerAdapter, MarkerType.RESTAURANT);
 		setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
 
 		restaurantItemGetter.getRestaurants(new DbQueryCallback<List<PlaceDocuments>>() {
 			@Override
 			public void onResultSuccessful(List<PlaceDocuments> placeDocuments) {
-				createMarkers(placeDocuments, MarkerType.RESTAURANT);
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
+						createMarkers(placeDocuments, MarkerType.RESTAURANT);
 						showMarkers(MarkerType.RESTAURANT);
 					}
 				});
@@ -865,7 +867,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 						placeItemsGetter.getPlaces(new DbQueryCallback<List<PlaceDocuments>>() {
 							@Override
 							public void onResultSuccessful(List<PlaceDocuments> placeDocuments) {
-								addMarkers(placeDocuments, markerType);
+								addExtraMarkers(placeDocuments, markerType);
 							}
 
 							@Override
@@ -888,7 +890,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 								requireActivity().runOnUiThread(new Runnable() {
 									@Override
 									public void run() {
-										addMarkers(placeDocuments, markerType);
+										addExtraMarkers(placeDocuments, markerType);
 									}
 								});
 							}

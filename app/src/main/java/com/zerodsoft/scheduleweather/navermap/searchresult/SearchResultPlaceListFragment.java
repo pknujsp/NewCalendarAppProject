@@ -33,7 +33,6 @@ import com.zerodsoft.scheduleweather.common.interfaces.DataProcessingCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.FragmentLocationSearchResultBinding;
 import com.zerodsoft.scheduleweather.etc.LocationType;
-import com.zerodsoft.scheduleweather.navermap.LocationItemViewPagerAdapter;
 import com.zerodsoft.scheduleweather.navermap.MarkerType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
@@ -218,11 +217,9 @@ public class SearchResultPlaceListFragment extends Fragment implements OnExtraLi
 				super.onItemRangeInserted(positionStart, itemCount);
 
 				if (positionStart > 0) {
-					iMapData.addMarkers(adapter.getCurrentList().snapshot(), MarkerType.SEARCH_RESULT_PLACE);
+					iMapData.addExtraMarkers(adapter.getCurrentList().snapshot(), MarkerType.SEARCH_RESULT_PLACE);
 				} else {
 					if (itemCount > 0) {
-						iMapData.setLocationItemViewPagerAdapter(new LocationItemViewPagerAdapter(getContext(),
-								MarkerType.SEARCH_RESULT_PLACE), MarkerType.SEARCH_RESULT_PLACE);
 						iMapData.createMarkers(adapter.getCurrentList().snapshot(), MarkerType.SEARCH_RESULT_PLACE);
 					}
 				}
