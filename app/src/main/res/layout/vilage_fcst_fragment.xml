@@ -22,15 +22,19 @@
                 android:layout_height="wrap_content"
                 android:nestedScrollingEnabled="false">
 
-                <TableLayout
-                    android:id="@+id/vilage_fcst_table"
-                    android:layout_width="match_parent"
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:id="@+id/vilage_fcst_view"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
             </HorizontalScrollView>
         </LinearLayout>
 
-        <include
-            android:id="@+id/weather_progress_layout"
-            layout="@layout/data_progress_view" />
+        <com.zerodsoft.scheduleweather.common.view.CustomProgressView
+            android:id="@+id/custom_progress_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical" />
+        
     </FrameLayout>
 </layout>

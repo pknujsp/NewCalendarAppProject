@@ -12,6 +12,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
@@ -44,14 +46,14 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collections;
 
 public class SelectionDetailLocationFragment extends NaverMapFragment {
+	private final Marker selectedLocationMarker = new Marker();
+
 	private LocationDTO selectedLocationDTOInEvent;
-	private LocationViewModel viewModel;
 	private int resultCode = Activity.RESULT_CANCELED;
 	private LocationIntentCode requestCode;
 
 	private LocationDTO selectedLocationDTOInMap;
 	private String locationNameInEvent;
-	private final Marker selectedLocationMarker = new Marker();
 
 	private void finishActivity() {
 		requireActivity().setResult(resultCode, requireActivity().getIntent());
@@ -63,6 +65,7 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 		super.onCreate(savedInstanceState);
 
 		Bundle arguments = requireActivity().getIntent().getExtras();
+
 		selectedLocationDTOInEvent = (LocationDTO) arguments.getParcelable(DetailLocationSelectorKey.SELECTED_LOCATION_DTO_IN_EVENT.value());
 		locationNameInEvent = arguments.getString(DetailLocationSelectorKey.LOCATION_NAME_IN_EVENT.value());
 		requestCode = LocationIntentCode.enumOf(arguments.getInt("requestCode"));
@@ -82,8 +85,6 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 	public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		viewModel = new ViewModelProvider(this).get(LocationViewModel.class);
-
 		switch (requestCode) {
 			case REQUEST_CODE_SELECT_LOCATION_EMPTY_QUERY: {
 				// 아무것도 하지 않음
@@ -94,14 +95,25 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 			case REQUEST_CODE_SELECT_LOCATION_BY_QUERY: {
 				setPlaceBottomSheetSelectBtnVisibility(View.VISIBLE);
 				setPlaceBottomSheetUnSelectBtnVisibility(View.GONE);
+
 				binding.naverMapFragmentRootLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
 					@Override
 					public void onGlobalLayout() {
 						binding.naverMapFragmentRootLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-						binding.headerFragmentContainer.callOnClick();
+						FragmentManager fragmentManager = getChildFragmentManager();
+						FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks = new FragmentManager.FragmentLifecycleCallbacks() {
+							@Override
+							public void onFragmentStarted(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
+								super.onFragmentStarted(fm, f);
+								if (f instanceof MapHeaderSearchFragment) {
+									((MapHeaderSearchFragment) f).setQuery(locationNameInEvent, true);
+									fragmentManager.unregisterFragmentLifecycleCallbacks(this);
+								}
+							}
+						};
 
-						binding.locationSearchBottomSheet.searchFragmentContainer.getViewTreeObserver()
-								.addOnGlobalLayoutListener(searchBottomSheetFragmentOnGlobalLayoutListener);
+						fragmentManager.registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false);
+						binding.headerFragmentContainer.callOnClick();
 					}
 				});
 				break;
@@ -113,16 +125,6 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 			}
 		}
 	}
-
-
-	private ViewTreeObserver.OnGlobalLayoutListener searchBottomSheetFragmentOnGlobalLayoutListener =
-			new ViewTreeObserver.OnGlobalLayoutListener() {
-				@Override
-				public void onGlobalLayout() {
-					binding.locationSearchBottomSheet.searchFragmentContainer.getViewTreeObserver().removeOnGlobalLayoutListener(searchBottomSheetFragmentOnGlobalLayoutListener);
-					((MapHeaderSearchFragment) getChildFragmentManager().findFragmentByTag(getString(R.string.tag_map_header_search_fragment))).setQuery(locationNameInEvent, true);
-				}
-			};
 
 
 	private void showLocationItem() {
@@ -156,9 +158,9 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 				LocalApiPlaceParameter parameter = LocalParameterUtil.getPlaceParameter(selectedLocationDTOInEvent.getPlaceName(),
 						String.valueOf(selectedLocationDTOInEvent.getLatitude()), String.valueOf(selectedLocationDTOInEvent.getLongitude()), LocalApiPlaceParameter.DEFAULT_SIZE,
 						LocalApiPlaceParameter.DEFAULT_PAGE, LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
-				parameter.setRadius("100");
+				parameter.setRadius("50");
 
-				viewModel.getPlaceItem(parameter, selectedLocationDTOInEvent.getPlaceId(), new JsonDownloader<PlaceKakaoLocalResponse>() {
+				locationViewModel.getPlaceItem(parameter, selectedLocationDTOInEvent.getPlaceId(), new JsonDownloader<PlaceKakaoLocalResponse>() {
 					@Override
 					public void onResponseSuccessful(PlaceKakaoLocalResponse result) {
 						PlaceDocuments document = result.getPlaceDocuments().get(0);

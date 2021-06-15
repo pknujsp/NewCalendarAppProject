@@ -15,8 +15,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TableLayout;
-import android.widget.TableRow;
+import android.widget.LinearLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -40,7 +40,6 @@ public class MidFcstFragment extends Fragment {
 	private MidFcstFragmentBinding binding;
 	private WeatherAreaCodeDTO weatherAreaCode;
 	private final OnDownloadedTimeListener onDownloadedTimeListener;
-	private ViewProgress viewProgress;
 	private MidFcstProcessing midFcstProcessing;
 
 	public MidFcstFragment(WeatherAreaCodeDTO weatherAreaCodeDTO, OnDownloadedTimeListener onDownloadedTimeListener) {
@@ -61,9 +60,8 @@ public class MidFcstFragment extends Fragment {
 		clearViews();
 
 		midFcstProcessing = new MidFcstProcessing(getContext(), weatherAreaCode.getY(), weatherAreaCode.getX(), weatherAreaCode);
-		viewProgress = new ViewProgress(binding.midFcstLayout, binding.weatherProgressLayout.progressBar,
-				binding.weatherProgressLayout.progressStatusTextview, binding.weatherProgressLayout.getRoot());
-		viewProgress.onStartedProcessingData();
+		binding.customProgressView.setContentView(binding.midFcstLayout);
+		binding.customProgressView.onStartedProcessingData();
 
 		midFcstProcessing.getWeatherData(new WeatherDataCallback<MidFcstResult>() {
 			@Override
@@ -73,7 +71,7 @@ public class MidFcstFragment extends Fragment {
 					public void run() {
 						onDownloadedTimeListener.setDownloadedTime(e.getDownloadedDate(), WeatherDataDTO.MID_LAND_FCST);
 						onDownloadedTimeListener.setDownloadedTime(e.getDownloadedDate(), WeatherDataDTO.MID_TA);
-						viewProgress.onCompletedProcessingData(true);
+						binding.customProgressView.onSuccessfulProcessingData();
 						setTable(e);
 					}
 				});
@@ -87,7 +85,7 @@ public class MidFcstFragment extends Fragment {
 						clearViews();
 						onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.MID_LAND_FCST);
 						onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.MID_TA);
-						viewProgress.onCompletedProcessingData(false, e.getMessage());
+						binding.customProgressView.onFailedProcessingData(getString(R.string.error));
 
 					}
 				});
@@ -96,7 +94,8 @@ public class MidFcstFragment extends Fragment {
 	}
 
 	public void refresh() {
-		viewProgress.onStartedProcessingData();
+		binding.customProgressView.onStartedProcessingData();
+
 		midFcstProcessing.refresh(new WeatherDataCallback<MidFcstResult>() {
 			@Override
 			public void isSuccessful(MidFcstResult e) {
@@ -105,7 +104,8 @@ public class MidFcstFragment extends Fragment {
 					public void run() {
 						onDownloadedTimeListener.setDownloadedTime(e.getDownloadedDate(), WeatherDataDTO.MID_LAND_FCST);
 						onDownloadedTimeListener.setDownloadedTime(e.getDownloadedDate(), WeatherDataDTO.MID_TA);
-						viewProgress.onCompletedProcessingData(true);
+						binding.customProgressView.onSuccessfulProcessingData();
+
 						setTable(e);
 					}
 				});
@@ -119,8 +119,7 @@ public class MidFcstFragment extends Fragment {
 						clearViews();
 						onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.MID_LAND_FCST);
 						onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.MID_TA);
-						viewProgress.onCompletedProcessingData(false, e.getMessage());
-
+						binding.customProgressView.onFailedProcessingData(getString(R.string.error));
 					}
 				});
 			}
@@ -130,76 +129,55 @@ public class MidFcstFragment extends Fragment {
 
 	public void clearViews() {
 		binding.midFcstHeaderCol.removeAllViews();
-		binding.midFcstTable.removeAllViews();
+		binding.midFcstView.removeAllViews();
 	}
 
 	private void setTable(MidFcstResult midFcstResult) {
-		final int COLUMN_WIDTH = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80f, getResources().getDisplayMetrics());
-		final int MARGIN_TB = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
+		final int COLUMN_WIDTH = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 74f, getResources().getDisplayMetrics());
+		final int TB_MARGIN = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
 		final int DIVISION_LINE_WIDTH = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1f, getResources().getDisplayMetrics());
-		final int DP4 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
+		final int LR_DIVISION_LINE_MARGIN = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 3f,
+				getResources().getDisplayMetrics());
 
-		final int DATE_ROW_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 34f, getResources().getDisplayMetrics());
-		final int SMALL_IMG_SIZE = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 26f, getResources().getDisplayMetrics());
-		final int BIG_SKY_IMG_SIZE = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
-		final int CHANCE_OF_SHOWER_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 30f, getResources().getDisplayMetrics());
-		final int TEMP_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 90f, getResources().getDisplayMetrics());
+		final int DATE_ROW_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 22f, getResources().getDisplayMetrics());
+		final int SMALL_IMG_SIZE = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 34f, getResources().getDisplayMetrics());
+		final int BIG_SKY_IMG_SIZE = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 38f, getResources().getDisplayMetrics());
+		final int SKY_ROW_HEIGHT = BIG_SKY_IMG_SIZE;
+		final int CHANCE_OF_SHOWER_ROW_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 34f,
+				getResources().getDisplayMetrics());
+		final int TEMP_ROW_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 85f, getResources().getDisplayMetrics());
 
 		List<MidFcstData> dataList = midFcstResult.getMidFcstFinalDataList();
 
-		final int DATA_SIZE = dataList.size();
-		final int VIEW_WIDTH = DATA_SIZE * COLUMN_WIDTH;
+		final int COLUMN_SIZE = dataList.size();
+		final int VIEW_WIDTH = COLUMN_SIZE * COLUMN_WIDTH;
 
 		clearViews();
 
 		Context context = getContext();
-
-		TableRow dateRow = new TableRow(context);
-		TableRow skyRow = new TableRow(context);
-		TableRow chanceOfShowerRow = new TableRow(context);
-		TempView tempRow = new TempView(context, dataList);
 
 		TextView dateLabel = new TextView(context);
 		TextView skyLabel = new TextView(context);
 		TextView tempLabel = new TextView(context);
 		TextView chanceOfShowerLabel = new TextView(context);
 
-		dateLabel.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13f);
-		skyLabel.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13f);
-		tempLabel.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13f);
-		chanceOfShowerLabel.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13f);
-
-		dateLabel.setGravity(Gravity.CENTER);
-		dateLabel.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-		skyLabel.setGravity(Gravity.CENTER);
-		skyLabel.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-		tempLabel.setGravity(Gravity.CENTER);
-		tempLabel.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-		chanceOfShowerLabel.setGravity(Gravity.CENTER);
-		chanceOfShowerLabel.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-
-		dateLabel.setTextColor(Color.GRAY);
-		skyLabel.setTextColor(Color.GRAY);
-		tempLabel.setTextColor(Color.GRAY);
-		chanceOfShowerLabel.setTextColor(Color.GRAY);
-
-		dateLabel.setText(getString(R.string.date));
-		skyLabel.setText(getString(R.string.sky) + "\n" + "(" + getString(R.string.am) + "/" + getString(R.string.pm) + ")");
-		tempLabel.setText(getString(R.string.temperature));
-		chanceOfShowerLabel.setText(getString(R.string.chance_of_shower));
+		setLabelTextView(dateLabel, getString(R.string.date));
+		setLabelTextView(skyLabel, getString(R.string.sky) + "\n" + "(" + getString(R.string.am) + "/" + getString(R.string.pm) + ")");
+		setLabelTextView(tempLabel, getString(R.string.temperature));
+		setLabelTextView(chanceOfShowerLabel, getString(R.string.chance_of_shower));
 
 		LinearLayout.LayoutParams dateParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DATE_ROW_HEIGHT);
-		dateParams.topMargin = MARGIN_TB;
-		dateParams.bottomMargin = MARGIN_TB;
-		LinearLayout.LayoutParams skyParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, BIG_SKY_IMG_SIZE);
-		skyParams.topMargin = MARGIN_TB;
-		skyParams.bottomMargin = MARGIN_TB;
-		LinearLayout.LayoutParams chanceOfShowerParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, CHANCE_OF_SHOWER_HEIGHT);
-		chanceOfShowerParams.topMargin = MARGIN_TB;
-		chanceOfShowerParams.bottomMargin = MARGIN_TB;
-		LinearLayout.LayoutParams tempParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, TEMP_HEIGHT);
-		tempParams.topMargin = MARGIN_TB;
-		tempParams.bottomMargin = MARGIN_TB;
+		dateParams.topMargin = TB_MARGIN;
+		dateParams.bottomMargin = TB_MARGIN;
+
+		LinearLayout.LayoutParams skyParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, SKY_ROW_HEIGHT);
+		LinearLayout.LayoutParams chanceOfShowerParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, CHANCE_OF_SHOWER_ROW_HEIGHT);
+		chanceOfShowerParams.topMargin = TB_MARGIN;
+		chanceOfShowerParams.bottomMargin = TB_MARGIN;
+
+		LinearLayout.LayoutParams tempParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, TEMP_ROW_HEIGHT);
+		tempParams.topMargin = TB_MARGIN;
+		tempParams.bottomMargin = TB_MARGIN;
 
 		dateParams.gravity = Gravity.CENTER;
 		skyParams.gravity = Gravity.CENTER;
@@ -211,13 +189,22 @@ public class MidFcstFragment extends Fragment {
 		binding.midFcstHeaderCol.addView(chanceOfShowerLabel, chanceOfShowerParams);
 		binding.midFcstHeaderCol.addView(tempLabel, tempParams);
 
+		LinearLayout dateRow = new LinearLayout(context);
+		LinearLayout skyRow = new LinearLayout(context);
+		LinearLayout chanceOfShowerRow = new LinearLayout(context);
+		TempView tempRow = new TempView(context, dataList);
+
+		dateRow.setOrientation(LinearLayout.HORIZONTAL);
+		skyRow.setOrientation(LinearLayout.HORIZONTAL);
+		chanceOfShowerRow.setOrientation(LinearLayout.HORIZONTAL);
+
 		//시각 --------------------------------------------------------------------------
-		for (int col = 0; col < DATA_SIZE; col++) {
+		for (int col = 0; col < COLUMN_SIZE; col++) {
 			TextView textView = new TextView(context);
 			setValueTextView(textView);
 			textView.setText(dataList.get(col).getDate());
 
-			TableRow.LayoutParams textParams = new TableRow.LayoutParams(COLUMN_WIDTH, DATE_ROW_HEIGHT);
+			LinearLayout.LayoutParams textParams = new LinearLayout.LayoutParams(COLUMN_WIDTH, DATE_ROW_HEIGHT);
 			textParams.gravity = Gravity.CENTER;
 			dateRow.addView(textView, textParams);
 		}
@@ -245,8 +232,8 @@ public class MidFcstFragment extends Fragment {
 
 			View divisionLine = new View(context);
 			LinearLayout.LayoutParams divisionLineParams = new LinearLayout.LayoutParams(DIVISION_LINE_WIDTH, SMALL_IMG_SIZE);
-			divisionLineParams.leftMargin = DP4;
-			divisionLineParams.rightMargin = DP4;
+			divisionLineParams.leftMargin = LR_DIVISION_LINE_MARGIN;
+			divisionLineParams.rightMargin = LR_DIVISION_LINE_MARGIN;
 			divisionLineParams.gravity = Gravity.CENTER;
 
 			divisionLine.setLayoutParams(divisionLineParams);
@@ -256,7 +243,7 @@ public class MidFcstFragment extends Fragment {
 			linearLayout.addView(divisionLine);
 			linearLayout.addView(skyPm, layoutParams);
 
-			TableRow.LayoutParams params = new TableRow.LayoutParams(COLUMN_WIDTH, BIG_SKY_IMG_SIZE);
+			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(COLUMN_WIDTH, SKY_ROW_HEIGHT);
 			params.gravity = Gravity.CENTER;
 			skyRow.addView(linearLayout, params);
 		}
@@ -277,9 +264,9 @@ public class MidFcstFragment extends Fragment {
 			layoutParams.gravity = Gravity.CENTER;
 			linearLayout.addView(sky, layoutParams);
 
-			TableRow.LayoutParams tableRowParams = new TableRow.LayoutParams(COLUMN_WIDTH, BIG_SKY_IMG_SIZE);
-			tableRowParams.gravity = Gravity.CENTER;
-			skyRow.addView(linearLayout, tableRowParams);
+			LinearLayout.LayoutParams LinearLayoutParams = new LinearLayout.LayoutParams(COLUMN_WIDTH, SKY_ROW_HEIGHT);
+			LinearLayoutParams.gravity = Gravity.CENTER;
+			skyRow.addView(linearLayout, LinearLayoutParams);
 		}
 
 		//강수확률 ---------------------------------------------------------------------------------
@@ -290,7 +277,7 @@ public class MidFcstFragment extends Fragment {
 
 			textView.setText(dataList.get(col).getAmShowerOfChance() + " / " + dataList.get(col).getPmShowerOfChance());
 
-			TableRow.LayoutParams textParams = new TableRow.LayoutParams(COLUMN_WIDTH, CHANCE_OF_SHOWER_HEIGHT);
+			LinearLayout.LayoutParams textParams = new LinearLayout.LayoutParams(COLUMN_WIDTH, CHANCE_OF_SHOWER_ROW_HEIGHT);
 			textParams.gravity = Gravity.CENTER;
 			chanceOfShowerRow.addView(textView, textParams);
 		}
@@ -302,31 +289,39 @@ public class MidFcstFragment extends Fragment {
 
 			textView.setText(dataList.get(col).getShowerOfChance());
 
-			TableRow.LayoutParams textParams = new TableRow.LayoutParams(COLUMN_WIDTH, CHANCE_OF_SHOWER_HEIGHT);
+			LinearLayout.LayoutParams textParams = new LinearLayout.LayoutParams(COLUMN_WIDTH, CHANCE_OF_SHOWER_ROW_HEIGHT);
 			textParams.gravity = Gravity.CENTER;
 			chanceOfShowerRow.addView(textView, textParams);
 		}
 
 		//기온 ------------------------------------------------------------------------------
-		tempRow.measure(VIEW_WIDTH, TEMP_HEIGHT);
+		tempRow.measure(VIEW_WIDTH, TEMP_ROW_HEIGHT);
 
-		TableLayout.LayoutParams dateRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT);
-		dateRowParams.topMargin = MARGIN_TB;
-		dateRowParams.bottomMargin = MARGIN_TB;
-		TableLayout.LayoutParams skyRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT);
-		skyRowParams.topMargin = MARGIN_TB;
-		skyRowParams.bottomMargin = MARGIN_TB;
-		TableLayout.LayoutParams chanceOfShowerRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, ViewGroup.LayoutParams.WRAP_CONTENT);
-		chanceOfShowerRowParams.topMargin = MARGIN_TB;
-		chanceOfShowerRowParams.bottomMargin = MARGIN_TB;
-		TableLayout.LayoutParams tempRowParams = new TableLayout.LayoutParams(VIEW_WIDTH, TEMP_HEIGHT);
-		tempRowParams.topMargin = MARGIN_TB;
-		tempRowParams.bottomMargin = MARGIN_TB;
+		LinearLayout.LayoutParams dateRowParams = new LinearLayout.LayoutParams(VIEW_WIDTH, DATE_ROW_HEIGHT);
+		dateRowParams.topMargin = TB_MARGIN;
+		dateRowParams.bottomMargin = TB_MARGIN;
 
-		binding.midFcstTable.addView(dateRow, dateRowParams);
-		binding.midFcstTable.addView(skyRow, skyRowParams);
-		binding.midFcstTable.addView(chanceOfShowerRow, chanceOfShowerRowParams);
-		binding.midFcstTable.addView(tempRow, tempRowParams);
+		LinearLayout.LayoutParams skyRowParams = new LinearLayout.LayoutParams(VIEW_WIDTH, SKY_ROW_HEIGHT);
+		LinearLayout.LayoutParams chanceOfShowerRowParams = new LinearLayout.LayoutParams(VIEW_WIDTH, CHANCE_OF_SHOWER_ROW_HEIGHT);
+		chanceOfShowerRowParams.topMargin = TB_MARGIN;
+		chanceOfShowerRowParams.bottomMargin = TB_MARGIN;
+
+		LinearLayout.LayoutParams tempRowParams = new LinearLayout.LayoutParams(VIEW_WIDTH, TEMP_ROW_HEIGHT);
+		tempRowParams.topMargin = TB_MARGIN;
+		tempRowParams.bottomMargin = TB_MARGIN;
+
+		binding.midFcstView.addView(dateRow, dateRowParams);
+		binding.midFcstView.addView(skyRow, skyRowParams);
+		binding.midFcstView.addView(chanceOfShowerRow, chanceOfShowerRowParams);
+		binding.midFcstView.addView(tempRow, tempRowParams);
+	}
+
+	private void setLabelTextView(TextView textView, String labelText) {
+		textView.setTextColor(Color.GRAY);
+		textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
+		textView.setGravity(Gravity.CENTER);
+		textView.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+		textView.setText(labelText);
 	}
 
 	private void setValueTextView(TextView textView) {

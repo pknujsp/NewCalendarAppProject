@@ -43,7 +43,7 @@ public class CustomProgressView extends LinearLayout implements OnProgressViewLi
 
 	private void init() {
 		setOrientation(VERTICAL);
-		final int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, getResources().getDisplayMetrics());
+		final int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
 		setPadding(0, padding, 0, padding);
 
 		progressStatusTextView = new TextView(getContext());

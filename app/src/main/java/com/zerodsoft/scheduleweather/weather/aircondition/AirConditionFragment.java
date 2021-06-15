@@ -28,7 +28,6 @@ public class AirConditionFragment extends Fragment implements OnUpdateListener {
 	private final String LONGITUDE;
 	private final OnDownloadedTimeListener onDownloadedTimeListener;
 
-	private ViewProgress viewProgress;
 	private AirConditionProcessing airConditionProcessing;
 
 	public AirConditionFragment(String LATITUDE, String LONGITUDE, OnDownloadedTimeListener onDownloadedTimeListener) {
@@ -58,14 +57,12 @@ public class AirConditionFragment extends Fragment implements OnUpdateListener {
 		binding.ultraFinedustStatus.setText("");
 		binding.showDetailDialogButton.setOnClickListener(onClickListener);
 
-		viewProgress = new ViewProgress(binding.airConditionLayout, binding.weatherProgressLayout.progressBar,
-				binding.weatherProgressLayout.progressStatusTextview, binding.weatherProgressLayout.getRoot());
-
+		binding.customProgressView.setContentView(binding.airConditionLayout);
 		init();
 	}
 
 	private void init() {
-		viewProgress.onStartedProcessingData();
+		binding.customProgressView.onStartedProcessingData();
 
 		airConditionProcessing.getWeatherData(new WeatherDataCallback<AirConditionResult>() {
 			@Override
@@ -74,7 +71,7 @@ public class AirConditionFragment extends Fragment implements OnUpdateListener {
 					@Override
 					public void run() {
 						onDownloadedTimeListener.setDownloadedTime(e.getDownloadedDate(), WeatherDataDTO.AIR_CONDITION);
-						viewProgress.onCompletedProcessingData(true);
+						binding.customProgressView.onSuccessfulProcessingData();
 						setData(e);
 					}
 				});
@@ -86,7 +83,7 @@ public class AirConditionFragment extends Fragment implements OnUpdateListener {
 					@Override
 					public void run() {
 						onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.AIR_CONDITION);
-						viewProgress.onCompletedProcessingData(false, e.getMessage());
+						binding.customProgressView.onFailedProcessingData(getString(R.string.error));
 					}
 				});
 			}
@@ -126,7 +123,7 @@ public class AirConditionFragment extends Fragment implements OnUpdateListener {
 	}
 
 	public void refresh() {
-		viewProgress.onStartedProcessingData();
+		binding.customProgressView.onStartedProcessingData();
 		airConditionProcessing.refresh(new WeatherDataCallback<AirConditionResult>() {
 			@Override
 			public void isSuccessful(AirConditionResult e) {
@@ -134,7 +131,7 @@ public class AirConditionFragment extends Fragment implements OnUpdateListener {
 					@Override
 					public void run() {
 						onDownloadedTimeListener.setDownloadedTime(e.getDownloadedDate(), WeatherDataDTO.AIR_CONDITION);
-						viewProgress.onCompletedProcessingData(true);
+						binding.customProgressView.onSuccessfulProcessingData();
 						setData(e);
 					}
 				});
@@ -146,7 +143,7 @@ public class AirConditionFragment extends Fragment implements OnUpdateListener {
 					@Override
 					public void run() {
 						onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.AIR_CONDITION);
-						viewProgress.onCompletedProcessingData(false, e.getMessage());
+						binding.customProgressView.onFailedProcessingData(getString(R.string.error));
 					}
 				});
 			}
