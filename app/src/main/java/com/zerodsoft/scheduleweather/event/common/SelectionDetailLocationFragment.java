@@ -141,7 +141,7 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 						coordToAddressDocuments.getCoordToAddressAddress().setLongitude(selectedLocationDTOInEvent.getLongitude());
 
 						createMarkers(Collections.singletonList(coordToAddressDocuments), MarkerType.SELECTED_ADDRESS_IN_EVENT);
-						onPOIItemSelectedByList(0, MarkerType.SELECTED_ADDRESS_IN_EVENT);
+						onPOIItemSelectedByList(coordToAddressDocuments, MarkerType.SELECTED_ADDRESS_IN_EVENT);
 
 					}
 
@@ -163,7 +163,7 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 					public void onResponseSuccessful(PlaceKakaoLocalResponse result) {
 						PlaceDocuments document = result.getPlaceDocuments().get(0);
 						createMarkers(Collections.singletonList(document), MarkerType.SELECTED_PLACE_IN_EVENT);
-						onPOIItemSelectedByList(0, MarkerType.SELECTED_PLACE_IN_EVENT);
+						onPOIItemSelectedByList(document, MarkerType.SELECTED_PLACE_IN_EVENT);
 					}
 
 					@Override

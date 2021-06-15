@@ -41,15 +41,17 @@ public class PlaceItemsAdapters extends PagedListAdapter<PlaceDocuments, PlaceIt
 			placeCategoryTextView = (TextView) view.findViewById(R.id.place_item_category);
 			placeDistanceTextView = (TextView) view.findViewById(R.id.place_item_distance);
 
-			view.getRootView().setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View view) {
-					onClickedPlacesListListener.onClickedItemInList(placeCategoryDTO, getAdapterPosition());
-				}
-			});
+
 		}
 
 		public void bind(PlaceDocuments item) {
+			itemView.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View view) {
+					onClickedPlacesListListener.onClickedItemInList(placeCategoryDTO, item, getBindingAdapterPosition());
+				}
+			});
+
 			placeNameTextView.setText(item.getPlaceName());
 			placeAddressTextView.setText(item.getAddressName());
 			placeCategoryTextView.setText(item.getCategoryName());

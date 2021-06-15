@@ -34,7 +34,7 @@ import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.databinding.FragmentFavoriteLocationBinding;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
-import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
+import com.zerodsoft.scheduleweather.event.places.interfaces.MarkerOnClickListener;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.MarkerType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
@@ -54,7 +54,7 @@ import java.util.Set;
 public class FavoriteLocationFragment extends Fragment implements OnClickedFavoriteItem
 		, SharedPreferences.OnSharedPreferenceChangeListener {
 	private FragmentFavoriteLocationBinding binding;
-	private PoiItemOnClickListener poiItemOnClickListener;
+	private MarkerOnClickListener markerOnClickListener;
 	private BottomSheetController bottomSheetController;
 	private IMapData iMapData;
 	private IMapPoint iMapPoint;
@@ -100,7 +100,7 @@ public class FavoriteLocationFragment extends Fragment implements OnClickedFavor
 		mapSharedViewModel = new ViewModelProvider(getParentFragment()).get(MapSharedViewModel.class);
 		iMapData = mapSharedViewModel.getiMapData();
 		bottomSheetController = mapSharedViewModel.getBottomSheetController();
-		poiItemOnClickListener = mapSharedViewModel.getPoiItemOnClickListener();
+		markerOnClickListener = mapSharedViewModel.getPoiItemOnClickListener();
 		iMapPoint = mapSharedViewModel.getiMapPoint();
 
 		favoriteLocationViewModel = new ViewModelProvider(getParentFragment()).get(FavoriteLocationViewModel.class);
@@ -295,8 +295,8 @@ public class FavoriteLocationFragment extends Fragment implements OnClickedFavor
 		if (!binding.switchShowFavoriteLocationsMarkerOnMap.isChecked()) {
 			binding.switchShowFavoriteLocationsMarkerOnMap.setChecked(true);
 		}
-		poiItemOnClickListener.onPOIItemSelectedByList(position, MarkerType.FAVORITE);
 		getParentFragmentManager().popBackStackImmediate();
+		markerOnClickListener.onFavoritePOIItemSelectedByList(e);
 	}
 
 	@Override

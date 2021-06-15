@@ -19,7 +19,7 @@ import com.zerodsoft.scheduleweather.common.enums.KakaoLocalApiResultType;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.FragmentSearchResultListBinding;
 import com.zerodsoft.scheduleweather.etc.LocationType;
-import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
+import com.zerodsoft.scheduleweather.event.places.interfaces.MarkerOnClickListener;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.MarkerType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
@@ -54,7 +54,7 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
 	private MapSharedViewModel mapSharedViewModel;
 	private IMapData iMapData;
 	private BottomSheetController bottomSheetController;
-	private PoiItemOnClickListener poiItemOnClickListener;
+	private MarkerOnClickListener markerOnClickListener;
 
 
 	@Override
@@ -70,7 +70,7 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
 		mapSharedViewModel = new ViewModelProvider(getParentFragment()).get(MapSharedViewModel.class);
 		iMapData = mapSharedViewModel.getiMapData();
 		bottomSheetController = mapSharedViewModel.getBottomSheetController();
-		poiItemOnClickListener = mapSharedViewModel.getPoiItemOnClickListener();
+		markerOnClickListener = mapSharedViewModel.getPoiItemOnClickListener();
 	}
 
 	@Override
@@ -204,7 +204,7 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
 		@Override
 		public void onClickedListItem(PlaceDocuments e, int position) {
 			iMapData.showMarkers(MarkerType.SEARCH_RESULT_PLACE);
-			poiItemOnClickListener.onPOIItemSelectedByList(position, MarkerType.SEARCH_RESULT_PLACE);
+			markerOnClickListener.onPOIItemSelectedByList(e, MarkerType.SEARCH_RESULT_PLACE);
 			bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_COLLAPSED);
 			showMap();
 		}
@@ -219,7 +219,7 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
 		@Override
 		public void onClickedListItem(AddressResponseDocuments e, int position) {
 			iMapData.showMarkers(MarkerType.SEARCH_RESULT_ADDRESS);
-			poiItemOnClickListener.onPOIItemSelectedByList(position, MarkerType.SEARCH_RESULT_ADDRESS);
+			markerOnClickListener.onPOIItemSelectedByList(e, MarkerType.SEARCH_RESULT_ADDRESS);
 			bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_COLLAPSED);
 			showMap();
 		}

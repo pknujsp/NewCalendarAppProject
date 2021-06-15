@@ -19,33 +19,31 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerAdapter {
 	private ArrayMap<FavoriteLocationDTO, KakaoLocalDocument> favoriteLocationsMap = new ArrayMap<>();
-	private List<FavoriteLocationDTO> favoriteLocationList = new ArrayList<>();
 
 	public FavoriteLocationItemViewPagerAdapter(Context context) {
 		super(context, MarkerType.FAVORITE);
 	}
 
 	public void setFavoriteLocationList(List<FavoriteLocationDTO> favoriteLocationList) {
-		this.favoriteLocationList = favoriteLocationList;
 		for (FavoriteLocationDTO favoriteLocationDTO : favoriteLocationList) {
 			favoriteLocationsMap.put(favoriteLocationDTO, null);
 		}
 	}
 
 	public void addFavoriteLocation(FavoriteLocationDTO newFavoriteLocationDTO) {
-		favoriteLocationList.add(newFavoriteLocationDTO);
 		favoriteLocationsMap.put(newFavoriteLocationDTO, null);
 	}
 
 	public void removeFavoriteLocation(FavoriteLocationDTO removedFavoriteLocationDTO) {
 		int index = 0;
+		Set<FavoriteLocationDTO> keySet = favoriteLocationsMap.keySet();
 
-		for (FavoriteLocationDTO favoriteLocationDTO : favoriteLocationList) {
+		for (FavoriteLocationDTO favoriteLocationDTO : keySet) {
 			if (removedFavoriteLocationDTO.equals(favoriteLocationDTO)) {
-				favoriteLocationList.remove(index);
 				favoriteLocationsMap.removeAt(index);
 				break;
 			}
@@ -53,13 +51,8 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
 		}
 	}
 
-
 	public void setFavoriteLocationsMap(ArrayMap<FavoriteLocationDTO, KakaoLocalDocument> favoriteLocationsMap) {
 		this.favoriteLocationsMap.putAll(favoriteLocationsMap);
-	}
-
-	public List<FavoriteLocationDTO> getFavoriteLocationList() {
-		return favoriteLocationList;
 	}
 
 	public ArrayMap<FavoriteLocationDTO, KakaoLocalDocument> getFavoriteLocationsMap() {
@@ -87,11 +80,16 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
 		((FavoriteLocationItemInMapViewHolder) holder).bind();
 	}
 
-	public int getItemPosition(FavoriteLocationDTO favoriteLocationDTO) {
-		int position = 0;
-		final int id = favoriteLocationDTO.getId();
+	public FavoriteLocationDTO getKey(int position) {
+		return favoriteLocationsMap.keyAt(position);
+	}
 
-		for (FavoriteLocationDTO favoriteLocation : favoriteLocationList) {
+	public int getItemPosition(FavoriteLocationDTO favoriteLocationDTO) {
+		final int id = favoriteLocationDTO.getId();
+		Set<FavoriteLocationDTO> keySet = favoriteLocationsMap.keySet();
+
+		int position = 0;
+		for (FavoriteLocationDTO favoriteLocation : keySet) {
 			if (id == favoriteLocation.getId()) {
 				break;
 			}
@@ -116,8 +114,6 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
 		@Override
 		protected void onClickedFavoriteBtn(int position) {
 			processOnClickedFavoriteBtn(favoriteLocationsMap.get(favoriteLocationsMap.keyAt(position)));
-			favoriteLocationList.remove(position);
-			favoriteLocationsMap.removeAt(position);
 		}
 
 		public void bind() {

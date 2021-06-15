@@ -65,7 +65,6 @@ import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceItemsGetter;
 import com.zerodsoft.scheduleweather.event.places.map.PlacesOfSelectedCategoriesFragment;
 import com.zerodsoft.scheduleweather.event.weather.fragment.WeatherMainFragment;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
-import com.zerodsoft.scheduleweather.navermap.LocationItemViewPagerAdapter;
 import com.zerodsoft.scheduleweather.navermap.NaverMapFragment;
 import com.zerodsoft.scheduleweather.navermap.MarkerType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener;
@@ -620,10 +619,10 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 
 		PlacesOfSelectedCategoriesFragment placesOfSelectedCategoriesFragment = new PlacesOfSelectedCategoriesFragment(EVENT_ID, new OnClickedPlacesListListener() {
 			@Override
-			public void onClickedItemInList(PlaceCategoryDTO placeCategory, int index) {
+			public void onClickedItemInList(PlaceCategoryDTO placeCategory, PlaceDocuments placeDocument, int index) {
 				getChildFragmentManager().popBackStackImmediate();
 				placeCategoryChipMap.get(placeCategory.getCode()).setChecked(true);
-				onPOIItemSelectedByList(index, MarkerType.SELECTED_PLACE_CATEGORY);
+				onPOIItemSelectedByList(placeDocument, MarkerType.SELECTED_PLACE_CATEGORY);
 			}
 
 			@Override

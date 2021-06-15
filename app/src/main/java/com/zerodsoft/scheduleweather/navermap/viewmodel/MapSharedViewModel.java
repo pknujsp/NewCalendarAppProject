@@ -5,7 +5,7 @@ import android.app.Application;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 
-import com.zerodsoft.scheduleweather.event.places.interfaces.PoiItemOnClickListener;
+import com.zerodsoft.scheduleweather.event.places.interfaces.MarkerOnClickListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
@@ -16,7 +16,7 @@ public class MapSharedViewModel extends AndroidViewModel {
 	private BottomSheetController bottomSheetController;
 	private IMapData iMapData;
 	private IMapPoint iMapPoint;
-	private PoiItemOnClickListener poiItemOnClickListener;
+	private MarkerOnClickListener markerOnClickListener;
 
 
 	public MapSharedViewModel(@NonNull @NotNull Application application) {
@@ -47,11 +47,11 @@ public class MapSharedViewModel extends AndroidViewModel {
 		return bottomSheetController;
 	}
 
-	public void setPoiItemOnClickListener(PoiItemOnClickListener poiItemOnClickListener) {
-		this.poiItemOnClickListener = poiItemOnClickListener;
+	public void setPoiItemOnClickListener(MarkerOnClickListener markerOnClickListener) {
+		this.markerOnClickListener = markerOnClickListener;
 	}
 
-	public PoiItemOnClickListener getPoiItemOnClickListener() {
-		return poiItemOnClickListener;
+	public MarkerOnClickListener getPoiItemOnClickListener() {
+		return markerOnClickListener;
 	}
 }

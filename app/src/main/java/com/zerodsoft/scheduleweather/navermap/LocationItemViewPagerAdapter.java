@@ -55,6 +55,10 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
 		this.placesItemBottomSheetButtonOnClickListener = placesItemBottomSheetButtonOnClickListener;
 	}
 
+	public KakaoLocalDocument getItem(int position) {
+		return localDocumentsList.get(position);
+	}
+
 	public int getItemPosition(KakaoLocalDocument kakaoLocalDocument) {
 		int position = 0;
 
