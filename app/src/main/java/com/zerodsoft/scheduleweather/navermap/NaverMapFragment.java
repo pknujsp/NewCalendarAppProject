@@ -531,7 +531,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		if (mapFragment == null) {
 			NaverMapOptions naverMapOptions = new NaverMapOptions();
 			naverMapOptions.scaleBarEnabled(true).locationButtonEnabled(false).compassEnabled(false).zoomControlEnabled(false)
-					.mapType(NaverMap.MapType.Basic).camera(new CameraPosition(new LatLng(37.6076585, 127.0965492), 10));
+					.mapType(NaverMap.MapType.Basic).camera(new CameraPosition(new LatLng(37.6076585, 127.0965492), 11));
 
 			mapFragment = MapFragment.newInstance(naverMapOptions);
 			getChildFragmentManager().beginTransaction().add(R.id.naver_map_fragment, mapFragment).commitNow();

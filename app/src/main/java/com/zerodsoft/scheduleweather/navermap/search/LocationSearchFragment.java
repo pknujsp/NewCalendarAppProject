@@ -81,11 +81,40 @@ public class LocationSearchFragment extends Fragment {
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+		binding.customProgressView.setContentView(binding.searchHistoryRecyclerview);
+		binding.customProgressView.onSuccessfulProcessingData();
 
 		binding.searchHistoryRecyclerview.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
 		binding.searchHistoryRecyclerview.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
 
 		searchLocationHistoryAdapter = new SearchLocationHistoryAdapter(searchHistoryDTOOnClickedListItem);
+		searchLocationHistoryAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+			@Override
+			public void onChanged() {
+				super.onChanged();
+				if (searchLocationHistoryAdapter.getItemCount() == 0) {
+					binding.customProgressView.onFailedProcessingData(getString(R.string.not_search_history));
+				} else {
+					binding.customProgressView.onSuccessfulProcessingData();
+				}
+			}
+
+			@Override
+			public void onItemRangeInserted(int positionStart, int itemCount) {
+				super.onItemRangeInserted(positionStart, itemCount);
+				if (positionStart == 0) {
+					binding.customProgressView.onSuccessfulProcessingData();
+				}
+			}
+
+			@Override
+			public void onItemRangeRemoved(int positionStart, int itemCount) {
+				super.onItemRangeRemoved(positionStart, itemCount);
+				if (searchLocationHistoryAdapter.getItemCount() == 0) {
+					binding.customProgressView.onFailedProcessingData(getString(R.string.not_search_history));
+				}
+			}
+		});
 		binding.searchHistoryRecyclerview.setAdapter(searchLocationHistoryAdapter);
 
 		searchHistoryViewModel.select(SearchHistoryDTO.LOCATION_SEARCH, new DbQueryCallback<List<SearchHistoryDTO>>() {

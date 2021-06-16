@@ -43,7 +43,9 @@ import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 
 import java.text.DecimalFormat;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class PlacesOfSelectedCategoriesFragment extends Fragment implements PlaceItemsGetter, OnExtraListDataListener<String> {
 	private final long EVENT_ID;
@@ -54,7 +56,7 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 	private OnHiddenFragmentListener onHiddenFragmentListener;
 
 	private PlacelistFragmentBinding binding;
-	private List<PlaceCategoryDTO> placeCategoryList;
+	private Set<PlaceCategoryDTO> placeCategorySet = new HashSet<>();
 	private LocationDTO selectedLocationDto;
 
 	private PlaceCategoryViewModel placeCategoryViewModel;
@@ -165,13 +167,13 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 		placeCategoryViewModel.selectConvertedSelected(new DbQueryCallback<List<PlaceCategoryDTO>>() {
 			@Override
 			public void onResultSuccessful(List<PlaceCategoryDTO> savedPlaceCategoriesList) {
-				placeCategoryList = savedPlaceCategoriesList;
+				placeCategorySet.addAll(savedPlaceCategoriesList);
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
 						binding.addressName.setText(selectedLocationDto.getAddressName());
 
-						if (placeCategoryList.isEmpty()) {
+						if (savedPlaceCategoriesList.isEmpty()) {
 							binding.customProgressView.onFailedProcessingData(getString(R.string.not_selected_place_category));
 							return;
 						} else {
@@ -185,7 +187,7 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 						LayoutInflater layoutInflater = getLayoutInflater();
 						final String rangeRadius = App.getPreference_key_radius_range();
 
-						for (PlaceCategoryDTO placeCategory : placeCategoryList) {
+						for (PlaceCategoryDTO placeCategory : savedPlaceCategoriesList) {
 							LinearLayout categoryView = (LinearLayout) layoutInflater.inflate(R.layout.place_category_view, null);
 							((TextView) categoryView.findViewById(R.id.map_category_name)).setText(placeCategory.getDescription());
 
@@ -232,6 +234,104 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 			@Override
 			public void onResultNoData() {
 
+			}
+		});
+	}
+
+	public void refreshList() {
+		placeCategoryViewModel.selectConvertedSelected(new DbQueryCallback<List<PlaceCategoryDTO>>() {
+			@Override
+			public void onResultSuccessful(List<PlaceCategoryDTO> savedPlaceCategoryList) {
+				Set<PlaceCategoryDTO> newSet = new HashSet<>();
+				newSet.addAll(savedPlaceCategoryList);
+
+				Set<PlaceCategoryDTO> removedSet = new HashSet<>(placeCategorySet);
+				Set<PlaceCategoryDTO> addedSet = new HashSet<>(newSet);
+
+				removedSet.removeAll(newSet);
+				addedSet.removeAll(placeCategorySet);
+
+				if (!removedSet.isEmpty() || !addedSet.isEmpty()) {
+					placeCategorySet = newSet;
+					Set<String> newCodeSet = new HashSet<>();
+					for (PlaceCategoryDTO placeCategoryDTO : newSet) {
+						newCodeSet.add(placeCategoryDTO.getCode());
+					}
+
+					requireActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							//refresh list
+							if (savedPlaceCategoryList.isEmpty()) {
+								binding.categoryViewlist.removeAllViews();
+								adaptersMap.clear();
+								listMap.clear();
+								binding.customProgressView.onFailedProcessingData(getString(R.string.not_selected_place_category));
+								return;
+							} else {
+								binding.customProgressView.onSuccessfulProcessingData();
+							}
+
+							final int currentListSize = listMap.size();
+							for (int index = currentListSize - 1; index >= 0; index--) {
+								if (!newCodeSet.contains(listMap.keyAt(index))) {
+									listMap.removeAt(index);
+									adaptersMap.removeAt(index);
+									binding.categoryViewlist.removeViewAt(index);
+								}
+							}
+
+							LayoutInflater layoutInflater = getLayoutInflater();
+							final String rangeRadius = App.getPreference_key_radius_range();
+
+							for (PlaceCategoryDTO placeCategory : addedSet) {
+								LinearLayout categoryView = (LinearLayout) layoutInflater.inflate(R.layout.place_category_view, null);
+								((TextView) categoryView.findViewById(R.id.map_category_name)).setText(placeCategory.getDescription());
+
+								RecyclerView itemRecyclerView = (RecyclerView) categoryView.findViewById(R.id.map_category_itemsview);
+
+								itemRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.HORIZONTAL, false));
+								itemRecyclerView.addItemDecoration(new CustomRecyclerViewItemDecoration((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics())));
+
+								LocalApiPlaceParameter placeParameter = LocalParameterUtil.getPlaceParameter(placeCategory.getCode(), String.valueOf(selectedLocationDto.getLatitude()),
+										String.valueOf(selectedLocationDto.getLongitude()), LocalApiPlaceParameter.DEFAULT_SIZE, LocalApiPlaceParameter.DEFAULT_PAGE,
+										LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
+								placeParameter.setRadius(rangeRadius);
+
+								PlaceItemsAdapters adapter = new PlaceItemsAdapters(onClickedPlacesListListener, placeCategory);
+								itemRecyclerView.setAdapter(adapter);
+
+								PlacesViewModel viewModel =
+										new ViewModelProvider(PlacesOfSelectedCategoriesFragment.this).get(PlacesViewModel.class);
+								viewModel.init(placeParameter);
+								viewModel.getPagedListMutableLiveData().observe(PlacesOfSelectedCategoriesFragment.this.getViewLifecycleOwner(),
+										new Observer<PagedList<PlaceDocuments>>() {
+											@Override
+											public void onChanged(PagedList<PlaceDocuments> placeDocuments) {
+												//카테고리 뷰 어댑터에 데이터 삽입
+												adapter.submitList(placeDocuments);
+											}
+										});
+
+								((Button) categoryView.findViewById(R.id.map_category_more)).setOnClickListener(new View.OnClickListener() {
+									@Override
+									public void onClick(View view) {
+										onClickedPlacesListListener.onClickedMoreInList(placeCategory);
+									}
+								});
+
+								adaptersMap.put(placeCategory.getCode(), adapter);
+								listMap.put(placeCategory.getCode(), itemRecyclerView);
+								binding.categoryViewlist.addView(categoryView);
+							}
+						}
+					});
+				}
+
+			}
+
+			@Override
+			public void onResultNoData() {
 			}
 		});
 	}

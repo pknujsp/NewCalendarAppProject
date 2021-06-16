@@ -42,6 +42,7 @@
         android:title="@string/preference_place_category_title">
 
         <Preference
+            android:fragment="com.zerodsoft.scheduleweather.activity.placecategory.PlaceCategorySettingsFragment"
             android:key="@string/preference_key_places_category"
             android:summary="@string/preference_summary_places_category"
             android:title="@string/preference_title_places_category" />

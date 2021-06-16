@@ -122,7 +122,6 @@ public class SearchResultPlaceListFragment extends Fragment implements OnExtraLi
 			}
 		});
 
-
 		requestPlaces(QUERY);
 	}
 

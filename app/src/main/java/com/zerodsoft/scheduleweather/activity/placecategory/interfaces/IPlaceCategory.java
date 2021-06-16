@@ -1,44 +1,39 @@
 package com.zerodsoft.scheduleweather.activity.placecategory.interfaces;
 
-import android.service.carrier.CarrierMessagingService;
-
 import com.zerodsoft.scheduleweather.activity.placecategory.model.PlaceCategoryData;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.room.dto.CustomPlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.dto.SelectedPlaceCategoryDTO;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.List;
 
-public interface IPlaceCategory
-{
-    //custom
-    void insertCustom(String code, CarrierMessagingService.ResultCallback<CustomPlaceCategoryDTO> callback);
+public interface IPlaceCategory {
+	//custom
+	void addCustom(String code, DbQueryCallback<CustomPlaceCategoryDTO> callback);
 
-    void selectCustom(CarrierMessagingService.ResultCallback<List<CustomPlaceCategoryDTO>> callback);
+	void getCustom(DbQueryCallback<List<CustomPlaceCategoryDTO>> callback);
 
-    void updateCustom(String currentCode, String code, CarrierMessagingService.ResultCallback<CustomPlaceCategoryDTO> callback);
+	void deleteCustom(String code, DbQueryCallback<Boolean> callback);
 
-    void deleteCustom(String code, CarrierMessagingService.ResultCallback<Boolean> callback);
+	void deleteAllCustom(DbQueryCallback<Boolean> callback);
 
-    void deleteAllCustom(CarrierMessagingService.ResultCallback<Boolean> callback);
+	void contains(String code, DbQueryCallback<Boolean> callback);
 
-    void containsCode(String code, CarrierMessagingService.ResultCallback<Boolean> callback);
+	//selected
+	void addSelected(String code, DbQueryCallback<SelectedPlaceCategoryDTO> callback);
 
-    //selected
-    void insertSelected(String code, CarrierMessagingService.ResultCallback<SelectedPlaceCategoryDTO> callback);
+	void addAllSelected(List<PlaceCategoryDTO> list, DbQueryCallback<List<SelectedPlaceCategoryDTO>> callback);
 
-    void insertAllSelected(List<PlaceCategoryDTO> list, CarrierMessagingService.ResultCallback<List<SelectedPlaceCategoryDTO>> callback);
+	void deleteSelected(String code, @Nullable DbQueryCallback<Boolean> callback);
 
-    void deleteSelected(String code, CarrierMessagingService.ResultCallback<Boolean> callback);
+	void deleteAllSelected(DbQueryCallback<Boolean> callback);
 
-    void deleteAllSelected(CarrierMessagingService.ResultCallback<Boolean> callback);
+	void getSelected(DbQueryCallback<List<SelectedPlaceCategoryDTO>> callback);
 
-    void selectSelected(CarrierMessagingService.ResultCallback<List<SelectedPlaceCategoryDTO>> callback);
+	void getSettingsData(DbQueryCallback<PlaceCategoryData> callback);
 
-    void getSettingsData(CarrierMessagingService.ResultCallback<PlaceCategoryData> callback);
-
-    void updateSelected(String currentCode, String code, CarrierMessagingService.ResultCallback<SelectedPlaceCategoryDTO> callback);
-
-    void selectConvertedSelected(DbQueryCallback<List<PlaceCategoryDTO>> callback);
+	void selectConvertedSelected(DbQueryCallback<List<PlaceCategoryDTO>> callback);
 }

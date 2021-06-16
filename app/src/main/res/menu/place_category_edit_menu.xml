@@ -6,7 +6,4 @@
         android:id="@+id/delete_place_category"
         android:checkable="false"
         android:title="@string/delete_button" />
-    <item
-        android:id="@+id/edit_place_category"
-        android:title="@string/edit_button" />
 </menu>

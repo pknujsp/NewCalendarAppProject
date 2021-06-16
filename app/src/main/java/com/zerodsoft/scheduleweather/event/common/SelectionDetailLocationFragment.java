@@ -54,14 +54,18 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 	private LocationDTO selectedLocationDTOInMap;
 	private String locationNameInEvent;
 
+	boolean mapReady = false;
+	boolean mapHeaderSearchFragmentStarted = false;
+
 	private FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks = new FragmentManager.FragmentLifecycleCallbacks() {
 		@Override
 		public void onFragmentStarted(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
 			super.onFragmentStarted(fm, f);
 			if (f instanceof MapHeaderSearchFragment) {
 				if (requestCode == LocationIntentCode.REQUEST_CODE_SELECT_LOCATION_BY_QUERY) {
+					mapHeaderSearchFragmentStarted = true;
+					attemptSearchQuery();
 					fm.unregisterFragmentLifecycleCallbacks(fragmentLifecycleCallbacks);
-					((MapHeaderSearchFragment) f).setQuery(locationNameInEvent, true);
 				}
 			} else if (f instanceof MapHeaderMainFragment) {
 				if (requestCode == LocationIntentCode.REQUEST_CODE_SELECT_LOCATION_BY_QUERY) {
@@ -225,8 +229,23 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 	@Override
 	public void onMapReady(@NonNull @NotNull NaverMap naverMap) {
 		super.onMapReady(naverMap);
-		if (selectedLocationDTOInEvent != null) {
-			showLocationItem();
+		mapReady = true;
+		if (requestCode == LocationIntentCode.REQUEST_CODE_SELECT_LOCATION_BY_QUERY) {
+			attemptSearchQuery();
+		}
+
+		if (requestCode == LocationIntentCode.REQUEST_CODE_CHANGE_LOCATION) {
+			if (selectedLocationDTOInEvent != null) {
+				showLocationItem();
+			}
 		}
 	}
+
+	private void attemptSearchQuery() {
+		if (mapReady && mapHeaderSearchFragmentStarted) {
+			((MapHeaderSearchFragment) getChildFragmentManager().findFragmentByTag(getString(R.string.tag_map_header_search_fragment))).setQuery(locationNameInEvent, true);
+		}
+	}
+
+
 }

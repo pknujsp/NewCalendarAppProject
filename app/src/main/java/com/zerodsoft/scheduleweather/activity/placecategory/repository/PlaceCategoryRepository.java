@@ -1,7 +1,6 @@
 package com.zerodsoft.scheduleweather.activity.placecategory.repository;
 
 import android.content.Context;
-import android.service.carrier.CarrierMessagingService;
 
 import androidx.lifecycle.MutableLiveData;
 
@@ -17,316 +16,248 @@ import com.zerodsoft.scheduleweather.room.AppDb;
 import com.zerodsoft.scheduleweather.room.dao.SelectedPlaceCategoryDAO;
 import com.zerodsoft.scheduleweather.room.dto.SelectedPlaceCategoryDTO;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import lombok.SneakyThrows;
+public class PlaceCategoryRepository implements IPlaceCategory {
+	private final SelectedPlaceCategoryDAO selectedPlaceCategoryDAO;
+	private final CustomPlaceCategoryDAO customPlaceCategoryDAO;
+	private MutableLiveData<List<PlaceCategoryDTO>> convertedSelectedCategoriesLiveData = new MutableLiveData<>();
+	private MutableLiveData<PlaceCategoryDTO> onSelectedCategoryLiveData = new MutableLiveData<>();
+	private MutableLiveData<String> onUnSelectedCategoryLiveData = new MutableLiveData<>();
 
-public class PlaceCategoryRepository implements IPlaceCategory
-{
-    private final SelectedPlaceCategoryDAO selectedPlaceCategoryDAO;
-    private final CustomPlaceCategoryDAO customPlaceCategoryDAO;
-    private MutableLiveData<List<PlaceCategoryDTO>> convertedSelectedCategoriesLiveData = new MutableLiveData<>();
+	public PlaceCategoryRepository(Context context) {
+		selectedPlaceCategoryDAO = AppDb.getInstance(context).selectedPlaceCategoryDAO();
+		customPlaceCategoryDAO = AppDb.getInstance(context).customPlaceCategoryDAO();
+	}
 
-    public PlaceCategoryRepository(Context context)
-    {
-        selectedPlaceCategoryDAO = AppDb.getInstance(context).selectedPlaceCategoryDAO();
-        customPlaceCategoryDAO = AppDb.getInstance(context).customPlaceCategoryDAO();
-    }
+	@Override
+	public void addCustom(String code, DbQueryCallback<CustomPlaceCategoryDTO> callback) {
+		App.executorService.execute(new Runnable() {
+			@Override
+			public void run() {
+				//custom category에 추가
+				customPlaceCategoryDAO.insert(code);
+				CustomPlaceCategoryDTO customPlaceCategory = customPlaceCategoryDAO.select(code);
+				callback.processResult(customPlaceCategory);
+			}
+		});
+	}
 
-    @Override
-    public void insertCustom(String code, CarrierMessagingService.ResultCallback<CustomPlaceCategoryDTO> callback)
-    {
-        App.executorService.execute(new Runnable()
-        {
-            @SneakyThrows
-            @Override
-            public void run()
-            {
-                //custom category에 추가
-                customPlaceCategoryDAO.insert(code);
-                CustomPlaceCategoryDTO customPlaceCategory = customPlaceCategoryDAO.select(code);
-                callback.onReceiveResult(customPlaceCategory);
-            }
-        });
-    }
+	@Override
+	public void getCustom(DbQueryCallback<List<CustomPlaceCategoryDTO>> callback) {
+		App.executorService.execute(new Runnable() {
+			@Override
+			public void run() {
+				List<CustomPlaceCategoryDTO> list = customPlaceCategoryDAO.select();
+				callback.processResult(list);
+			}
+		});
 
-    @Override
-    public void selectCustom(CarrierMessagingService.ResultCallback<List<CustomPlaceCategoryDTO>> callback)
-    {
-        App.executorService.execute(new Runnable()
-        {
-            @SneakyThrows
-            @Override
-            public void run()
-            {
-                List<CustomPlaceCategoryDTO> list = customPlaceCategoryDAO.select();
-                callback.onReceiveResult(list);
-            }
-        });
+	}
 
-    }
+	@Override
+	public void deleteCustom(String code, DbQueryCallback<Boolean> callback) {
+		App.executorService.execute(new Runnable() {
+			@Override
+			public void run() {
+				// custom category와 selected category 모두 삭제
+				selectedPlaceCategoryDAO.delete(code);
+				customPlaceCategoryDAO.delete(code);
+				callback.processResult(true);
+			}
+		});
+	}
 
-    @Override
-    public void updateCustom(String currentCode, String code, CarrierMessagingService.ResultCallback<CustomPlaceCategoryDTO> callback)
-    {
-        App.executorService.execute(new Runnable()
-        {
-            @SneakyThrows
-            @Override
-            public void run()
-            {
-                // custom category와 selected category 모두 수정
-                selectedPlaceCategoryDAO.update(currentCode, code);
-                customPlaceCategoryDAO.update(currentCode, code);
+	@Override
+	public void deleteAllCustom(DbQueryCallback<Boolean> callback) {
+		App.executorService.execute(new Runnable() {
+			@Override
+			public void run() {
+				// selected category에서 커스텀 모두 삭제, custom category모두 삭제
+				List<CustomPlaceCategoryDTO> customs = customPlaceCategoryDAO.select();
+				for (CustomPlaceCategoryDTO custom : customs) {
+					selectedPlaceCategoryDAO.delete(custom.getCode());
+				}
+				customPlaceCategoryDAO.deleteAll();
+				callback.processResult(true);
+			}
+		});
 
-                CustomPlaceCategoryDTO customPlaceCategory = customPlaceCategoryDAO.select(code);
-                callback.onReceiveResult(customPlaceCategory);
-            }
-        });
-    }
+	}
 
-    @Override
-    public void deleteCustom(String code, CarrierMessagingService.ResultCallback<Boolean> callback)
-    {
-        App.executorService.execute(new Runnable()
-        {
-            @SneakyThrows
-            @Override
-            public void run()
-            {
-                // custom category와 selected category 모두 삭제
-                selectedPlaceCategoryDAO.delete(code);
-                customPlaceCategoryDAO.delete(code);
-                callback.onReceiveResult(true);
-            }
-        });
-    }
+	@Override
+	public void addSelected(String code, DbQueryCallback<SelectedPlaceCategoryDTO> callback) {
+		App.executorService.execute(new Runnable() {
+			@Override
+			public void run() {
+				selectedPlaceCategoryDAO.add(code);
+				SelectedPlaceCategoryDTO selectedPlaceCategory = selectedPlaceCategoryDAO.get(code);
+				callback.processResult(selectedPlaceCategory);
 
-    @Override
-    public void deleteAllCustom(CarrierMessagingService.ResultCallback<Boolean> callback)
-    {
-        App.executorService.execute(new Runnable()
-        {
-            @SneakyThrows
-            @Override
-            public void run()
-            {
-                // selected category에서 커스텀 모두 삭제, custom category모두 삭제
-                List<CustomPlaceCategoryDTO> customs = customPlaceCategoryDAO.select();
-                for (CustomPlaceCategoryDTO custom : customs)
-                {
-                    selectedPlaceCategoryDAO.delete(custom.getCode());
-                }
-                customPlaceCategoryDAO.deleteAll();
-                callback.onReceiveResult(true);
-            }
-        });
+				PlaceCategoryDTO placeCategoryDTO = new PlaceCategoryDTO();
+				placeCategoryDTO.setCode(selectedPlaceCategory.getCode());
 
-    }
+				if (KakaoLocalApiCategoryUtil.containsDefault(selectedPlaceCategory.getCode())) {
+					placeCategoryDTO.setDescription(KakaoLocalApiCategoryUtil.getDefaultDescription(selectedPlaceCategory.getCode()));
+				} else {
+					placeCategoryDTO.setCustom(true);
+					placeCategoryDTO.setDescription(selectedPlaceCategory.getCode());
+				}
 
-    @Override
-    public void insertSelected(String code, CarrierMessagingService.ResultCallback<SelectedPlaceCategoryDTO> callback)
-    {
-        App.executorService.execute(new Runnable()
-        {
-            @SneakyThrows
-            @Override
-            public void run()
-            {
-                selectedPlaceCategoryDAO.insert(code);
-                SelectedPlaceCategoryDTO selectedPlaceCategory = selectedPlaceCategoryDAO.select(code);
-                callback.onReceiveResult(selectedPlaceCategory);
-            }
-        });
-    }
+				onSelectedCategoryLiveData.postValue(placeCategoryDTO);
+			}
+		});
+	}
 
-    @Override
-    public void deleteSelected(String code, CarrierMessagingService.ResultCallback<Boolean> callback)
-    {
-        App.executorService.execute(new Runnable()
-        {
-            @SneakyThrows
-            @Override
-            public void run()
-            {
-                selectedPlaceCategoryDAO.delete(code);
-                callback.onReceiveResult(true);
-            }
-        });
-    }
+	@Override
+	public void deleteSelected(String code, @Nullable DbQueryCallback<Boolean> callback) {
+		App.executorService.execute(new Runnable() {
+			@Override
+			public void run() {
+				selectedPlaceCategoryDAO.delete(code);
+				if (callback != null) {
+					callback.processResult(true);
+				}
+				onUnSelectedCategoryLiveData.postValue(code);
+			}
+		});
+	}
 
-    @Override
-    public void deleteAllSelected(CarrierMessagingService.ResultCallback<Boolean> callback)
-    {
-        App.executorService.execute(new Runnable()
-        {
-            @SneakyThrows
-            @Override
-            public void run()
-            {
-                selectedPlaceCategoryDAO.deleteAll();
-                callback.onReceiveResult(true);
-            }
-        });
-    }
+	@Override
+	public void deleteAllSelected(DbQueryCallback<Boolean> callback) {
+		App.executorService.execute(new Runnable() {
+			@Override
+			public void run() {
+				selectedPlaceCategoryDAO.deleteAll();
+				callback.processResult(true);
+			}
+		});
+	}
 
-    @Override
-    public void selectSelected(CarrierMessagingService.ResultCallback<List<SelectedPlaceCategoryDTO>> callback)
-    {
-        App.executorService.execute(new Runnable()
-        {
-            @SneakyThrows
-            @Override
-            public void run()
-            {
-                List<SelectedPlaceCategoryDTO> list = selectedPlaceCategoryDAO.select();
-                callback.onReceiveResult(list);
-            }
-        });
+	@Override
+	public void getSelected(DbQueryCallback<List<SelectedPlaceCategoryDTO>> callback) {
+		App.executorService.execute(new Runnable() {
+			@Override
+			public void run() {
+				List<SelectedPlaceCategoryDTO> list = selectedPlaceCategoryDAO.getAll();
+				callback.processResult(list);
+			}
+		});
 
-    }
+	}
 
-    @Override
-    public void getSettingsData(CarrierMessagingService.ResultCallback<PlaceCategoryData> callback)
-    {
-        App.executorService.execute(new Runnable()
-        {
-            @SneakyThrows
-            @Override
-            public void run()
-            {
-                //커스텀 카테고리 모든 데이터를 가져옴
-                List<CustomPlaceCategoryDTO> customAllList = customPlaceCategoryDAO.select();
+	@Override
+	public void getSettingsData(DbQueryCallback<PlaceCategoryData> callback) {
+		App.executorService.execute(new Runnable() {
+			@Override
+			public void run() {
+				//커스텀 카테고리 모든 데이터를 가져옴
+				List<CustomPlaceCategoryDTO> customAllList = customPlaceCategoryDAO.select();
 
-                //선택된 카테고리 리스트를 가져옴
-                List<SelectedPlaceCategoryDTO> selectedCategorylist = selectedPlaceCategoryDAO.select();
+				//선택된 카테고리 리스트를 가져옴
+				List<SelectedPlaceCategoryDTO> selectedCategorylist = selectedPlaceCategoryDAO.getAll();
 
-                //기본, 커스텀 카테고리 리스트 설정
-                List<PlaceCategoryDTO> defaultAllPlaceCategories = KakaoLocalApiCategoryUtil.getDefaultPlaceCategoryList();
-                List<PlaceCategoryDTO> customAllCategories = new ArrayList<>();
+				//기본, 커스텀 카테고리 리스트 설정
+				List<PlaceCategoryDTO> defaultAllPlaceCategories = KakaoLocalApiCategoryUtil.getDefaultPlaceCategoryList();
+				List<PlaceCategoryDTO> customAllCategories = new ArrayList<>();
 
-                //커스텀 카테고리를 전체 카테고리로 포함시킨다
-                for (CustomPlaceCategoryDTO customPlaceCategory : customAllList)
-                {
-                    PlaceCategoryDTO placeCategoryDTO = new PlaceCategoryDTO();
-                    placeCategoryDTO.setCode(customPlaceCategory.getCode());
-                    placeCategoryDTO.setDescription(customPlaceCategory.getCode());
-                    placeCategoryDTO.setCustom(true);
-                    customAllCategories.add(placeCategoryDTO);
-                }
+				//커스텀 카테고리를 전체 카테고리로 포함시킨다
+				for (CustomPlaceCategoryDTO customPlaceCategory : customAllList) {
+					PlaceCategoryDTO placeCategoryDTO = new PlaceCategoryDTO();
+					placeCategoryDTO.setCode(customPlaceCategory.getCode());
+					placeCategoryDTO.setDescription(customPlaceCategory.getCode());
+					placeCategoryDTO.setCustom(true);
+					customAllCategories.add(placeCategoryDTO);
+				}
 
-                PlaceCategoryData placeCategoryData = new PlaceCategoryData();
-                placeCategoryData.setCustomCategories(customAllCategories);
-                placeCategoryData.setDefaultPlaceCategories(defaultAllPlaceCategories);
-                placeCategoryData.setSelectedPlaceCategories(selectedCategorylist);
+				PlaceCategoryData placeCategoryData = new PlaceCategoryData();
+				placeCategoryData.setCustomCategories(customAllCategories);
+				placeCategoryData.setDefaultPlaceCategories(defaultAllPlaceCategories);
+				placeCategoryData.setSelectedPlaceCategories(selectedCategorylist);
 
-                callback.onReceiveResult(placeCategoryData);
-            }
-        });
+				callback.processResult(placeCategoryData);
+			}
+		});
 
-    }
+	}
 
-    @Override
-    public void containsCode(String code, CarrierMessagingService.ResultCallback<Boolean> callback)
-    {
-        App.executorService.execute(new Runnable()
-        {
-            @SneakyThrows
-            @Override
-            public void run()
-            {
-                boolean containsCode = customPlaceCategoryDAO.containsCode(code) == 1;
+	@Override
+	public void contains(String code, DbQueryCallback<Boolean> callback) {
+		App.executorService.execute(new Runnable() {
+			@Override
+			public void run() {
+				boolean containsCode = customPlaceCategoryDAO.containsCode(code) == 1;
 
-                if (!containsCode)
-                {
-                    Map<String, String> defaultAllPlaceCategoryMap = KakaoLocalApiCategoryUtil.getDefaultPlaceCategoryMap();
+				if (!containsCode) {
+					Map<String, String> defaultAllPlaceCategoryMap = KakaoLocalApiCategoryUtil.getDefaultPlaceCategoryMap();
 
-                    if (defaultAllPlaceCategoryMap.containsKey(code) || defaultAllPlaceCategoryMap.containsValue(code))
-                    {
-                        containsCode = true;
-                    }
-                }
-                callback.onReceiveResult(containsCode);
-            }
-        });
-    }
+					if (defaultAllPlaceCategoryMap.containsKey(code) || defaultAllPlaceCategoryMap.containsValue(code)) {
+						containsCode = true;
+					}
+				}
+				callback.processResult(containsCode);
+			}
+		});
+	}
 
-    @Override
-    public void updateSelected(String currentCode, String code, CarrierMessagingService.ResultCallback<SelectedPlaceCategoryDTO> callback)
-    {
-        App.executorService.execute(new Runnable()
-        {
-            @SneakyThrows
-            @Override
-            public void run()
-            {
-                selectedPlaceCategoryDAO.update(currentCode, code);
-                SelectedPlaceCategoryDTO selectedPlaceCategory = selectedPlaceCategoryDAO.select(code);
-                callback.onReceiveResult(selectedPlaceCategory);
-            }
-        });
-    }
+	@Override
+	public void selectConvertedSelected(DbQueryCallback<List<PlaceCategoryDTO>> callback) {
+		App.executorService.execute(new Runnable() {
+			@Override
+			public void run() {
+				//선택된 카테고리 리스트를 가져옴
+				List<SelectedPlaceCategoryDTO> selectedCategoryList = selectedPlaceCategoryDAO.getAll();
 
-    @Override
-    public void selectConvertedSelected(DbQueryCallback<List<PlaceCategoryDTO>> callback)
-    {
-        App.executorService.execute(new Runnable()
-        {
-            @Override
-            public void run()
-            {
-                //선택된 카테고리 리스트를 가져옴
-                List<SelectedPlaceCategoryDTO> selectedCategoryList = selectedPlaceCategoryDAO.select();
+				//기본, 커스텀 카테고리 리스트 설정
+				Map<String, String> defaultCategoryMap = KakaoLocalApiCategoryUtil.getDefaultPlaceCategoryMap();
+				List<PlaceCategoryDTO> categories = new ArrayList<>();
 
-                //기본, 커스텀 카테고리 리스트 설정
-                Map<String, String> defaultCategoryMap = KakaoLocalApiCategoryUtil.getDefaultPlaceCategoryMap();
-                List<PlaceCategoryDTO> categories = new ArrayList<>();
+				//커스텀 카테고리를 전체 카테고리로 포함시킨다
+				for (SelectedPlaceCategoryDTO selectedPlaceCategory : selectedCategoryList) {
+					PlaceCategoryDTO placeCategoryDTO = new PlaceCategoryDTO();
+					placeCategoryDTO.setCode(selectedPlaceCategory.getCode());
 
-                //커스텀 카테고리를 전체 카테고리로 포함시킨다
-                for (SelectedPlaceCategoryDTO selectedPlaceCategory : selectedCategoryList)
-                {
-                    PlaceCategoryDTO placeCategoryDTO = new PlaceCategoryDTO();
-                    placeCategoryDTO.setCode(selectedPlaceCategory.getCode());
+					if (defaultCategoryMap.containsKey(selectedPlaceCategory.getCode())) {
+						placeCategoryDTO.setDescription(defaultCategoryMap.get(selectedPlaceCategory.getCode()));
+					} else {
+						placeCategoryDTO.setCustom(true);
+						placeCategoryDTO.setDescription(selectedPlaceCategory.getCode());
+					}
+					categories.add(placeCategoryDTO);
+				}
 
-                    if (defaultCategoryMap.containsKey(selectedPlaceCategory.getCode()))
-                    {
-                        placeCategoryDTO.setDescription(defaultCategoryMap.get(selectedPlaceCategory.getCode()));
-                    } else
-                    {
-                        placeCategoryDTO.setCustom(true);
-                        placeCategoryDTO.setDescription(selectedPlaceCategory.getCode());
-                    }
-                    categories.add(placeCategoryDTO);
-                }
+				callback.processResult(categories);
+			}
+		});
+	}
 
-                callback.processResult(categories);
-            }
-        });
-    }
+	@Override
+	public void addAllSelected(List<PlaceCategoryDTO> list, DbQueryCallback<List<SelectedPlaceCategoryDTO>> callback) {
+		App.executorService.execute(new Runnable() {
+			@Override
+			public void run() {
+				for (PlaceCategoryDTO placeCategoryDTO : list) {
+					selectedPlaceCategoryDAO.add(placeCategoryDTO.getCode());
+				}
+				List<SelectedPlaceCategoryDTO> selectedPlaceCategoryList = selectedPlaceCategoryDAO.getAll();
+				callback.processResult(selectedPlaceCategoryList);
+			}
+		});
+	}
 
-    @Override
-    public void insertAllSelected(List<PlaceCategoryDTO> list, CarrierMessagingService.ResultCallback<List<SelectedPlaceCategoryDTO>> callback)
-    {
-        App.executorService.execute(new Runnable()
-        {
-            @SneakyThrows
-            @Override
-            public void run()
-            {
-                for (PlaceCategoryDTO placeCategoryDTO : list)
-                {
-                    selectedPlaceCategoryDAO.insert(placeCategoryDTO.getCode());
-                }
-                List<SelectedPlaceCategoryDTO> selectedPlaceCategoryList = selectedPlaceCategoryDAO.select();
-                callback.onReceiveResult(selectedPlaceCategoryList);
-            }
-        });
-    }
+	public MutableLiveData<List<PlaceCategoryDTO>> getConvertedSelectedCategoriesLiveData() {
+		return convertedSelectedCategoriesLiveData;
+	}
 
-    public MutableLiveData<List<PlaceCategoryDTO>> getConvertedSelectedCategoriesLiveData()
-    {
-        return convertedSelectedCategoriesLiveData;
-    }
+	public MutableLiveData<PlaceCategoryDTO> getOnSelectedCategoryLiveData() {
+		return onSelectedCategoryLiveData;
+	}
+
+	public MutableLiveData<String> getOnUnSelectedCategoryLiveData() {
+		return onUnSelectedCategoryLiveData;
+	}
 }

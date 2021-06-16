@@ -5,8 +5,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.RemoteException;
-import android.service.carrier.CarrierMessagingService;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -28,7 +26,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.slider.Slider;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
-import com.zerodsoft.scheduleweather.activity.placecategory.activity.PlaceCategoryActivity;
 import com.zerodsoft.scheduleweather.activity.preferences.SettingsActivity;
 import com.zerodsoft.scheduleweather.activity.preferences.custom.RadiusPreference;
 import com.zerodsoft.scheduleweather.activity.preferences.custom.SearchBuildingRangeRadiusPreference;
@@ -98,8 +95,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 				return true;
 			}
 		});
-
-		placesCategoryPreference.setIntent(new Intent(getActivity(), PlaceCategoryActivity.class));
 
 		resetAppDbPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
 			@Override

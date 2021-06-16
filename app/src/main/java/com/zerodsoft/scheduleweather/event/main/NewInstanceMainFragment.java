@@ -50,7 +50,7 @@ import com.naver.maps.map.overlay.Marker;
 import com.naver.maps.map.overlay.Overlay;
 import com.naver.maps.map.overlay.OverlayImage;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.activity.placecategory.activity.PlaceCategoryActivity;
+import com.zerodsoft.scheduleweather.activity.placecategory.PlaceCategorySettingsFragment;
 import com.zerodsoft.scheduleweather.activity.placecategory.viewmodel.PlaceCategoryViewModel;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
@@ -76,7 +76,9 @@ import org.jetbrains.annotations.NotNull;
 import org.xmlpull.v1.XmlPullParser;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoodMenuPoiItems,
 		PlacesOfSelectedCategoriesFragment.PlaceCategoryChipsViewController, DialogInterface.OnDismissListener
@@ -108,6 +110,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	private Chip placeCategorySettingsChip;
 	private String selectedPlaceCategoryCode;
 	private OnExtraListDataListener<String> placeCategoryOnExtraListDataListener;
+	private Set<PlaceCategoryDTO> savedPlaceCategorySet = new HashSet<>();
 
 	private LinearLayout chipsLayout;
 	private ViewGroup functionItemsView;
@@ -133,7 +136,46 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		@Override
 		public void onFragmentDestroyed(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
 			super.onFragmentDestroyed(fm, f);
+			if (f instanceof PlaceCategorySettingsFragment) {
+				//place category가 변경된 경우 갱신
+				placeCategoryViewModel.selectConvertedSelected(new DbQueryCallback<List<PlaceCategoryDTO>>() {
+					@Override
+					public void onResultSuccessful(List<PlaceCategoryDTO> savedPlaceCategoryList) {
+						Set<PlaceCategoryDTO> newSet = new HashSet<>();
+						newSet.addAll(savedPlaceCategoryList);
 
+						Set<PlaceCategoryDTO> removedSet = new HashSet<>(savedPlaceCategorySet);
+						Set<PlaceCategoryDTO> addedSet = new HashSet<>(newSet);
+
+						removedSet.removeAll(newSet);
+						addedSet.removeAll(savedPlaceCategorySet);
+
+						if (!removedSet.isEmpty() || !addedSet.isEmpty()) {
+							savedPlaceCategorySet = newSet;
+
+							requireActivity().runOnUiThread(new Runnable() {
+								@Override
+								public void run() {
+									//place category list fragment 갱신
+									PlacesOfSelectedCategoriesFragment fragment =
+											(PlacesOfSelectedCategoriesFragment) getChildFragmentManager().findFragmentByTag(getString(R.string.tag_places_of_selected_categories_fragment));
+									fragment.refreshList();
+
+									//chips 재 생성
+									placeCategoryChipMap.clear();
+									placeCategoryChipGroup.removeViews(2, placeCategoryChipGroup.getChildCount() - 2);
+									setPlaceCategoryChips(savedPlaceCategoryList);
+								}
+							});
+						}
+
+					}
+
+					@Override
+					public void onResultNoData() {
+					}
+				});
+			}
 		}
 
 
@@ -198,6 +240,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 								@Override
 								public void run() {
 									//지도 로드
+									createFunctionList();
 									loadMap();
 									addPlaceCategoryListFragmentIntoBottomSheet();
 									createPlaceCategoryListChips();
@@ -211,19 +254,18 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 								@Override
 								public void run() {
 									//인스턴스 정보 프래그먼트 표시
-									functionButtons[0].callOnClick();
+									onClickedOpenEventFragmentBtn();
 								}
 							});
 						}
 					});
 				} else {
 					//인스턴스 정보 프래그먼트 표시
-					functionButtons[0].callOnClick();
+					onClickedOpenEventFragmentBtn();
 					locationViewModel.removeLocation(EVENT_ID, null);
 				}
 			}
 		});
-		createFunctionList();
 	}
 
 
@@ -299,57 +341,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		functionButtons[0].setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				//이벤트 정보
 				functionButton.callOnClick();
-
-				EventFragment eventFragment = new EventFragment(new DialogInterface() {
-					@Override
-					public void cancel() {
-
-					}
-
-					@Override
-					public void dismiss() {
-						instance = calendarViewModel.getInstance(INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
-						if (instance.getAsString(CalendarContract.Instances.EVENT_LOCATION) != null) {
-							locationViewModel.getLocation(EVENT_ID, new DbQueryCallback<LocationDTO>() {
-								@Override
-								public void onResultSuccessful(LocationDTO savedLocationDto) {
-									selectedLocationDtoInEvent = savedLocationDto;
-
-									requireActivity().runOnUiThread(new Runnable() {
-										@Override
-										public void run() {
-											//지도 로드
-											if (mapFragment == null) {
-												loadMap();
-												addPlaceCategoryListFragmentIntoBottomSheet();
-												createPlaceCategoryListChips();
-											}
-										}
-									});
-								}
-
-								@Override
-								public void onResultNoData() {
-									requireActivity().runOnUiThread(new Runnable() {
-										@Override
-										public void run() {
-											onBackPressedCallback();
-										}
-									});
-								}
-							});
-						} else {
-							//인스턴스 정보 프래그먼트 표시
-							onBackPressedCallback();
-						}
-					}
-				}, NewInstanceMainFragment.this, DEFAULT_HEIGHT_OF_BOTTOMSHEET,
-						CALENDAR_ID,
-						EVENT_ID, INSTANCE_ID,
-						ORIGINAL_BEGIN, ORIGINAL_END);
-				eventFragment.show(getParentFragmentManager(), getString(R.string.tag_event_fragment));
+				onClickedOpenEventFragmentBtn();
 			}
 		});
 
@@ -423,6 +416,69 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 			}
 		});
 	}
+
+	private void onClickedOpenEventFragmentBtn() {
+		EventFragment eventFragment = new EventFragment(new DialogInterface() {
+			@Override
+			public void cancel() {
+
+			}
+
+			@Override
+			public void dismiss() {
+				instance = calendarViewModel.getInstance(INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
+
+				if (instance.getAsString(CalendarContract.Instances.EVENT_LOCATION) != null) {
+					locationViewModel.getLocation(EVENT_ID, new DbQueryCallback<LocationDTO>() {
+						@Override
+						public void onResultSuccessful(LocationDTO savedLocationDto) {
+							if (selectedLocationDtoInEvent != null) {
+								if (selectedLocationDtoInEvent.getId() != savedLocationDto.getId()) {
+									selectedLocationDtoInEvent = savedLocationDto;
+
+									requireActivity().runOnUiThread(new Runnable() {
+										@Override
+										public void run() {
+											createSelectedLocationMarker();
+										}
+									});
+								}
+							} else {
+								selectedLocationDtoInEvent = savedLocationDto;
+								requireActivity().runOnUiThread(new Runnable() {
+									@Override
+									public void run() {
+										createFunctionList();
+										addPlaceCategoryListFragmentIntoBottomSheet();
+										createPlaceCategoryListChips();
+										loadMap();
+									}
+								});
+							}
+
+						}
+
+						@Override
+						public void onResultNoData() {
+							requireActivity().runOnUiThread(new Runnable() {
+								@Override
+								public void run() {
+									requireActivity().finish();
+								}
+							});
+						}
+					});
+				} else {
+					requireActivity().finish();
+				}
+			}
+		}, NewInstanceMainFragment.this, DEFAULT_HEIGHT_OF_BOTTOMSHEET,
+				CALENDAR_ID,
+				EVENT_ID, INSTANCE_ID,
+				ORIGINAL_BEGIN, ORIGINAL_END);
+		eventFragment.show(getParentFragmentManager(), getString(R.string.tag_event_fragment));
+	}
+
 
 	private void collapseFunctions() {
 		functionItemsView.setVisibility(View.GONE);
@@ -575,6 +631,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		placeCategoryViewModel.selectConvertedSelected(new DbQueryCallback<List<PlaceCategoryDTO>>() {
 			@Override
 			public void onResultSuccessful(List<PlaceCategoryDTO> savedPlaceCategoryList) {
+				savedPlaceCategorySet.addAll(savedPlaceCategoryList);
+
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
@@ -585,7 +643,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 
 			@Override
 			public void onResultNoData() {
-
 			}
 		});
 	}
@@ -726,7 +783,9 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		placeCategorySettingsChip.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				placeCategoryActivityResultLauncher.launch(new Intent(getActivity(), PlaceCategoryActivity.class));
+				PlaceCategorySettingsFragment placeCategorySettingsFragment = new PlaceCategorySettingsFragment();
+				getChildFragmentManager().beginTransaction().add(binding.fragmentContainer.getId(), placeCategorySettingsFragment,
+						getString(R.string.tag_place_category_settings_fragment)).addToBackStack(getString(R.string.tag_place_category_settings_fragment)).commit();
 			}
 		});
 
@@ -734,19 +793,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		placeCategoryChipGroup.addView(placeCategorySettingsChip, 1);
 	}
 
-
-	private final ActivityResultLauncher<Intent> placeCategoryActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-			new ActivityResultCallback<ActivityResult>() {
-				@Override
-				public void onActivityResult(ActivityResult result) {
-					if (result.getResultCode() == 0) {
-						if (placeCategoryChipGroup.getCheckedChipIds().size() > 0) {
-							placeCategoryChipMap.get(selectedPlaceCategoryCode).setChecked(false);
-						}
-						((PlacesOfSelectedCategoriesFragment) bottomSheetFragmentMap.get(BottomSheetType.SELECTED_PLACE_CATEGORY)).makeCategoryListView();
-					}
-				}
-			});
 
 	private final CompoundButton.OnCheckedChangeListener placeCategoryChipOnCheckedChangeListener = new CompoundButton.OnCheckedChangeListener() {
 		@Override

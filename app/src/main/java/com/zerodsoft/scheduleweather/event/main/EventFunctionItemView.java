@@ -49,7 +49,7 @@ public class EventFunctionItemView extends MaterialCardView {
 
 		setClickable(true);
 		setRadius(getResources().getDimension(R.dimen.corner_radius));
-		setCardElevation((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 18f, getResources().getDisplayMetrics()));
+		setCardElevation((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 6f, getResources().getDisplayMetrics()));
 		setUseCompatPadding(true);
 
 		LinearLayout linearLayout = new LinearLayout(getContext());
