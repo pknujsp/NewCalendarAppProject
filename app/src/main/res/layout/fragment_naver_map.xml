@@ -14,15 +14,10 @@
             android:layout_height="match_parent">
 
 
-            <fragment
+            <androidx.fragment.app.FragmentContainerView
                 android:id="@+id/naver_map_fragment"
-                android:name="com.naver.maps.map.MapFragment"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                app:navermap_latitude="37.6076585"
-                app:navermap_longitude="127.0965492"
-                app:navermap_mapType="Basic"
-                app:navermap_zoom="10" />
+                android:layout_height="match_parent" />
 
             <LinearLayout
                 android:id="@+id/header_layout"

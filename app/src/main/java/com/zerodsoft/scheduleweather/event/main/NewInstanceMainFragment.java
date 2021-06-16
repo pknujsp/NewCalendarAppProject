@@ -201,7 +201,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 									loadMap();
 									addPlaceCategoryListFragmentIntoBottomSheet();
 									createPlaceCategoryListChips();
-									createSelectedLocationMarker();
 								}
 							});
 						}
@@ -227,10 +226,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		createFunctionList();
 	}
 
-	@Override
-	protected void loadMap() {
-		super.loadMap();
-	}
 
 	private void setHeightOfBottomSheet(int height, LinearLayout bottomSheetView, BottomSheetBehavior bottomSheetBehavior) {
 		bottomSheetView.getLayoutParams().height = height;
@@ -241,6 +236,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	@Override
 	public void onMapReady(@NonNull NaverMap naverMap) {
 		super.onMapReady(naverMap);
+		createSelectedLocationMarker();
 	}
 
 	private void createFunctionList() {
@@ -329,9 +325,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 												loadMap();
 												addPlaceCategoryListFragmentIntoBottomSheet();
 												createPlaceCategoryListChips();
-											} else {
 											}
-											createSelectedLocationMarker();
 										}
 									});
 								}

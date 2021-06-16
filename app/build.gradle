@@ -129,7 +129,7 @@ dependencies {
 
     implementation 'org.jsoup:jsoup:1.13.1'
 
-    implementation 'com.naver.maps:map-sdk:3.11.0'
+    implementation 'com.naver.maps:map-sdk:3.12.0'
 
     implementation ('com.google.apis:google-api-services-youtube:v3-rev204-1.23.0'){
         exclude group:'com.google.guava'

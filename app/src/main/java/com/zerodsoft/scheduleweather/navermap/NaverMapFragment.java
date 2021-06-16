@@ -52,6 +52,7 @@ import com.naver.maps.geometry.LatLng;
 import com.naver.maps.geometry.LatLngBounds;
 import com.naver.maps.geometry.Utmk;
 import com.naver.maps.map.CameraAnimation;
+import com.naver.maps.map.CameraPosition;
 import com.naver.maps.map.CameraUpdate;
 import com.naver.maps.map.LocationTrackingMode;
 import com.naver.maps.map.MapFragment;
@@ -332,8 +333,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		mapFragment = (MapFragment) getChildFragmentManager().findFragmentById(R.id.naver_map_fragment);
-
 		setLocationItemsBottomSheet();
 		setLocationSearchBottomSheet();
 		setBuildingBottomSheet();
@@ -531,13 +530,14 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	protected void loadMap() {
 		if (mapFragment == null) {
 			NaverMapOptions naverMapOptions = new NaverMapOptions();
-			naverMapOptions.scaleBarEnabled(true).locationButtonEnabled(false).compassEnabled(false).zoomControlEnabled(false);
+			naverMapOptions.scaleBarEnabled(true).locationButtonEnabled(false).compassEnabled(false).zoomControlEnabled(false)
+					.mapType(NaverMap.MapType.Basic).camera(new CameraPosition(new LatLng(37.6076585, 127.0965492), 10));
 
 			mapFragment = MapFragment.newInstance(naverMapOptions);
-			//fragmentManager.beginTransaction().add(R.id.naver_map_fragment, mapFragment).commitNow();
+			getChildFragmentManager().beginTransaction().add(R.id.naver_map_fragment, mapFragment).commitNow();
 
-			fusedLocationSource = new FusedLocationSource(this, PERMISSION_REQUEST_CODE);
 			mapFragment.getMapAsync(this);
+			fusedLocationSource = new FusedLocationSource(this, PERMISSION_REQUEST_CODE);
 		}
 
 	}

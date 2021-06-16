@@ -30,6 +30,7 @@ import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.LocationItemViewPagerAdapter;
 import com.zerodsoft.scheduleweather.navermap.MarkerType;
 import com.zerodsoft.scheduleweather.navermap.NaverMapFragment;
+import com.zerodsoft.scheduleweather.navermap.searchheader.MapHeaderMainFragment;
 import com.zerodsoft.scheduleweather.navermap.searchheader.MapHeaderSearchFragment;
 import com.zerodsoft.scheduleweather.navermap.model.CoordToAddressUtilByKakao;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
@@ -46,14 +47,29 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collections;
 
 public class SelectionDetailLocationFragment extends NaverMapFragment {
-	private final Marker selectedLocationMarker = new Marker();
-
 	private LocationDTO selectedLocationDTOInEvent;
 	private int resultCode = Activity.RESULT_CANCELED;
 	private LocationIntentCode requestCode;
 
 	private LocationDTO selectedLocationDTOInMap;
 	private String locationNameInEvent;
+
+	private FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks = new FragmentManager.FragmentLifecycleCallbacks() {
+		@Override
+		public void onFragmentStarted(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
+			super.onFragmentStarted(fm, f);
+			if (f instanceof MapHeaderSearchFragment) {
+				if (requestCode == LocationIntentCode.REQUEST_CODE_SELECT_LOCATION_BY_QUERY) {
+					fm.unregisterFragmentLifecycleCallbacks(fragmentLifecycleCallbacks);
+					((MapHeaderSearchFragment) f).setQuery(locationNameInEvent, true);
+				}
+			} else if (f instanceof MapHeaderMainFragment) {
+				if (requestCode == LocationIntentCode.REQUEST_CODE_SELECT_LOCATION_BY_QUERY) {
+					binding.headerFragmentContainer.callOnClick();
+				}
+			}
+		}
+	};
 
 	private void finishActivity() {
 		requireActivity().setResult(resultCode, requireActivity().getIntent());
@@ -63,7 +79,6 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 	@Override
 	public void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
 		Bundle arguments = requireActivity().getIntent().getExtras();
 
 		selectedLocationDTOInEvent = (LocationDTO) arguments.getParcelable(DetailLocationSelectorKey.SELECTED_LOCATION_DTO_IN_EVENT.value());
@@ -71,9 +86,7 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 		requestCode = LocationIntentCode.enumOf(arguments.getInt("requestCode"));
 
 		arguments.remove(DetailLocationSelectorKey.SELECTED_LOCATION_DTO_IN_EVENT.value());
-
-		selectedLocationMarker.setCaptionColor(Color.BLUE);
-		selectedLocationMarker.setCaptionTextSize(14f);
+		getChildFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false);
 	}
 
 	@Override
@@ -84,38 +97,17 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 	@Override
 	public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+		loadMap();
+
+		binding.naverMapButtonsLayout.buildingButton.setVisibility(View.GONE);
+		binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.GONE);
 
 		switch (requestCode) {
-			case REQUEST_CODE_SELECT_LOCATION_EMPTY_QUERY: {
+			case REQUEST_CODE_SELECT_LOCATION_EMPTY_QUERY:
+			case REQUEST_CODE_SELECT_LOCATION_BY_QUERY: {
 				// 아무것도 하지 않음
 				setPlaceBottomSheetSelectBtnVisibility(View.VISIBLE);
 				setPlaceBottomSheetUnSelectBtnVisibility(View.GONE);
-				break;
-			}
-			case REQUEST_CODE_SELECT_LOCATION_BY_QUERY: {
-				setPlaceBottomSheetSelectBtnVisibility(View.VISIBLE);
-				setPlaceBottomSheetUnSelectBtnVisibility(View.GONE);
-
-				binding.naverMapFragmentRootLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-					@Override
-					public void onGlobalLayout() {
-						binding.naverMapFragmentRootLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-						FragmentManager fragmentManager = getChildFragmentManager();
-						FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks = new FragmentManager.FragmentLifecycleCallbacks() {
-							@Override
-							public void onFragmentStarted(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
-								super.onFragmentStarted(fm, f);
-								if (f instanceof MapHeaderSearchFragment) {
-									((MapHeaderSearchFragment) f).setQuery(locationNameInEvent, true);
-									fragmentManager.unregisterFragmentLifecycleCallbacks(this);
-								}
-							}
-						};
-
-						fragmentManager.registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false);
-						binding.headerFragmentContainer.callOnClick();
-					}
-				});
 				break;
 			}
 			case REQUEST_CODE_CHANGE_LOCATION: {
@@ -129,51 +121,50 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 
 	private void showLocationItem() {
 		// 위치가 이미 선택되어 있는 경우 해당 위치 정보를 표시함 (삭제 버튼 추가)
-		if (networkAvailable()) {
-			if (selectedLocationDTOInEvent.getLocationType() == LocationType.ADDRESS) {
-				// 주소 검색 순서 : 좌표로 주소 변환
-				LocalApiPlaceParameter parameter =
-						LocalParameterUtil.getCoordToAddressParameter(Double.parseDouble(selectedLocationDTOInEvent.getLatitude()),
-								Double.parseDouble(selectedLocationDTOInEvent.getLongitude()));
-				CoordToAddressUtilByKakao.coordToAddress(parameter, new JsonDownloader<CoordToAddress>() {
-					@Override
-					public void onResponseSuccessful(CoordToAddress result) {
-						CoordToAddressDocuments coordToAddressDocuments = result.getCoordToAddressDocuments().get(0);
-						coordToAddressDocuments.getCoordToAddressAddress().setLatitude(selectedLocationDTOInEvent.getLatitude());
-						coordToAddressDocuments.getCoordToAddressAddress().setLongitude(selectedLocationDTOInEvent.getLongitude());
 
-						createMarkers(Collections.singletonList(coordToAddressDocuments), MarkerType.SELECTED_ADDRESS_IN_EVENT);
-						onPOIItemSelectedByList(coordToAddressDocuments, MarkerType.SELECTED_ADDRESS_IN_EVENT);
+		if (selectedLocationDTOInEvent.getLocationType() == LocationType.ADDRESS) {
+			// 주소 검색 순서 : 좌표로 주소 변환
+			LocalApiPlaceParameter parameter =
+					LocalParameterUtil.getCoordToAddressParameter(Double.parseDouble(selectedLocationDTOInEvent.getLatitude()),
+							Double.parseDouble(selectedLocationDTOInEvent.getLongitude()));
+			CoordToAddressUtilByKakao.coordToAddress(parameter, new JsonDownloader<CoordToAddress>() {
+				@Override
+				public void onResponseSuccessful(CoordToAddress result) {
+					CoordToAddressDocuments coordToAddressDocuments = result.getCoordToAddressDocuments().get(0);
+					coordToAddressDocuments.getCoordToAddressAddress().setLatitude(selectedLocationDTOInEvent.getLatitude());
+					coordToAddressDocuments.getCoordToAddressAddress().setLongitude(selectedLocationDTOInEvent.getLongitude());
 
-					}
+					createMarkers(Collections.singletonList(coordToAddressDocuments), MarkerType.SELECTED_ADDRESS_IN_EVENT);
+					onPOIItemSelectedByList(coordToAddressDocuments, MarkerType.SELECTED_ADDRESS_IN_EVENT);
 
-					@Override
-					public void onResponseFailed(Exception e) {
+				}
 
-					}
-				});
+				@Override
+				public void onResponseFailed(Exception e) {
 
-			} else if (selectedLocationDTOInEvent.getLocationType() == LocationType.PLACE) {
-				// 장소 검색 순서 : 장소의 위경도 내 10M 반경에서 장소 이름 검색(여러개 나올 경우 장소ID와 일치하는 장소를 선택)
-				LocalApiPlaceParameter parameter = LocalParameterUtil.getPlaceParameter(selectedLocationDTOInEvent.getPlaceName(),
-						String.valueOf(selectedLocationDTOInEvent.getLatitude()), String.valueOf(selectedLocationDTOInEvent.getLongitude()), LocalApiPlaceParameter.DEFAULT_SIZE,
-						LocalApiPlaceParameter.DEFAULT_PAGE, LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
-				parameter.setRadius("50");
+				}
+			});
 
-				locationViewModel.getPlaceItem(parameter, selectedLocationDTOInEvent.getPlaceId(), new JsonDownloader<PlaceKakaoLocalResponse>() {
-					@Override
-					public void onResponseSuccessful(PlaceKakaoLocalResponse result) {
-						PlaceDocuments document = result.getPlaceDocuments().get(0);
-						createMarkers(Collections.singletonList(document), MarkerType.SELECTED_PLACE_IN_EVENT);
-						onPOIItemSelectedByList(document, MarkerType.SELECTED_PLACE_IN_EVENT);
-					}
+		} else if (selectedLocationDTOInEvent.getLocationType() == LocationType.PLACE) {
+			// 장소 검색 순서 : 장소의 위경도 내 10M 반경에서 장소 이름 검색(여러개 나올 경우 장소ID와 일치하는 장소를 선택)
+			LocalApiPlaceParameter parameter = LocalParameterUtil.getPlaceParameter(selectedLocationDTOInEvent.getPlaceName(),
+					String.valueOf(selectedLocationDTOInEvent.getLatitude()), String.valueOf(selectedLocationDTOInEvent.getLongitude()), LocalApiPlaceParameter.DEFAULT_SIZE,
+					LocalApiPlaceParameter.DEFAULT_PAGE, LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
+			parameter.setRadius("50");
 
-					@Override
-					public void onResponseFailed(Exception e) {
+			locationViewModel.getPlaceItem(parameter, selectedLocationDTOInEvent.getPlaceId(), new JsonDownloader<PlaceKakaoLocalResponse>() {
+				@Override
+				public void onResponseSuccessful(PlaceKakaoLocalResponse result) {
+					PlaceDocuments document = result.getPlaceDocuments().get(0);
+					createMarkers(Collections.singletonList(document), MarkerType.SELECTED_PLACE_IN_EVENT);
+					onPOIItemSelectedByList(document, MarkerType.SELECTED_PLACE_IN_EVENT);
+				}
 
-					}
-				});
-			}
+				@Override
+				public void onResponseFailed(Exception e) {
+
+				}
+			});
 		}
 
 	}
@@ -209,8 +200,6 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 		bundle.putParcelable(DetailLocationSelectorKey.SELECTED_LOCATION_DTO_IN_MAP.value(), location);
 		requireActivity().getIntent().putExtras(bundle);
 
-		removeMarker();
-		createMarker();
 		bottomSheetBehaviorMap.get(BottomSheetType.LOCATION_ITEM).setState(BottomSheetBehavior.STATE_COLLAPSED);
 
 		resultCode = (requestCode == LocationIntentCode.REQUEST_CODE_CHANGE_LOCATION)
@@ -221,24 +210,10 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 		finishActivity();
 	}
 
-	private void createMarker() {
-		selectedLocationMarker.setPosition(new LatLng(Double.parseDouble(selectedLocationDTOInMap.getLatitude()),
-				Double.parseDouble(selectedLocationDTOInMap.getLongitude())));
-		selectedLocationMarker.setCaptionText(selectedLocationDTOInMap.getLocationType() == LocationType.PLACE ? selectedLocationDTOInMap.getPlaceName() : selectedLocationDTOInMap.getAddressName());
-		selectedLocationMarker.setMap(naverMap);
-	}
-
-	private void removeMarker() {
-		if (selectedLocationMarker.getMap() != null) {
-			selectedLocationMarker.setMap(null);
-		}
-	}
-
 	@Override
 	public void onRemovedLocation() {
 		deselectMarker();
 		removeAllMarkers();
-		removeMarker();
 
 		bottomSheetBehaviorMap.get(BottomSheetType.LOCATION_ITEM).setState(BottomSheetBehavior.STATE_COLLAPSED);
 		resultCode = LocationIntentCode.RESULT_CODE_REMOVED_LOCATION.value();
