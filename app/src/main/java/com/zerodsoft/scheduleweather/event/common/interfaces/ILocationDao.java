@@ -7,6 +7,8 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceKakaoLocalResponse;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
+import org.jetbrains.annotations.Nullable;
+
 public interface ILocationDao {
 	public void getLocation(long eventId, DbQueryCallback<LocationDTO> resultCallback);
 
@@ -16,7 +18,7 @@ public interface ILocationDao {
 
 	public void addLocation(LocationDTO location, DbQueryCallback<LocationDTO> resultCallback);
 
-	public void removeLocation(long eventId, DbQueryCallback<Boolean> resultCallback);
+	public void removeLocation(long eventId, @Nullable DbQueryCallback<Boolean> resultCallback);
 
 	public void modifyLocation(LocationDTO location, DbQueryCallback<LocationDTO> resultCallback);
 

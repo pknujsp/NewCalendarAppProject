@@ -271,6 +271,12 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	};
 
 	@Override
+	public void onAttach(@NonNull @NotNull Context context) {
+		super.onAttach(context);
+		addOnBackPressedCallback();
+	}
+
+	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
@@ -284,6 +290,10 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 		favoriteLocationViewModel = new ViewModelProvider(this).get(FavoriteLocationViewModel.class);
 
+		locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
+		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
+		searchHistoryViewModel = new ViewModelProvider(this).get(SearchHistoryViewModel.class);
+
 		networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback() {
 			@Override
 			public void onAvailable(@NonNull Network network) {
@@ -293,11 +303,11 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			@Override
 			public void onLost(@NonNull Network network) {
 				super.onLost(network);
-				getActivity().runOnUiThread(new Runnable() {
+				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
+						requireActivity().finish();
 						networkStatus.showToastDisconnected();
-						getActivity().finish();
 					}
 				});
 			}
@@ -307,9 +317,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		markerHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
 		favoriteMarkerSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
 
-		locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
-		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
-		searchHistoryViewModel = new ViewModelProvider(this).get(SearchHistoryViewModel.class);
+
 	}
 
 
@@ -323,6 +331,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+
+		mapFragment = (MapFragment) getChildFragmentManager().findFragmentById(R.id.naver_map_fragment);
 
 		setLocationItemsBottomSheet();
 		setLocationSearchBottomSheet();
@@ -502,29 +512,34 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 				}
 			}
 		});
-
-
-		FragmentManager fragmentManager = getChildFragmentManager();
-
-		mapFragment = (MapFragment) fragmentManager.findFragmentById(R.id.naver_map_fragment);
-		if (mapFragment == null) {
-			NaverMapOptions naverMapOptions = new NaverMapOptions();
-			naverMapOptions.scaleBarEnabled(true).locationButtonEnabled(false).compassEnabled(false).zoomControlEnabled(false);
-
-			mapFragment = MapFragment.newInstance(naverMapOptions);
-
-			fragmentManager.beginTransaction().add(R.id.naver_map_fragment, mapFragment).commitNow();
-		}
-
-		fusedLocationSource = new FusedLocationSource(this, PERMISSION_REQUEST_CODE);
-
-		mapFragment.getMapAsync(this);
 		binding.naverMapButtonsLayout.currentAddress.setText("");
 	}
 
 	@Override
 	public void onResume() {
 		super.onResume();
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		removeOnBackPressedCallback();
+		networkStatus.unregisterNetworkCallback();
+		getChildFragmentManager().unregisterFragmentLifecycleCallbacks(fragmentLifecycleCallbacks);
+	}
+
+	protected void loadMap() {
+		if (mapFragment == null) {
+			NaverMapOptions naverMapOptions = new NaverMapOptions();
+			naverMapOptions.scaleBarEnabled(true).locationButtonEnabled(false).compassEnabled(false).zoomControlEnabled(false);
+
+			mapFragment = MapFragment.newInstance(naverMapOptions);
+			//fragmentManager.beginTransaction().add(R.id.naver_map_fragment, mapFragment).commitNow();
+
+			fusedLocationSource = new FusedLocationSource(this, PERMISSION_REQUEST_CODE);
+			mapFragment.getMapAsync(this);
+		}
+
 	}
 
 	private void setLocationSearchBottomSheet() {
@@ -806,12 +821,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 				}
 			});
 
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-		networkStatus.unregisterNetworkCallback();
-		getChildFragmentManager().unregisterFragmentLifecycleCallbacks(fragmentLifecycleCallbacks);
-	}
 
 	private final JsonDownloader<ReverseGeoCodingResponse> reverseGeoCodingResponseJsonDownloader =
 			new JsonDownloader<ReverseGeoCodingResponse>() {

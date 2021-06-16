@@ -15,6 +15,8 @@ import com.zerodsoft.scheduleweather.room.AppDb;
 import com.zerodsoft.scheduleweather.room.dao.LocationDAO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.Map;
 
 import lombok.SneakyThrows;
@@ -122,13 +124,15 @@ public class LocationRepository implements ILocationDao {
 	}
 
 	@Override
-	public void removeLocation(long eventId, DbQueryCallback<Boolean> resultCallback) {
+	public void removeLocation(long eventId, @Nullable DbQueryCallback<Boolean> resultCallback) {
 		App.executorService.execute(new Runnable() {
 			@SneakyThrows
 			@Override
 			public void run() {
 				locationDAO.delete(eventId);
-				resultCallback.processResult(true);
+				if (resultCallback != null) {
+					resultCallback.processResult(true);
+				}
 			}
 		});
 	}

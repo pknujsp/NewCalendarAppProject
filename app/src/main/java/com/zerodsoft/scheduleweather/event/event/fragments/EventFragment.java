@@ -53,6 +53,8 @@ import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
 import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -62,20 +64,14 @@ import java.util.TimeZone;
 import lombok.SneakyThrows;
 
 public class EventFragment extends BottomSheetDialogFragment {
-	public static final String TAG = "EventFragment";
 	// 참석자가 있는 경우 참석 여부 표시
 	// 알림 값을 클릭하면 알림표시를 하는 시각을 보여준다
     /*
     공휴일인 경우 : 제목, 날짜, 이벤트 색상, 캘린더 정보만 출력
      */
-	private EventFragmentBinding binding;
-	private ContentValues instanceValues;
-	private List<ContentValues> attendeeList;
-	private CalendarViewModel calendarViewModel;
-	private LocationViewModel locationViewModel;
-
 	private final int VIEW_HEIGHT;
 	private final IRefreshView iRefreshView;
+	private final DialogInterface dialogInterface;
 
 	private final int CALENDAR_ID;
 	private final long EVENT_ID;
@@ -83,13 +79,19 @@ public class EventFragment extends BottomSheetDialogFragment {
 	private final long ORIGINAL_BEGIN;
 	private final long ORIGINAL_END;
 
+	private EventFragmentBinding binding;
+	private ContentValues instanceValues;
+	private List<ContentValues> attendeeList;
+	private CalendarViewModel calendarViewModel;
+	private LocationViewModel locationViewModel;
+
+
 	private AlertDialog attendeeDialog;
 
 	private int resultCode = Activity.RESULT_CANCELED;
 
 	private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
 	private FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel;
-	private NetworkStatus networkStatus;
 
 	public void showSetLocationDialog() {
 		MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getActivity())
@@ -131,7 +133,10 @@ public class EventFragment extends BottomSheetDialogFragment {
 		editLocationActivityResultLauncher.launch(intent);
 	}
 
-	public EventFragment(IRefreshView iRefreshView, int VIEW_HEIGHT, int CALENDAR_ID, long EVENT_ID, long INSTANCE_ID, long ORIGINAL_BEGIN, long ORIGINAL_END) {
+	public EventFragment(DialogInterface dialogInterface, IRefreshView iRefreshView, int VIEW_HEIGHT, int CALENDAR_ID, long EVENT_ID,
+	                     long INSTANCE_ID,
+	                     long ORIGINAL_BEGIN, long ORIGINAL_END) {
+		this.dialogInterface = dialogInterface;
 		this.iRefreshView = iRefreshView;
 		this.VIEW_HEIGHT = VIEW_HEIGHT;
 		this.CALENDAR_ID = CALENDAR_ID;
@@ -142,6 +147,12 @@ public class EventFragment extends BottomSheetDialogFragment {
 	}
 
 	@Override
+	public void onDismiss(@NonNull @NotNull DialogInterface dialog) {
+		super.onDismiss(dialog);
+		dialogInterface.dismiss();
+	}
+
+	@Override
 	public void onAttach(@NonNull Context context) {
 		super.onAttach(context);
 	}
@@ -149,7 +160,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback());
 	}
 
 	@NonNull

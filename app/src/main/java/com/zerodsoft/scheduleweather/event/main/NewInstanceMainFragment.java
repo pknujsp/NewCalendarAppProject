@@ -100,11 +100,10 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 
 	private RestaurantsGetter restaurantItemGetter;
 	private OnExtraListDataListener<Integer> restaurantOnExtraListDataListener;
-
 	private PlaceItemsGetter placeItemsGetter;
 
 	private ChipGroup placeCategoryChipGroup;
-	private final ArrayMap<String, Chip> placeCategoryChipMap = new ArrayMap<>();
+	private ArrayMap<String, Chip> placeCategoryChipMap = new ArrayMap<>();
 	private Chip placeCategoryListChip;
 	private Chip placeCategorySettingsChip;
 	private String selectedPlaceCategoryCode;
@@ -152,7 +151,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	@Override
 	public void onAttach(@NonNull Context context) {
 		super.onAttach(context);
-		addOnBackPressedCallback();
 	}
 
 
@@ -162,12 +160,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
 		placeCategoryViewModel = new ViewModelProvider(this).get(PlaceCategoryViewModel.class);
 		getChildFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, true);
-	}
 
-	@Override
-	public void onDetach() {
-		super.onDetach();
-		removeOnBackPressedCallback();
+		instance = calendarViewModel.getInstance(INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
 	}
 
 	@Override
@@ -184,40 +178,58 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		createFunctionList();
-
-		//restaurant
-		Object[] results2 = createBottomSheet(R.id.restaurant_fragment_container);
-		LinearLayout restaurantsBottomSheet = (LinearLayout) results2[0];
-		BottomSheetBehavior restaurantsBottomSheetBehavior = (BottomSheetBehavior) results2[1];
-
-		bottomSheetViewMap.put(BottomSheetType.RESTAURANT, restaurantsBottomSheet);
-		bottomSheetBehaviorMap.put(BottomSheetType.RESTAURANT, restaurantsBottomSheetBehavior);
-
-		restaurantsBottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
-			@Override
-			public void onStateChanged(@NonNull View bottomSheet, int newState) {
-
-			}
-
-			@Override
-			public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-
-			}
-		});
-
 		binding.naverMapFragmentRootLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
 			@Override
 			public void onGlobalLayout() {
 				binding.naverMapFragmentRootLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
 
-				final int HEADERBAR_HEIGHT = (int) getResources().getDimension(R.dimen.map_header_bar_height);
-				final int HEADERBAR_TOP_MARGIN = (int) getResources().getDimension(R.dimen.map_header_bar_top_margin);
-				final int HEADERBAR_MARGIN = (int) (HEADERBAR_TOP_MARGIN * 1.5f);
-				DEFAULT_HEIGHT_OF_BOTTOMSHEET = binding.naverMapFragmentRootLayout.getHeight() - HEADERBAR_HEIGHT - HEADERBAR_MARGIN;
-				functionButtons[0].callOnClick();
+				final int headerbarHeight = (int) getResources().getDimension(R.dimen.map_header_bar_height);
+				final int headerbarTopMargin = (int) getResources().getDimension(R.dimen.map_header_bar_top_margin);
+				final int headerbarMargin = (int) (headerbarTopMargin * 1.5f);
+				DEFAULT_HEIGHT_OF_BOTTOMSHEET = binding.naverMapFragmentRootLayout.getHeight() - headerbarHeight - headerbarMargin;
+
+				if (instance.getAsString(CalendarContract.Instances.EVENT_LOCATION) != null) {
+					locationViewModel.getLocation(EVENT_ID, new DbQueryCallback<LocationDTO>() {
+						@Override
+						public void onResultSuccessful(LocationDTO savedLocationDto) {
+							selectedLocationDtoInEvent = savedLocationDto;
+
+							requireActivity().runOnUiThread(new Runnable() {
+								@Override
+								public void run() {
+									//지도 로드
+									loadMap();
+									addPlaceCategoryListFragmentIntoBottomSheet();
+									createPlaceCategoryListChips();
+									createSelectedLocationMarker();
+								}
+							});
+						}
+
+						@Override
+						public void onResultNoData() {
+							requireActivity().runOnUiThread(new Runnable() {
+								@Override
+								public void run() {
+									//인스턴스 정보 프래그먼트 표시
+									functionButtons[0].callOnClick();
+								}
+							});
+						}
+					});
+				} else {
+					//인스턴스 정보 프래그먼트 표시
+					functionButtons[0].callOnClick();
+					locationViewModel.removeLocation(EVENT_ID, null);
+				}
 			}
 		});
+		createFunctionList();
+	}
+
+	@Override
+	protected void loadMap() {
+		super.loadMap();
 	}
 
 	private void setHeightOfBottomSheet(int height, LinearLayout bottomSheetView, BottomSheetBehavior bottomSheetBehavior) {
@@ -229,7 +241,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	@Override
 	public void onMapReady(@NonNull NaverMap naverMap) {
 		super.onMapReady(naverMap);
-		setInitInstanceData();
 	}
 
 	private void createFunctionList() {
@@ -295,10 +306,56 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 				//이벤트 정보
 				functionButton.callOnClick();
 
-				EventFragment eventFragment = new EventFragment(NewInstanceMainFragment.this, DEFAULT_HEIGHT_OF_BOTTOMSHEET, CALENDAR_ID,
+				EventFragment eventFragment = new EventFragment(new DialogInterface() {
+					@Override
+					public void cancel() {
+
+					}
+
+					@Override
+					public void dismiss() {
+						instance = calendarViewModel.getInstance(INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
+						if (instance.getAsString(CalendarContract.Instances.EVENT_LOCATION) != null) {
+							locationViewModel.getLocation(EVENT_ID, new DbQueryCallback<LocationDTO>() {
+								@Override
+								public void onResultSuccessful(LocationDTO savedLocationDto) {
+									selectedLocationDtoInEvent = savedLocationDto;
+
+									requireActivity().runOnUiThread(new Runnable() {
+										@Override
+										public void run() {
+											//지도 로드
+											if (mapFragment == null) {
+												loadMap();
+												addPlaceCategoryListFragmentIntoBottomSheet();
+												createPlaceCategoryListChips();
+											} else {
+											}
+											createSelectedLocationMarker();
+										}
+									});
+								}
+
+								@Override
+								public void onResultNoData() {
+									requireActivity().runOnUiThread(new Runnable() {
+										@Override
+										public void run() {
+											onBackPressedCallback();
+										}
+									});
+								}
+							});
+						} else {
+							//인스턴스 정보 프래그먼트 표시
+							onBackPressedCallback();
+						}
+					}
+				}, NewInstanceMainFragment.this, DEFAULT_HEIGHT_OF_BOTTOMSHEET,
+						CALENDAR_ID,
 						EVENT_ID, INSTANCE_ID,
 						ORIGINAL_BEGIN, ORIGINAL_END);
-				eventFragment.show(getParentFragmentManager(), EventFragment.TAG);
+				eventFragment.show(getParentFragmentManager(), getString(R.string.tag_event_fragment));
 			}
 		});
 
@@ -313,7 +370,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 				LatLng latLng = naverMap.getContentBounds().getCenter();
 				bundle.putString("latitude", String.valueOf(latLng.latitude));
 				bundle.putString("longitude", String.valueOf(latLng.longitude));
-				bundle.putBoolean("hasSimpleLocation", hasSimpleLocation());
+				bundle.putBoolean("hasSimpleLocation", false);
 
 				weatherMainFragment.setArguments(bundle);
 				weatherMainFragment.show(getParentFragmentManager(), WeatherMainFragment.TAG);
@@ -337,6 +394,14 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 						fragmentManager.beginTransaction().show(restaurantFragment).addToBackStack(getString(R.string.tag_restaurant_fragment)).commit();
 					}
 				} else {
+					//restaurant
+					Object[] results2 = createBottomSheet(R.id.restaurant_fragment_container);
+					LinearLayout restaurantsBottomSheet = (LinearLayout) results2[0];
+					BottomSheetBehavior restaurantsBottomSheetBehavior = (BottomSheetBehavior) results2[1];
+
+					bottomSheetViewMap.put(BottomSheetType.RESTAURANT, restaurantsBottomSheet);
+					bottomSheetBehaviorMap.put(BottomSheetType.RESTAURANT, restaurantsBottomSheetBehavior);
+
 					RestaurantFragment restaurantFragment =
 							new RestaurantFragment(NewInstanceMainFragment.this, NewInstanceMainFragment.this
 									, new OnHiddenFragmentListener() {
@@ -374,73 +439,15 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		functionItemsView.setVisibility(View.VISIBLE);
 	}
 
-	private void setInitInstanceData() {
-		instance = calendarViewModel.getInstance(INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
-		//location
-		if (hasSimpleLocation()) {
-			setDetailLocationData();
-		} else {
-
-		}
-	}
-
-	public boolean hasSimpleLocation() {
-		boolean result = false;
-
-		if (instance.getAsString(CalendarContract.Instances.EVENT_LOCATION) != null) {
-			result = !instance.getAsString(CalendarContract.Instances.EVENT_LOCATION).isEmpty();
-		}
-		return result;
-	}
-
-	private void setDetailLocationData() {
-		if (hasSimpleLocation()) {
-			locationViewModel.getLocation(EVENT_ID, new DbQueryCallback<LocationDTO>() {
-				@Override
-				public void onResultSuccessful(LocationDTO locationResultDto) {
-					if (selectedLocationDtoInEvent == null) {
-						selectedLocationDtoInEvent = locationResultDto;
-
-						requireActivity().runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								addPlaceCategoryListFragmentIntoBottomSheet();
-								createPlaceCategoryListChips();
-								createSelectedLocationMarker();
-							}
-						});
-					} else {
-						if (locationResultDto.equals(selectedLocationDtoInEvent)) {
-						} else {
-							selectedLocationDtoInEvent = locationResultDto;
-
-							requireActivity().runOnUiThread(new Runnable() {
-								@Override
-								public void run() {
-									selectedLocationInEventMarker.setMap(null);
-									selectedLocationInEventMarker = null;
-									createSelectedLocationMarker();
-								}
-							});
-						}
-					}
-				}
-
-				@Override
-				public void onResultNoData() {
-
-				}
-			});
-
-		}
-
-	}
-
 	private void createSelectedLocationMarker() {
 		LatLng latLng = new LatLng(Double.parseDouble(selectedLocationDtoInEvent.getLatitude()),
 				Double.parseDouble(selectedLocationDtoInEvent.getLongitude()));
 
 		final int markerSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 28f, getResources().getDisplayMetrics());
+
+		if (selectedLocationInEventMarker != null) {
+			selectedLocationInEventMarker.setMap(null);
+		}
 
 		selectedLocationInEventMarker = new Marker(latLng);
 		selectedLocationInEventMarker.setMap(naverMap);
@@ -914,7 +921,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 			selectedLocationInEventMarker.setMap(null);
 			selectedLocationInEventMarker = null;
 		}
-		setInitInstanceData();
 	}
 
 	@Override

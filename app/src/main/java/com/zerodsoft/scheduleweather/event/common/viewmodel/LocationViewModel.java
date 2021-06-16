@@ -14,6 +14,8 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceKakaoLocalResponse;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
+import org.jetbrains.annotations.Nullable;
+
 public class LocationViewModel extends AndroidViewModel implements ILocationDao {
 	private LocationRepository locationRepository;
 
@@ -43,7 +45,7 @@ public class LocationViewModel extends AndroidViewModel implements ILocationDao 
 	}
 
 	@Override
-	public void removeLocation(long eventId, DbQueryCallback<Boolean> resultCallback) {
+	public void removeLocation(long eventId, @Nullable DbQueryCallback<Boolean> resultCallback) {
 		locationRepository.removeLocation(eventId, resultCallback);
 	}
 

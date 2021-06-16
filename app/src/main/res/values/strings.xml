@@ -583,4 +583,5 @@
     <string name="tag_instance_main_fragment">tag_instance_main_fragment</string>
     <string name="tag_places_of_selected_categories_fragment">tag_places_of_selected_categories_fragment</string>
     <string name="tag_place_info_web_dialog_fragment">tag_place_info_web_dialog_fragment</string>
+    <string name="tag_event_fragment">tag_event_fragment</string>
 </resources>
