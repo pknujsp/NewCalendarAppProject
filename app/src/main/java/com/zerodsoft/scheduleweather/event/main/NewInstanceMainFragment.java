@@ -140,9 +140,9 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 				//place category가 변경된 경우 갱신
 				placeCategoryViewModel.selectConvertedSelected(new DbQueryCallback<List<PlaceCategoryDTO>>() {
 					@Override
-					public void onResultSuccessful(List<PlaceCategoryDTO> savedPlaceCategoryList) {
+					public void onResultSuccessful(List<PlaceCategoryDTO> newPlaceCategoryList) {
 						Set<PlaceCategoryDTO> newSet = new HashSet<>();
-						newSet.addAll(savedPlaceCategoryList);
+						newSet.addAll(newPlaceCategoryList);
 
 						Set<PlaceCategoryDTO> removedSet = new HashSet<>(savedPlaceCategorySet);
 						Set<PlaceCategoryDTO> addedSet = new HashSet<>(newSet);
@@ -164,7 +164,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 									//chips 재 생성
 									placeCategoryChipMap.clear();
 									placeCategoryChipGroup.removeViews(2, placeCategoryChipGroup.getChildCount() - 2);
-									setPlaceCategoryChips(savedPlaceCategoryList);
+									setPlaceCategoryChips(newPlaceCategoryList);
 								}
 							});
 						}

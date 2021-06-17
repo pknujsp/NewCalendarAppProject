@@ -14,18 +14,16 @@ public class KakaoRestaurantsDataSourceFactory extends DataSource.Factory<Intege
 	private KakaoRestaurantsDataSource dataSource;
 	private MutableLiveData<KakaoRestaurantsDataSource> liveData;
 	private LocalApiPlaceParameter placeParameter;
-	private OnProgressViewListener onProgressViewListener;
 
-	public KakaoRestaurantsDataSourceFactory(LocalApiPlaceParameter placeParameter, OnProgressViewListener onProgressViewListener) {
+	public KakaoRestaurantsDataSourceFactory(LocalApiPlaceParameter placeParameter ) {
 		liveData = new MutableLiveData<>();
 		this.placeParameter = placeParameter;
-		this.onProgressViewListener = onProgressViewListener;
 	}
 
 	@NonNull
 	@Override
 	public DataSource<Integer, PlaceDocuments> create() {
-		dataSource = new KakaoRestaurantsDataSource(placeParameter, onProgressViewListener);
+		dataSource = new KakaoRestaurantsDataSource(placeParameter);
 		liveData.postValue(dataSource);
 		return dataSource;
 	}

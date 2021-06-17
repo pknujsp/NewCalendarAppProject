@@ -221,7 +221,18 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 				LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
 		placeParameter.setRadius("20000");
 
-		kakaoRestaurantsViewModel.init(placeParameter, (OnProgressViewListener) binding.customProgressView);
+		kakaoRestaurantsViewModel.init(placeParameter, new PagedList.BoundaryCallback<PlaceDocuments>() {
+			@Override
+			public void onZeroItemsLoaded() {
+				super.onZeroItemsLoaded();
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						binding.customProgressView.onFailedProcessingData(getString(R.string.not_founded_search_result));
+					}
+				});
+			}
+		});
 		kakaoRestaurantsViewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<PlaceDocuments>>() {
 			boolean isFirst = true;
 
@@ -235,16 +246,17 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 						@Override
 						public void onItemRangeInserted(int positionStart, int itemCount) {
 							super.onItemRangeInserted(positionStart, itemCount);
+							binding.customProgressView.onSuccessfulProcessingData();
 
 							if (adapterDataObserver != null) {
 								adapterDataObserver.onItemRangeInserted(0, itemCount);
 							}
-							binding.customProgressView.onSuccessfulProcessingData();
 						}
 
 					});
 				}
 			}
+
 
 		});
 	}

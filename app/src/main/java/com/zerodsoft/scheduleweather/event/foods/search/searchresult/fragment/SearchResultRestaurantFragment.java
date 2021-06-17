@@ -86,7 +86,7 @@ public class SearchResultRestaurantFragment extends Fragment {
 		restaurantListFragment.setArguments(bundle);
 
 		getChildFragmentManager().beginTransaction().add(binding.fragmentContainer.getId(), restaurantListFragment,
-				getString(R.string.tag_place_info_web_fragment)).commit();
+				getString(R.string.tag_restaurant_list_fragment)).commit();
 
 		binding.searchView.setQuery(query, false);
 		binding.searchView.setOnBackClickListener(new View.OnClickListener() {

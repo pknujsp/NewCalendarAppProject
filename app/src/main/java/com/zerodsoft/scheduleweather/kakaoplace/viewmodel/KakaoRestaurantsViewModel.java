@@ -1,20 +1,18 @@
 package com.zerodsoft.scheduleweather.kakaoplace.viewmodel;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.paging.LivePagedListBuilder;
 import androidx.paging.PagedList;
 
-import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
-import com.zerodsoft.scheduleweather.common.interfaces.OnProgressViewListener;
-import com.zerodsoft.scheduleweather.common.view.CustomProgressView;
 import com.zerodsoft.scheduleweather.kakaoplace.datasource.KakaoRestaurantsDataSource;
 import com.zerodsoft.scheduleweather.kakaoplace.datasourcefactory.KakaoRestaurantsDataSourceFactory;
-import com.zerodsoft.scheduleweather.navermap.model.datasource.PlaceItemDataSource;
-import com.zerodsoft.scheduleweather.navermap.model.datasourcefactory.PlaceItemDataSourceFactory;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -31,8 +29,8 @@ public class KakaoRestaurantsViewModel extends ViewModel {
 		pagedListLiveData = new MutableLiveData<>();
 	}
 
-	public void init(LocalApiPlaceParameter placeParameter, OnProgressViewListener onProgressViewListener) {
-		dataSourceFactory = new KakaoRestaurantsDataSourceFactory(placeParameter, onProgressViewListener);
+	public void init(LocalApiPlaceParameter placeParameter, PagedList.BoundaryCallback<PlaceDocuments> boundaryCallback) {
+		dataSourceFactory = new KakaoRestaurantsDataSourceFactory(placeParameter);
 		dataSourceMutableLiveData = dataSourceFactory.getLiveData();
 
 		config = (new PagedList.Config.Builder())
@@ -43,8 +41,10 @@ public class KakaoRestaurantsViewModel extends ViewModel {
 				.build();
 
 		pagedListLiveData = new LivePagedListBuilder<Integer, PlaceDocuments>(dataSourceFactory, config)
+				.setBoundaryCallback(boundaryCallback)
 				.setFetchExecutor(executor)
 				.build();
+
 	}
 
 	public LiveData<PagedList<PlaceDocuments>> getPagedListMutableLiveData() {

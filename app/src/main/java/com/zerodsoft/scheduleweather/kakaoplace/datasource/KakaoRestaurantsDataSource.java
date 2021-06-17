@@ -29,12 +29,10 @@ public class KakaoRestaurantsDataSource extends PositionalDataSource<PlaceDocume
 	private Querys querys;
 	private PlaceMeta placeMeta;
 	private LocalApiPlaceParameter localApiPlaceParameter;
-	private OnProgressViewListener onProgressViewListener;
 	private String categoryName;
 
-	public KakaoRestaurantsDataSource(LocalApiPlaceParameter localApiParameter, OnProgressViewListener onProgressViewListener) {
+	public KakaoRestaurantsDataSource(LocalApiPlaceParameter localApiParameter) {
 		this.localApiPlaceParameter = localApiParameter;
-		this.onProgressViewListener = onProgressViewListener;
 	}
 
 	@Override

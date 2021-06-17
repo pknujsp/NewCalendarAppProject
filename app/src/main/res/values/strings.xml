@@ -587,4 +587,6 @@
     <string name="selected_place_category_list">선택된 카테고리 목록</string>
     <string name="selectable_place_category_list">표시할 카테고리 선택</string>
     <string name="tag_place_category_settings_fragment">tag_place_category_settings_fragment</string>
+    <string name="tag_restaurant_search_result_fragment">tag_restaurant_search_result_fragment</string>
+    <string name="tag_restaurant_list_fragment">tag_restaurant_list_fragment</string>
 </resources>
