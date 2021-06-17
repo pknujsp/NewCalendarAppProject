@@ -589,4 +589,7 @@
     <string name="tag_place_category_settings_fragment">tag_place_category_settings_fragment</string>
     <string name="tag_restaurant_search_result_fragment">tag_restaurant_search_result_fragment</string>
     <string name="tag_restaurant_list_fragment">tag_restaurant_list_fragment</string>
+    <string name="address_place">주소, 장소</string>
+    <string name="tag_calendar_transaction_fragment">tag_calendar_transaction_fragment</string>
+    <string name="tag_all_favorite_fragment">tag_all_favorite_fragment</string>
 </resources>

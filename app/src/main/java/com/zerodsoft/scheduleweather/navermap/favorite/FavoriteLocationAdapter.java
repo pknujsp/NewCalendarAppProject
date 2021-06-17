@@ -20,6 +20,7 @@ public class FavoriteLocationAdapter extends RecyclerView.Adapter<FavoriteLocati
 	private final OnClickedFavoriteItem onClickedFavoriteItem;
 	private final CompoundButton.OnCheckedChangeListener onCheckedChangeListener;
 	private int checkBoxVisibility = View.GONE;
+	private int distanceVisibility = View.VISIBLE;
 
 	public FavoriteLocationAdapter(OnClickedFavoriteItem onClickedFavoriteItem, CompoundButton.OnCheckedChangeListener onCheckedChangeListener) {
 		this.onClickedFavoriteItem = onClickedFavoriteItem;
@@ -27,11 +28,15 @@ public class FavoriteLocationAdapter extends RecyclerView.Adapter<FavoriteLocati
 	}
 
 	public void setList(List<FavoriteLocationDTO> list) {
-		this.list = list;
+		this.list.addAll(list);
 	}
 
 	public void setCheckBoxVisibility(int checkBoxVisibility) {
 		this.checkBoxVisibility = checkBoxVisibility;
+	}
+
+	public void setDistanceVisibility(int distanceVisibility) {
+		this.distanceVisibility = distanceVisibility;
 	}
 
 	public List<FavoriteLocationDTO> getList() {
@@ -60,6 +65,8 @@ public class FavoriteLocationAdapter extends RecyclerView.Adapter<FavoriteLocati
 		public ViewHolder(@NonNull View itemView) {
 			super(itemView);
 			binding = FavoriteLocationItemBinding.bind(itemView);
+			binding.addressItemLayout.distance.setVisibility(distanceVisibility);
+			binding.placeItemLayout.distance.setVisibility(distanceVisibility);
 		}
 
 		public void onBind() {

@@ -241,9 +241,9 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
 		LatLng latLng = new LatLng(latitude, longitude);
 
 		if (type == CalcType.MIN) {
-			return Utmk.valueOf(latLng.offset(-meter, 0));
+			return Utmk.valueOf(latLng.offset(-meter, -meter));
 		} else {
-			return Utmk.valueOf(latLng.offset(+meter, 0));
+			return Utmk.valueOf(latLng.offset(+meter, +meter));
 		}
 	}
 

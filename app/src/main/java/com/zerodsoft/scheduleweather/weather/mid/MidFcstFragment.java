@@ -466,8 +466,8 @@ public class MidFcstFragment extends Fragment {
 				lastMaxColumnPoint.set(x, maxY);
 			}
 
-			drawMinMaxTempLine(canvas, MIN_TEMP);
-			drawMinMaxTempLine(canvas, MAX_TEMP);
+			//drawMinMaxTempLine(canvas, MIN_TEMP);
+			//drawMinMaxTempLine(canvas, MAX_TEMP);
 		}
 
 		private void drawMinMaxTempLine(Canvas canvas, int temp) {

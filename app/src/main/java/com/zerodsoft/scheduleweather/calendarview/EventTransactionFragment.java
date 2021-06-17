@@ -75,7 +75,6 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 		CalendarDateOnClickListener,
 		OnEventItemLongClickListener, OnDateTimeChangedListener, OnEditedEventListener {
 	// 달력 프래그먼트를 관리하는 프래그먼트
-	public static final String TAG = "CalendarTransactionFragment";
 	public static final int FIRST_VIEW_POSITION = Integer.MAX_VALUE / 2;
 
 	private final IConnectedCalendars iConnectedCalendars;

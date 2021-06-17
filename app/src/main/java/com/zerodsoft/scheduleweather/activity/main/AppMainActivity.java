@@ -35,6 +35,7 @@ import com.zerodsoft.scheduleweather.databinding.ActivityAppMainBinding;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.dto.AccountDto;
 import com.zerodsoft.scheduleweather.common.classes.AppPermission;
+import com.zerodsoft.scheduleweather.favorites.AllFavoritesHostFragment;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.WeatherDataConverter;
 
@@ -77,7 +78,6 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 		return DISPLAY_WIDTH;
 	}
 
-	@SneakyThrows
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -134,8 +134,8 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 		changeCalendar(CalendarViewType.enumOf(type));
 		EventTransactionFragment eventTransactionFragment = new EventTransactionFragment(this, CalendarViewType.enumOf(type), drawLayoutBtnOnClickListener);
 		getSupportFragmentManager().beginTransaction()
-				.add(mainBinding.rootCalendarContainer.getId(), eventTransactionFragment,
-						EventTransactionFragment.TAG).setPrimaryNavigationFragment(eventTransactionFragment).commit();
+				.add(mainBinding.fragmentContainer.getId(), eventTransactionFragment,
+						getString(R.string.tag_calendar_transaction_fragment)).commit();
 	}
 
 
@@ -228,7 +228,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 	};
 
 	private void changeCalendar(CalendarViewType calendarViewType) {
-		EventTransactionFragment eventTransactionFragment = (EventTransactionFragment) getSupportFragmentManager().findFragmentByTag(EventTransactionFragment.TAG);
+		EventTransactionFragment eventTransactionFragment = (EventTransactionFragment) getSupportFragmentManager().findFragmentByTag(getString(R.string.tag_calendar_transaction_fragment));
 		String fragmentTag = null;
 
 		if (calendarViewType == CalendarViewType.DAY) {
@@ -261,6 +261,11 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 		public void onClick(View view) {
 			switch (view.getId()) {
 				case R.id.favorite_location:
+					AllFavoritesHostFragment allFavoritesHostFragment = new AllFavoritesHostFragment();
+					getSupportFragmentManager().beginTransaction().hide(getSupportFragmentManager().findFragmentByTag(getString(R.string.tag_calendar_transaction_fragment)))
+							.add(mainBinding.fragmentContainer.getId(), allFavoritesHostFragment,
+									getString(R.string.tag_all_favorite_fragment)).addToBackStack(getString(R.string.tag_all_favorite_fragment))
+							.commit();
 					break;
 				case R.id.settings:
 					Intent intent = new Intent(AppMainActivity.this, SettingsActivity.class);
@@ -293,7 +298,6 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 
 	private final ActivityResultLauncher<String[]> permissionsResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
 			new ActivityResultCallback<Map<String, Boolean>>() {
-				@SneakyThrows
 				@Override
 				public void onActivityResult(Map<String, Boolean> result) {
 					if (result.get(Manifest.permission.READ_CALENDAR)) {
@@ -315,7 +319,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 	@Override
 	public void onCheckedBox(String key, ContentValues calendar, boolean state) {
 		EventTransactionFragment eventTransactionFragment =
-				(EventTransactionFragment) getSupportFragmentManager().findFragmentByTag(EventTransactionFragment.TAG);
+				(EventTransactionFragment) getSupportFragmentManager().findFragmentByTag(getString(R.string.tag_calendar_transaction_fragment));
 
 		SharedPreferences sharedPreferences = getSharedPreferences(getString(R.string.preferences_selected_calendars_key), Context.MODE_PRIVATE);
 		SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -330,7 +334,6 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 				if (!state) {
 					// 같은 값을 가진 것이 이미 추가되어있는 경우 선택해제 하는 것이므로 삭제한다.
 					connectedCalendarMap.remove(key);
-
 					connectedCalendarList.clear();
 					connectedCalendarList.addAll(connectedCalendarMap.values());
 
@@ -362,7 +365,12 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 		//뒤로가기 2번 누르면(2초 내) 완전 종료
 		//첫 클릭시 2초 타이머 작동
 		//2초 내로 재 클릭없으면 무효
-		closeWindow.clicked(this);
+		int fragmentSize = getSupportFragmentManager().getBackStackEntryCount();
+		if (fragmentSize > 0) {
+			getSupportFragmentManager().popBackStackImmediate();
+		} else {
+			closeWindow.clicked(this);
+		}
 	}
 
 	private final View.OnClickListener drawLayoutBtnOnClickListener = new View.OnClickListener() {
@@ -371,5 +379,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 			mainBinding.drawerLayout.openDrawer(mainBinding.sideNavigation);
 		}
 	};
+
+
 }
 

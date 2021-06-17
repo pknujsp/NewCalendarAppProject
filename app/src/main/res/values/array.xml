@@ -11,6 +11,11 @@
         <item>카테고리 순서</item>
     </string-array>
 
+    <string-array name="all_favorite_locations_sort_spinner">
+        <item>등록 순서</item>
+        <item>카테고리 순서</item>
+    </string-array>
+
     <string-array name="day_list">
         <item>일</item>
         <item>월</item>

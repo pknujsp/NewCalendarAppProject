@@ -503,8 +503,8 @@ public class VilageFcstFragment extends Fragment {
 			}
 
 			//draw min max temp line
-			drawMinMaxTempLine(canvas, MIN_TEMP);
-			drawMinMaxTempLine(canvas, MAX_TEMP);
+			//drawMinMaxTempLine(canvas, MIN_TEMP);
+			//drawMinMaxTempLine(canvas, MAX_TEMP);
 		}
 
 		private void drawMinMaxTempLine(Canvas canvas, int temp) {
