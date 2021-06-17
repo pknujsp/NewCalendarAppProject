@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.event.places.map;
+package com.zerodsoft.scheduleweather.event.places;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -50,7 +50,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 public class PlacesOfSelectedCategoriesFragment extends Fragment implements PlaceItemsGetter, OnExtraListDataListener<String> {
 	private final long EVENT_ID;
@@ -221,32 +220,27 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 				if (!removedSet.isEmpty() || !addedSet.isEmpty()) {
 					placeCategorySet = newSet;
 
-					Set<String> newCodeSet = new HashSet<>();
-					for (PlaceCategoryDTO placeCategoryDTO : newSet) {
-						newCodeSet.add(placeCategoryDTO.getCode());
-					}
-
 					requireActivity().runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
 							//삭제
 							if (!removedSet.isEmpty()) {
-								Set<String> currentKeySet = listMap.keySet();
-								List<Integer> removeIndexList = new ArrayList<>();
+								Set<String> removeCodeSet = new HashSet<>();
+								for (PlaceCategoryDTO placeCategoryDTO : removedSet) {
+									removeCodeSet.add(placeCategoryDTO.getCode());
+								}
 
-								for (String key : currentKeySet) {
-									if (!newCodeSet.contains(key)) {
-										removeIndexList.add(listMap.indexOfKey(key));
+								int childCount = binding.categoryViewlist.getChildCount();
+
+								for (int index = childCount - 1; index >= 0; index--) {
+									String removeCode = (String) binding.categoryViewlist.getChildAt(index).getTag();
+									if (removeCodeSet.contains(removeCode)) {
+										binding.categoryViewlist.removeViewAt(index);
+										listMap.remove(removeCode);
+										adaptersMap.remove(removeCode);
 									}
 								}
 
-								Collections.sort(removeIndexList, Comparator.reverseOrder());
-
-								for (Integer index : removeIndexList) {
-									listMap.removeAt(index);
-									adaptersMap.removeAt(index);
-									binding.categoryViewlist.removeViewAt(index);
-								}
 							}
 
 							if (!addedSet.isEmpty()) {
@@ -281,44 +275,59 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 
 	private void addCategoryView(PlaceCategoryDTO placeCategory, String rangeRadius) {
 		LinearLayout categoryView = (LinearLayout) getLayoutInflater().inflate(R.layout.place_category_view, null);
-		((TextView) categoryView.findViewById(R.id.map_category_name)).setText(placeCategory.getDescription());
-
+		PlaceItemsAdapters adapter = new PlaceItemsAdapters(onClickedPlacesListListener, placeCategory);
 		RecyclerView itemRecyclerView = (RecyclerView) categoryView.findViewById(R.id.map_category_itemsview);
+
+		adaptersMap.put(placeCategory.getCode(), adapter);
+		listMap.put(placeCategory.getCode(), itemRecyclerView);
+		categoryView.setTag(placeCategory.getCode());
+		binding.categoryViewlist.addView(categoryView);
+
+		((TextView) categoryView.findViewById(R.id.map_category_name)).setText(placeCategory.getDescription());
 
 		CustomProgressView customProgressView = (CustomProgressView) categoryView.findViewById(R.id.custom_progress_view);
 		customProgressView.setContentView(itemRecyclerView);
-		customProgressView.onSuccessfulProcessingData();
+		customProgressView.onStartedProcessingData();
 
 		itemRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.HORIZONTAL, false));
 		itemRecyclerView.addItemDecoration(new CustomRecyclerViewItemDecoration((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics())));
+
+		itemRecyclerView.setAdapter(adapter);
+		adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+
+			@Override
+			public void onItemRangeInserted(int positionStart, int itemCount) {
+				super.onItemRangeInserted(positionStart, itemCount);
+				if (positionStart == 0) {
+					customProgressView.onSuccessfulProcessingData();
+				}
+			}
+		});
+
+		PlacesViewModel viewModel =
+				new ViewModelProvider(PlacesOfSelectedCategoriesFragment.this).get(PlacesViewModel.class);
 
 		LocalApiPlaceParameter placeParameter = LocalParameterUtil.getPlaceParameter(placeCategory.getCode(), String.valueOf(selectedLocationDto.getLatitude()),
 				String.valueOf(selectedLocationDto.getLongitude()), LocalApiPlaceParameter.DEFAULT_SIZE, LocalApiPlaceParameter.DEFAULT_PAGE,
 				LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
 		placeParameter.setRadius(rangeRadius);
 
-		PlaceItemsAdapters adapter = new PlaceItemsAdapters(onClickedPlacesListListener, placeCategory);
-		itemRecyclerView.setAdapter(adapter);
-		adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+		viewModel.init(placeParameter, new PagedList.BoundaryCallback<PlaceDocuments>() {
 			@Override
-			public void onChanged() {
-				super.onChanged();
-			}
-
-			@Override
-			public void onItemRangeInserted(int positionStart, int itemCount) {
-				super.onItemRangeInserted(positionStart, itemCount);
+			public void onZeroItemsLoaded() {
+				super.onZeroItemsLoaded();
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						customProgressView.onFailedProcessingData(getString(R.string.not_founded_search_result));
+					}
+				});
 			}
 		});
-
-		PlacesViewModel viewModel =
-				new ViewModelProvider(PlacesOfSelectedCategoriesFragment.this).get(PlacesViewModel.class);
-		viewModel.init(placeParameter);
 		viewModel.getPagedListMutableLiveData().observe(PlacesOfSelectedCategoriesFragment.this.getViewLifecycleOwner(),
 				new Observer<PagedList<PlaceDocuments>>() {
 					@Override
 					public void onChanged(PagedList<PlaceDocuments> placeDocuments) {
-						//카테고리 뷰 어댑터에 데이터 삽입
 						adapter.submitList(placeDocuments);
 					}
 				});
@@ -330,9 +339,6 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 			}
 		});
 
-		adaptersMap.put(placeCategory.getCode(), adapter);
-		listMap.put(placeCategory.getCode(), itemRecyclerView);
-		binding.categoryViewlist.addView(categoryView);
 	}
 
 	@Override

@@ -3,14 +3,9 @@ package com.zerodsoft.scheduleweather.event.main;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -54,6 +49,7 @@ import com.zerodsoft.scheduleweather.activity.placecategory.PlaceCategorySetting
 import com.zerodsoft.scheduleweather.activity.placecategory.viewmodel.PlaceCategoryViewModel;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
+import com.zerodsoft.scheduleweather.common.classes.CloseWindow;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnHiddenFragmentListener;
 import com.zerodsoft.scheduleweather.etc.LocationType;
@@ -62,7 +58,7 @@ import com.zerodsoft.scheduleweather.event.foods.RestaurantFragment;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.ISetFoodMenuPoiItems;
 import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceItemsGetter;
-import com.zerodsoft.scheduleweather.event.places.map.PlacesOfSelectedCategoriesFragment;
+import com.zerodsoft.scheduleweather.event.places.PlacesOfSelectedCategoriesFragment;
 import com.zerodsoft.scheduleweather.event.weather.fragment.WeatherMainFragment;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.NaverMapFragment;
@@ -114,6 +110,15 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 
 	private LinearLayout chipsLayout;
 	private ViewGroup functionItemsView;
+	private CloseWindow closeWindow = new CloseWindow();
+
+	@Override
+	public void onBackPressedCallback() {
+		FragmentManager fragmentManager = getChildFragmentManager();
+		if (!fragmentManager.popBackStackImmediate()) {
+			closeWindow.clicked(requireActivity());
+		}
+	}
 
 	private FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks = new FragmentManager.FragmentLifecycleCallbacks() {
 		@Override
@@ -220,6 +225,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+		binding.headerLayout.setVisibility(View.GONE);
+		binding.naverMapButtonsLayout.getRoot().setVisibility(View.GONE);
 		binding.naverMapFragmentRootLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
 			@Override
 			public void onGlobalLayout() {
@@ -240,6 +247,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 								@Override
 								public void run() {
 									//지도 로드
+									binding.headerLayout.setVisibility(View.VISIBLE);
+									binding.naverMapButtonsLayout.getRoot().setVisibility(View.VISIBLE);
 									createFunctionList();
 									loadMap();
 									addPlaceCategoryListFragmentIntoBottomSheet();
@@ -448,6 +457,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 								requireActivity().runOnUiThread(new Runnable() {
 									@Override
 									public void run() {
+										binding.headerLayout.setVisibility(View.VISIBLE);
+										binding.naverMapButtonsLayout.getRoot().setVisibility(View.VISIBLE);
 										createFunctionList();
 										addPlaceCategoryListFragmentIntoBottomSheet();
 										createPlaceCategoryListChips();
@@ -463,6 +474,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 							requireActivity().runOnUiThread(new Runnable() {
 								@Override
 								public void run() {
+									binding.headerLayout.setVisibility(View.GONE);
+									binding.naverMapButtonsLayout.getRoot().setVisibility(View.GONE);
 									requireActivity().finish();
 								}
 							});
@@ -606,6 +619,9 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		LinearLayout.LayoutParams titleTextViewLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
 				ViewGroup.LayoutParams.WRAP_CONTENT);
 		titleTextViewLayoutParams.gravity = Gravity.CENTER_VERTICAL;
+		int titleMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
+		titleTextViewLayoutParams.leftMargin = titleMargin;
+		titleTextViewLayoutParams.rightMargin = titleMargin;
 
 		chipsLayout.addView(titleTextView, titleTextViewLayoutParams);
 

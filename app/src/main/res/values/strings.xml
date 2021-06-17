@@ -495,7 +495,7 @@
     <string name="show_extra_floor">다른 층 더보기</string>
     <string name="delete_all">모두 삭제</string>
     <string name="not_search_history">검색 기록 없음</string>
-    <string name="message_request_double_click_for_close">앱을 종료하시려면 한번 더 클릭해주세요</string>
+    <string name="message_request_double_click_for_close">종료하시려면 한번 더 클릭해주세요</string>
     <string name="hint_request_input_custom_food_menu">추가할 음식 메뉴를 입력해주세요</string>
     <string name="not_added_custom_food_menu">추가된 음식 메뉴가 없습니다</string>
     <string name="place">장소</string>

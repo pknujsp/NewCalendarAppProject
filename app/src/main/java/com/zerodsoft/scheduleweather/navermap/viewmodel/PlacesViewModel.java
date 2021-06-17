@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel;
 import androidx.paging.LivePagedListBuilder;
 import androidx.paging.PagedList;
 
-import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.navermap.model.datasource.PlaceItemDataSource;
@@ -27,7 +26,7 @@ public class PlacesViewModel extends ViewModel {
 		pagedListLiveData = new MutableLiveData<>();
 	}
 
-	public void init(LocalApiPlaceParameter placeParameter) {
+	public void init(LocalApiPlaceParameter placeParameter, PagedList.BoundaryCallback<PlaceDocuments> boundaryCallback) {
 		dataSourceFactory = new PlaceItemDataSourceFactory(placeParameter);
 		dataSourceMutableLiveData = dataSourceFactory.getLiveData();
 
@@ -39,6 +38,7 @@ public class PlacesViewModel extends ViewModel {
 				.build();
 
 		pagedListLiveData = new LivePagedListBuilder<Integer, PlaceDocuments>(dataSourceFactory, config)
+				.setBoundaryCallback(boundaryCallback)
 				.setFetchExecutor(executor)
 				.build();
 	}

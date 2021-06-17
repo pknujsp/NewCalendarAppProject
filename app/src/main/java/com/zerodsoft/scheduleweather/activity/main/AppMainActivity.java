@@ -29,6 +29,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.ICalendarCheckBox;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.month.MonthFragment;
 import com.zerodsoft.scheduleweather.calendarview.week.WeekFragment;
+import com.zerodsoft.scheduleweather.common.classes.CloseWindow;
 import com.zerodsoft.scheduleweather.common.enums.CalendarViewType;
 import com.zerodsoft.scheduleweather.databinding.ActivityAppMainBinding;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
@@ -62,6 +63,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 	private static Map<String, ContentValues> connectedCalendarMap = new HashMap<>();
 	private static List<ContentValues> connectedCalendarList = new ArrayList<>();
 	private List<AccountDto> accountList;
+	private CloseWindow closeWindow = new CloseWindow();
 
 	private ActivityAppMainBinding mainBinding;
 	private CalendarViewModel calendarViewModel;
@@ -360,7 +362,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 		//뒤로가기 2번 누르면(2초 내) 완전 종료
 		//첫 클릭시 2초 타이머 작동
 		//2초 내로 재 클릭없으면 무효
-		AppClose.clicked(this);
+		closeWindow.clicked(this);
 	}
 
 	private final View.OnClickListener drawLayoutBtnOnClickListener = new View.OnClickListener() {
@@ -369,37 +371,5 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 			mainBinding.drawerLayout.openDrawer(mainBinding.sideNavigation);
 		}
 	};
-
-	static class AppClose {
-		static long firstPressedTime = 0L;
-
-		static void clicked(Activity activity) {
-			if (firstPressedTime > 0L) {
-				long secondPressedTime = System.currentTimeMillis();
-
-				if (secondPressedTime - firstPressedTime < 2000L) {
-                    /*
-                    activity.moveTaskToBack(true); // 태스크를 백그라운드로 이동
-                    activity.finishAndRemoveTask(); // 액티비티 종료 + 태스크 리스트에서 지우기
-                    android.os.Process.killProcess(android.os.Process.myPid()); // 앱 프로세스 종료
-
-                     */
-					activity.finish();
-				}
-			} else {
-				firstPressedTime = System.currentTimeMillis();
-				Toast.makeText(activity, activity.getString(R.string.message_request_double_click_for_close), Toast.LENGTH_SHORT).show();
-
-				new Timer().schedule(new TimerTask() {
-					@Override
-					public void run() {
-						firstPressedTime = 0L;
-					}
-				}, 2000);
-			}
-		}
-
-
-	}
 }
 

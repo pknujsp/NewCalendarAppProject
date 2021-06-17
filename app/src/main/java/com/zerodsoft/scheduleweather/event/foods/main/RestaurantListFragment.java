@@ -148,8 +148,19 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 		binding.recyclerView.addItemDecoration(new DividerItemDecoration(view.getContext(), DividerItemDecoration.VERTICAL));
 
 		adapter = new RestaurantListAdapter(getContext(), RestaurantListFragment.this, favoriteLocationQuery);
-		binding.recyclerView.setAdapter(adapter);
+		adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+			@Override
+			public void onItemRangeInserted(int positionStart, int itemCount) {
+				super.onItemRangeInserted(positionStart, itemCount);
+				binding.customProgressView.onSuccessfulProcessingData();
 
+				if (adapterDataObserver != null) {
+					adapterDataObserver.onItemRangeInserted(0, itemCount);
+				}
+			}
+
+		});
+		binding.recyclerView.setAdapter(adapter);
 		requestRestaurantList(query);
 	}
 
@@ -203,7 +214,6 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 						@Override
 						public void run() {
 							callback.onResultNoData();
-
 						}
 					});
 				}
@@ -239,22 +249,6 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 			@Override
 			public void onChanged(PagedList<PlaceDocuments> placeDocuments) {
 				adapter.submitList(placeDocuments);
-
-				if (isFirst) {
-					isFirst = false;
-					adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
-						@Override
-						public void onItemRangeInserted(int positionStart, int itemCount) {
-							super.onItemRangeInserted(positionStart, itemCount);
-							binding.customProgressView.onSuccessfulProcessingData();
-
-							if (adapterDataObserver != null) {
-								adapterDataObserver.onItemRangeInserted(0, itemCount);
-							}
-						}
-
-					});
-				}
 			}
 
 

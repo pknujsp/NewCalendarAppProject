@@ -17,7 +17,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.common.interfaces.OnProgressBarListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentLocationSearchResultBinding;
 import com.zerodsoft.scheduleweather.event.foods.searchlocation.adapter.PlacesListAdapter;
 import com.zerodsoft.scheduleweather.event.foods.searchlocation.interfaces.OnClickedLocationItem;
@@ -70,7 +69,12 @@ public class PlacesListFragment extends Fragment {
 
 		adapter = new PlacesListAdapter(onClickedLocationItem);
 		binding.searchResultRecyclerview.setAdapter(adapter);
-		viewModel.init(placeParameter);
+		viewModel.init(placeParameter, new PagedList.BoundaryCallback<PlaceDocuments>() {
+			@Override
+			public void onZeroItemsLoaded() {
+				super.onZeroItemsLoaded();
+			}
+		});
 
 		viewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<PlaceDocuments>>() {
 			@Override

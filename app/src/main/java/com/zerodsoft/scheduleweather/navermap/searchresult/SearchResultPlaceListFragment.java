@@ -226,7 +226,12 @@ public class SearchResultPlaceListFragment extends Fragment implements OnExtraLi
 		});
 		binding.searchResultRecyclerview.setAdapter(adapter);
 
-		viewModel.init(parameter);
+		viewModel.init(parameter, new PagedList.BoundaryCallback<PlaceDocuments>() {
+			@Override
+			public void onZeroItemsLoaded() {
+				super.onZeroItemsLoaded();
+			}
+		});
 		viewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<PlaceDocuments>>() {
 			@Override
 			public void onChanged(PagedList<PlaceDocuments> placeDocuments) {

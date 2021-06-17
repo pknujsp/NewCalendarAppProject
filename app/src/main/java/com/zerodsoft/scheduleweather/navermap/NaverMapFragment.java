@@ -72,6 +72,7 @@ import com.zerodsoft.scheduleweather.common.classes.AppPermission;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
+import com.zerodsoft.scheduleweather.common.view.CustomProgressView;
 import com.zerodsoft.scheduleweather.databinding.FragmentNaverMapBinding;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
@@ -317,8 +318,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		markerWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
 		markerHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
 		favoriteMarkerSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
-
-
 	}
 
 
@@ -332,6 +331,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+		binding.customProgressView.setContentView(binding.naverMapFragment);
+		binding.customProgressView.onSuccessfulProcessingData();
 
 		setLocationItemsBottomSheet();
 		setLocationSearchBottomSheet();
