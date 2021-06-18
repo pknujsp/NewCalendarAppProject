@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -25,16 +26,18 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.naver.maps.geometry.LatLng;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
-import com.zerodsoft.scheduleweather.databinding.FragmentFavoriteLocationBinding;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
 import com.zerodsoft.scheduleweather.event.places.interfaces.MarkerOnClickListener;
+import com.zerodsoft.scheduleweather.favorites.addressplace.basefragment.FavoriteLocationsBaseFragment;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.MarkerType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
@@ -51,24 +54,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class FavoriteLocationFragment extends Fragment implements OnClickedFavoriteItem
-		, SharedPreferences.OnSharedPreferenceChangeListener {
-	private FragmentFavoriteLocationBinding binding;
+public class FavoriteLocationFragment extends FavoriteLocationsBaseFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 	private MarkerOnClickListener markerOnClickListener;
 	private BottomSheetController bottomSheetController;
 	private IMapData iMapData;
 	private IMapPoint iMapPoint;
 	private MapSharedViewModel mapSharedViewModel;
-
 	private LatLng latLngOnCurrentLocation;
-
-	private FavoriteLocationViewModel favoriteLocationViewModel;
-	private FavoriteLocationAdapter favoriteLocationAdapter;
-
 	private SharedPreferences sharedPreferences;
-	private ArrayAdapter<CharSequence> spinnerAdapter;
 
-	private Set<FavoriteLocationDTO> checkedFavoriteLocationSet = new HashSet<>();
+	private SwitchMaterial markerVisibilitySwitch;
+
+	@Override
+	protected void onAddedFavoriteLocation(FavoriteLocationDTO addedFavoriteLocation) {
+		List<FavoriteLocationDTO> list = favoriteLocationAdapter.getList();
+		list.add(addedFavoriteLocation);
+		calcDistance(list);
+		sort(list);
+		favoriteLocationAdapter.notifyDataSetChanged();
+	}
 
 	@Override
 	public void onHiddenChanged(boolean hidden) {
@@ -92,7 +96,6 @@ public class FavoriteLocationFragment extends Fragment implements OnClickedFavor
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
 
 		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
 		sharedPreferences.registerOnSharedPreferenceChangeListener(this);
@@ -106,63 +109,44 @@ public class FavoriteLocationFragment extends Fragment implements OnClickedFavor
 		favoriteLocationViewModel = new ViewModelProvider(getParentFragment()).get(FavoriteLocationViewModel.class);
 		latLngOnCurrentLocation = iMapPoint.getMapCenterPoint();
 
-		favoriteLocationViewModel.getAddedFavoriteLocationMutableLiveData().observe(this, new Observer<FavoriteLocationDTO>() {
-			@Override
-			public void onChanged(FavoriteLocationDTO addedFavoriteLocationDTO) {
-				if (addedFavoriteLocationDTO.getType() != FavoriteLocationDTO.RESTAURANT) {
-					List<FavoriteLocationDTO> list = favoriteLocationAdapter.getList();
-					list.add(addedFavoriteLocationDTO);
-
-					calcDistance(list);
-					sort(list);
-
-					favoriteLocationAdapter.notifyDataSetChanged();
-				}
-			}
-		});
-
-		favoriteLocationViewModel.getRemovedFavoriteLocationMutableLiveData().observe(this, new Observer<FavoriteLocationDTO>() {
-			@Override
-			public void onChanged(FavoriteLocationDTO favoriteLocationDTO) {
-				List<FavoriteLocationDTO> list = favoriteLocationAdapter.getList();
-
-				int indexOfList = 0;
-				int listSize = list.size();
-				for (; indexOfList < listSize; indexOfList++) {
-					if (list.get(indexOfList).getId().equals(favoriteLocationDTO.getId())) {
-						list.remove(indexOfList);
-						break;
-					}
-				}
-
-				favoriteLocationAdapter.notifyItemRemoved(indexOfList);
-			}
-		});
+		super.onCreate(savedInstanceState);
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-	                         Bundle savedInstanceState) {
-		binding = FragmentFavoriteLocationBinding.inflate(inflater);
-		return binding.getRoot();
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		return super.onCreateView(inflater, container, savedInstanceState);
 	}
 
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		binding.deleteFavoriteLocations.setVisibility(View.GONE);
-		binding.customProgressView.setContentView(binding.favoriteLocationRecyclerView);
+		binding.moreFavoriteAddressPlaceList.setVisibility(View.GONE);
+
+		LinearLayout settingsLayout = new LinearLayout(getContext());
+		LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT);
+		layoutParams.bottomMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
+		settingsLayout.setLayoutParams(layoutParams);
+		settingsLayout.setOrientation(LinearLayout.VERTICAL);
+
+		binding.rootLinearLayout.addView(settingsLayout, 1);
+
+		markerVisibilitySwitch = new SwitchMaterial(getContext());
+		markerVisibilitySwitch.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+		markerVisibilitySwitch.setText(R.string.show_favorite_locations_marker_on_map);
+
+		settingsLayout.addView(markerVisibilitySwitch);
 
 		spinnerAdapter = ArrayAdapter.createFromResource(getContext(),
 				R.array.favorite_locations_sort_spinner, android.R.layout.simple_spinner_item);
 		spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		binding.sortSpinner.setAdapter(spinnerAdapter);
-		binding.sortSpinner.setSelection(1);
-		binding.sortSpinner.setOnItemSelectedListener(spinnerItemSelectedListener);
+		binding.sortSpinnerForAddressPlace.setAdapter(spinnerAdapter);
+		binding.sortSpinnerForAddressPlace.setSelection(1);
+		binding.sortSpinnerForAddressPlace.setOnItemSelectedListener(spinnerItemSelectedListener);
 
 		boolean showFavoriteLocationsMarkersOnMap = App.isPreference_key_show_favorite_locations_markers_on_map();
-		binding.switchShowFavoriteLocationsMarkerOnMap.setChecked(showFavoriteLocationsMarkersOnMap);
-		binding.switchShowFavoriteLocationsMarkerOnMap.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+		markerVisibilitySwitch.setChecked(showFavoriteLocationsMarkersOnMap);
+		markerVisibilitySwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 			@Override
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 				SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -174,105 +158,20 @@ public class FavoriteLocationFragment extends Fragment implements OnClickedFavor
 			}
 		});
 
-		binding.favoriteLocationRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
-		binding.favoriteLocationRecyclerView.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
-
-		favoriteLocationAdapter = new FavoriteLocationAdapter(this, checkBoxOnCheckedChangeListener, View.VISIBLE);
-		binding.favoriteLocationRecyclerView.setAdapter(favoriteLocationAdapter);
-
-		favoriteLocationAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
-			@Override
-			public void onItemRangeInserted(int positionStart, int itemCount) {
-				super.onItemRangeInserted(positionStart, itemCount);
-				if (positionStart == 0 && itemCount > 0) {
-					binding.customProgressView.onSuccessfulProcessingData();
-				}
-			}
-
-			@Override
-			public void onItemRangeRemoved(int positionStart, int itemCount) {
-				super.onItemRangeRemoved(positionStart, itemCount);
-				if (favoriteLocationAdapter.getItemCount() == 0) {
-					binding.customProgressView.onFailedProcessingData(getString(R.string.empty_favorite_locations_list));
-				}
-			}
-
-			@Override
-			public void onChanged() {
-				super.onChanged();
-				if (favoriteLocationAdapter.getItemCount() == 0) {
-					binding.customProgressView.onFailedProcessingData(getString(R.string.empty_favorite_locations_list));
-				} else {
-					binding.customProgressView.onSuccessfulProcessingData();
-				}
-			}
-		});
-
-		binding.editButton.setOnClickListener(new View.OnClickListener() {
-			boolean isChecked = false;
-
-			@Override
-			public void onClick(View view) {
-				isChecked = !isChecked;
-
-				if (isChecked) {
-					binding.editButton.setTextColor(Color.BLUE);
-					binding.deleteFavoriteLocations.setVisibility(View.VISIBLE);
-					favoriteLocationAdapter.setCheckBoxVisibility(View.VISIBLE);
-				} else {
-					binding.editButton.setTextColor(ContextCompat.getColor(getContext(), R.color.gray_600));
-					binding.deleteFavoriteLocations.setVisibility(View.GONE);
-					favoriteLocationAdapter.setCheckBoxVisibility(View.GONE);
-				}
-				checkedFavoriteLocationSet.clear();
-				favoriteLocationAdapter.notifyDataSetChanged();
-			}
-		});
-
-		binding.deleteFavoriteLocations.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				if (checkedFavoriteLocationSet.isEmpty()) {
-					Toast.makeText(getContext(), R.string.not_checked_favorite_locations, Toast.LENGTH_SHORT).show();
-				} else {
-					for (FavoriteLocationDTO favoriteLocationDTO : checkedFavoriteLocationSet) {
-						favoriteLocationViewModel.delete(favoriteLocationDTO, null);
-					}
-
-					binding.editButton.callOnClick();
-				}
-			}
-		});
-
+		favoriteLocationAdapter.setDistanceVisibility(View.VISIBLE);
 		setFavoriteLocationList();
 	}
 
-	private void setFavoriteLocationList() {
-		binding.customProgressView.onStartedProcessingData();
+	@Override
+	protected void onLoadedFavoriteLocationsList(List<FavoriteLocationDTO> list) {
+		calcDistance(list);
+		sort(list);
+		favoriteLocationAdapter.setList(list);
 
-		favoriteLocationViewModel.getFavoriteLocations(FavoriteLocationDTO.ONLY_FOR_MAP, new DbQueryCallback<List<FavoriteLocationDTO>>() {
+		requireActivity().runOnUiThread(new Runnable() {
 			@Override
-			public void onResultSuccessful(List<FavoriteLocationDTO> list) {
-				calcDistance(list);
-				sort(list);
-				favoriteLocationAdapter.setList(list);
-
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						favoriteLocationAdapter.notifyDataSetChanged();
-					}
-				});
-			}
-
-			@Override
-			public void onResultNoData() {
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						binding.customProgressView.onFailedProcessingData(getString(R.string.empty_favorite_locations_list));
-					}
-				});
+			public void run() {
+				favoriteLocationAdapter.notifyDataSetChanged();
 			}
 		});
 	}
@@ -292,73 +191,34 @@ public class FavoriteLocationFragment extends Fragment implements OnClickedFavor
 	@Override
 	public void onClickedListItem(FavoriteLocationDTO e, int position) {
 		//맵에서 마커 클릭 후, 아이템 정보 바텀시트 보여주고 프래그먼트 바텀 시트 닫음
-		if (!binding.switchShowFavoriteLocationsMarkerOnMap.isChecked()) {
-			binding.switchShowFavoriteLocationsMarkerOnMap.setChecked(true);
+		if (!markerVisibilitySwitch.isChecked()) {
+			markerVisibilitySwitch.setChecked(true);
 		}
 		getParentFragmentManager().popBackStackImmediate();
 		markerOnClickListener.onFavoritePOIItemSelectedByList(e);
 	}
 
-	@Override
-	public void deleteListItem(FavoriteLocationDTO e, int position) {
-
-	}
-
-	@Override
-	public void onClickedEditButton(FavoriteLocationDTO e, View anchorView, int index) {
-		PopupMenu popupMenu = new PopupMenu(getContext(), anchorView, Gravity.LEFT);
-
-		popupMenu.getMenuInflater().inflate(R.menu.favorite_locations_menu, popupMenu.getMenu());
-		popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-			@SuppressLint("NonConstantResourceId")
-			@Override
-			public boolean onMenuItemClick(MenuItem menuItem) {
-				switch (menuItem.getItemId()) {
-					case R.id.delete_favorite_location:
-						favoriteLocationViewModel.delete(e, null);
-						break;
-				}
-				return true;
-			}
-		});
-
-		popupMenu.show();
-	}
 
 	@Override
 	public void onClickedShareButton(FavoriteLocationDTO e) {
 
 	}
 
-	private void sort(List<FavoriteLocationDTO> list) {
-		if (binding.sortSpinner.getSelectedItemPosition() == 0) {
-			//distance
-			list.sort(distanceComparator);
-		} else if (binding.sortSpinner.getSelectedItemPosition() == 1) {
-			//datetime
-			list.sort(addedDateTimeComparator);
-		} else {
-			//카테고리 유형 순서 - 음식점, 주소, 장소
-			//먼저 카테고리 분류를 시행
-			Set<Integer> categoryTypeSet = new HashSet<>();
-			Map<Integer, List<FavoriteLocationDTO>> sortedListMap = new HashMap<>();
-
-			for (FavoriteLocationDTO favoriteLocationDTO : list) {
-				categoryTypeSet.add(favoriteLocationDTO.getType());
-			}
-
-			for (Integer type : categoryTypeSet) {
-				sortedListMap.put(type, new ArrayList<>());
-			}
-
-			for (FavoriteLocationDTO favoriteLocationDTO : list) {
-				sortedListMap.get(favoriteLocationDTO.getType()).add(favoriteLocationDTO);
-			}
-
-			list.clear();
-			for (Integer type : categoryTypeSet) {
-				list.addAll(sortedListMap.get(type));
-			}
+	@Override
+	protected void sort(List<FavoriteLocationDTO> list) {
+		switch (binding.sortSpinnerForAddressPlace.getSelectedItemPosition()) {
+			case 0:
+				//거리순
+				list.sort(distanceComparator);
+				break;
+			case 1:
+				//등록순
+				sortByAddedDateTime(list);
+				break;
+			case 2:
+				//카테고리 별
+				sortByAddedCategory(list);
+				break;
 		}
 	}
 
@@ -367,39 +227,6 @@ public class FavoriteLocationFragment extends Fragment implements OnClickedFavor
 
 	}
 
-	private final CompoundButton.OnCheckedChangeListener checkBoxOnCheckedChangeListener = new CompoundButton.OnCheckedChangeListener() {
-
-		@Override
-		public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-			FavoriteLocationDTO favoriteLocationDTO = (FavoriteLocationDTO) compoundButton.getTag();
-
-			if (b) {
-				checkedFavoriteLocationSet.add(favoriteLocationDTO);
-			} else {
-				checkedFavoriteLocationSet.remove(favoriteLocationDTO);
-			}
-		}
-	};
-
-	private final AdapterView.OnItemSelectedListener spinnerItemSelectedListener = new AdapterView.OnItemSelectedListener() {
-		@Override
-		public void onItemSelected(AdapterView<?> adapterView, View view, int index, long l) {
-			sort(favoriteLocationAdapter.getList());
-			favoriteLocationAdapter.notifyDataSetChanged();
-		}
-
-		@Override
-		public void onNothingSelected(AdapterView<?> adapterView) {
-
-		}
-	};
-
-	private final Comparator<FavoriteLocationDTO> addedDateTimeComparator = new Comparator<FavoriteLocationDTO>() {
-		@Override
-		public int compare(FavoriteLocationDTO t1, FavoriteLocationDTO t2) {
-			return Long.compare(Long.parseLong(t1.getAddedDateTime()), Long.parseLong(t2.getAddedDateTime()));
-		}
-	};
 
 	private final Comparator<FavoriteLocationDTO> distanceComparator = new Comparator<FavoriteLocationDTO>() {
 		@Override

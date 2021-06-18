@@ -1,7 +1,9 @@
 package com.zerodsoft.scheduleweather.favorites;
 
+import android.content.Context;
 import android.os.Bundle;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -18,15 +20,30 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentAllFavoritesHostBinding;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
-import com.zerodsoft.scheduleweather.favorites.addressplace.AllFavoriteAddressPlaceFragment;
 import com.zerodsoft.scheduleweather.favorites.addressplace.AllFavoriteAddressPlaceHostFragment;
-import com.zerodsoft.scheduleweather.favorites.restaurant.AllFavoriteRestaurantFragment;
 import com.zerodsoft.scheduleweather.favorites.restaurant.AllFavoriteRestaurantHostFragment;
 
 import org.jetbrains.annotations.NotNull;
 
 public class AllFavoritesHostFragment extends Fragment {
 	private FragmentAllFavoritesHostBinding binding;
+
+	private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+		@Override
+		public void handleOnBackPressed() {
+			Fragment primaryNavFragment = getChildFragmentManager().getPrimaryNavigationFragment();
+			FragmentManager fragmentManager = primaryNavFragment.getChildFragmentManager();
+			if (!fragmentManager.popBackStackImmediate()) {
+				getParentFragmentManager().popBackStack();
+			}
+		}
+	};
+
+	@Override
+	public void onAttach(@NonNull @NotNull Context context) {
+		super.onAttach(context);
+		requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -89,4 +106,10 @@ public class AllFavoritesHostFragment extends Fragment {
 			return true;
 		}
 	};
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		onBackPressedCallback.remove();
+	}
 }

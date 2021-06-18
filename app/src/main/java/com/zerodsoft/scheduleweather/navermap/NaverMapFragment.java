@@ -124,7 +124,7 @@ import java.util.Set;
 public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IMapPoint, IMapData, INetwork, PlacesItemBottomSheetButtonOnClickListener,
 		MarkerOnClickListener, OnClickedBottomSheetListener,
 		NaverMap.OnMapClickListener,
-		NaverMap.OnCameraIdleListener, CameraUpdate.FinishCallback, NaverMap.OnLocationChangeListener, OnBackPressedCallbackController,
+		NaverMap.OnCameraIdleListener, CameraUpdate.FinishCallback, NaverMap.OnLocationChangeListener,
 		FragmentManager.OnBackStackChangedListener, BottomSheetController, NaverMap.OnMapLongClickListener,
 		OnClickedFavoriteButtonListener {
 	public static final int PERMISSION_REQUEST_CODE = 100;
@@ -221,29 +221,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		}
 	};
 
-	private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
-		@Override
-		public void handleOnBackPressed() {
-			onBackPressedCallback();
-		}
-	};
-
-	public void onBackPressedCallback() {
-		FragmentManager fragmentManager = getChildFragmentManager();
-		if (!fragmentManager.popBackStackImmediate()) {
-			requireActivity().finish();
-		}
-	}
-
-	@Override
-	public void addOnBackPressedCallback() {
-		requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-	}
-
-	@Override
-	public void removeOnBackPressedCallback() {
-		onBackPressedCallback.remove();
-	}
 
 	public final LocationListener locationListener = new LocationListener() {
 		@Override
@@ -275,7 +252,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	@Override
 	public void onAttach(@NonNull @NotNull Context context) {
 		super.onAttach(context);
-		addOnBackPressedCallback();
 	}
 
 	@Override
@@ -523,7 +499,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		removeOnBackPressedCallback();
 		networkStatus.unregisterNetworkCallback();
 		getChildFragmentManager().unregisterFragmentLifecycleCallbacks(fragmentLifecycleCallbacks);
 	}
@@ -1590,14 +1565,18 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		favoriteLocationViewModel.getRemovedFavoriteLocationMutableLiveData().observe(this, new Observer<FavoriteLocationDTO>() {
 			@Override
 			public void onChanged(FavoriteLocationDTO favoriteLocationDTO) {
-				removeFavoriteLocationMarker(favoriteLocationDTO);
+				if (naverMap != null) {
+					removeFavoriteLocationMarker(favoriteLocationDTO);
+				}
 			}
 		});
 
 		favoriteLocationViewModel.getAddedFavoriteLocationMutableLiveData().observe(this, new Observer<FavoriteLocationDTO>() {
 			@Override
 			public void onChanged(FavoriteLocationDTO favoriteLocationDTO) {
-				addFavoriteLocationsPoiItem(favoriteLocationDTO);
+				if (naverMap != null) {
+					addFavoriteLocationsPoiItem(favoriteLocationDTO);
+				}
 			}
 		});
 	}

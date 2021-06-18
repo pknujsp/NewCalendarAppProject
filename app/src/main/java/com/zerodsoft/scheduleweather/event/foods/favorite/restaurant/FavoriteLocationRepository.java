@@ -52,7 +52,12 @@ class FavoriteLocationRepository implements FavoriteLocationQuery {
 			@Override
 			public void run() {
 				List<FavoriteLocationDTO> list = dao.getFavoriteLocations(type);
-				callback.processResult(list);
+
+				if (list.isEmpty()) {
+					callback.onResultNoData();
+				} else {
+					callback.onResultSuccessful(list);
+				}
 			}
 		}).start();
 	}

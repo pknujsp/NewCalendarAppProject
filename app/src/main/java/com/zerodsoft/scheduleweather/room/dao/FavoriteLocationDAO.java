@@ -27,6 +27,7 @@ public interface FavoriteLocationDAO {
 	@Query("SELECT * FROM favorite_location_table " +
 			"WHERE (CASE " +
 			"WHEN :type = 3 THEN type = 1 OR type = 2 OR type = 0 " +
+			"WHEN :type = 4 THEN type = 1 OR type = 2 " +
 			"ELSE type = :type " +
 			"END)")
 	List<FavoriteLocationDTO> getFavoriteLocations(Integer type);

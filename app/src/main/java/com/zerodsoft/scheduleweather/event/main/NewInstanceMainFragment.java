@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -112,13 +113,15 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	private ViewGroup functionItemsView;
 	private CloseWindow closeWindow = new CloseWindow();
 
-	@Override
-	public void onBackPressedCallback() {
-		FragmentManager fragmentManager = getChildFragmentManager();
-		if (!fragmentManager.popBackStackImmediate()) {
-			closeWindow.clicked(requireActivity());
+	private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+		@Override
+		public void handleOnBackPressed() {
+			FragmentManager fragmentManager = getChildFragmentManager();
+			if (!fragmentManager.popBackStackImmediate()) {
+				closeWindow.clicked(requireActivity());
+			}
 		}
-	}
+	};
 
 	private FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks = new FragmentManager.FragmentLifecycleCallbacks() {
 		@Override
@@ -198,6 +201,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	@Override
 	public void onAttach(@NonNull Context context) {
 		super.onAttach(context);
+		requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
 	}
 
 
@@ -214,6 +218,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+		onBackPressedCallback.remove();
 		getChildFragmentManager().unregisterFragmentLifecycleCallbacks(fragmentLifecycleCallbacks);
 	}
 

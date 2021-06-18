@@ -8,9 +8,10 @@
         android:paddingLeft="16dp"
         android:paddingTop="16dp"
         android:paddingRight="16dp"
-        tools:context=".favorites.addressplace.AllFavoriteAddressPlaceFragment">
+        tools:context=".favorites.addressplace.basefragment.FavoriteLocationsBaseFragment">
 
         <LinearLayout
+            android:id="@+id/root_linear_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical">
@@ -35,6 +36,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
+                    android:background="@drawable/secondary_button"
+                    android:clickable="true"
+                    android:focusable="true"
                     android:text="@string/open_map"
                     android:textColor="@color/primary_button_color"
                     android:textSize="14sp" />

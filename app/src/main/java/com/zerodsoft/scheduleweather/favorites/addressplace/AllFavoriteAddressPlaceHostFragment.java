@@ -12,7 +12,6 @@ import android.view.ViewGroup;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentContainerHostBinding;
-import com.zerodsoft.scheduleweather.favorites.restaurant.AllFavoriteRestaurantFragment;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -36,7 +35,7 @@ public class AllFavoriteAddressPlaceHostFragment extends Fragment {
 	public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		getChildFragmentManager().beginTransaction()
-				.add(binding.fragmentContainer.getId(), new AllFavoriteAddressPlaceFragment()
+				.add(binding.fragmentContainer.getId(), new AllFavoriteLocationsFragment()
 						, getString(R.string.tag_all_favorite_locations_fragment))
 				.commit();
 	}

@@ -64,7 +64,6 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 	private static Map<String, ContentValues> connectedCalendarMap = new HashMap<>();
 	private static List<ContentValues> connectedCalendarList = new ArrayList<>();
 	private List<AccountDto> accountList;
-	private CloseWindow closeWindow = new CloseWindow();
 
 	private ActivityAppMainBinding mainBinding;
 	private CalendarViewModel calendarViewModel;
@@ -360,18 +359,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 	}
 
 
-	@Override
-	public void onBackPressed() {
-		//뒤로가기 2번 누르면(2초 내) 완전 종료
-		//첫 클릭시 2초 타이머 작동
-		//2초 내로 재 클릭없으면 무효
-		int fragmentSize = getSupportFragmentManager().getBackStackEntryCount();
-		if (fragmentSize > 0) {
-			getSupportFragmentManager().popBackStackImmediate();
-		} else {
-			closeWindow.clicked(this);
-		}
-	}
+
 
 	private final View.OnClickListener drawLayoutBtnOnClickListener = new View.OnClickListener() {
 		@Override

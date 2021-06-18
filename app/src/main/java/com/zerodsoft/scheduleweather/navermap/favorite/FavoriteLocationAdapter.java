@@ -18,14 +18,17 @@ import java.util.List;
 public class FavoriteLocationAdapter extends RecyclerView.Adapter<FavoriteLocationAdapter.ViewHolder> {
 	private final OnClickedFavoriteItem onClickedFavoriteItem;
 	private final CompoundButton.OnCheckedChangeListener onCheckedChangeListener;
-	private final int distanceVisibility;
+	private int distanceVisibility;
 
 	private int checkBoxVisibility = View.GONE;
 	private List<FavoriteLocationDTO> list = new ArrayList<>();
 
-	public FavoriteLocationAdapter(OnClickedFavoriteItem onClickedFavoriteItem, CompoundButton.OnCheckedChangeListener onCheckedChangeListener, int distanceVisibility) {
+	public FavoriteLocationAdapter(OnClickedFavoriteItem onClickedFavoriteItem, CompoundButton.OnCheckedChangeListener onCheckedChangeListener) {
 		this.onClickedFavoriteItem = onClickedFavoriteItem;
 		this.onCheckedChangeListener = onCheckedChangeListener;
+	}
+
+	public void setDistanceVisibility(int distanceVisibility) {
 		this.distanceVisibility = distanceVisibility;
 	}
 

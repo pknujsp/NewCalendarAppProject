@@ -7,6 +7,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.ContentObserver;
@@ -22,6 +23,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
@@ -54,6 +56,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEditedEventListen
 import com.zerodsoft.scheduleweather.calendarview.month.MonthFragment;
 import com.zerodsoft.scheduleweather.calendarview.week.WeekFragment;
 import com.zerodsoft.scheduleweather.common.broadcastreceivers.DateTimeTickReceiver;
+import com.zerodsoft.scheduleweather.common.classes.CloseWindow;
 import com.zerodsoft.scheduleweather.common.enums.CalendarViewType;
 import com.zerodsoft.scheduleweather.common.enums.EventIntentCode;
 import com.zerodsoft.scheduleweather.databinding.FragmentCalendarBinding;
@@ -64,6 +67,8 @@ import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationI
 import com.zerodsoft.scheduleweather.event.main.NewInstanceMainActivity;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Date;
 import java.util.Map;
@@ -84,6 +89,7 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 	private LocationViewModel locationViewModel;
 	private FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel;
 	private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
+	private CloseWindow closeWindow = new CloseWindow();
 
 	private Fragment currentFragment;
 	private NetworkStatus networkStatus;
@@ -92,6 +98,23 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 	private Date currentCalendarDate;
 
 	private FragmentCalendarBinding binding;
+
+	private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+		@Override
+		public void handleOnBackPressed() {
+
+			//뒤로가기 2번 누르면(2초 내) 완전 종료
+			//첫 클릭시 2초 타이머 작동
+			//2초 내로 재 클릭없으면 무효
+			int fragmentSize = getChildFragmentManager().getBackStackEntryCount();
+			if (fragmentSize > 0) {
+				getChildFragmentManager().popBackStackImmediate();
+			} else {
+				closeWindow.clicked(getActivity());
+			}
+
+		}
+	};
 
 	private final CarrierMessagingService.ResultCallback<String> dateTimeReceiverCallback =
 			new CarrierMessagingService.ResultCallback<String>() {
@@ -161,10 +184,17 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 	}
 
 	@Override
+	public void onAttach(@NonNull @NotNull Context context) {
+		super.onAttach(context);
+		requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+	}
+
+	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback() {
 		});
+		getContext().getContentResolver().registerContentObserver(CalendarContract.CONTENT_URI, true, contentObserver);
 
 		DateTimeTickReceiver dateTimeTickReceiver = DateTimeTickReceiver.newInstance(dateTimeReceiverCallback);
 		IntentFilter intentFilter = new IntentFilter();
@@ -219,6 +249,7 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+		onBackPressedCallback.remove();
 		networkStatus.unregisterNetworkCallback();
 		requireActivity().unregisterReceiver(DateTimeTickReceiver.getInstance());
 		requireActivity().getContentResolver().unregisterContentObserver(contentObserver);
@@ -419,7 +450,7 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 				break;
 			case R.id.refresh_calendar:
 				Toast.makeText(getContext(), "working", Toast.LENGTH_SHORT).show();
-				calendarViewModel.syncCalendars();
+				//calendarViewModel.syncCalendars();
 				break;
 		}
 	}

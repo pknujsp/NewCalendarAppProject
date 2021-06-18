@@ -594,4 +594,5 @@
     <string name="tag_all_favorite_fragment">tag_all_favorite_fragment</string>
     <string name="tag_all_favorite_restaurant_fragment">tag_all_favorite_restaurant_fragment</string>
     <string name="tag_all_favorite_locations_fragment">tag_all_favorite_locations_fragment</string>
+    <string name="tag_default_map">tag_default_map</string>
 </resources>

@@ -47,6 +47,8 @@ public class FavoriteLocationDTO {
 	public static final int ADDRESS = 2;
 	@Ignore
 	public static final int ONLY_FOR_MAP = 3;
+	@Ignore
+	public static final int EXCEPT_RESTAURANT = 4;
 
 	public Integer getId() {
 		return id;
