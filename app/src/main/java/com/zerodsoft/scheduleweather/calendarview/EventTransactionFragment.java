@@ -1,6 +1,5 @@
 package com.zerodsoft.scheduleweather.calendarview;
 
-import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
@@ -10,6 +9,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SyncStatusObserver;
 import android.database.ContentObserver;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
@@ -20,6 +20,8 @@ import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -60,7 +62,6 @@ import com.zerodsoft.scheduleweather.common.classes.CloseWindow;
 import com.zerodsoft.scheduleweather.common.enums.CalendarViewType;
 import com.zerodsoft.scheduleweather.common.enums.EventIntentCode;
 import com.zerodsoft.scheduleweather.databinding.FragmentCalendarBinding;
-import com.zerodsoft.scheduleweather.common.classes.AppPermission;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
@@ -70,10 +71,10 @@ import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
-
-import lombok.SneakyThrows;
 
 
 public class EventTransactionFragment extends Fragment implements IControlEvent, OnEventItemClickListener, IRefreshView, IToolbar,
@@ -84,6 +85,7 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 
 	private final IConnectedCalendars iConnectedCalendars;
 	private final View.OnClickListener drawerLayoutOnClickListener;
+	private final SyncCalendar syncCalendar = new SyncCalendar();
 
 	private CalendarViewModel calendarViewModel;
 	private LocationViewModel locationViewModel;
@@ -194,8 +196,6 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 		super.onCreate(savedInstanceState);
 		networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback() {
 		});
-		getContext().getContentResolver().registerContentObserver(CalendarContract.CONTENT_URI, true, contentObserver);
-
 		DateTimeTickReceiver dateTimeTickReceiver = DateTimeTickReceiver.newInstance(dateTimeReceiverCallback);
 		IntentFilter intentFilter = new IntentFilter();
 		intentFilter.addAction(Intent.ACTION_TIME_TICK);
@@ -235,9 +235,6 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 	@Override
 	public void onResume() {
 		super.onResume();
-		if (AppPermission.grantedPermissions(getContext(), Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR)) {
-			requireActivity().getContentResolver().registerContentObserver(CalendarContract.Events.CONTENT_URI, true, contentObserver);
-		}
 	}
 
 	@Override
@@ -248,11 +245,10 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 
 	@Override
 	public void onDestroy() {
-		super.onDestroy();
 		onBackPressedCallback.remove();
 		networkStatus.unregisterNetworkCallback();
 		requireActivity().unregisterReceiver(DateTimeTickReceiver.getInstance());
-		requireActivity().getContentResolver().unregisterContentObserver(contentObserver);
+		super.onDestroy();
 	}
 
 	private void init() {
@@ -449,8 +445,31 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 				goToToday();
 				break;
 			case R.id.refresh_calendar:
-				Toast.makeText(getContext(), "working", Toast.LENGTH_SHORT).show();
-				//calendarViewModel.syncCalendars();
+				syncCalendar.syncCalendars(new SyncCallback() {
+					@Override
+					public void onSyncStarted() {
+						requireActivity().runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								binding.mainToolbar.refreshCalendar.startAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.rotate));
+								Toast.makeText(requireActivity(), R.string.sync_started, Toast.LENGTH_SHORT).show();
+							}
+						});
+					}
+
+					@Override
+					public void onSyncFinished() {
+						requireActivity().runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								refreshView();
+								binding.mainToolbar.refreshCalendar.clearAnimation();
+								Toast.makeText(requireActivity(), R.string.sync_finished, Toast.LENGTH_SHORT).show();
+							}
+						});
+
+					}
+				});
 				break;
 		}
 	}
@@ -510,34 +529,6 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 				}
 			});
 
-	private final ContentObserver contentObserver = new ContentObserver(new Handler()) {
-		@Override
-		public boolean deliverSelfNotifications() {
-			return true;
-		}
-
-		@SneakyThrows
-		@Override
-		public void onChange(boolean selfChange) {
-			AccountManager accountManager = AccountManager.get(getContext());
-			Account[] accounts = accountManager.getAccountsByType("com.google");
-
-			boolean check = false;
-			for (Account account : accounts) {
-				if (ContentResolver.isSyncActive(account, CalendarContract.AUTHORITY)) {
-					check = true;
-				} else {
-					break;
-				}
-			}
-
-			if (check) {
-				Toast.makeText(getContext(), "SYNCED", Toast.LENGTH_SHORT).show();
-				refreshView();
-			}
-		}
-	};
-
 
 	@Override
 	public void onEditingEventResult(ActivityResult activityResult) {
@@ -549,6 +540,119 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 		} else if (fragment instanceof DayFragment) {
 			((DayFragment) fragment).processEditingEventResult(activityResult);
 		}
+	}
+
+	private final ActivityResultLauncher<Intent> accountsResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult()
+			, new ActivityResultCallback<ActivityResult>() {
+				@Override
+				public void onActivityResult(ActivityResult result) {
+					if (result.getData() != null) {
+						Account[] accounts = AccountManager.get(getContext()).getAccounts();
+						int accountsSize = accounts.length;
+					}
+				}
+			});
+
+	final class SyncCalendar {
+		private Account[] accounts;
+
+		class CalendarSyncStatusObserver implements SyncStatusObserver {
+			private final int PENDING = 0;
+			private final int PENDING_ACTIVE = 10;
+			private final int ACTIVE = 20;
+			private final int FINISHED = 30;
+
+			private SyncCallback syncCallback;
+
+			private Object mProviderHandle;
+
+			public void setProviderHandle(@NonNull final Object providerHandle) {
+				mProviderHandle = providerHandle;
+			}
+
+			public void setSyncCallback(@NonNull SyncCallback syncCallback) {
+				this.syncCallback = syncCallback;
+			}
+
+			private final Map<Account, Integer> mAccountSyncState =
+					Collections.synchronizedMap(new HashMap<Account, Integer>());
+
+			private final String mCalendarAuthority = CalendarContract.AUTHORITY;
+
+			@Override
+			public void onStatusChanged(int which) {
+				for (Account account : accounts) {
+					if (which == ContentResolver.SYNC_OBSERVER_TYPE_PENDING) {
+						if (ContentResolver.isSyncPending(account, mCalendarAuthority)) {
+							// There is now a pending sync.
+							mAccountSyncState.put(account, PENDING);
+						} else {
+							// There is no longer a pending sync.
+							mAccountSyncState.put(account, PENDING_ACTIVE);
+						}
+					} else if (which == ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE) {
+						if (ContentResolver.isSyncActive(account, mCalendarAuthority)) {
+							// There is now an active sync.
+							mAccountSyncState.put(account, ACTIVE);
+						} else {
+							// There is no longer an active sync.
+							mAccountSyncState.put(account, FINISHED);
+						}
+					}
+				}
+
+				// We haven't finished processing sync states for all accounts yet
+				if (accounts.length != mAccountSyncState.size())
+					return;
+
+				// Check if any accounts are not finished syncing yet. If so bail
+				for (Integer syncState : mAccountSyncState.values()) {
+					if (syncState != FINISHED)
+						return;
+				}
+
+				//finished
+				if (mProviderHandle != null) {
+					ContentResolver.removeStatusChangeListener(mProviderHandle);
+					mProviderHandle = null;
+				}
+				if (syncCallback != null) {
+					syncCallback.onSyncFinished();
+					syncCallback = null;
+				}
+				mAccountSyncState.clear();
+			}
+
+		}
+
+		public void syncCalendars(SyncCallback syncCallback) {
+			syncCallback.onSyncStarted();
+			//Intent intent = AccountManager.newChooseAccountIntent(null, null, new String[]{"com.google"}, null, null, null, null);
+			//accountsResultLauncher.launch(intent);
+
+			CalendarSyncStatusObserver calendarSyncStatusObserver = new CalendarSyncStatusObserver();
+			calendarSyncStatusObserver.setProviderHandle(ContentResolver.addStatusChangeListener(ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE |
+					ContentResolver.SYNC_OBSERVER_TYPE_PENDING, calendarSyncStatusObserver));
+			calendarSyncStatusObserver.setSyncCallback(syncCallback);
+
+			accounts = AccountManager.get(getContext()).getAccountsByType("com.google");
+
+			for (Account account : accounts) {
+				Bundle extras = new Bundle();
+				extras.putBoolean(
+						ContentResolver.SYNC_EXTRAS_MANUAL, true);
+				extras.putBoolean(
+						ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
+				ContentResolver.requestSync(account, CalendarContract.AUTHORITY, extras);
+			}
+
+		}
+	}
+
+	interface SyncCallback {
+		void onSyncStarted();
+
+		void onSyncFinished();
 	}
 }
 

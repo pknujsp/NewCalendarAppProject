@@ -880,7 +880,6 @@ public class CalendarProvider implements ICalendarProvider {
 	public void syncCalendars() {
 		AccountManager accountManager = (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
 		final Account[] accounts = accountManager.getAccountsByType("com.google");
-		final String authority = CalendarContract.AUTHORITY;
 
 		for (Account account : accounts) {
 			Bundle extras = new Bundle();
@@ -888,8 +887,7 @@ public class CalendarProvider implements ICalendarProvider {
 					ContentResolver.SYNC_EXTRAS_MANUAL, true);
 			extras.putBoolean(
 					ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
-
-			ContentResolver.requestSync(account, authority, extras);
+			ContentResolver.requestSync(account, CalendarContract.AUTHORITY, extras);
 		}
 	}
 

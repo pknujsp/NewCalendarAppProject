@@ -595,4 +595,6 @@
     <string name="tag_all_favorite_restaurant_fragment">tag_all_favorite_restaurant_fragment</string>
     <string name="tag_all_favorite_locations_fragment">tag_all_favorite_locations_fragment</string>
     <string name="tag_default_map">tag_default_map</string>
+    <string name="sync_finished">캘린더 동기화 완료</string>
+    <string name="sync_started">캘린더 동기화 시작</string>
 </resources>
