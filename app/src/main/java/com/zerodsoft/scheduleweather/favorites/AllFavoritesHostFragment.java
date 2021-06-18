@@ -7,6 +7,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -16,10 +17,11 @@ import android.view.ViewGroup;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentAllFavoritesHostBinding;
-import com.zerodsoft.scheduleweather.event.foods.favorite.RestaurantFavoritesHostFragment;
-import com.zerodsoft.scheduleweather.event.foods.main.RestaurantMainHostFragment;
-import com.zerodsoft.scheduleweather.event.foods.search.RestaurantSearchHostFragment;
-import com.zerodsoft.scheduleweather.event.foods.settings.RestaurantSettingsHostFragment;
+import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
+import com.zerodsoft.scheduleweather.favorites.addressplace.AllFavoriteAddressPlaceFragment;
+import com.zerodsoft.scheduleweather.favorites.addressplace.AllFavoriteAddressPlaceHostFragment;
+import com.zerodsoft.scheduleweather.favorites.restaurant.AllFavoriteRestaurantFragment;
+import com.zerodsoft.scheduleweather.favorites.restaurant.AllFavoriteRestaurantHostFragment;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -29,6 +31,7 @@ public class AllFavoritesHostFragment extends Fragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		new ViewModelProvider(this).get(FavoriteLocationViewModel.class);
 	}
 
 	@Override
@@ -70,10 +73,10 @@ public class AllFavoritesHostFragment extends Fragment {
 			if (destinationFragment == null) {
 				switch (item.getItemId()) {
 					case R.id.addresses_places:
-						destinationFragment = new AllFavoriteAddressPlaceFragment();
+						destinationFragment = new AllFavoriteAddressPlaceHostFragment();
 						break;
 					case R.id.restaurants:
-						destinationFragment = new AllFavoriteRestaurantFragment();
+						destinationFragment = new AllFavoriteRestaurantHostFragment();
 						break;
 				}
 

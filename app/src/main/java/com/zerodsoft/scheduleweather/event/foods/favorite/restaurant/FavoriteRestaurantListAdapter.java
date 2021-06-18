@@ -23,7 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-class FavoriteRestaurantListAdapter extends BaseExpandableListAdapter {
+public class FavoriteRestaurantListAdapter extends BaseExpandableListAdapter {
 	private Context context;
 	private ArrayMap<String, List<PlaceDocuments>> restaurantListMap = new ArrayMap<>();
 	private LayoutInflater layoutInflater;
@@ -103,6 +103,7 @@ class FavoriteRestaurantListAdapter extends BaseExpandableListAdapter {
 
 			groupViewHolder = new GroupViewHolder();
 			groupViewHolder.foodMenuName = (TextView) view.findViewById(R.id.group_name);
+			groupViewHolder.foodMenuName.setTextColor(R.color.colorPrimary);
 
 			view.setTag(groupViewHolder);
 		} else {

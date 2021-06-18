@@ -592,4 +592,6 @@
     <string name="address_place">주소, 장소</string>
     <string name="tag_calendar_transaction_fragment">tag_calendar_transaction_fragment</string>
     <string name="tag_all_favorite_fragment">tag_all_favorite_fragment</string>
+    <string name="tag_all_favorite_restaurant_fragment">tag_all_favorite_restaurant_fragment</string>
+    <string name="tag_all_favorite_locations_fragment">tag_all_favorite_locations_fragment</string>
 </resources>

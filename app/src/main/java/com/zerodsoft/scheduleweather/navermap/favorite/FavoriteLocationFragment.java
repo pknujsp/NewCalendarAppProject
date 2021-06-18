@@ -177,7 +177,7 @@ public class FavoriteLocationFragment extends Fragment implements OnClickedFavor
 		binding.favoriteLocationRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
 		binding.favoriteLocationRecyclerView.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
 
-		favoriteLocationAdapter = new FavoriteLocationAdapter(this, checkBoxOnCheckedChangeListener);
+		favoriteLocationAdapter = new FavoriteLocationAdapter(this, checkBoxOnCheckedChangeListener, View.VISIBLE);
 		binding.favoriteLocationRecyclerView.setAdapter(favoriteLocationAdapter);
 
 		favoriteLocationAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {

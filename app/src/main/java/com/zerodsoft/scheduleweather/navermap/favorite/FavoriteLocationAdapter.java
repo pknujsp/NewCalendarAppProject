@@ -16,15 +16,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FavoriteLocationAdapter extends RecyclerView.Adapter<FavoriteLocationAdapter.ViewHolder> {
-	private List<FavoriteLocationDTO> list = new ArrayList<>();
 	private final OnClickedFavoriteItem onClickedFavoriteItem;
 	private final CompoundButton.OnCheckedChangeListener onCheckedChangeListener;
-	private int checkBoxVisibility = View.GONE;
-	private int distanceVisibility = View.VISIBLE;
+	private final int distanceVisibility;
 
-	public FavoriteLocationAdapter(OnClickedFavoriteItem onClickedFavoriteItem, CompoundButton.OnCheckedChangeListener onCheckedChangeListener) {
+	private int checkBoxVisibility = View.GONE;
+	private List<FavoriteLocationDTO> list = new ArrayList<>();
+
+	public FavoriteLocationAdapter(OnClickedFavoriteItem onClickedFavoriteItem, CompoundButton.OnCheckedChangeListener onCheckedChangeListener, int distanceVisibility) {
 		this.onClickedFavoriteItem = onClickedFavoriteItem;
 		this.onCheckedChangeListener = onCheckedChangeListener;
+		this.distanceVisibility = distanceVisibility;
 	}
 
 	public void setList(List<FavoriteLocationDTO> list) {
@@ -33,10 +35,6 @@ public class FavoriteLocationAdapter extends RecyclerView.Adapter<FavoriteLocati
 
 	public void setCheckBoxVisibility(int checkBoxVisibility) {
 		this.checkBoxVisibility = checkBoxVisibility;
-	}
-
-	public void setDistanceVisibility(int distanceVisibility) {
-		this.distanceVisibility = distanceVisibility;
 	}
 
 	public List<FavoriteLocationDTO> getList() {
@@ -73,8 +71,8 @@ public class FavoriteLocationAdapter extends RecyclerView.Adapter<FavoriteLocati
 			final int position = getBindingAdapterPosition();
 			FavoriteLocationDTO favoriteLocationDTO = list.get(position);
 
-			binding.checkbox.setChecked(false);
 			binding.checkbox.setVisibility(checkBoxVisibility);
+			binding.checkbox.setChecked(false);
 			binding.checkbox.setTag(favoriteLocationDTO);
 			binding.checkbox.setOnCheckedChangeListener(onCheckedChangeListener);
 

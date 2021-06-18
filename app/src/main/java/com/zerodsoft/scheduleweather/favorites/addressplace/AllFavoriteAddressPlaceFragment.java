@@ -1,7 +1,6 @@
-package com.zerodsoft.scheduleweather.favorites;
+package com.zerodsoft.scheduleweather.favorites.addressplace;
 
 import android.annotation.SuppressLint;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 
@@ -26,15 +25,10 @@ import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.Toast;
 
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import com.naver.maps.geometry.LatLng;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.databinding.FragmentAllFavoriteAddressPlaceBinding;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
-import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
-import com.zerodsoft.scheduleweather.navermap.MarkerType;
 import com.zerodsoft.scheduleweather.navermap.favorite.FavoriteLocationAdapter;
 import com.zerodsoft.scheduleweather.navermap.favorite.OnClickedFavoriteItem;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
@@ -137,8 +131,7 @@ public class AllFavoriteAddressPlaceFragment extends Fragment implements OnClick
 					checkedFavoriteLocationSet.remove(favoriteLocationDTO);
 				}
 			}
-		});
-		favoriteLocationAdapter.setDistanceVisibility(View.GONE);
+		}, View.GONE);
 		binding.favoriteAddressPlaceList.setAdapter(favoriteLocationAdapter);
 
 		favoriteLocationAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
@@ -147,6 +140,7 @@ public class AllFavoriteAddressPlaceFragment extends Fragment implements OnClick
 				super.onItemRangeInserted(positionStart, itemCount);
 				if (positionStart == 0 && itemCount > 0) {
 					binding.customProgressViewForFavoriteAddressPlace.onSuccessfulProcessingData();
+					binding.editButton.setVisibility(View.VISIBLE);
 				}
 			}
 
@@ -155,6 +149,7 @@ public class AllFavoriteAddressPlaceFragment extends Fragment implements OnClick
 				super.onItemRangeRemoved(positionStart, itemCount);
 				if (favoriteLocationAdapter.getItemCount() == 0) {
 					binding.customProgressViewForFavoriteAddressPlace.onFailedProcessingData(getString(R.string.empty_favorite_locations_list));
+					binding.editButton.setVisibility(View.GONE);
 				}
 			}
 
@@ -163,8 +158,10 @@ public class AllFavoriteAddressPlaceFragment extends Fragment implements OnClick
 				super.onChanged();
 				if (favoriteLocationAdapter.getItemCount() == 0) {
 					binding.customProgressViewForFavoriteAddressPlace.onFailedProcessingData(getString(R.string.empty_favorite_locations_list));
+					binding.editButton.setVisibility(View.GONE);
 				} else {
 					binding.customProgressViewForFavoriteAddressPlace.onSuccessfulProcessingData();
+					binding.editButton.setVisibility(View.VISIBLE);
 				}
 			}
 		});
@@ -205,6 +202,13 @@ public class AllFavoriteAddressPlaceFragment extends Fragment implements OnClick
 			}
 		});
 
+		binding.moreFavoriteAddressPlaceList.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				//open map
+			}
+		});
+
 		setFavoriteLocationList();
 	}
 
@@ -231,6 +235,7 @@ public class AllFavoriteAddressPlaceFragment extends Fragment implements OnClick
 					@Override
 					public void run() {
 						binding.customProgressViewForFavoriteAddressPlace.onFailedProcessingData(getString(R.string.empty_favorite_locations_list));
+						binding.editButton.setVisibility(View.GONE);
 					}
 				});
 			}
