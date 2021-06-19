@@ -606,4 +606,6 @@
     <string name="tag_timezone_fragment">tag_timezone_fragment</string>
     <string name="tag_modify_instance_fragment">tag_modify_instance_fragment</string>
     <string name="tag_new_event_fragment">tag_new_event_fragment</string>
+    <string name="tag_map_fragment">tag_map_fragment</string>
+    <string name="tag_nearby_msrstn_list_on_map">tag_nearby_msrstn_list_on_map</string>
 </resources>

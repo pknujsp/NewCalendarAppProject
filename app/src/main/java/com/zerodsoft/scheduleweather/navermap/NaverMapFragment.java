@@ -510,7 +510,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 					.mapType(NaverMap.MapType.Basic).camera(new CameraPosition(new LatLng(37.6076585, 127.0965492), 11));
 
 			mapFragment = MapFragment.newInstance(naverMapOptions);
-			getChildFragmentManager().beginTransaction().add(R.id.naver_map_fragment, mapFragment).commitNow();
+			getChildFragmentManager().beginTransaction().add(R.id.naver_map_fragment, mapFragment, getString(R.string.tag_map_fragment)).commitNow();
 
 			mapFragment.getMapAsync(this);
 			fusedLocationSource = new FusedLocationSource(this, PERMISSION_REQUEST_CODE);

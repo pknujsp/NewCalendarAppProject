@@ -10,6 +10,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
@@ -41,6 +43,7 @@ public class WeatherMainFragment extends BottomSheetDialogFragment implements On
 	private final int CALENDAR_ID;
 	private final long EVENT_ID;
 	private final int VIEW_HEIGHT;
+	private final DialogInterface dialogInterface;
 
 	private FragmentWeatherItemBinding binding;
 	private LocationDTO selectedLocationDto;
@@ -66,15 +69,11 @@ public class WeatherMainFragment extends BottomSheetDialogFragment implements On
 
 	private BottomSheetBehavior bottomSheetBehavior;
 
-	public WeatherMainFragment(int VIEW_HEIGHT, int CALENDAR_ID, long EVENT_ID) {
+	public WeatherMainFragment(DialogInterface dialogInterface, int VIEW_HEIGHT, int CALENDAR_ID, long EVENT_ID) {
+		this.dialogInterface = dialogInterface;
 		this.VIEW_HEIGHT = VIEW_HEIGHT;
 		this.CALENDAR_ID = CALENDAR_ID;
 		this.EVENT_ID = EVENT_ID;
-	}
-
-	@Override
-	public void dismiss() {
-		bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
 	}
 
 	@Override
@@ -87,6 +86,26 @@ public class WeatherMainFragment extends BottomSheetDialogFragment implements On
 	@Override
 	public void onDismiss(@NonNull DialogInterface dialog) {
 		super.onDismiss(dialog);
+		dialogInterface.dismiss();
+	}
+
+	@Override
+	public void onHiddenChanged(boolean hidden) {
+		super.onHiddenChanged(hidden);
+		FragmentManager fragmentManager = getParentFragmentManager().findFragmentByTag(getString(R.string.tag_instance_main_fragment))
+				.getChildFragmentManager();
+
+		Fragment mapFragment = fragmentManager.findFragmentByTag(getString(R.string.tag_map_fragment));
+
+		if (hidden) {
+			fragmentManager.beginTransaction()
+					.show(mapFragment).commit();
+			getDialog().hide();
+		} else {
+			fragmentManager.beginTransaction()
+					.hide(mapFragment).commit();
+			getDialog().show();
+		}
 	}
 
 	@Override

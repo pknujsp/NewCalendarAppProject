@@ -116,9 +116,17 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
 		@Override
 		public void handleOnBackPressed() {
-			FragmentManager fragmentManager = getChildFragmentManager();
-			if (!fragmentManager.popBackStackImmediate()) {
-				closeWindow.clicked(requireActivity());
+			FragmentManager parentFragmentManager = getParentFragmentManager();
+			int fragmentSize = parentFragmentManager.getBackStackEntryCount();
+			if (fragmentSize > 0) {
+				for (int count = 0; count < fragmentSize; count++) {
+					parentFragmentManager.popBackStackImmediate();
+				}
+			} else {
+				FragmentManager fragmentManager = getChildFragmentManager();
+				if (!fragmentManager.popBackStackImmediate()) {
+					closeWindow.clicked(requireActivity());
+				}
 			}
 		}
 	};
@@ -366,7 +374,18 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 				//날씨
 				functionButton.callOnClick();
 
-				WeatherMainFragment weatherMainFragment = new WeatherMainFragment(DEFAULT_HEIGHT_OF_BOTTOMSHEET, CALENDAR_ID, EVENT_ID);
+				WeatherMainFragment weatherMainFragment = new WeatherMainFragment(new DialogInterface() {
+					@Override
+					public void cancel() {
+
+					}
+
+					@Override
+					public void dismiss() {
+						getChildFragmentManager().beginTransaction().show(mapFragment).commit();
+					}
+				}, DEFAULT_HEIGHT_OF_BOTTOMSHEET, CALENDAR_ID,
+						EVENT_ID);
 				Bundle bundle = new Bundle();
 				LatLng latLng = naverMap.getContentBounds().getCenter();
 				bundle.putString("latitude", String.valueOf(latLng.latitude));
@@ -375,6 +394,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 
 				weatherMainFragment.setArguments(bundle);
 				weatherMainFragment.show(getParentFragmentManager(), WeatherMainFragment.TAG);
+				getChildFragmentManager().beginTransaction().hide(mapFragment).commit();
 			}
 		});
 

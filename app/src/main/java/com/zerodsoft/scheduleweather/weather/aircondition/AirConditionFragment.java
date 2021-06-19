@@ -8,7 +8,9 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentAirConditionBinding;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyItem;
@@ -52,12 +54,21 @@ public class AirConditionFragment extends Fragment implements OnUpdateListener {
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+		binding.customProgressView.setContentView(binding.airConditionLayout);
 
 		binding.finedustStatus.setText("");
 		binding.ultraFinedustStatus.setText("");
 		binding.showDetailDialogButton.setOnClickListener(onClickListener);
+		binding.showMapButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				getParentFragment().getParentFragmentManager()
+						.beginTransaction().hide(getParentFragment())
+						.addToBackStack(getString(R.string.tag_nearby_msrstn_list_on_map))
+						.commit();
+			}
+		});
 
-		binding.customProgressView.setContentView(binding.airConditionLayout);
 		init();
 	}
 
