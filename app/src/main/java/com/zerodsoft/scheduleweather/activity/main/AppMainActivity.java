@@ -132,6 +132,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 
 		changeCalendar(CalendarViewType.enumOf(type));
 		EventTransactionFragment eventTransactionFragment = new EventTransactionFragment(this, CalendarViewType.enumOf(type), drawLayoutBtnOnClickListener);
+
 		getSupportFragmentManager().beginTransaction()
 				.add(mainBinding.fragmentContainer.getId(), eventTransactionFragment,
 						getString(R.string.tag_calendar_transaction_fragment)).commit();
@@ -327,7 +328,6 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 		Map<String, String> selectedCalendarsMap = (Map<String, String>) sharedPreferences.getAll();
 
 		selectedCalendarSet.addAll(selectedCalendarsMap.values());
-
 		for (String v : selectedCalendarSet) {
 			if (v.equals(key)) {
 				if (!state) {
@@ -352,13 +352,10 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 		eventTransactionFragment.refreshView();
 	}
 
-
 	@Override
 	public List<ContentValues> getConnectedCalendars() {
 		return connectedCalendarList;
 	}
-
-
 
 
 	private final View.OnClickListener drawLayoutBtnOnClickListener = new View.OnClickListener() {

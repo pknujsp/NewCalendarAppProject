@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.event.common;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -10,6 +11,7 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -48,14 +50,28 @@ import java.util.Collections;
 
 public class SelectionDetailLocationFragment extends NaverMapFragment {
 	private LocationDTO selectedLocationDTOInEvent;
-	private int resultCode = Activity.RESULT_CANCELED;
 	private LocationIntentCode requestCode;
+	private OnDetailLocationSelectionResultListener onDetailLocationSelectionResultListener;
 
 	private LocationDTO selectedLocationDTOInMap;
 	private String locationNameInEvent;
 
 	boolean mapReady = false;
 	boolean mapHeaderSearchFragmentStarted = false;
+
+	public SelectionDetailLocationFragment(OnDetailLocationSelectionResultListener onDetailLocationSelectionResultListener) {
+		this.onDetailLocationSelectionResultListener = onDetailLocationSelectionResultListener;
+	}
+
+	private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+		@Override
+		public void handleOnBackPressed() {
+			FragmentManager fragmentManager = getChildFragmentManager();
+			if (!fragmentManager.popBackStackImmediate()) {
+				getParentFragmentManager().popBackStack();
+			}
+		}
+	};
 
 	private FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks = new FragmentManager.FragmentLifecycleCallbacks() {
 		@Override
@@ -75,17 +91,18 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 		}
 	};
 
-	private void finishActivity() {
-		requireActivity().setResult(resultCode, requireActivity().getIntent());
-		requireActivity().finish();
+	@Override
+	public void onAttach(@NonNull @NotNull Context context) {
+		super.onAttach(context);
+		requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
 	}
 
 	@Override
 	public void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		Bundle arguments = requireActivity().getIntent().getExtras();
+		Bundle arguments = getArguments();
 
-		selectedLocationDTOInEvent = (LocationDTO) arguments.getParcelable(DetailLocationSelectorKey.SELECTED_LOCATION_DTO_IN_EVENT.value());
+		selectedLocationDTOInEvent = arguments.getParcelable(DetailLocationSelectorKey.SELECTED_LOCATION_DTO_IN_EVENT.value());
 		locationNameInEvent = arguments.getString(DetailLocationSelectorKey.LOCATION_NAME_IN_EVENT.value());
 		requestCode = LocationIntentCode.enumOf(arguments.getInt("requestCode"));
 
@@ -122,6 +139,11 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 		}
 	}
 
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		onBackPressedCallback.remove();
+	}
 
 	private void showLocationItem() {
 		// 위치가 이미 선택되어 있는 경우 해당 위치 정보를 표시함 (삭제 버튼 추가)
@@ -140,7 +162,6 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 
 					createMarkers(Collections.singletonList(coordToAddressDocuments), MarkerType.SELECTED_ADDRESS_IN_EVENT);
 					onPOIItemSelectedByList(coordToAddressDocuments, MarkerType.SELECTED_ADDRESS_IN_EVENT);
-
 				}
 
 				@Override
@@ -206,12 +227,15 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 
 		bottomSheetBehaviorMap.get(BottomSheetType.LOCATION_ITEM).setState(BottomSheetBehavior.STATE_COLLAPSED);
 
-		resultCode = (requestCode == LocationIntentCode.REQUEST_CODE_CHANGE_LOCATION)
-				? LocationIntentCode.RESULT_CODE_CHANGED_LOCATION.value() : LocationIntentCode.RESULT_CODE_SELECTED_LOCATION.value();
-
 		String locationName = location.getLocationType() == LocationType.PLACE ? location.getPlaceName() : location.getAddressName();
 		Toast.makeText(getContext(), locationName + " - " + getString(R.string.selected_location), Toast.LENGTH_SHORT).show();
-		finishActivity();
+
+		if (requestCode == LocationIntentCode.REQUEST_CODE_CHANGE_LOCATION) {
+			onDetailLocationSelectionResultListener.onResultChangedLocation(location);
+		} else {
+			onDetailLocationSelectionResultListener.onResultSelectedLocation(location);
+		}
+		getParentFragmentManager().popBackStack();
 	}
 
 	@Override
@@ -220,10 +244,11 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 		removeAllMarkers();
 
 		bottomSheetBehaviorMap.get(BottomSheetType.LOCATION_ITEM).setState(BottomSheetBehavior.STATE_COLLAPSED);
-		resultCode = LocationIntentCode.RESULT_CODE_REMOVED_LOCATION.value();
 
 		Toast.makeText(getContext(), R.string.canceled_location, Toast.LENGTH_SHORT).show();
-		finishActivity();
+
+		onDetailLocationSelectionResultListener.onResultUnselectedLocation();
+		getParentFragmentManager().popBackStack();
 	}
 
 	@Override
@@ -235,9 +260,7 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 		}
 
 		if (requestCode == LocationIntentCode.REQUEST_CODE_CHANGE_LOCATION) {
-			if (selectedLocationDTOInEvent != null) {
-				showLocationItem();
-			}
+			showLocationItem();
 		}
 	}
 
@@ -248,4 +271,11 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 	}
 
 
+	public interface OnDetailLocationSelectionResultListener {
+		public void onResultChangedLocation(LocationDTO newLocation);
+
+		public void onResultSelectedLocation(LocationDTO newLocation);
+
+		public void onResultUnselectedLocation();
+	}
 }

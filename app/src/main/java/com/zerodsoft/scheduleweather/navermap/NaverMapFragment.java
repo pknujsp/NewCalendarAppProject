@@ -682,7 +682,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			}
 		});
 
-		final int rlPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12f, getResources().getDisplayMetrics());
+		final int rlPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 14f, getResources().getDisplayMetrics());
 		final int bPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
 		final int margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 3f, getResources().getDisplayMetrics());
 
@@ -691,7 +691,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		locationItemBottomSheetViewPager.getChildAt(0).setOverScrollMode(View.OVER_SCROLL_NEVER);
 
 		CompositePageTransformer compositePageTransformer = new CompositePageTransformer();
-		compositePageTransformer.addTransformer(new MarginPageTransformer(margin));
+		//compositePageTransformer.addTransformer(new MarginPageTransformer(margin));
 		compositePageTransformer.addTransformer(new ViewPager2.PageTransformer() {
 			@Override
 			public void transformPage(@NonNull View page, float position) {

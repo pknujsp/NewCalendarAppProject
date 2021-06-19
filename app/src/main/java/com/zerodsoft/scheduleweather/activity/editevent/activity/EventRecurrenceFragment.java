@@ -1,68 +1,78 @@
 package com.zerodsoft.scheduleweather.activity.editevent.activity;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
+import androidx.fragment.app.Fragment;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.provider.CalendarContract;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
-import android.widget.EditText;
 
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClickListener;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.databinding.ActivityRecurrenceBinding;
+import com.zerodsoft.scheduleweather.databinding.FragmentEventRecurrenceBinding;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Calendar;
 import java.util.List;
 import java.util.regex.PatternSyntaxException;
 
-public class RecurrenceActivity extends AppCompatActivity {
+public class EventRecurrenceFragment extends Fragment {
 	private final RecurrenceRule GIVED_RULE = new RecurrenceRule();
 	private final RecurrenceRule NEW_RULE = new RecurrenceRule();
 	private final int[] dayViewIds = {R.id.recurrence_sunday, R.id.recurrence_monday, R.id.recurrence_tuesday
 			, R.id.recurrence_wednesday, R.id.recurrence_thursday, R.id.recurrence_friday, R.id.recurrence_saturday};
+	private OnEventRecurrenceResultListener onEventRecurrenceResultListener;
 
-	private ActivityRecurrenceBinding binding;
+	private FragmentEventRecurrenceBinding binding;
 	private ArrayAdapter<CharSequence> spinnerAdapter;
-
 	private Calendar eventStartDateTime;
 	private Calendar untilDateTime;
 
-
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		binding = DataBindingUtil.setContentView(this, R.layout.activity_recurrence);
-
-		eventStartDateTime = Calendar.getInstance();
-		eventStartDateTime.setTimeInMillis(getIntent().getLongExtra(CalendarContract.Events.DTSTART, 0L));
-		untilDateTime = (Calendar) eventStartDateTime.clone();
-		String givedRecurrenceRuleStr = getIntent().getStringExtra(CalendarContract.Events.RRULE);
-
-		GIVED_RULE.separateValues(givedRecurrenceRuleStr);
-		init();
+	public EventRecurrenceFragment(OnEventRecurrenceResultListener onEventRecurrenceResultListener) {
+		this.onEventRecurrenceResultListener = onEventRecurrenceResultListener;
 	}
 
-	private void init() {
-		setSupportActionBar(binding.toolbar);
+	@Override
+	public View onCreateView(@NonNull @NotNull LayoutInflater inflater, @Nullable @org.jetbrains.annotations.Nullable ViewGroup container, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+		binding = FragmentEventRecurrenceBinding.inflate(inflater);
+		return binding.getRoot();
+	}
 
-		ActionBar actionBar = getSupportActionBar();
-		assert actionBar != null;
-		actionBar.setDisplayHomeAsUpEnabled(true);
-		actionBar.setHomeButtonEnabled(true);
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
 
-		spinnerAdapter = ArrayAdapter.createFromResource(getApplicationContext(),
+		Bundle arguments = getArguments();
+
+		eventStartDateTime = Calendar.getInstance();
+		eventStartDateTime.setTimeInMillis(arguments.getLong(CalendarContract.Events.DTSTART, 0L));
+		untilDateTime = (Calendar) eventStartDateTime.clone();
+		String givedRecurrenceRuleStr = arguments.getString(CalendarContract.Events.RRULE);
+
+		GIVED_RULE.separateValues(givedRecurrenceRuleStr);
+	}
+
+	@Override
+	public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+
+		spinnerAdapter = ArrayAdapter.createFromResource(getContext(),
 				R.array.recurrence_date_types, android.R.layout.simple_spinner_item);
 		spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		binding.recurrenceCustomRule.dateTypeSpinner.setAdapter(spinnerAdapter);
@@ -141,7 +151,7 @@ public class RecurrenceActivity extends AppCompatActivity {
 						binding.recurrenceDetailRule.recurrenceUntil.setText(ClockUtil.YYYY_M_D_E.format(untilDateTime.getTime()));
 					}
 				});
-				picker.show(getSupportFragmentManager(), picker.toString());
+				picker.show(getParentFragmentManager(), picker.toString());
 			}
 		});
 
@@ -268,10 +278,6 @@ public class RecurrenceActivity extends AppCompatActivity {
 
 	}
 
-	@Override
-	protected void onStart() {
-		super.onStart();
-	}
 
 	private void setFirstDayRadioGroupText() {
 		final String dayOfWeek = ClockUtil.E.format(eventStartDateTime.getTime());
@@ -292,8 +298,9 @@ public class RecurrenceActivity extends AppCompatActivity {
 	}
 
 	@Override
-	public void onBackPressed() {
+	public void onDestroy() {
 		onCompletedSelection();
+		super.onDestroy();
 	}
 
 	@SuppressLint("NonConstantResourceId")
@@ -322,9 +329,7 @@ public class RecurrenceActivity extends AppCompatActivity {
 		}
 
 		onCompletedRecurrenceDetail();
-		getIntent().putExtra(CalendarContract.Events.RRULE, NEW_RULE.getRule());
-		setResult(RESULT_OK, getIntent());
-		finish();
+		onEventRecurrenceResultListener.onResult(NEW_RULE.getRule());
 	}
 
 	private void onCompletedNotRecurrence() {
@@ -492,12 +497,7 @@ public class RecurrenceActivity extends AppCompatActivity {
 		}
 	}
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		if (item.getItemId() == android.R.id.home) {
-			onBackPressed();
-			return true;
-		}
-		return super.onOptionsItemSelected(item);
+	public interface OnEventRecurrenceResultListener {
+		void onResult(String rRule);
 	}
 }

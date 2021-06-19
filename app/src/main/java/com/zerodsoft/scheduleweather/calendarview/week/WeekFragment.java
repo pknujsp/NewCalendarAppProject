@@ -5,6 +5,8 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.view.LayoutInflater;
@@ -12,13 +14,14 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.zerodsoft.scheduleweather.activity.main.AppMainActivity;
+import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IMoveViewpager;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnDateTimeChangedListener;
-import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEditedEventListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
@@ -28,7 +31,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 
-public class WeekFragment extends Fragment implements IRefreshView, OnDateTimeChangedListener, OnEditedEventListener {
+public class WeekFragment extends Fragment implements IRefreshView, OnDateTimeChangedListener, IMoveViewpager {
 	public static final String TAG = "WEEK_FRAGMENT";
 	private ViewPager2 weekViewPager;
 	private WeekViewPagerAdapter weekViewPagerAdapter;
@@ -39,6 +42,7 @@ public class WeekFragment extends Fragment implements IRefreshView, OnDateTimeCh
 	private final OnEventItemClickListener onEventItemClickListener;
 	private final OnEventItemLongClickListener onEventItemLongClickListener;
 	private final IConnectedCalendars iConnectedCalendars;
+	private CalendarViewModel calendarViewModel;
 
 	private static final int COLUMN_WIDTH = AppMainActivity.getDisplayWidth() / 8;
 
@@ -59,6 +63,57 @@ public class WeekFragment extends Fragment implements IRefreshView, OnDateTimeCh
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		calendarViewModel = new ViewModelProvider(requireActivity()).get(CalendarViewModel.class);
+
+		calendarViewModel.getOnAddedNewEventLiveData().observe(this, new Observer<Long>() {
+			@Override
+			public void onChanged(Long start) {
+				moveCurrentViewForBegin(start);
+			}
+		});
+
+		calendarViewModel.getOnModifiedEventLiveData().observe(this, new Observer<Long>() {
+			@Override
+			public void onChanged(Long start) {
+				moveCurrentViewForBegin(start);
+			}
+		});
+
+		calendarViewModel.getOnModifiedFutureInstancesLiveData().observe(this, new Observer<Long>() {
+			@Override
+			public void onChanged(Long begin) {
+				moveCurrentViewForBegin(begin);
+			}
+		});
+
+		calendarViewModel.getOnModifiedInstanceLiveData().observe(this, new Observer<Long>() {
+			@Override
+			public void onChanged(Long begin) {
+				moveCurrentViewForBegin(begin);
+			}
+		});
+
+		calendarViewModel.getOnExceptedInstanceLiveData().observe(this, new Observer<Boolean>() {
+			@Override
+			public void onChanged(Boolean aBoolean) {
+				refreshView();
+			}
+		});
+
+		calendarViewModel.getOnRemovedFutureInstancesLiveData().observe(this, new Observer<Boolean>() {
+			@Override
+			public void onChanged(Boolean aBoolean) {
+				refreshView();
+			}
+		});
+
+		calendarViewModel.getOnRemovedEventLiveData().observe(this, new Observer<Boolean>() {
+			@Override
+			public void onChanged(Boolean aBoolean) {
+				refreshView();
+			}
+		});
+
 	}
 
 	@Override
@@ -101,29 +156,6 @@ public class WeekFragment extends Fragment implements IRefreshView, OnDateTimeCh
 		refreshView();
 	}
 
-	@Override
-	public void onSavedNewEvent(long eventId, long begin) {
-		moveCurrentView(begin);
-	}
-
-	@Override
-	public void onModifiedEvent(long eventId, long begin) {
-		moveCurrentView(begin);
-	}
-
-	@Override
-	public void onModifiedInstance(long instanceId, long begin) {
-		moveCurrentView(begin);
-	}
-
-	@Override
-	public void moveCurrentView(long begin) {
-		refreshView();
-		int movePosition = ClockUtil.calcWeekDifference(new Date(begin), weekViewPagerAdapter.getCALENDAR().getTime());
-		if (movePosition != 0) {
-			weekViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION + movePosition, true);
-		}
-	}
 
 	class OnPageChangeCallback extends ViewPager2.OnPageChangeCallback {
 		final Calendar calendar;
@@ -162,6 +194,25 @@ public class WeekFragment extends Fragment implements IRefreshView, OnDateTimeCh
 		}
 	}
 
+	@Override
+	public void moveCurrentViewForBegin(long begin) {
+		refreshView();
+		int movePosition = ClockUtil.calcWeekDifference(new Date(begin), weekViewPagerAdapter.getCALENDAR().getTime());
+		if (movePosition != 0) {
+			weekViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION + movePosition, true);
+		}
+	}
+
+	@Override
+	public void refreshView() {
+		if (!ClockUtil.areSameDate(System.currentTimeMillis(), weekViewPagerAdapter.getCurrentDateTime().getTime())) {
+			setViewPager();
+		} else {
+			weekViewPagerAdapter.notifyDataSetChanged();
+		}
+	}
+
+	@Override
 	public void goToToday() {
 		if (!ClockUtil.areSameDate(System.currentTimeMillis(), weekViewPagerAdapter.getCurrentDateTime().getTime())) {
 			setViewPager();
@@ -176,15 +227,5 @@ public class WeekFragment extends Fragment implements IRefreshView, OnDateTimeCh
 	public void goToWeek(Date date) {
 		int weekDifference = ClockUtil.calcWeekDifference(date, onPageChangeCallback.copiedCalendar.getTime());
 		weekViewPager.setCurrentItem(weekViewPager.getCurrentItem() + weekDifference, true);
-	}
-
-
-	@Override
-	public void refreshView() {
-		if (!ClockUtil.areSameDate(System.currentTimeMillis(), weekViewPagerAdapter.getCurrentDateTime().getTime())) {
-			setViewPager();
-		} else {
-			weekViewPagerAdapter.notifyDataSetChanged();
-		}
 	}
 }

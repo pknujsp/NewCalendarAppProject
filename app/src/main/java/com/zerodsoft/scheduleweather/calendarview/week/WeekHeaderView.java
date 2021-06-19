@@ -17,7 +17,6 @@ import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
 
-import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.common.HeaderInstancesView;
@@ -25,7 +24,6 @@ import com.zerodsoft.scheduleweather.calendarview.common.InstanceView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.CalendarViewInitializer;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
-import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.calendarview.month.EventData;
@@ -37,7 +35,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -201,7 +198,7 @@ public class WeekHeaderView extends ViewGroup implements CalendarViewInitializer
 		ROWS_COUNT = 0;
 		removeAllViews();
 
-		headerInstancesView = new HeaderInstancesView(getContext(), onEventItemClickListener);
+		headerInstancesView = new HeaderInstancesView(getContext(), onEventItemClickListener, onEventItemLongClickListener);
 		addView(headerInstancesView);
 
 		START_INDEX = Integer.MAX_VALUE;

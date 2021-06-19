@@ -2,48 +2,71 @@ package com.zerodsoft.scheduleweather.activity.editevent.activity;
 
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.provider.CalendarContract;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
+import androidx.lifecycle.ViewModelProvider;
 
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
-import com.zerodsoft.scheduleweather.activity.editevent.value.EventData;
-import com.zerodsoft.scheduleweather.activity.editevent.value.EventDefaultValue;
+import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.common.enums.EventIntentCode;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
+import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
-public class NewEventActivity extends EditEventActivity {
+public class NewEventFragment extends EventBaseFragment {
+	private OnNewEventResultListener onNewEventResultListener;
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		loadInitData();
-		initializing = false;
+	public NewEventFragment(OnNewEventResultListener onNewEventResultListener) {
+		this.onNewEventResultListener = onNewEventResultListener;
 	}
 
 	@Override
-	protected void onDestroy() {
-		super.onDestroy();
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+
+		eventDataViewModel = new ViewModelProvider(this).get(EventDataViewModel.class);
+		calendarViewModel = new ViewModelProvider(requireActivity()).get(CalendarViewModel.class);
+		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
+	}
+
+	@Override
+	public View onCreateView(@NonNull @NotNull LayoutInflater inflater, @Nullable @org.jetbrains.annotations.Nullable ViewGroup container, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+		return super.onCreateView(inflater, container, savedInstanceState);
+	}
+
+	@Override
+	public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+		loadInitData();
+		initializing = false;
+
+		binding.saveBtn.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				saveNewEvent();
+			}
+		});
 	}
 
 	@Override
 	protected void loadInitData() {
-		ActionBar actionBar = getSupportActionBar();
-		actionBar.setTitle(R.string.new_event);
-
 		//캘린더도 기본 값 설정
 		List<ContentValues> calendars = calendarViewModel.getCalendars();
 		//기본 캘린더 확인
@@ -108,59 +131,45 @@ public class NewEventActivity extends EditEventActivity {
 		binding.attendeeLayout.showAttendeesDetail.setText(getString(R.string.add_attendee));
 	}
 
-	@SuppressLint("NonConstantResourceId")
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-			case R.id.save_schedule_button:
-				saveNewEvent();
-				break;
-		}
-		return super.onOptionsItemSelected(item);
-	}
 
 	protected void saveNewEvent() {
 		// 시간이 바뀌는 경우, 알림 데이터도 변경해야함.
 		// 알림 재설정
-		ContentValues event = eventDataViewModel.getEVENT();
-		List<ContentValues> reminderList = eventDataViewModel.getREMINDERS();
-		List<ContentValues> attendeeList = eventDataViewModel.getATTENDEES();
+		ContentValues newEvent = eventDataViewModel.getEVENT();
+		List<ContentValues> newReminderList = eventDataViewModel.getREMINDERS();
+		List<ContentValues> newAttendeeList = eventDataViewModel.getATTENDEES();
 
-		if (event.getAsInteger(CalendarContract.Events.ALL_DAY) == 1) {
+		if (newEvent.getAsInteger(CalendarContract.Events.ALL_DAY) == 1) {
 			Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-			calendar.setTimeInMillis(event.getAsLong(CalendarContract.Events.DTEND));
+			calendar.setTimeInMillis(newEvent.getAsLong(CalendarContract.Events.DTEND));
 			calendar.add(Calendar.DAY_OF_YEAR, 1);
 
-			event.put(CalendarContract.Events.DTEND, calendar.getTimeInMillis());
+			newEvent.put(CalendarContract.Events.DTEND, calendar.getTimeInMillis());
 		}
 
-		final int CALENDAR_ID = event.getAsInteger(CalendarContract.Events.CALENDAR_ID);
-		final long NEW_EVENT_ID = calendarViewModel.addEvent(event);
+		final long NEW_EVENT_ID = calendarViewModel.addEvent(newEvent);
 
-		getIntent().putExtra(CalendarContract.Events._ID, NEW_EVENT_ID);
-		getIntent().putExtra(CalendarContract.Instances.BEGIN, event.getAsLong(CalendarContract.Events.DTSTART));
-		setResult(EventIntentCode.RESULT_SAVED.value(), getIntent());
-
-		if (!reminderList.isEmpty()) {
-			for (ContentValues reminder : reminderList) {
+		if (!newReminderList.isEmpty()) {
+			for (ContentValues reminder : newReminderList) {
 				reminder.put(CalendarContract.Reminders.EVENT_ID, NEW_EVENT_ID);
 			}
-			calendarViewModel.addReminders(reminderList);
+			calendarViewModel.addReminders(newReminderList);
 		}
 
-		if (!attendeeList.isEmpty()) {
-			for (ContentValues attendee : attendeeList) {
+		if (!newAttendeeList.isEmpty()) {
+			for (ContentValues attendee : newAttendeeList) {
 				attendee.put(CalendarContract.Attendees.EVENT_ID, NEW_EVENT_ID);
 			}
-			calendarViewModel.addAttendees(attendeeList);
+			calendarViewModel.addAttendees(newAttendeeList);
 		}
 
-		if (event.containsKey(CalendarContract.Events.EVENT_LOCATION)) {
+		if (newEvent.containsKey(CalendarContract.Events.EVENT_LOCATION)) {
 			locationDTO.setEventId(NEW_EVENT_ID);
 			locationViewModel.addLocation(locationDTO, new DbQueryCallback<LocationDTO>() {
 				@Override
 				public void onResultSuccessful(LocationDTO result) {
-					finish();
+					onNewEventResultListener.onSavedNewEvent(NEW_EVENT_ID, newEvent.getAsLong(CalendarContract.Events.DTSTART));
+					getParentFragmentManager().popBackStack();
 				}
 
 				@Override
@@ -169,7 +178,8 @@ public class NewEventActivity extends EditEventActivity {
 				}
 			});
 		} else {
-			finish();
+			onNewEventResultListener.onSavedNewEvent(NEW_EVENT_ID, newEvent.getAsLong(CalendarContract.Events.DTSTART));
+			getParentFragmentManager().popBackStack();
 		}
 	}
 
@@ -183,5 +193,9 @@ public class NewEventActivity extends EditEventActivity {
 	protected void removeReminderItemView(int minutes) {
 		super.removeReminderItemView(minutes);
 		eventDataViewModel.removeReminder(minutes);
+	}
+
+	public interface OnNewEventResultListener {
+		void onSavedNewEvent(long eventId, long begin);
 	}
 }

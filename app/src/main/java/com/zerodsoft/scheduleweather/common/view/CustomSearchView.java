@@ -144,6 +144,7 @@ public class CustomSearchView extends LinearLayout {
 
 	public void setOnQueryTextListener(SearchView.OnQueryTextListener onQueryTextListener) {
 		this.onQueryTextListener = onQueryTextListener;
+		searchEditText.setOnQueryTextListener(onQueryTextListener);
 	}
 
 	public void setOnBackClickListener(View.OnClickListener onBackClickListener) {

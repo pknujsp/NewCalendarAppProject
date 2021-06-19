@@ -32,9 +32,8 @@
     <dimen name="info_around_location_item_margin">12dp</dimen>
 
     <!-- place item cardview -->
-    <dimen name="place_item_cardview_width">145dp</dimen>
-    <dimen name="place_item_cardview_height">170dp</dimen>
-    <dimen name="place_item_cardview_corner_radius">15dp</dimen>
+    <dimen name="place_item_cardview_width">155dp</dimen>
+    <dimen name="place_item_cardview_height">140dp</dimen>
 
     <dimen name="map_button_size">36dp</dimen>
 

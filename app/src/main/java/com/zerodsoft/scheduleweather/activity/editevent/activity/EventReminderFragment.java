@@ -1,8 +1,11 @@
 package com.zerodsoft.scheduleweather.activity.editevent.activity;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
+import androidx.fragment.app.Fragment;
 
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
@@ -11,20 +14,24 @@ import android.os.Handler;
 import android.provider.CalendarContract;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.RadioGroup;
 
-import com.google.android.material.chip.ChipGroup;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.enums.EventIntentCode;
-import com.zerodsoft.scheduleweather.databinding.ActivityReminderBinding;
+import com.zerodsoft.scheduleweather.databinding.FragmentEventReminderBinding;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
-public class ReminderActivity extends AppCompatActivity {
-	private ActivityReminderBinding binding;
+import org.jetbrains.annotations.NotNull;
+
+public class EventReminderFragment extends Fragment {
+	private FragmentEventReminderBinding binding;
+	private OnEventReminderResultListener onEventReminderResultListener;
 
 	private Handler repeatUpdateHandler = new Handler();
 	private boolean cIncrement = false;
@@ -39,21 +46,26 @@ public class ReminderActivity extends AppCompatActivity {
 	private Integer previousMinutes;
 	private Integer previousMethod;
 
-
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		binding = DataBindingUtil.setContentView(this, R.layout.activity_reminder);
-		init();
+	public EventReminderFragment(OnEventReminderResultListener onEventReminderResultListener) {
+		this.onEventReminderResultListener = onEventReminderResultListener;
 	}
 
-	private void init() {
-		setSupportActionBar(binding.toolbar);
+	@Override
+	public View onCreateView(@NonNull @NotNull LayoutInflater inflater, @Nullable @org.jetbrains.annotations.Nullable ViewGroup container, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+		binding = FragmentEventReminderBinding.inflate(inflater);
+		return binding.getRoot();
+	}
 
-		ActionBar actionBar = getSupportActionBar();
-		assert actionBar != null;
-		actionBar.setDisplayHomeAsUpEnabled(true);
-		actionBar.setHomeButtonEnabled(true);
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+	}
+
+	@Override
+	public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
+
+		Bundle arguments = getArguments();
 
 		binding.eventReminderRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
 			@SuppressLint("NonConstantResourceId")
@@ -107,7 +119,7 @@ public class ReminderActivity extends AppCompatActivity {
 		binding.downMinute.setOnTouchListener(onTouchListener);
 
 		// 알람 추가/수정 여부 확인
-		requestCode = EventIntentCode.enumOf(getIntent().getIntExtra("requestCode", 0));
+		requestCode = EventIntentCode.enumOf(arguments.getInt("requestCode", 0));
 
 		switch (requestCode) {
 			case REQUEST_ADD_REMINDER: {
@@ -117,8 +129,8 @@ public class ReminderActivity extends AppCompatActivity {
 			break;
 			case REQUEST_MODIFY_REMINDER: {
 				// 수정할 경우에는 분, 메소드 인수를 받음
-				previousMinutes = getIntent().getIntExtra("previousMinutes", 0);
-				previousMethod = getIntent().getIntExtra("previousMethod", 0);
+				previousMinutes = arguments.getInt("previousMinutes", 0);
+				previousMethod = arguments.getInt("previousMethod", 0);
 
 				switch (previousMethod) {
 					case CalendarContract.Reminders.METHOD_ALERT:
@@ -142,23 +154,8 @@ public class ReminderActivity extends AppCompatActivity {
 		}
 	}
 
-	private int getMethod() {
-		int method = 0;
-
-		switch (binding.reminderMethodChipGroup.getCheckedChipId()) {
-			case R.id.method_alert:
-				method = CalendarContract.Reminders.METHOD_ALERT;
-				break;
-			case R.id.method_email:
-				method = CalendarContract.Reminders.METHOD_EMAIL;
-				break;
-		}
-
-		return method;
-	}
-
 	@Override
-	public void onBackPressed() {
+	public void onDestroy() {
 		//정시에 알림도 있음
 		final int newMinutes = EventUtil.convertReminderValues(
 				new ReminderDto(Integer.parseInt(binding.reminderWeekValue.getText().toString())
@@ -174,11 +171,9 @@ public class ReminderActivity extends AppCompatActivity {
 					reminder.put(CalendarContract.Reminders.MINUTES, newMinutes);
 					reminder.put(CalendarContract.Reminders.METHOD, getMethod());
 
-					getIntent().putExtra("reminder", reminder);
-					setResult(EventIntentCode.RESULT_ADDED_REMINDER.value(), getIntent());
+					onEventReminderResultListener.onResultAddedReminder(reminder);
 				} else {
 					//알람을 추가하지 않음
-					setResult(RESULT_CANCELED, getIntent());
 				}
 				break;
 			}
@@ -187,35 +182,39 @@ public class ReminderActivity extends AppCompatActivity {
 				if (binding.okRemindRadio.isChecked()) {
 					if (previousMinutes == newMinutes && previousMethod == getMethod()) {
 						//기존 알람 값과 동일하여 취소로 판단
-						setResult(RESULT_CANCELED, getIntent());
 					} else {
 						//알람 수정
 						ContentValues reminder = new ContentValues();
 						reminder.put(CalendarContract.Reminders.MINUTES, newMinutes);
 						reminder.put(CalendarContract.Reminders.METHOD, getMethod());
 
-						getIntent().putExtra("reminder", reminder);
-						setResult(EventIntentCode.RESULT_MODIFIED_REMINDER.value(), getIntent());
+						onEventReminderResultListener.onResultModifiedReminder(reminder, previousMinutes);
 					}
 				} else {
 					//알람 삭제
-					setResult(EventIntentCode.RESULT_REMOVED_REMINDER.value(), getIntent());
+					onEventReminderResultListener.onResultRemovedReminder(previousMinutes);
 				}
 				break;
 			}
 		}
-
-		finish();
+		super.onDestroy();
 	}
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		if (item.getItemId() == android.R.id.home) {
-			onBackPressed();
-			return true;
+	private int getMethod() {
+		int method = 0;
+
+		switch (binding.reminderMethodChipGroup.getCheckedChipId()) {
+			case R.id.method_alert:
+				method = CalendarContract.Reminders.METHOD_ALERT;
+				break;
+			case R.id.method_email:
+				method = CalendarContract.Reminders.METHOD_EMAIL;
+				break;
 		}
-		return super.onOptionsItemSelected(item);
+
+		return method;
 	}
+
 
 	private final TextWatcher textWatcher = new TextWatcher() {
 		@Override
@@ -448,5 +447,13 @@ public class ReminderActivity extends AppCompatActivity {
 				repeatUpdateHandler.postDelayed(new RptUpdater(type), 40);
 			}
 		}
+	}
+
+	public interface OnEventReminderResultListener {
+		void onResultModifiedReminder(ContentValues reminder, int previousMinutes);
+
+		void onResultAddedReminder(ContentValues reminder);
+
+		void onResultRemovedReminder(int previousMinutes);
 	}
 }

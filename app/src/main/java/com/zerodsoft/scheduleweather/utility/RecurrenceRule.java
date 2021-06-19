@@ -109,7 +109,7 @@ public class RecurrenceRule
     {
         if (RULE_MAP.isEmpty())
         {
-            return null;
+            return "";
         } else
         {
             StringBuilder rule = new StringBuilder();

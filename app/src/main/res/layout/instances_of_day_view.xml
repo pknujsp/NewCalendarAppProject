@@ -5,17 +5,19 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@drawable/map_view_background"
+        android:clickable="true"
+        android:focusable="false"
         android:paddingBottom="@dimen/corner_radius">
 
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
             <LinearLayout
                 android:id="@+id/header_layout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
                 android:orientation="horizontal"
                 android:padding="16dp">
 
@@ -44,10 +46,14 @@
                 android:id="@+id/events_info_events_list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_below="@id/header_layout"
-                android:layout_alignParentBottom="true"
                 android:orientation="vertical" />
-        </RelativeLayout>
+
+            <com.zerodsoft.scheduleweather.common.view.CustomProgressView
+                android:id="@+id/custom_progress_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/delete_instances"

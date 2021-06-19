@@ -11,6 +11,7 @@ import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -19,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.editevent.adapter.TimeZoneRecyclerViewAdapter;
 import com.zerodsoft.scheduleweather.activity.editevent.interfaces.ITimeZone;
+import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.TimezoneFragmentBinding;
 
 import java.util.ArrayList;
@@ -26,18 +28,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
-public class TimeZoneFragment extends Fragment {
+public class TimeZoneFragment extends Fragment implements OnClickedListItem<TimeZone> {
+	private OnTimeZoneResultListener onTimeZoneResultListener;
 	private TimezoneFragmentBinding binding;
 	private TimeZoneRecyclerViewAdapter adapter;
-	private ITimeZone iTimeZone;
-	private final long startTime = System.currentTimeMillis();
 
-	public TimeZoneFragment() {
-
-	}
-
-	public void setiTimeZone(ITimeZone iTimeZone) {
-		this.iTimeZone = iTimeZone;
+	public TimeZoneFragment(OnTimeZoneResultListener onTimeZoneResultListener) {
+		this.onTimeZoneResultListener = onTimeZoneResultListener;
 	}
 
 	@Override
@@ -55,6 +52,8 @@ public class TimeZoneFragment extends Fragment {
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+		binding.customProgressView.setContentView(binding.timezoneList);
+		binding.customProgressView.onSuccessfulProcessingData();
 
 		binding.timezoneList.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
 		binding.timezoneList.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
@@ -66,27 +65,46 @@ public class TimeZoneFragment extends Fragment {
 			timeZoneList.add(TimeZone.getTimeZone(v));
 		}
 
-		Date startDate = new Date(startTime);
-
-		adapter = new TimeZoneRecyclerViewAdapter(iTimeZone, timeZoneList, startDate);
-		binding.timezoneList.setAdapter(adapter);
-
-		binding.searchTimezone.addTextChangedListener(new TextWatcher() {
+		adapter = new TimeZoneRecyclerViewAdapter(this, timeZoneList, new Date(System.currentTimeMillis()));
+		adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
 			@Override
-			public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
-			}
-
-			@Override
-			public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-				// 실시간 검색
-				adapter.getFilter().filter(charSequence);
-			}
-
-			@Override
-			public void afterTextChanged(Editable editable) {
-
+			public void onChanged() {
+				super.onChanged();
+				if (adapter.getItemCount() == 0) {
+					binding.customProgressView.onFailedProcessingData(getString(R.string.not_founded_search_result));
+				} else {
+					binding.customProgressView.onSuccessfulProcessingData();
+				}
 			}
 		});
+		binding.timezoneList.setAdapter(adapter);
+
+		binding.customSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+			@Override
+			public boolean onQueryTextSubmit(String query) {
+				return false;
+			}
+
+			@Override
+			public boolean onQueryTextChange(String newText) {
+				adapter.getFilter().filter(newText);
+				return false;
+			}
+		});
+
+	}
+
+	@Override
+	public void onClickedListItem(TimeZone e, int position) {
+
+	}
+
+	@Override
+	public void deleteListItem(TimeZone e, int position) {
+
+	}
+
+	public interface OnTimeZoneResultListener {
+		void onResult(TimeZone timeZone);
 	}
 }

@@ -6,7 +6,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.provider.CalendarContract;
 import android.view.LayoutInflater;
@@ -26,6 +25,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
@@ -34,7 +35,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
-import com.zerodsoft.scheduleweather.activity.editevent.activity.ModifyInstanceActivity;
+import com.zerodsoft.scheduleweather.activity.editevent.activity.ModifyInstanceFragment;
 import com.zerodsoft.scheduleweather.calendar.CalendarInstanceUtil;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
@@ -43,13 +44,12 @@ import com.zerodsoft.scheduleweather.common.enums.LocationIntentCode;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.databinding.EventFragmentBinding;
 import com.zerodsoft.scheduleweather.event.common.DetailLocationSelectorKey;
-import com.zerodsoft.scheduleweather.event.common.SelectionDetailLocationActivity;
+import com.zerodsoft.scheduleweather.event.common.SelectionDetailLocationFragment;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
-import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
 import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
@@ -88,10 +88,18 @@ public class EventFragment extends BottomSheetDialogFragment {
 
 	private AlertDialog attendeeDialog;
 
-	private int resultCode = Activity.RESULT_CANCELED;
-
 	private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
 	private FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel;
+
+	private FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks = new FragmentManager.FragmentLifecycleCallbacks() {
+		@Override
+		public void onFragmentDestroyed(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
+			super.onFragmentDestroyed(fm, f);
+			if (f instanceof SelectionDetailLocationFragment) {
+				getDialog().show();
+			}
+		}
+	};
 
 	public void showSetLocationDialog() {
 		MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getActivity())
@@ -106,31 +114,43 @@ public class EventFragment extends BottomSheetDialogFragment {
 				.setPositiveButton(getString(R.string.check), new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialogInterface, int i) {
-						Intent intent = new Intent(getActivity(), SelectionDetailLocationActivity.class);
 						Bundle bundle = new Bundle();
 						bundle.putString(DetailLocationSelectorKey.LOCATION_NAME_IN_EVENT.value(),
 								instanceValues.getAsString(CalendarContract.Instances.EVENT_LOCATION));
 						bundle.putInt("requestCode", LocationIntentCode.REQUEST_CODE_SELECT_LOCATION_BY_QUERY.value());
 
-						intent.putExtras(bundle);
-						setLocationActivityResultLauncher.launch(intent);
+						SelectionDetailLocationFragment selectionDetailLocationFragment = new SelectionDetailLocationFragment(new SelectionDetailLocationFragment.OnDetailLocationSelectionResultListener() {
+							@Override
+							public void onResultChangedLocation(LocationDTO newLocation) {
+
+							}
+
+							@Override
+							public void onResultSelectedLocation(LocationDTO newLocation) {
+								saveDetailLocation(newLocation);
+							}
+
+							@Override
+							public void onResultUnselectedLocation() {
+
+							}
+						});
+
+						selectionDetailLocationFragment.setArguments(bundle);
+						getParentFragmentManager().beginTransaction().add(R.id.fragment_container, selectionDetailLocationFragment,
+								getString(R.string.tag_detail_location_selection_fragment)).addToBackStack(getString(R.string.tag_detail_location_selection_fragment)).commit();
 						dialogInterface.dismiss();
+						requireActivity().runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								getDialog().hide();
+							}
+						});
 					}
 				});
 
 		AlertDialog dialog = builder.create();
 		dialog.show();
-	}
-
-	public void startEditLocationActivity(LocationDTO locationDTO) {
-		//naver
-		Intent intent = new Intent(getActivity(), SelectionDetailLocationActivity.class);
-		Bundle bundle = new Bundle();
-		bundle.putParcelable(DetailLocationSelectorKey.SELECTED_LOCATION_DTO_IN_EVENT.value(), locationDTO);
-		bundle.putInt("requestCode", LocationIntentCode.REQUEST_CODE_CHANGE_LOCATION.value());
-
-		intent.putExtras(bundle);
-		editLocationActivityResultLauncher.launch(intent);
 	}
 
 	public EventFragment(DialogInterface dialogInterface, IRefreshView iRefreshView, int VIEW_HEIGHT, int CALENDAR_ID, long EVENT_ID,
@@ -160,6 +180,7 @@ public class EventFragment extends BottomSheetDialogFragment {
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		getParentFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false);
 	}
 
 	@NonNull
@@ -230,7 +251,36 @@ public class EventFragment extends BottomSheetDialogFragment {
 										@Override
 										public void onResultSuccessful(LocationDTO locationResultDto) {
 											if (!locationResultDto.isEmpty()) {
-												startEditLocationActivity(locationResultDto);
+												SelectionDetailLocationFragment selectionDetailLocationFragment = new SelectionDetailLocationFragment(new SelectionDetailLocationFragment.OnDetailLocationSelectionResultListener() {
+													@Override
+													public void onResultChangedLocation(LocationDTO newLocation) {
+														changedDetailLocation(newLocation);
+													}
+
+													@Override
+													public void onResultSelectedLocation(LocationDTO newLocation) {
+
+													}
+
+													@Override
+													public void onResultUnselectedLocation() {
+														deletedDetailLocation();
+													}
+												});
+
+												Bundle bundle = new Bundle();
+												bundle.putParcelable(DetailLocationSelectorKey.SELECTED_LOCATION_DTO_IN_EVENT.value(), locationResultDto);
+												bundle.putInt("requestCode", LocationIntentCode.REQUEST_CODE_CHANGE_LOCATION.value());
+
+												selectionDetailLocationFragment.setArguments(bundle);
+												getParentFragmentManager().beginTransaction().add(R.id.fragment_container, selectionDetailLocationFragment,
+														getString(R.string.tag_detail_location_selection_fragment)).addToBackStack(getString(R.string.tag_detail_location_selection_fragment)).commit();
+												requireActivity().runOnUiThread(new Runnable() {
+													@Override
+													public void run() {
+														getDialog().hide();
+													}
+												});
 											}
 										}
 
@@ -269,6 +319,35 @@ public class EventFragment extends BottomSheetDialogFragment {
 				intent.putExtra(CalendarContract.Instances.RRULE, instanceValues.getAsString(CalendarContract.Instances.RRULE));
 
 				editInstanceActivityResultLauncher.launch(intent);
+
+				Bundle bundle = new Bundle();
+				ModifyInstanceFragment modifyInstanceFragment = new ModifyInstanceFragment(new ModifyInstanceFragment.OnModifyInstanceResultListener() {
+					@Override
+					public void onResultModifiedEvent(long eventId, long begin) {
+		setInstanceData();
+								requireActivity().getIntent().putExtras(result.getData());
+								getDialog().show();
+					}
+
+					@Override
+					public void onResultModifiedThisInstance() {
+								setInstanceData();
+								requireActivity().getIntent().putExtras(result.getData());
+																getDialog().show();
+
+					}
+
+					@Override
+					public void onResultModifiedAfterAllInstancesIncludingThisInstance() {
+
+					}
+				});
+				modifyInstanceFragment.setArguments(bundle);
+				getParentFragmentManager().beginTransaction().add(R.id.fragment_container, modifyInstanceFragment,
+						getString(R.string.tag_modify_instance_fragment)).addToBackStack(getString(R.string.tag_modify_instance_fragment)).commit();
+
+														getDialog().hide();
+
 				 */
 				Toast.makeText(getContext(), "Working", Toast.LENGTH_SHORT).show();
 			}
@@ -291,7 +370,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 				}
 				new MaterialAlertDialogBuilder(getActivity()).setTitle(getString(R.string.remove_event))
 						.setItems(items, new DialogInterface.OnClickListener() {
-							@SneakyThrows
 							@Override
 							public void onClick(DialogInterface dialogInterface, int index) {
 								if (instanceValues.getAsString(CalendarContract.Instances.RRULE) != null) {
@@ -330,9 +408,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		setLocationActivityResultLauncher.unregister();
-		editLocationActivityResultLauncher.unregister();
-		editInstanceActivityResultLauncher.unregister();
 	}
 
 	private void showDeleteEventDialog() {
@@ -343,7 +418,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 					public void onClick(DialogInterface dialog, int which) {
 						CalendarInstanceUtil.deleteEvent(calendarViewModel, locationViewModel, foodCriteriaLocationInfoViewModel, foodCriteriaLocationHistoryViewModel,
 								CALENDAR_ID, EVENT_ID);
-						resultCode = EventIntentCode.RESULT_DELETED.value();
 						dialog.dismiss();
 						dismiss();
 					}
@@ -385,7 +459,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						CalendarInstanceUtil.exceptThisInstance(calendarViewModel, instanceValues.getAsLong(CalendarContract.Instances.BEGIN), EVENT_ID);
-						resultCode = EventIntentCode.RESULT_EXCEPTED_INSTANCE.value();
 						dialog.dismiss();
 						dismiss();
 					}
@@ -660,70 +733,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 		return attendeeList;
 	}
 
-	private final ActivityResultLauncher<Intent> setLocationActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-			new ActivityResultCallback<ActivityResult>() {
-				@Override
-				public void onActivityResult(ActivityResult result) {
-
-					try {
-						resultCode = result.getResultCode();
-						switch (LocationIntentCode.enumOf(resultCode)) {
-							case RESULT_CODE_SELECTED_LOCATION:
-								LocationDTO locationDTO =
-										result.getData().getExtras().getParcelable(DetailLocationSelectorKey.SELECTED_LOCATION_DTO_IN_MAP.value());
-								saveDetailLocation(locationDTO);
-								break;
-						}
-					} catch (IllegalArgumentException e) {
-					}
-				}
-			});
-
-	private final ActivityResultLauncher<Intent> editLocationActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-			new ActivityResultCallback<ActivityResult>() {
-				@Override
-				public void onActivityResult(ActivityResult result) {
-
-					try {
-						resultCode = result.getResultCode();
-						switch (LocationIntentCode.enumOf(result.getResultCode())) {
-							case RESULT_CODE_CHANGED_LOCATION:
-								LocationDTO locationDTO =
-										result.getData().getExtras().getParcelable(DetailLocationSelectorKey.SELECTED_LOCATION_DTO_IN_MAP.value());
-								changedDetailLocation(locationDTO);
-								break;
-							case RESULT_CODE_REMOVED_LOCATION:
-								deletedDetailLocation();
-								break;
-						}
-					} catch (IllegalArgumentException e) {
-					}
-
-
-				}
-			});
-
-	private final ActivityResultLauncher<Intent> editInstanceActivityResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-			new ActivityResultCallback<ActivityResult>() {
-				@Override
-				public void onActivityResult(ActivityResult result) {
-					try {
-						resultCode = result.getResultCode();
-						switch (EventIntentCode.enumOf(resultCode)) {
-							case RESULT_MODIFIED_THIS_INSTANCE:
-							case RESULT_MODIFIED_EVENT:
-								//데이터 갱신
-								setInstanceData();
-								requireActivity().getIntent().putExtras(result.getData());
-								break;
-						}
-					} catch (IllegalArgumentException e) {
-
-					}
-
-
-				}
-			});
 
 	private void saveDetailLocation(LocationDTO locationDTO) {
 		// 지정이 완료된 경우 - DB에 등록하고 이벤트 액티비티로 넘어가서 날씨 또는 주변 정보 프래그먼트를 실행한다.

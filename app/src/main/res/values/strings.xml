@@ -597,4 +597,13 @@
     <string name="tag_default_map">tag_default_map</string>
     <string name="sync_finished">캘린더 동기화 완료</string>
     <string name="sync_started">캘린더 동기화 시작</string>
+    <string name="tag_all_favorite_restaurant_host_fragment">tag_all_favorite_restaurant_host_fragment</string>
+    <string name="tag_all_favorite_locations_host_fragment">tag_all_favorite_locations_host_fragment</string>
+    <string name="tag_detail_location_selection_fragment">tag_detail_location_selection_fragment</string>
+    <string name="tag_attendees_fragment">tag_attendees_fragment</string>
+    <string name="tag_event_reminder_fragment">tag_event_reminder_fragment</string>
+    <string name="tag_event_recurrence_fragment">tag_event_recurrence_fragment</string>
+    <string name="tag_timezone_fragment">tag_timezone_fragment</string>
+    <string name="tag_modify_instance_fragment">tag_modify_instance_fragment</string>
+    <string name="tag_new_event_fragment">tag_new_event_fragment</string>
 </resources>

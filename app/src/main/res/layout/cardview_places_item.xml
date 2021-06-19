@@ -12,12 +12,12 @@
             style="@style/Widget.MaterialComponents.CardView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_margin="4dp"
             android:clickable="true"
             android:foreground="?attr/selectableItemBackground"
             app:cardBackgroundColor="@color/white"
-            app:cardCornerRadius="@dimen/place_item_cardview_corner_radius"
-            app:cardElevation="3dp">
+            app:cardCornerRadius="@dimen/corner_radius"
+            app:cardElevation="4dp"
+            app:cardUseCompatPadding="true">
 
             <RelativeLayout
                 android:id="@+id/map_place_item_rows"
@@ -106,8 +106,8 @@
             <com.zerodsoft.scheduleweather.common.view.CustomProgressView
                 android:id="@+id/custom_progress_view"
                 android:layout_width="match_parent"
-                android:layout_gravity="center_vertical"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical" />
 
         </androidx.cardview.widget.CardView>
 

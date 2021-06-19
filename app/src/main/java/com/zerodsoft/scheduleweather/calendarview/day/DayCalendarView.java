@@ -48,7 +48,7 @@ public class DayCalendarView implements CalendarViewInitializer {
 		this.iConnectedCalendars = iConnectedCalendars;
 		this.iControlEvent = iControlEvent;
 
-		dayHeaderView.init(null, null, onEventItemClickListener, null, null);
+		dayHeaderView.init(null, onEventItemLongClickListener, onEventItemClickListener, null, null);
 		dayView.init(null, onEventItemLongClickListener, onEventItemClickListener, null, null);
 
 		viewStartDate = copiedCalendar.getTime();

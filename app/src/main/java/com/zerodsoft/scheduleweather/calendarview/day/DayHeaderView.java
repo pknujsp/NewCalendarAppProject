@@ -13,7 +13,6 @@ import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
 
-import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.common.HeaderInstancesView;
@@ -21,7 +20,6 @@ import com.zerodsoft.scheduleweather.calendarview.common.InstanceView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.CalendarViewInitializer;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
-import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.calendarview.month.EventData;
@@ -121,7 +119,7 @@ public class DayHeaderView extends ViewGroup implements CalendarViewInitializer 
 		rowNum = 0;
 		int availableRow = 0;
 
-		headerInstancesView = new HeaderInstancesView(getContext(), onEventItemClickListener);
+		headerInstancesView = new HeaderInstancesView(getContext(), onEventItemClickListener, onEventItemLongClickListener);
 		headerInstancesView.setClickable(true);
 		addView(headerInstancesView);
 

@@ -23,6 +23,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
+import com.zerodsoft.scheduleweather.common.view.CustomProgressView;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
@@ -41,6 +42,7 @@ public class InstancesOfDayView implements CalendarViewInitializer {
 	private ImageButton moreButton;
 	private TextView deleteInstancesBtn;
 	private Context context;
+	private CustomProgressView customProgressView;
 
 	private OnEventItemClickListener onEventItemClickListener;
 	private OnEventItemLongClickListener onEventItemLongClickListener;
@@ -61,6 +63,10 @@ public class InstancesOfDayView implements CalendarViewInitializer {
 		moreButton = (ImageButton) view.findViewById(R.id.more_button);
 		recyclerView = (RecyclerView) view.findViewById(R.id.events_info_events_list);
 		deleteInstancesBtn = (TextView) view.findViewById(R.id.delete_instances);
+		customProgressView = (CustomProgressView) view.findViewById(R.id.custom_progress_view);
+
+		customProgressView.setContentView(recyclerView);
+		customProgressView.onSuccessfulProcessingData();
 
 		recyclerView.addItemDecoration(new RecyclerViewItemDecoration(context));
 		recyclerView.setLayoutManager(new LinearLayoutManager(context, RecyclerView.VERTICAL, false));
@@ -127,6 +133,18 @@ public class InstancesOfDayView implements CalendarViewInitializer {
 
 		dayTextView.setText(ClockUtil.YYYY_M_D_E.format(begin));
 		adapter = new EventsInfoRecyclerViewAdapter(onEventItemLongClickListener, onEventItemClickListener, checkBoxOnCheckedChangeListener, begin, end);
+		adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+			@Override
+			public void onChanged() {
+				super.onChanged();
+				if (adapter.getItemCount() == 0) {
+					customProgressView.onFailedProcessingData(context.getString(R.string.not_data));
+				} else {
+					customProgressView.onSuccessfulProcessingData();
+				}
+			}
+
+		});
 		recyclerView.setAdapter(adapter);
 
 		setData(iControlEvent.getInstances(begin, end));

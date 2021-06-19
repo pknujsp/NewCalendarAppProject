@@ -4,6 +4,8 @@ import android.app.Application;
 import android.content.ContentValues;
 
 import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import com.zerodsoft.scheduleweather.calendar.dto.AccountDto;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
@@ -15,13 +17,57 @@ import java.util.Map;
 public class CalendarViewModel extends AndroidViewModel implements ICalendarProvider {
 	private CalendarProvider calendarProvider;
 
+	private MutableLiveData<Long> onAddedNewEventLiveData;
+	private MutableLiveData<Boolean> onRemovedEventLiveData;
+	private MutableLiveData<Boolean> onExceptedInstanceLiveData;
+	private MutableLiveData<Boolean> onRemovedFutureInstancesLiveData;
+	private MutableLiveData<Long> onModifiedInstanceLiveData;
+	private MutableLiveData<Long> onModifiedEventLiveData;
+	private MutableLiveData<Long> onModifiedFutureInstancesLiveData;
+
 	public CalendarViewModel(Application application) {
 		super(application);
 		if (CalendarProvider.getInstance() == null) {
 			this.calendarProvider = CalendarProvider.newInstance(application.getApplicationContext());
+
+			onAddedNewEventLiveData = calendarProvider.getOnAddedNewEventLiveData();
+			onRemovedEventLiveData = calendarProvider.getOnRemovedEventLiveData();
+			onExceptedInstanceLiveData = calendarProvider.getOnExceptedInstanceLiveData();
+			onRemovedFutureInstancesLiveData = calendarProvider.getOnRemovedFutureInstancesLiveData();
+			onModifiedInstanceLiveData = calendarProvider.getOnModifiedInstanceLiveData();
+			onModifiedEventLiveData = calendarProvider.getOnModifiedEventLiveData();
+			onModifiedFutureInstancesLiveData = calendarProvider.getOnModifiedFutureInstancesLiveData();
 		} else {
 			this.calendarProvider = CalendarProvider.getInstance();
 		}
+	}
+
+	public LiveData<Long> getOnAddedNewEventLiveData() {
+		return onAddedNewEventLiveData;
+	}
+
+	public LiveData<Boolean> getOnRemovedEventLiveData() {
+		return onRemovedEventLiveData;
+	}
+
+	public LiveData<Boolean> getOnExceptedInstanceLiveData() {
+		return onExceptedInstanceLiveData;
+	}
+
+	public LiveData<Boolean> getOnRemovedFutureInstancesLiveData() {
+		return onRemovedFutureInstancesLiveData;
+	}
+
+	public LiveData<Long> getOnModifiedInstanceLiveData() {
+		return onModifiedInstanceLiveData;
+	}
+
+	public LiveData<Long> getOnModifiedEventLiveData() {
+		return onModifiedEventLiveData;
+	}
+
+	public LiveData<Long> getOnModifiedFutureInstancesLiveData() {
+		return onModifiedFutureInstancesLiveData;
 	}
 
 	@Override

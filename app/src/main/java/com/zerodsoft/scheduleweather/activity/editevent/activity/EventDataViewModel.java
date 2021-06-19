@@ -164,7 +164,7 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 	}
 
 	private void putOrRemoveValue(String key, String value) {
-		if (value == null) {
+		if (value.isEmpty()) {
 			EVENT.remove(key);
 		} else {
 			EVENT.put(key, value);

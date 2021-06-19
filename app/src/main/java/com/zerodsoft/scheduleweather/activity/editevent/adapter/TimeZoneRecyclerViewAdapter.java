@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.editevent.interfaces.ITimeZone;
+import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -23,13 +24,13 @@ import java.util.TimeZone;
 public class TimeZoneRecyclerViewAdapter extends RecyclerView.Adapter<TimeZoneRecyclerViewAdapter.TimeZoneViewHolder> implements Filterable {
 	private final SimpleDateFormat DATE_FORMAT;
 	private final Date DATE;
-	private final ITimeZone iTimeZone;
 
 	private List<TimeZone> unFilteredList;
 	private List<TimeZone> filteredList;
+	private OnClickedListItem<TimeZone> onClickedListItem;
 
-	public TimeZoneRecyclerViewAdapter(ITimeZone iTimeZone, List<TimeZone> TIMEZONE_LIST, Date date) {
-		this.iTimeZone = iTimeZone;
+	public TimeZoneRecyclerViewAdapter(OnClickedListItem<TimeZone> onClickedListItem, List<TimeZone> TIMEZONE_LIST, Date date) {
+		this.onClickedListItem = onClickedListItem;
 		this.unFilteredList = TIMEZONE_LIST;
 		this.filteredList = TIMEZONE_LIST;
 		this.DATE = date;
@@ -100,7 +101,7 @@ public class TimeZoneRecyclerViewAdapter extends RecyclerView.Adapter<TimeZoneRe
 			super.itemView.getRootView().setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View view) {
-					iTimeZone.onSelectedTimeZone(filteredList.get(getBindingAdapterPosition()));
+					onClickedListItem.onClickedListItem(filteredList.get(getBindingAdapterPosition()), getBindingAdapterPosition());
 				}
 			});
 		}

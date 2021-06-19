@@ -10,17 +10,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SyncStatusObserver;
-import android.database.ContentObserver;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.RemoteException;
 import android.provider.CalendarContract;
 import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -39,7 +36,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.activity.editevent.activity.NewEventActivity;
+import com.zerodsoft.scheduleweather.activity.editevent.activity.NewEventFragment;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.CommonPopupMenu;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
@@ -54,7 +51,6 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnDateTimeChangedListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
-import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEditedEventListener;
 import com.zerodsoft.scheduleweather.calendarview.month.MonthFragment;
 import com.zerodsoft.scheduleweather.calendarview.week.WeekFragment;
 import com.zerodsoft.scheduleweather.common.broadcastreceivers.DateTimeTickReceiver;
@@ -79,7 +75,7 @@ import java.util.Map;
 
 public class EventTransactionFragment extends Fragment implements IControlEvent, OnEventItemClickListener, IRefreshView, IToolbar,
 		CalendarDateOnClickListener,
-		OnEventItemLongClickListener, OnDateTimeChangedListener, OnEditedEventListener {
+		OnEventItemLongClickListener, OnDateTimeChangedListener {
 	// 달력 프래그먼트를 관리하는 프래그먼트
 	public static final int FIRST_VIEW_POSITION = Integer.MAX_VALUE / 2;
 
@@ -104,16 +100,22 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 	private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
 		@Override
 		public void handleOnBackPressed() {
-
 			//뒤로가기 2번 누르면(2초 내) 완전 종료
 			//첫 클릭시 2초 타이머 작동
 			//2초 내로 재 클릭없으면 무효
-			int fragmentSize = getChildFragmentManager().getBackStackEntryCount();
+			FragmentManager parentFragmentManager = getParentFragmentManager();
+			int fragmentSize = parentFragmentManager.getBackStackEntryCount();
 			if (fragmentSize > 0) {
-				getChildFragmentManager().popBackStackImmediate();
+				parentFragmentManager.popBackStackImmediate();
 			} else {
-				closeWindow.clicked(getActivity());
+				fragmentSize = getChildFragmentManager().getBackStackEntryCount();
+				if (fragmentSize > 0) {
+					getChildFragmentManager().popBackStackImmediate();
+				} else {
+					closeWindow.clicked(getActivity());
+				}
 			}
+
 
 		}
 	};
@@ -177,6 +179,7 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 				}
 			}
 		}
+
 	};
 
 	public EventTransactionFragment(Activity activity, CalendarViewType calendarViewType, View.OnClickListener drawerLayoutOnClickListener) {
@@ -194,12 +197,18 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback() {
-		});
+		networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback());
+
+		calendarViewModel = new ViewModelProvider(requireActivity()).get(CalendarViewModel.class);
+		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
+		foodCriteriaLocationInfoViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationInfoViewModel.class);
+		foodCriteriaLocationHistoryViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationHistoryViewModel.class);
+
 		DateTimeTickReceiver dateTimeTickReceiver = DateTimeTickReceiver.newInstance(dateTimeReceiverCallback);
 		IntentFilter intentFilter = new IntentFilter();
 		intentFilter.addAction(Intent.ACTION_TIME_TICK);
 		intentFilter.addAction(Intent.ACTION_DATE_CHANGED);
+
 		requireActivity().registerReceiver(dateTimeTickReceiver, intentFilter);
 	}
 
@@ -214,34 +223,8 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
-		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
-		foodCriteriaLocationHistoryViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationHistoryViewModel.class);
-		foodCriteriaLocationInfoViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationInfoViewModel.class);
-
 		init();
 	}
-
-	@Override
-	public void onStop() {
-		super.onStop();
-	}
-
-	@Override
-	public void onStart() {
-		super.onStart();
-	}
-
-	@Override
-	public void onResume() {
-		super.onResume();
-	}
-
-	@Override
-	public void onPause() {
-		super.onPause();
-	}
-
 
 	@Override
 	public void onDestroy() {
@@ -281,24 +264,25 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 	}
 
 	public void replaceFragment(String fragmentTag) {
-		FragmentTransaction fragmentTransaction = getChildFragmentManager().beginTransaction();
+		FragmentManager childFragmentManager = getChildFragmentManager();
 
 		switch (fragmentTag) {
 			case MonthFragment.TAG:
 				currentFragment = new MonthFragment(this, this, iConnectedCalendars, calendarViewModel);
-				fragmentTransaction.replace(R.id.calendar_container_view, currentFragment, MonthFragment.TAG);
+				if (childFragmentManager.findFragmentByTag(MonthAssistantCalendarFragment.TAG).isVisible()) {
+					binding.assistantCalendarContainer.setVisibility(View.GONE);
+					childFragmentManager.beginTransaction().hide((MonthAssistantCalendarFragment) childFragmentManager.findFragmentByTag(MonthAssistantCalendarFragment.TAG)).commit();
+				}
 				break;
 			case WeekFragment.TAG:
 				currentFragment = new WeekFragment(this, this, iConnectedCalendars);
-				fragmentTransaction.replace(R.id.calendar_container_view, currentFragment, WeekFragment.TAG);
 				break;
 			case DayFragment.TAG:
 				currentFragment = new DayFragment(this, this, iConnectedCalendars);
-				fragmentTransaction.replace(R.id.calendar_container_view, currentFragment, DayFragment.TAG);
 				break;
 		}
-		fragmentTransaction.setPrimaryNavigationFragment(currentFragment);
-		fragmentTransaction.commitNow();
+		childFragmentManager.beginTransaction().replace(R.id.calendar_container_view, currentFragment,
+				fragmentTag).setPrimaryNavigationFragment(currentFragment).commit();
 	}
 
 	@Override
@@ -436,14 +420,27 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 			case R.id.open_navigation_drawer:
 				drawerLayoutOnClickListener.onClick(view);
 				break;
+
 			case R.id.add_schedule:
-				Intent intent = new Intent(requireActivity(), NewEventActivity.class);
-				intent.putExtra("requestCode", EventIntentCode.REQUEST_NEW_EVENT.value());
-				newEventActivityResultLauncher.launch(intent);
+				NewEventFragment newEventFragment = new NewEventFragment(new NewEventFragment.OnNewEventResultListener() {
+					@Override
+					public void onSavedNewEvent(long eventId, long begin) {
+						//새로운 일정이 추가됨 -> 달력 이벤트 갱신 -> 추가한 이벤트의 첫번째 인스턴스가 있는 날짜로 달력을 이동
+					}
+				});
+				Bundle bundle = new Bundle();
+				bundle.putInt("requestCode", EventIntentCode.REQUEST_NEW_EVENT.value());
+				newEventFragment.setArguments(bundle);
+
+				getParentFragmentManager().beginTransaction().hide(EventTransactionFragment.this)
+						.add(R.id.fragment_container, newEventFragment, getString(R.string.tag_new_event_fragment))
+						.addToBackStack(getString(R.string.tag_new_event_fragment)).commit();
 				break;
+
 			case R.id.go_to_today:
 				goToToday();
 				break;
+
 			case R.id.refresh_calendar:
 				syncCalendar.syncCalendars(new SyncCallback() {
 					@Override
@@ -496,7 +493,7 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 							case RESULT_MODIFIED_AFTER_INSTANCE_INCLUDING_THIS_INSTANCE:
 							case RESULT_MODIFIED_THIS_INSTANCE:
 							case RESULT_MODIFIED_EVENT:
-								onEditingEventResult(result);
+								refreshView();
 								break;
 						}
 					} catch (IllegalArgumentException e) {
@@ -507,40 +504,6 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 				}
 			}
 	);
-
-	private final ActivityResultLauncher<Intent> newEventActivityResultLauncher =
-			registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-				@Override
-				public void onActivityResult(ActivityResult result) {
-
-					try {
-						EventIntentCode resultCode = EventIntentCode.enumOf(result.getResultCode());
-						switch (resultCode) {
-							case RESULT_SAVED:
-								//새로운 일정이 추가됨 -> 달력 이벤트 갱신 -> 추가한 이벤트의 첫번째 인스턴스가 있는 날짜로 달력을 이동
-								onEditingEventResult(result);
-								break;
-						}
-					} catch (IllegalArgumentException e) {
-
-					}
-
-
-				}
-			});
-
-
-	@Override
-	public void onEditingEventResult(ActivityResult activityResult) {
-		Fragment fragment = getChildFragmentManager().getPrimaryNavigationFragment();
-		if (fragment instanceof MonthFragment) {
-			((MonthFragment) fragment).processEditingEventResult(activityResult);
-		} else if (fragment instanceof WeekFragment) {
-			((WeekFragment) fragment).processEditingEventResult(activityResult);
-		} else if (fragment instanceof DayFragment) {
-			((DayFragment) fragment).processEditingEventResult(activityResult);
-		}
-	}
 
 	private final ActivityResultLauncher<Intent> accountsResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult()
 			, new ActivityResultCallback<ActivityResult>() {

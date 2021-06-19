@@ -5,12 +5,12 @@
     style="@style/Widget.MaterialComponents.CardView"
     android:layout_width="match_parent"
     android:layout_height="@dimen/place_item_cardview_height"
-    android:layout_margin="7dp"
     android:clickable="true"
     android:foreground="?attr/selectableItemBackground"
     app:cardBackgroundColor="@color/white"
-    app:cardCornerRadius="@dimen/place_item_cardview_corner_radius"
-    app:cardElevation="6dp">
+    app:cardCornerRadius="@dimen/corner_radius"
+    app:cardUseCompatPadding="true"
+    app:cardElevation="4dp">
 
     <RelativeLayout
         android:id="@+id/map_place_item_rows"

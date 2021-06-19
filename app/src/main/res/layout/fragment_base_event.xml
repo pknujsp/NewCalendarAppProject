@@ -3,22 +3,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <RelativeLayout
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".activity.editevent.activity.EditEventActivity">
-
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/event_toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/toolbar_height"
-            android:layout_alignParentTop="true" />
+        tools:context=".activity.editevent.activity.EventBaseFragment">
 
         <ScrollView
             android:id="@+id/schedule_scroll_view"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/event_toolbar">
+            android:layout_height="wrap_content">
 
             <LinearLayout
                 android:id="@+id/schedule_root_layout"
@@ -67,5 +60,16 @@
                     layout="@layout/event_availability_view" />
             </LinearLayout>
         </ScrollView>
-    </RelativeLayout>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/save_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|bottom"
+            android:layout_marginRight="16dp"
+            android:layout_marginBottom="16dp"
+            android:src="@drawable/save_icon_black"
+            app:backgroundTint="@color/light_blue_600" />
+
+    </FrameLayout>
 </layout>

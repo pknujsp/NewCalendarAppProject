@@ -92,6 +92,9 @@ public class AllFavoritesHostFragment extends Fragment {
 					case R.id.addresses_places:
 						destinationFragment = new AllFavoriteAddressPlaceHostFragment();
 						break;
+					case R.id.map:
+						destinationFragment = new DefaultMapFragment();
+						break;
 					case R.id.restaurants:
 						destinationFragment = new AllFavoriteRestaurantHostFragment();
 						break;

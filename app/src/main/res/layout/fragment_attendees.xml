@@ -6,24 +6,16 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        tools:context=".activity.editevent.activity.AttendeesActivity">
+        android:clickable="true"
+        android:focusable="false"
+        android:orientation="vertical">
 
-
-        <com.google.android.material.appbar.AppBarLayout
-            style="@style/Widget.MaterialComponents.AppBarLayout.Primary"
+        <com.zerodsoft.scheduleweather.common.view.CustomSearchView
+            android:id="@+id/custom_search_view"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <androidx.appcompat.widget.Toolbar
-                android:id="@+id/attendee_toolbar"
-                style="@style/Widget.MaterialComponents.Toolbar.Surface"
-                android:layout_width="match_parent"
-                android:layout_height="?android:attr/actionBarSize"
-                app:menu="@menu/attendee_toolbar"
-                app:titleTextColor="@color/black" />
-
-        </com.google.android.material.appbar.AppBarLayout>
+            android:layout_height="wrap_content"
+            app:backBtnVisibility="gone"
+            app:hint="@string/input_invite_attendee" />
 
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/authority_chip_group"
@@ -63,8 +55,13 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/attendee_list"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
+            android:layout_height="match_parent"
+            tools:listitem="@layout/event_attendee_item" />
+
+        <com.zerodsoft.scheduleweather.common.view.CustomProgressView
+            android:id="@id/custom_progress_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
     </LinearLayout>
 </layout>

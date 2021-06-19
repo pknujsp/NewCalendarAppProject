@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.zerodsoft.scheduleweather.R;
@@ -74,15 +75,7 @@ public class AllFavoriteRestaurantFragment extends FavoriteRestaurantBaseFragmen
 	@Override
 	public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		binding.moreFavoriteRestaurantList.setVisibility(View.VISIBLE);
-		binding.moreFavoriteRestaurantList.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				getParentFragmentManager().beginTransaction().hide(AllFavoriteRestaurantFragment.this)
-						.add(R.id.fragment_container, new DefaultMapFragment(), getString(R.string.tag_default_map))
-						.addToBackStack(getString(R.string.tag_default_map)).commit();
-			}
-		});
+		binding.moreFavoriteRestaurantList.setVisibility(View.GONE);
 	}
 
 	@Override

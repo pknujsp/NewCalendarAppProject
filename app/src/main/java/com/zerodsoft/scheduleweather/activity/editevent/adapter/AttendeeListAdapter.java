@@ -15,101 +15,92 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.zerodsoft.scheduleweather.R;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class AttendeeListAdapter extends RecyclerView.Adapter<AttendeeListAdapter.AttendeeViewHolder>
-{
-    private List<ContentValues> attendeeList;
-    final String SELECTED_CALENDAR_NAME;
-    final String SELECTED_CALENDAR_OWNER_ACCOUNT;
+public class AttendeeListAdapter extends RecyclerView.Adapter<AttendeeListAdapter.AttendeeViewHolder> {
+	private List<ContentValues> attendeeList = new ArrayList<>();
+	final String SELECTED_CALENDAR_NAME;
+	final String SELECTED_CALENDAR_OWNER_ACCOUNT;
 
-    public AttendeeListAdapter(List<ContentValues> attendeeList, ContentValues selectedCalendar)
-    {
-        this.attendeeList = attendeeList;
-        SELECTED_CALENDAR_NAME = selectedCalendar.getAsString(CalendarContract.Attendees.ATTENDEE_NAME);
-        SELECTED_CALENDAR_OWNER_ACCOUNT = selectedCalendar.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL);
-    }
+	public AttendeeListAdapter(ContentValues selectedCalendar) {
+		SELECTED_CALENDAR_NAME = selectedCalendar.getAsString(CalendarContract.Attendees.ATTENDEE_NAME);
+		SELECTED_CALENDAR_OWNER_ACCOUNT = selectedCalendar.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL);
+	}
 
-    @NonNull
-    @Override
-    public AttendeeViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
-    {
-        return new AttendeeViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.event_attendee_item, parent, false));
-    }
+	public void setAttendeeList(List<ContentValues> attendeeList) {
+		this.attendeeList.addAll(attendeeList);
+	}
 
-    @Override
-    public void onBindViewHolder(@NonNull AttendeeViewHolder holder, int position)
-    {
-        holder.onBind(position);
-    }
+	public List<ContentValues> getAttendeeList() {
+		return attendeeList;
+	}
 
-    @Override
-    public int getItemCount()
-    {
-        return attendeeList.size();
-    }
+	@NonNull
+	@Override
+	public AttendeeViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+		return new AttendeeViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.event_attendee_item, parent, false));
+	}
 
-    class AttendeeViewHolder extends RecyclerView.ViewHolder
-    {
-        private TextView attendeeName;
-        private ImageButton removeButton;
+	@Override
+	public void onBindViewHolder(@NonNull AttendeeViewHolder holder, int position) {
+		holder.onBind(position);
+	}
 
-        public AttendeeViewHolder(@NonNull View itemView)
-        {
-            super(itemView);
-            ((LinearLayout) itemView.findViewById(R.id.attendee_relationship_status_layout)).setVisibility(View.GONE);
+	@Override
+	public int getItemCount() {
+		return attendeeList.size();
+	}
 
-            attendeeName = (TextView) itemView.findViewById(R.id.attendee_name);
-            removeButton = (ImageButton) itemView.findViewById(R.id.remove_attendee_button);
-        }
+	class AttendeeViewHolder extends RecyclerView.ViewHolder {
+		private TextView attendeeName;
+		private ImageButton removeButton;
 
-        public void onBind(int position)
-        {
-            ContentValues attendee = attendeeList.get(position);
-            String attendeeNameValue = null;
+		public AttendeeViewHolder(@NonNull View itemView) {
+			super(itemView);
+			((LinearLayout) itemView.findViewById(R.id.attendee_relationship_status_layout)).setVisibility(View.GONE);
 
-            if (attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP) == CalendarContract.Attendees.RELATIONSHIP_ORGANIZER)
-            {
-                removeButton.setVisibility(View.GONE);
-                attendeeNameValue = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_NAME);
+			attendeeName = (TextView) itemView.findViewById(R.id.attendee_name);
+			removeButton = (ImageButton) itemView.findViewById(R.id.remove_attendee_button);
+		}
 
-                if (attendeeNameValue.equals(SELECTED_CALENDAR_NAME))
-                {
-                    attendeeNameValue += "(ME)";
-                }
-            } else
-            {
-                attendeeNameValue = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL);
-                if (attendeeNameValue.equals(SELECTED_CALENDAR_OWNER_ACCOUNT))
-                {
-                    attendeeNameValue += "(ME)";
-                }
-            }
+		public void onBind(int position) {
+			ContentValues attendee = attendeeList.get(position);
+			String attendeeNameValue = null;
 
-            attendeeName.setText(attendeeNameValue);
+			if (attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP) == CalendarContract.Attendees.RELATIONSHIP_ORGANIZER) {
+				removeButton.setVisibility(View.GONE);
+				attendeeNameValue = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_NAME);
 
-            attendeeName.setOnClickListener(new View.OnClickListener()
-            {
-                @Override
-                public void onClick(View view)
-                {
-                    //logic for communications with attendee
-                }
-            });
-            removeButton.setOnClickListener(new View.OnClickListener()
-            {
-                @Override
-                public void onClick(View view)
-                {
-                    attendeeList.remove(getAdapterPosition());
-                    if (attendeeList.size() == 1)
-                    {
-                        attendeeList.clear();
-                    }
-                    notifyDataSetChanged();
-                }
-            });
+				if (attendeeNameValue.equals(SELECTED_CALENDAR_NAME)) {
+					attendeeNameValue += "(ME)";
+				}
+			} else {
+				attendeeNameValue = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL);
+				if (attendeeNameValue.equals(SELECTED_CALENDAR_OWNER_ACCOUNT)) {
+					attendeeNameValue += "(ME)";
+				}
+			}
 
-        }
-    }
+			attendeeName.setText(attendeeNameValue);
+
+			attendeeName.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View view) {
+					//logic for communications with attendee
+				}
+			});
+			removeButton.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View view) {
+					attendeeList.remove(getAdapterPosition());
+					if (attendeeList.size() == 1) {
+						attendeeList.clear();
+					}
+					notifyDataSetChanged();
+				}
+			});
+
+		}
+	}
 }

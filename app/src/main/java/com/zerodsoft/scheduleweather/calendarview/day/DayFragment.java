@@ -8,16 +8,19 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IMoveViewpager;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnDateTimeChangedListener;
-import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEditedEventListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
@@ -25,7 +28,7 @@ import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import java.util.Calendar;
 import java.util.Date;
 
-public class DayFragment extends Fragment implements IRefreshView, OnDateTimeChangedListener, OnEditedEventListener {
+public class DayFragment extends Fragment implements IRefreshView, OnDateTimeChangedListener, IMoveViewpager {
 	public static final String TAG = "DAY_FRAGMENT";
 
 	private final IControlEvent iControlEvent;
@@ -33,6 +36,7 @@ public class DayFragment extends Fragment implements IRefreshView, OnDateTimeCha
 	private final IToolbar iToolbar;
 	private final IConnectedCalendars iConnectedCalendars;
 	private final OnEventItemLongClickListener onEventItemLongClickListener;
+	private CalendarViewModel calendarViewModel;
 
 	private ViewPager2 dayViewPager;
 	private DayViewPagerAdapter dayViewPagerAdapter;
@@ -52,6 +56,57 @@ public class DayFragment extends Fragment implements IRefreshView, OnDateTimeCha
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		calendarViewModel = new ViewModelProvider(requireActivity()).get(CalendarViewModel.class);
+
+		calendarViewModel.getOnAddedNewEventLiveData().observe(this, new Observer<Long>() {
+			@Override
+			public void onChanged(Long start) {
+				moveCurrentViewForBegin(start);
+			}
+		});
+
+		calendarViewModel.getOnModifiedEventLiveData().observe(this, new Observer<Long>() {
+			@Override
+			public void onChanged(Long start) {
+				moveCurrentViewForBegin(start);
+			}
+		});
+
+		calendarViewModel.getOnModifiedFutureInstancesLiveData().observe(this, new Observer<Long>() {
+			@Override
+			public void onChanged(Long begin) {
+				moveCurrentViewForBegin(begin);
+			}
+		});
+
+		calendarViewModel.getOnModifiedInstanceLiveData().observe(this, new Observer<Long>() {
+			@Override
+			public void onChanged(Long begin) {
+				moveCurrentViewForBegin(begin);
+			}
+		});
+
+		calendarViewModel.getOnExceptedInstanceLiveData().observe(this, new Observer<Boolean>() {
+			@Override
+			public void onChanged(Boolean aBoolean) {
+				refreshView();
+			}
+		});
+
+		calendarViewModel.getOnRemovedFutureInstancesLiveData().observe(this, new Observer<Boolean>() {
+			@Override
+			public void onChanged(Boolean aBoolean) {
+				refreshView();
+			}
+		});
+
+		calendarViewModel.getOnRemovedEventLiveData().observe(this, new Observer<Boolean>() {
+			@Override
+			public void onChanged(Boolean aBoolean) {
+				refreshView();
+			}
+		});
+
 	}
 
 	@Nullable
@@ -104,30 +159,6 @@ public class DayFragment extends Fragment implements IRefreshView, OnDateTimeCha
 		refreshView();
 	}
 
-	@Override
-	public void onSavedNewEvent(long eventId, long begin) {
-		moveCurrentView(begin);
-	}
-
-	@Override
-	public void onModifiedEvent(long eventId, long begin) {
-		moveCurrentView(begin);
-	}
-
-	@Override
-	public void onModifiedInstance(long instanceId, long begin) {
-		moveCurrentView(begin);
-	}
-
-	@Override
-	public void moveCurrentView(long begin) {
-		refreshView();
-		int movePosition = ClockUtil.calcDayDifference(new Date(begin), dayViewPagerAdapter.getCALENDAR().getTime());
-		if (movePosition != 0) {
-			dayViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION + movePosition, true);
-		}
-	}
-
 	class OnPageChangeCallback extends ViewPager2.OnPageChangeCallback {
 		private final Calendar calendar;
 		private Calendar copiedCalendar;
@@ -171,7 +202,15 @@ public class DayFragment extends Fragment implements IRefreshView, OnDateTimeCha
 			dayViewPagerAdapter.notifyDataSetChanged();
 		}
 	}
-
+	
+	@Override
+	public void moveCurrentViewForBegin(long begin) {
+		refreshView();
+		int movePosition = ClockUtil.calcDayDifference(new Date(begin), dayViewPagerAdapter.getCALENDAR().getTime());
+		if (movePosition != 0) {
+			dayViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION + movePosition, true);
+		}
+	}
 
 	public void goToToday() {
 		if (!ClockUtil.areSameDate(System.currentTimeMillis(), dayViewPagerAdapter.getCurrentDateTime().getTime())) {

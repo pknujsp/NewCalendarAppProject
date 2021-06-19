@@ -26,6 +26,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.slider.Slider;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
+import com.zerodsoft.scheduleweather.activity.editevent.fragments.TimeZoneFragment;
 import com.zerodsoft.scheduleweather.activity.preferences.SettingsActivity;
 import com.zerodsoft.scheduleweather.activity.preferences.custom.RadiusPreference;
 import com.zerodsoft.scheduleweather.activity.preferences.custom.SearchBuildingRangeRadiusPreference;
@@ -40,7 +41,7 @@ import com.zerodsoft.scheduleweather.weather.viewmodel.WeatherDbViewModel;
 import java.text.DecimalFormat;
 import java.util.TimeZone;
 
-public class SettingsFragment extends PreferenceFragmentCompat implements PreferenceListener, IPreferenceFragment {
+public class SettingsFragment extends PreferenceFragmentCompat implements PreferenceListener {
 	private SharedPreferences preferences;
 	private OnBackPressedCallback onBackPressedCallback;
 
@@ -215,13 +216,27 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 		customTimeZonePreference.setSummary(R.string.preference_summary_custom_timezone);
 		customTimeZonePreference.setTitle(R.string.preference_title_custom_timezone);
 		customTimeZonePreference.setWidgetLayoutResource(R.layout.custom_preference_layout);
-
 		customTimeZonePreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
 			@Override
 			public boolean onPreferenceClick(Preference preference) {
-				getParentFragmentManager().beginTransaction().replace(R.id.settings_fragment_container, new SettingsTimeZoneFragment(SettingsFragment.this))
-						.addToBackStack(null).commit();
-				((SettingsActivity) getActivity()).getSupportActionBar().setTitle(getString(R.string.preference_title_custom_timezone));
+				/*
+				TimeZoneFragment timeZoneFragment = new TimeZoneFragment(new TimeZoneFragment.OnTimeZoneResultListener() {
+					@Override
+					public void onResult(TimeZone timeZone) {
+						//수동 시간대 설정이 완료된 경우
+						TimeZone currentTimeZone = customTimeZonePreference.getTimeZone();
+
+						if (currentTimeZone.getID().equals(timeZone.getID())) {
+							Toast.makeText(getActivity(), "이미 선택된 시간대 입니다", Toast.LENGTH_SHORT).show();
+						} else {
+							customTimeZonePreference.setTimeZone(timeZone);
+							SharedPreferences.Editor editor = preferences.edit();
+							editor.putString(getString(R.string.preference_key_custom_timezone), timeZone.getID()).apply();
+							App.setPreference_key_custom_timezone(timeZone);
+						}
+					}
+				});
+				*/
 				return true;
 			}
 		});
@@ -448,22 +463,4 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 	public void onCreatedPreferenceView() {
 	}
 
-
-	@Override
-	public void onFinished(Object result) {
-		if (result instanceof TimeZone) {
-			//수동 시간대 설정이 완료된 경우
-			TimeZone currentTimeZone = customTimeZonePreference.getTimeZone();
-			TimeZone newTimeZone = (TimeZone) result;
-
-			if (currentTimeZone.getID().equals(newTimeZone.getID())) {
-				Toast.makeText(getActivity(), "이미 선택된 시간대 입니다", Toast.LENGTH_SHORT).show();
-			} else {
-				customTimeZonePreference.setTimeZone(newTimeZone);
-				SharedPreferences.Editor editor = preferences.edit();
-				editor.putString(getString(R.string.preference_key_custom_timezone), newTimeZone.getID()).apply();
-				App.setPreference_key_custom_timezone(newTimeZone);
-			}
-		}
-	}
 }

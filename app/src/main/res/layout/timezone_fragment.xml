@@ -6,21 +6,16 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:clickable="true"
+        android:focusable="false"
         android:orientation="vertical">
 
-        <LinearLayout
+        <com.zerodsoft.scheduleweather.common.view.CustomSearchView
+            android:id="@+id/custom_search_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="4dp">
-
-            <EditText
-                android:id="@+id/search_timezone"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="@string/input_timezone" />
-
-        </LinearLayout>
+            app:backBtnVisibility="gone"
+            app:hint="@string/input_timezone" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/timezone_list"
@@ -28,6 +23,11 @@
             android:layout_height="match_parent"
             android:orientation="vertical"
             tools:listitem="@layout/timezone_itemview" />
+
+        <com.zerodsoft.scheduleweather.common.view.CustomProgressView
+            android:id="@+id/custom_progress_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
 
     </LinearLayout>
 </layout>

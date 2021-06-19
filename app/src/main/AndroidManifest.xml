@@ -35,21 +35,16 @@
             android:name=".navermap.NaverMapActivity"
             android:windowSoftInputMode="stateAlwaysHidden|adjustNothing" />
         <activity
-            android:name=".event.common.SelectionDetailLocationActivity"
-            android:theme="@style/AppTheme"
-            android:windowSoftInputMode="adjustNothing" />
-        <activity
             android:name=".activity.preferences.SettingsActivity"
             android:label="@string/app_settings" />
-        <activity android:name=".activity.editevent.activity.AttendeesActivity" />
+        <activity android:name=".activity.editevent.activity.AttendeesFragment" />
 
-        <activity android:name=".activity.editevent.activity.ReminderActivity" />
-        <activity android:name=".activity.editevent.activity.TimeZoneActivity" />
-        <activity android:name=".activity.editevent.activity.RecurrenceActivity" />
-        <activity android:name=".activity.editevent.activity.NewEventActivity" />
-        <activity android:name=".activity.editevent.activity.ModifyInstanceActivity" />
+        <activity android:name=".activity.editevent.activity.EventReminderFragment" />
+        <activity android:name=".activity.editevent.activity.EventRecurrenceFragment" />
+        <activity android:name=".activity.editevent.activity.NewEventFragment" />
+        <activity android:name=".activity.editevent.activity.ModifyInstanceFragment" />
         <activity
-            android:name=".activity.editevent.activity.EditEventActivity"
+            android:name=".activity.editevent.activity.EventBaseFragment"
             android:windowSoftInputMode="adjustNothing" />
         <activity
             android:name=".activity.main.AppMainActivity"

@@ -14,6 +14,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatEditText;
+import androidx.appcompat.widget.SearchView;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
 
@@ -24,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 public class CustomEditText extends AppCompatEditText implements TextWatcher, View.OnTouchListener {
 	private Drawable closeDrawable;
 	private OnTouchListener onTouchListener;
+	private SearchView.OnQueryTextListener onQueryTextListener;
 
 	public CustomEditText(@NonNull @NotNull Context context) {
 		super(context);
@@ -78,6 +80,9 @@ public class CustomEditText extends AppCompatEditText implements TextWatcher, Vi
 		if (isFocused()) {
 			setClearBtnVisibility(charSequence.length() > 0);
 		}
+		if (onQueryTextListener != null) {
+			onQueryTextListener.onQueryTextChange(charSequence.toString());
+		}
 	}
 
 	@Override
@@ -96,4 +101,7 @@ public class CustomEditText extends AppCompatEditText implements TextWatcher, Vi
 		return false;
 	}
 
+	public void setOnQueryTextListener(SearchView.OnQueryTextListener onQueryTextListener) {
+		this.onQueryTextListener = onQueryTextListener;
+	}
 }

@@ -3,20 +3,23 @@ package com.zerodsoft.scheduleweather.event.main;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.material.card.MaterialCardView;
 import com.zerodsoft.scheduleweather.R;
 
-public class EventFunctionItemView extends MaterialCardView {
+public class EventFunctionItemView extends LinearLayout {
 	private TextView titleView;
 	private ImageView imgView;
 
@@ -48,32 +51,31 @@ public class EventFunctionItemView extends MaterialCardView {
 		typedArray.recycle();
 
 		setClickable(true);
-		setRadius(getResources().getDimension(R.dimen.corner_radius));
-		setCardElevation((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 6f, getResources().getDisplayMetrics()));
-		setUseCompatPadding(true);
-
-		LinearLayout linearLayout = new LinearLayout(getContext());
-		linearLayout.setOrientation(LinearLayout.VERTICAL);
-
-		addView(linearLayout, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-
-		titleView = new TextView(getContext());
-		final int titleTextViewPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
-		titleView.setPadding(titleTextViewPadding, titleTextViewPadding, titleTextViewPadding, titleTextViewPadding);
-		titleView.setText(title);
-		titleView.setTextColor(Color.GRAY);
-		titleView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
-
-		linearLayout.addView(titleView);
-
+		setOrientation(HORIZONTAL);
+		int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12f, getResources().getDisplayMetrics());
+		setPadding(padding, padding, padding, padding);
+		setBackground(ContextCompat.getDrawable(getContext(), R.drawable.textview_underline));
 		imgView = new ImageView(getContext());
 		imgView.setImageDrawable(img);
-		imgView.setScaleType(ImageView.ScaleType.CENTER);
+		imgView.setScaleType(ImageView.ScaleType.FIT_CENTER);
 
-		LinearLayout.LayoutParams imgLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
-		imgLayoutParams.weight = 1;
+		LinearLayout.LayoutParams imgLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+				ViewGroup.LayoutParams.MATCH_PARENT);
+		addView(imgView, imgLayoutParams);
 
-		linearLayout.addView(imgView, imgLayoutParams);
+		titleView = new TextView(getContext());
+		titleView.setText(title);
+		titleView.setTextColor(ContextCompat.getColor(getContext(), R.color.black_medium_emphasis));
+		titleView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f);
+		titleView.setTypeface(null, Typeface.BOLD);
+
+		LinearLayout.LayoutParams titleLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT);
+		titleLayoutParams.gravity = Gravity.CENTER_VERTICAL;
+		titleLayoutParams.leftMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
+		addView(titleView, titleLayoutParams);
+
+
 	}
 
 	@Override
@@ -83,27 +85,29 @@ public class EventFunctionItemView extends MaterialCardView {
 }
 
 /*
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/function_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="4dp"
-            android:text="functionName"
-            android:textColor="@color/black"
-            android:textSize="13sp" />
+  <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/textview_underline"
+        android:orientation="horizontal"
+        android:padding="8dp">
 
         <ImageView
-            android:id="@+id/function_image"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:scaleType="center"
-            android:src="@android:mipmap/sym_def_app_icon" />
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:scaleType="fitCenter"
+            android:src="@drawable/event_svg" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="8dp"
+            android:text="@string/instance_info"
+            android:textColor="@color/black_medium_emphasis"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
 
     </LinearLayout>
  */

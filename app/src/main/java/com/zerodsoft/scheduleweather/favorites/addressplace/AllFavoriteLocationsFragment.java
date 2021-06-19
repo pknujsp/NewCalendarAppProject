@@ -9,6 +9,8 @@ import android.widget.CompoundButton;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -39,7 +41,7 @@ public class AllFavoriteLocationsFragment extends FavoriteLocationsBaseFragment 
 	@Override
 	public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		binding.deleteBtn.setVisibility(View.GONE);
+		binding.moreFavoriteAddressPlaceList.setVisibility(View.GONE);
 		spinnerAdapter = ArrayAdapter.createFromResource(getContext(),
 				R.array.all_favorite_locations_sort_spinner, android.R.layout.simple_spinner_item);
 
@@ -47,16 +49,6 @@ public class AllFavoriteLocationsFragment extends FavoriteLocationsBaseFragment 
 		binding.sortSpinnerForAddressPlace.setAdapter(spinnerAdapter);
 		binding.sortSpinnerForAddressPlace.setSelection(0);
 		binding.sortSpinnerForAddressPlace.setOnItemSelectedListener(spinnerItemSelectedListener);
-
-		binding.moreFavoriteAddressPlaceList.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				getParentFragmentManager().beginTransaction().hide(AllFavoriteLocationsFragment.this)
-						.add(R.id.fragment_container,new DefaultMapFragment(),getString(R.string.tag_default_map))
-						.addToBackStack(getString(R.string.tag_default_map)).commit();
-				//open map
-			}
-		});
 
 		favoriteLocationAdapter.setDistanceVisibility(View.GONE);
 		setFavoriteLocationList();

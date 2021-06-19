@@ -26,8 +26,7 @@ public class DefaultMapFragment extends NaverMapFragment {
 		@Override
 		public void handleOnBackPressed() {
 			if (!getChildFragmentManager().popBackStackImmediate()) {
-				FragmentManager fragmentManager = getParentFragmentManager();
-				fragmentManager.popBackStack();
+				getParentFragment().getParentFragmentManager().popBackStack();
 			}
 		}
 	};
@@ -41,7 +40,7 @@ public class DefaultMapFragment extends NaverMapFragment {
 	@Override
 	public void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		favoriteLocationViewModel = new ViewModelProvider(getParentFragment().getParentFragment()).get(FavoriteLocationViewModel.class);
+		favoriteLocationViewModel = new ViewModelProvider(getParentFragment()).get(FavoriteLocationViewModel.class);
 	}
 
 	@Override
@@ -64,5 +63,15 @@ public class DefaultMapFragment extends NaverMapFragment {
 	@Override
 	public void onMapReady(@NonNull @NotNull NaverMap naverMap) {
 		super.onMapReady(naverMap);
+	}
+
+	@Override
+	public void onHiddenChanged(boolean hidden) {
+		super.onHiddenChanged(hidden);
+		if (hidden) {
+			onBackPressedCallback.remove();
+		} else {
+			requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+		}
 	}
 }

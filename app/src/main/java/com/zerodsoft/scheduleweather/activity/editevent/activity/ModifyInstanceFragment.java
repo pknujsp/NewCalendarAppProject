@@ -6,48 +6,75 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.CalendarContract;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.common.enums.EventIntentCode;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
+import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Date;
 import java.util.List;
 
-public class ModifyInstanceActivity extends EditEventActivity {
+public class ModifyInstanceFragment extends EventBaseFragment {
+	private OnModifyInstanceResultListener onModifyInstanceResultListener;
 	private ContentValues originalInstance = new ContentValues();
 	private boolean originalHasAttendeeList;
 	private boolean originalHasReminderList;
 
+	public ModifyInstanceFragment(OnModifyInstanceResultListener onModifyInstanceResultListener) {
+		this.onModifyInstanceResultListener = onModifyInstanceResultListener;
+	}
+
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
+	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
+		calendarViewModel = new ViewModelProvider(requireActivity()).get(CalendarViewModel.class);
+		eventDataViewModel = new ViewModelProvider(this).get(EventDataViewModel.class);
+	}
+
+	@Override
+	public View onCreateView(@NonNull @NotNull LayoutInflater inflater, @Nullable @org.jetbrains.annotations.Nullable ViewGroup container, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+		return super.onCreateView(inflater, container, savedInstanceState);
+	}
+
+	@Override
+	public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
 		loadInitData();
 		initializing = false;
 	}
 
 	@Override
-	protected void onDestroy() {
+	public void onDestroy() {
 		super.onDestroy();
 	}
 
 	@Override
 	protected void loadInitData() {
-		ActionBar actionBar = getSupportActionBar();
-		actionBar.setTitle(R.string.modify_event);
+		Bundle arguments = getArguments();
 
-		Intent intent = getIntent();
-		final long eventId = intent.getLongExtra(CalendarContract.Instances.EVENT_ID, 0);
-		final long instanceId = intent.getLongExtra(CalendarContract.Instances._ID, 0);
-		final long begin = intent.getLongExtra(CalendarContract.Instances.BEGIN, 0);
-		final long end = intent.getLongExtra(CalendarContract.Instances.END, 0);
-		final String rrule = intent.getStringExtra(CalendarContract.Instances.RRULE);
+		final long eventId = arguments.getLong(CalendarContract.Instances.EVENT_ID, 0);
+		final long instanceId = arguments.getLong(CalendarContract.Instances._ID, 0);
+		final long begin = arguments.getLong(CalendarContract.Instances.BEGIN, 0);
+		final long end = arguments.getLong(CalendarContract.Instances.END, 0);
+		final String rrule = arguments.getString(CalendarContract.Instances.RRULE);
 
 		//이벤트와 인스턴스를 구분해서 데이터를 가져온다
 
@@ -148,7 +175,7 @@ public class ModifyInstanceActivity extends EditEventActivity {
 							getString(R.string.save_all_events)
 					};
 
-					new MaterialAlertDialogBuilder(getApplicationContext()).setTitle(R.string.save_event_title)
+					new MaterialAlertDialogBuilder(requireActivity()).setTitle(R.string.save_event_title)
 							.setItems(dialogMenus, new DialogInterface.OnClickListener() {
 								@Override
 								public void onClick(DialogInterface dialogInterface, int index) {
@@ -221,7 +248,8 @@ public class ModifyInstanceActivity extends EditEventActivity {
 			locationViewModel.addLocation(locationDTO, new DbQueryCallback<LocationDTO>() {
 				@Override
 				public void onResultSuccessful(LocationDTO result) {
-					finish();
+					onModifyInstanceResultListener.onResultModifiedThisInstance();
+					getParentFragmentManager().popBackStack();
 				}
 
 				@Override
@@ -231,16 +259,16 @@ public class ModifyInstanceActivity extends EditEventActivity {
 			});
 		}
 
-		setResult(EventIntentCode.RESULT_MODIFIED_THIS_INSTANCE.value());
-		finish();
+		onModifyInstanceResultListener.onResultModifiedThisInstance();
+		getParentFragmentManager().popBackStack();
 	}
 
 	protected void updateAfterInstanceIncludingThisInstance() {
 		ContentValues event = eventDataViewModel.getEVENT();
 		calendarViewModel.updateAllFutureInstances(event, originalInstance);
 
-		setResult(EventIntentCode.RESULT_MODIFIED_AFTER_INSTANCE_INCLUDING_THIS_INSTANCE.value());
-		finish();
+		onModifyInstanceResultListener.onResultModifiedAfterAllInstancesIncludingThisInstance();
+		getParentFragmentManager().popBackStack();
 	}
 
 	protected void updateEvent() {
@@ -277,13 +305,8 @@ public class ModifyInstanceActivity extends EditEventActivity {
 			calendarViewModel.addAttendees(attendeeList);
 		}
 
-		getIntent().putExtra(CalendarContract.Events._ID,
-				event.getAsLong(CalendarContract.Events._ID));
-		getIntent().putExtra(CalendarContract.Instances.BEGIN,
-				event.getAsLong(CalendarContract.Events.DTSTART));
-
-		setResult(EventIntentCode.RESULT_MODIFIED_EVENT.value(), getIntent());
-		finish();
+		onModifyInstanceResultListener.onResultModifiedEvent(event.getAsLong(CalendarContract.Events._ID), event.getAsLong(CalendarContract.Events.DTSTART));
+		getParentFragmentManager().popBackStack();
 	}
 
 
@@ -364,4 +387,12 @@ public class ModifyInstanceActivity extends EditEventActivity {
 		eventDataViewModel.removeReminder(minutes);
 	}
 
+	public interface OnModifyInstanceResultListener {
+
+		void onResultModifiedEvent(long eventId, long begin);
+
+		void onResultModifiedThisInstance();
+
+		void onResultModifiedAfterAllInstancesIncludingThisInstance();
+	}
 }
