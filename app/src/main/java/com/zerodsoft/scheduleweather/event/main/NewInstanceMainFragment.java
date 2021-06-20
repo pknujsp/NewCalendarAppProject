@@ -65,6 +65,8 @@ import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.NaverMapFragment;
 import com.zerodsoft.scheduleweather.navermap.MarkerType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.NearbyMsrstnList.NearbyMsrstnListItem;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.NearbyMsrstnList.NearbyMsrstnListRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
@@ -78,7 +80,7 @@ import java.util.List;
 import java.util.Set;
 
 public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoodMenuPoiItems,
-		PlacesOfSelectedCategoriesFragment.PlaceCategoryChipsViewController, DialogInterface.OnDismissListener
+		PlacesOfSelectedCategoriesFragment.PlaceCategoryChipsViewController
 		, IRefreshView {
 	private final int CALENDAR_ID;
 	private final long EVENT_ID;
@@ -382,7 +384,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 
 					@Override
 					public void dismiss() {
-						getChildFragmentManager().beginTransaction().show(mapFragment).commit();
 					}
 				}, DEFAULT_HEIGHT_OF_BOTTOMSHEET, CALENDAR_ID,
 						EVENT_ID);
@@ -394,7 +395,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 
 				weatherMainFragment.setArguments(bundle);
 				weatherMainFragment.show(getParentFragmentManager(), WeatherMainFragment.TAG);
-				getChildFragmentManager().beginTransaction().hide(mapFragment).commit();
 			}
 		});
 
@@ -1002,11 +1002,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 			selectedLocationInEventMarker.setMap(null);
 			selectedLocationInEventMarker = null;
 		}
-	}
-
-	@Override
-	public void onDismiss(DialogInterface dialogInterface) {
-
 	}
 
 

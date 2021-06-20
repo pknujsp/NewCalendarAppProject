@@ -59,15 +59,7 @@ public class AirConditionFragment extends Fragment implements OnUpdateListener {
 		binding.finedustStatus.setText("");
 		binding.ultraFinedustStatus.setText("");
 		binding.showDetailDialogButton.setOnClickListener(onClickListener);
-		binding.showMapButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				getParentFragment().getParentFragmentManager()
-						.beginTransaction().hide(getParentFragment())
-						.addToBackStack(getString(R.string.tag_nearby_msrstn_list_on_map))
-						.commit();
-			}
-		});
+
 
 		init();
 	}

@@ -32,12 +32,9 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:gravity="center"
-                    android:shadowColor="@color/black"
-                    android:shadowDx="0.5"
-                    android:shadowDy="0.5"
-                    android:shadowRadius="1.5"
                     android:text="50"
-                    android:textColor="@color/white"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
                     android:textSize="15sp" />
 
             </LinearLayout>
@@ -63,12 +60,9 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:gravity="center"
-                    android:shadowColor="@color/black"
-                    android:shadowDx="0.5"
-                    android:shadowDy="0.5"
-                    android:shadowRadius="1.7"
                     android:text="50"
-                    android:textColor="@color/white"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
                     android:textSize="15sp" />
 
             </LinearLayout>
@@ -76,30 +70,20 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center"
                 android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/show_detail_dialog_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginBottom="4dp"
+                    android:layout_gravity="center"
                     android:background="@drawable/secondary_button"
                     android:clickable="true"
                     android:padding="8dp"
                     android:text="@string/detail"
                     android:textColor="@color/colorPrimary" />
 
-                <TextView
-                    android:id="@+id/show_map_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:background="@drawable/secondary_button"
-                    android:clickable="true"
-                    android:padding="8dp"
-                    android:text="@string/open_map"
-                    android:textColor="@color/text_color" />
             </LinearLayout>
 
         </LinearLayout>

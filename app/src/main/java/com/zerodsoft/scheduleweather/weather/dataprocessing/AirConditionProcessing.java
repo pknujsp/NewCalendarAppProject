@@ -9,8 +9,10 @@ import com.naver.maps.geometry.Utmk;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.MsrstnAcctoRltmMesureDnstyParameter;
+import com.zerodsoft.scheduleweather.retrofit.paremeters.MsrstnListParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.NearbyMsrstnListParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyRoot;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnList.MsrstnListRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.NearbyMsrstnList.NearbyMsrstnListRoot;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
 import com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.AirConditionResult;
@@ -252,4 +254,5 @@ public class AirConditionProcessing extends WeatherDataProcessing<AirConditionRe
 	public NearbyMsrstnListRoot getNearbyMsrstnListRoot() {
 		return nearbyMsrstnListRoot;
 	}
+
 }

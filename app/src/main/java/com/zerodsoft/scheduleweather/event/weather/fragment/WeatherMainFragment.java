@@ -86,26 +86,11 @@ public class WeatherMainFragment extends BottomSheetDialogFragment implements On
 	@Override
 	public void onDismiss(@NonNull DialogInterface dialog) {
 		super.onDismiss(dialog);
-		dialogInterface.dismiss();
 	}
 
 	@Override
 	public void onHiddenChanged(boolean hidden) {
 		super.onHiddenChanged(hidden);
-		FragmentManager fragmentManager = getParentFragmentManager().findFragmentByTag(getString(R.string.tag_instance_main_fragment))
-				.getChildFragmentManager();
-
-		Fragment mapFragment = fragmentManager.findFragmentByTag(getString(R.string.tag_map_fragment));
-
-		if (hidden) {
-			fragmentManager.beginTransaction()
-					.show(mapFragment).commit();
-			getDialog().hide();
-		} else {
-			fragmentManager.beginTransaction()
-					.hide(mapFragment).commit();
-			getDialog().show();
-		}
 	}
 
 	@Override

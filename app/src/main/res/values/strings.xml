@@ -426,8 +426,8 @@
 
     <!-- 대기 상태 -->
 
-    <string name="pm10">미세먼지(PM10)</string>
-    <string name="pm2.5">초미세먼지(PM2.5)</string>
+    <string name="pm10">미세먼지</string>
+    <string name="pm2.5">초미세먼지</string>
     <string name="so2">아황산가스</string>
     <string name="co">일산화탄소</string>
     <string name="o3">오존</string>

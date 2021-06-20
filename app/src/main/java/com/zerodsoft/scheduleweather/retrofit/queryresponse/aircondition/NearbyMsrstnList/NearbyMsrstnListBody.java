@@ -9,7 +9,7 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.FindSta
 
 import java.util.List;
 
-public class NearbyMsrstnListBody extends FindStationRoot implements Parcelable
+public class NearbyMsrstnListBody implements Parcelable
 {
     @Expose
     @SerializedName("items")
