@@ -2,6 +2,7 @@ package com.zerodsoft.scheduleweather.calendar;
 
 import android.app.Application;
 import android.content.ContentValues;
+import android.util.Log;
 
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
@@ -27,6 +28,8 @@ public class CalendarViewModel extends AndroidViewModel implements ICalendarProv
 
 	public CalendarViewModel(Application application) {
 		super(application);
+		Log.e("VIEWMODEL ERROR : ", CalendarProvider.getInstance() == null ? "null" : "not null");
+
 		if (CalendarProvider.getInstance() == null) {
 			this.calendarProvider = CalendarProvider.newInstance(application.getApplicationContext());
 

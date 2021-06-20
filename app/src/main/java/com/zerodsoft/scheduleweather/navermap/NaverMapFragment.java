@@ -258,6 +258,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
+		favoriteLocationViewModel = new ViewModelProvider(this).get(FavoriteLocationViewModel.class);
+
 		getChildFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false);
 
 		mapSharedViewModel = new ViewModelProvider(this).get(MapSharedViewModel.class);
@@ -265,8 +267,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		mapSharedViewModel.setiMapData(this);
 		mapSharedViewModel.setiMapPoint(this);
 		mapSharedViewModel.setPoiItemOnClickListener(this);
-
-		favoriteLocationViewModel = new ViewModelProvider(this).get(FavoriteLocationViewModel.class);
 
 		locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
 		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
@@ -284,8 +284,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						requireActivity().finish();
 						networkStatus.showToastDisconnected();
+						getParentFragmentManager().popBackStackImmediate();
 					}
 				});
 			}

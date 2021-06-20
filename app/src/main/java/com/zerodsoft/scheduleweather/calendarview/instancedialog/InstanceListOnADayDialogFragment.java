@@ -100,6 +100,8 @@ public class InstanceListOnADayDialogFragment extends DialogFragment implements 
 
 		begin = bundle.getLong("begin");
 		end = bundle.getLong("end");
+
+		calendarViewModel = new ViewModelProvider(requireActivity()).get(CalendarViewModel.class);
 	}
 
 	@NonNull
@@ -120,7 +122,6 @@ public class InstanceListOnADayDialogFragment extends DialogFragment implements 
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
 		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 		foodCriteriaLocationHistoryViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationHistoryViewModel.class);
 		foodCriteriaLocationInfoViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationInfoViewModel.class);

@@ -172,7 +172,6 @@ public class RestaurantFragment extends Fragment implements IOnSetView {
 			FragmentManager fragmentManager = primaryNavFragment.getChildFragmentManager();
 			if (!fragmentManager.popBackStackImmediate()) {
 				getParentFragmentManager().popBackStack();
-				//java.lang.NullPointerException: Attempt to read from field 'androidx.fragment.app.FragmentManager androidx.fragment.app.Fragment.mFragmentManager' on a null object reference
 			}
 		}
 	};

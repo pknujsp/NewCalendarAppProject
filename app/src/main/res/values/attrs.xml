@@ -14,9 +14,9 @@
     </declare-styleable>
 
     <declare-styleable name="AirConditionBar">
-        <attr name="arrow_color" format="color" />
-        <attr name="arrow_width" format="dimension" />
-        <attr name="padding" format="dimension" />
+        <attr name="value_circle_color" format="color" />
+        <attr name="value_circle_size" format="dimension" />
+        <attr name="bar_height" format="dimension" />
         <attr name="data_type" format="enum">
             <enum name="finedust" value="0" />
             <enum name="ultra_finedust" value="1" />

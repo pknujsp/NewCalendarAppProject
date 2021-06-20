@@ -8,10 +8,17 @@ import com.zerodsoft.scheduleweather.R;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.annotation.Nonnull;
+
 public class CloseWindow {
 	private long firstPressedTime = 0L;
 	private final long DURATION = 2000L;
 	private Toast toast;
+	private final OnBackKeyDoubleClickedListener onBackKeyDoubleClickedListener;
+
+	public CloseWindow(@Nonnull OnBackKeyDoubleClickedListener onBackKeyDoubleClickedListener) {
+		this.onBackKeyDoubleClickedListener = onBackKeyDoubleClickedListener;
+	}
 
 	public void clicked(Activity activity) {
 		if (firstPressedTime > 0L) {
@@ -22,9 +29,8 @@ public class CloseWindow {
                     activity.moveTaskToBack(true); // 태스크를 백그라운드로 이동
                     activity.finishAndRemoveTask(); // 액티비티 종료 + 태스크 리스트에서 지우기
                     android.os.Process.killProcess(android.os.Process.myPid()); // 앱 프로세스 종료
-
                      */
-				activity.finish();
+				onBackKeyDoubleClickedListener.onDoubleClicked();
 			}
 		} else {
 			firstPressedTime = System.currentTimeMillis();
@@ -43,4 +49,7 @@ public class CloseWindow {
 		}
 	}
 
+	public interface OnBackKeyDoubleClickedListener {
+		void onDoubleClicked();
+	}
 }

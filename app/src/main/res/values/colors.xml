@@ -39,8 +39,8 @@
 
     <color name="air_condition_good">#25aefb</color>
     <color name="air_condition_normal">#92f101</color>
-    <color name="air_condition_bad">#fde905</color>
-    <color name="air_condition_very_bad">#fc3037</color>
+    <color name="air_condition_bad_begin">#F4AE7F</color>
+    <color name="air_condition_very_bad_end">#FF0000</color>
 
     <color name="text_stroke_color">#000000</color>
     <color name="light_green_500">#8BC34A</color>

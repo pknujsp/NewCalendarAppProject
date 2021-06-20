@@ -113,23 +113,22 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 
 	private LinearLayout chipsLayout;
 	private ViewGroup functionItemsView;
-	private CloseWindow closeWindow = new CloseWindow();
+	private CloseWindow closeWindow = new CloseWindow(new CloseWindow.OnBackKeyDoubleClickedListener() {
+		@Override
+		public void onDoubleClicked() {
+			getParentFragmentManager().popBackStackImmediate();
+		}
+	});
 
 	private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
 		@Override
 		public void handleOnBackPressed() {
-			FragmentManager parentFragmentManager = getParentFragmentManager();
-			int fragmentSize = parentFragmentManager.getBackStackEntryCount();
-			if (fragmentSize > 0) {
-				for (int count = 0; count < fragmentSize; count++) {
-					parentFragmentManager.popBackStackImmediate();
-				}
-			} else {
-				FragmentManager fragmentManager = getChildFragmentManager();
-				if (!fragmentManager.popBackStackImmediate()) {
-					closeWindow.clicked(requireActivity());
-				}
+
+			FragmentManager fragmentManager = getChildFragmentManager();
+			if (!fragmentManager.popBackStackImmediate()) {
+				closeWindow.clicked(requireActivity());
 			}
+
 		}
 	};
 
@@ -218,7 +217,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
+		calendarViewModel = new ViewModelProvider(requireActivity()).get(CalendarViewModel.class);
 		placeCategoryViewModel = new ViewModelProvider(this).get(PlaceCategoryViewModel.class);
 		getChildFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, true);
 
@@ -394,7 +393,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 				bundle.putBoolean("hasSimpleLocation", false);
 
 				weatherMainFragment.setArguments(bundle);
-				weatherMainFragment.show(getParentFragmentManager(), WeatherMainFragment.TAG);
+				weatherMainFragment.show(getChildFragmentManager(), WeatherMainFragment.TAG);
 			}
 		});
 
@@ -514,7 +513,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 				CALENDAR_ID,
 				EVENT_ID, INSTANCE_ID,
 				ORIGINAL_BEGIN, ORIGINAL_END);
-		eventFragment.show(getParentFragmentManager(), getString(R.string.tag_event_fragment));
+		eventFragment.show(getChildFragmentManager(), getString(R.string.tag_event_fragment));
 	}
 
 
@@ -531,7 +530,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		LatLng latLng = new LatLng(Double.parseDouble(selectedLocationDtoInEvent.getLatitude()),
 				Double.parseDouble(selectedLocationDtoInEvent.getLongitude()));
 
-		final int markerSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 28f, getResources().getDisplayMetrics());
+		final int markerWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
+		final int markerHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 36f, getResources().getDisplayMetrics());
 
 		if (selectedLocationInEventMarker != null) {
 			selectedLocationInEventMarker.setMap(null);
@@ -539,8 +539,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 
 		selectedLocationInEventMarker = new Marker(latLng);
 		selectedLocationInEventMarker.setMap(naverMap);
-		selectedLocationInEventMarker.setWidth(markerSize);
-		selectedLocationInEventMarker.setHeight(markerSize);
+		selectedLocationInEventMarker.setWidth(markerWidth);
+		selectedLocationInEventMarker.setHeight(markerHeight);
 		selectedLocationInEventMarker.setIcon(OverlayImage.fromResource(R.drawable.current_location_icon));
 		selectedLocationInEventMarker.setForceShowIcon(true);
 		selectedLocationInEventMarker.setCaptionColor(Color.BLUE);
@@ -896,12 +896,13 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	@Override
 	public void createCriteriaLocationMarker(String name, String latitude, String longitude) {
 		LatLng latLng = new LatLng(Double.parseDouble(latitude), Double.parseDouble(longitude));
-		final int markerSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 28f, getResources().getDisplayMetrics());
+		final int markerWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
+		final int markerHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 36f, getResources().getDisplayMetrics());
 
 		Marker criteriaLocationForRestaurantsMarker = new Marker(latLng);
 		criteriaLocationForRestaurantsMarker.setMap(naverMap);
-		criteriaLocationForRestaurantsMarker.setWidth(markerSize);
-		criteriaLocationForRestaurantsMarker.setHeight(markerSize);
+		criteriaLocationForRestaurantsMarker.setWidth(markerWidth);
+		criteriaLocationForRestaurantsMarker.setHeight(markerHeight);
 		criteriaLocationForRestaurantsMarker.setIcon(OverlayImage.fromResource(R.drawable.criteria_location_svg));
 		criteriaLocationForRestaurantsMarker.setForceShowIcon(true);
 		criteriaLocationForRestaurantsMarker.setCaptionColor(Color.BLACK);

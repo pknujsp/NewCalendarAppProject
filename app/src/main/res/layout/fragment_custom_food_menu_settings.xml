@@ -35,24 +35,20 @@
 
         </LinearLayout>
 
-        <TextView
-            android:id="@+id/error"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/header_bar"
-            android:layout_centerHorizontal="true"
-            android:gravity="center"
-            android:text="@string/not_added_custom_food_menu" />
-
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/custom_food_menu_recyclerview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/error"
+            android:layout_below="@id/header_bar"
             android:layout_alignParentBottom="true"
             android:orientation="vertical" />
 
 
+        <com.zerodsoft.scheduleweather.common.view.CustomProgressView
+            android:id="@+id/custom_progress_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/header_bar" />
     </RelativeLayout>
 </layout>

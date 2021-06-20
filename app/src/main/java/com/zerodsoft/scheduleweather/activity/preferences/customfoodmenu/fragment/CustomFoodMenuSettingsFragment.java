@@ -31,18 +31,11 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
 	private FragmentCustomFoodMenuSettingsBinding binding;
 	private CustomFoodMenuAdapter adapter;
 	private CustomFoodMenuViewModel viewModel;
-	private IOnSetView iOnSetView;
-	private RestaurantSharedViewModel restaurantSharedViewModel;
-	private boolean isEdited = false;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		viewModel = new ViewModelProvider(this).get(CustomFoodMenuViewModel.class);
-		restaurantSharedViewModel = new ViewModelProvider(requireActivity()).get(RestaurantSharedViewModel.class);
-
-		iOnSetView = (IOnSetView) getParentFragment();
-		iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.HEADER, View.GONE);
 	}
 
 	@Override
@@ -56,6 +49,8 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+		binding.customProgressView.setContentView(binding.customFoodMenuRecyclerview);
+		binding.customProgressView.onSuccessfulProcessingData();
 
 		binding.customFoodMenuRecyclerview.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
 		binding.customFoodMenuRecyclerview.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
@@ -66,20 +61,17 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
 			public void onChanged() {
 				super.onChanged();
 				if (adapter.getItemCount() == 0) {
-					binding.customFoodMenuRecyclerview.setVisibility(View.GONE);
-					binding.error.setVisibility(View.VISIBLE);
+					binding.customProgressView.onFailedProcessingData(getString(R.string.not_added_custom_food_menu));
 				} else {
-					binding.customFoodMenuRecyclerview.setVisibility(View.VISIBLE);
-					binding.error.setVisibility(View.GONE);
+					binding.customProgressView.onSuccessfulProcessingData();
 				}
 			}
 
 			@Override
 			public void onItemRangeInserted(int positionStart, int itemCount) {
 				super.onItemRangeInserted(positionStart, itemCount);
-				if (binding.customFoodMenuRecyclerview.getVisibility() == View.GONE) {
-					binding.customFoodMenuRecyclerview.setVisibility(View.VISIBLE);
-					binding.error.setVisibility(View.GONE);
+				if (positionStart == 0) {
+					binding.customProgressView.onSuccessfulProcessingData();
 				}
 			}
 
@@ -87,8 +79,7 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
 			public void onItemRangeRemoved(int positionStart, int itemCount) {
 				super.onItemRangeRemoved(positionStart, itemCount);
 				if (adapter.getItemCount() == 0) {
-					binding.customFoodMenuRecyclerview.setVisibility(View.GONE);
-					binding.error.setVisibility(View.VISIBLE);
+					binding.customProgressView.onFailedProcessingData(getString(R.string.not_added_custom_food_menu));
 				}
 			}
 		});
@@ -130,10 +121,9 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
 										requireActivity().runOnUiThread(new Runnable() {
 											@Override
 											public void run() {
-												isEdited = true;
 												binding.edittextCustomFoodmenu.setText("");
 												adapter.getList().add(customFoodMenuResultDto);
-												adapter.notifyItemInserted(adapter.getItemCount());
+												adapter.notifyItemInserted(adapter.getItemCount() - 1);
 											}
 										});
 									}
@@ -173,7 +163,6 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						isEdited = true;
 						adapter.getList().remove(e);
 						adapter.notifyItemRemoved(position);
 					}
@@ -191,10 +180,5 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.HEADER, View.VISIBLE);
-	}
-
-	public boolean isEdited() {
-		return isEdited;
 	}
 }

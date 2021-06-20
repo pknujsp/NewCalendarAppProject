@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.event.foods.main;
 
+import android.content.Context;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 
@@ -50,10 +51,17 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 	private HeaderCriteriaLocationFragment headerCriteriaLocationFragment;
 
 	private FoodCategoryAdapter foodCategoryAdapter;
-
 	private IOnSetView iOnSetView;
 
 	private FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks = new FragmentManager.FragmentLifecycleCallbacks() {
+		@Override
+		public void onFragmentAttached(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @NonNull @NotNull Context context) {
+			super.onFragmentAttached(fm, f, context);
+			if (f instanceof CustomFoodMenuSettingsFragment) {
+				iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.HEADER, View.GONE);
+			}
+		}
+
 		@Override
 		public void onFragmentCreated(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 			super.onFragmentCreated(fm, f, savedInstanceState);
@@ -65,6 +73,8 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 			if (f instanceof RestaurantListTabFragment) {
 				fm.beginTransaction().remove(fm.findFragmentByTag(getString(R.string.tag_header_food_menu_list_fragment)))
 						.show(headerCriteriaLocationFragment).commit();
+			} else if (f instanceof CustomFoodMenuSettingsFragment) {
+				iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.HEADER, View.VISIBLE);
 			}
 		}
 	};

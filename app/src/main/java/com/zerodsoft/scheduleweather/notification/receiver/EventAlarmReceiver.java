@@ -23,7 +23,6 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.repository.LocationRepository;
-import com.zerodsoft.scheduleweather.event.main.NewInstanceMainActivity;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyItem;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
@@ -86,7 +85,7 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 		int requestCode = (int) System.currentTimeMillis();
 
 		for (ContentValues instance : instanceList) {
-			Intent activityIntent = new Intent(context, NewInstanceMainActivity.class);
+			Intent activityIntent = new Intent(context, null);
 			activityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
 			activityIntent.putExtra(CalendarContract.Instances.CALENDAR_ID, instance.getAsInteger(CalendarContract.CalendarAlerts.CALENDAR_ID));

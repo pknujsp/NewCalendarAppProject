@@ -180,6 +180,7 @@ public class EventFragment extends BottomSheetDialogFragment {
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		calendarViewModel = new ViewModelProvider(requireActivity()).get(CalendarViewModel.class);
 		getParentFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false);
 	}
 
@@ -401,7 +402,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 			}
 		});
 
-		calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
 		setInstanceData();
 	}
 

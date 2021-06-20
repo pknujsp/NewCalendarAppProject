@@ -29,27 +29,13 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
         <activity
-            android:name=".event.main.NewInstanceMainActivity"
-            android:windowSoftInputMode="stateAlwaysHidden|adjustNothing" />
-        <activity
-            android:name=".navermap.NaverMapActivity"
-            android:windowSoftInputMode="stateAlwaysHidden|adjustNothing" />
-        <activity
             android:name=".activity.preferences.SettingsActivity"
             android:label="@string/app_settings" />
-        <activity android:name=".activity.editevent.activity.AttendeesFragment" />
-
-        <activity android:name=".activity.editevent.activity.EventReminderFragment" />
-        <activity android:name=".activity.editevent.activity.EventRecurrenceFragment" />
-        <activity android:name=".activity.editevent.activity.NewEventFragment" />
-        <activity android:name=".activity.editevent.activity.ModifyInstanceFragment" />
-        <activity
-            android:name=".activity.editevent.activity.EventBaseFragment"
-            android:windowSoftInputMode="adjustNothing" />
         <activity
             android:name=".activity.main.AppMainActivity"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme">
+            android:theme="@style/AppTheme"
+            android:windowSoftInputMode="stateAlwaysHidden|adjustNothing">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

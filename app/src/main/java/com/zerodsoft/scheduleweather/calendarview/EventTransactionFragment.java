@@ -61,7 +61,7 @@ import com.zerodsoft.scheduleweather.databinding.FragmentCalendarBinding;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
-import com.zerodsoft.scheduleweather.event.main.NewInstanceMainActivity;
+import com.zerodsoft.scheduleweather.event.main.NewInstanceMainFragment;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
@@ -87,7 +87,12 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 	private LocationViewModel locationViewModel;
 	private FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel;
 	private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
-	private CloseWindow closeWindow = new CloseWindow();
+	private CloseWindow closeWindow = new CloseWindow(new CloseWindow.OnBackKeyDoubleClickedListener() {
+		@Override
+		public void onDoubleClicked() {
+			requireActivity().finish();
+		}
+	});
 
 	private Fragment currentFragment;
 	private NetworkStatus networkStatus;
@@ -100,9 +105,6 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 	private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
 		@Override
 		public void handleOnBackPressed() {
-			//뒤로가기 2번 누르면(2초 내) 완전 종료
-			//첫 클릭시 2초 타이머 작동
-			//2초 내로 재 클릭없으면 무효
 			FragmentManager parentFragmentManager = getParentFragmentManager();
 			int fragmentSize = parentFragmentManager.getBackStackEntryCount();
 			if (fragmentSize > 0) {
@@ -320,17 +322,12 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 	public void onClicked(int calendarId, long instanceId, long eventId, long viewBegin, long viewEnd) {
 		// 이벤트 정보 액티비티로 전환
 		if (networkStatus.networkAvailable()) {
-			Intent intent = new Intent(getActivity(), NewInstanceMainActivity.class);
-			Bundle bundle = new Bundle();
-
-			bundle.putInt(CalendarContract.Instances.CALENDAR_ID, calendarId);
-			bundle.putLong(CalendarContract.Instances._ID, instanceId);
-			bundle.putLong(CalendarContract.Instances.EVENT_ID, eventId);
-			bundle.putLong(CalendarContract.Instances.BEGIN, viewBegin);
-			bundle.putLong(CalendarContract.Instances.END, viewEnd);
-			intent.putExtras(bundle);
-
-			instanceActivityResultLauncher.launch(intent);
+			NewInstanceMainFragment newInstanceMainFragment = new NewInstanceMainFragment(calendarId, eventId, instanceId, viewBegin, viewEnd);
+			newInstanceMainFragment.setPlaceBottomSheetSelectBtnVisibility(View.GONE);
+			newInstanceMainFragment.setPlaceBottomSheetUnSelectBtnVisibility(View.GONE);
+			getParentFragmentManager().beginTransaction().add(R.id.fragment_container, newInstanceMainFragment,
+					getString(R.string.tag_instance_main_fragment)).addToBackStack(getString(R.string.tag_instance_main_fragment))
+					.commit();
 
 			DialogFragment instanceListOnADayDialogFragment = (DialogFragment) getParentFragmentManager().findFragmentByTag(InstanceListOnADayDialogFragment.TAG);
 			if (instanceListOnADayDialogFragment != null) {

@@ -22,6 +22,7 @@ import android.widget.Toast;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.activity.preferences.SettingsActivity;
+import com.zerodsoft.scheduleweather.calendar.CalendarProvider;
 import com.zerodsoft.scheduleweather.calendarview.CalendarsAdapter;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarview.day.DayFragment;
@@ -45,6 +46,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
+import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
 import java.security.MessageDigest;
@@ -81,14 +83,13 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mainBinding = DataBindingUtil.setContentView(this, R.layout.activity_app_main);
+		calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
 
 		Point point = new Point();
 		getWindowManager().getDefaultDisplay().getRealSize(point);
 
 		DISPLAY_WIDTH = point.x;
 		DISPLAY_HEIGHT = point.y;
-
-		calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
 
 		if (AppPermission.grantedPermissions(getApplicationContext(), Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR)) {
 			//권한 확인
@@ -294,6 +295,8 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
+		calendarViewModel = null;
+		CalendarProvider.close();
 	}
 
 	private final ActivityResultLauncher<String[]> permissionsResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),

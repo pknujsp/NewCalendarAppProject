@@ -43,6 +43,12 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
 		this.calendarDateOnClickListener = calendarDateOnClickListener;
 	}
 
+	@Override
+	public void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		calendarViewModel = new ViewModelProvider(requireActivity()).get(CalendarViewModel.class);
+	}
+
 	@Nullable
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -53,7 +59,6 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
 
 		binding.monthAssistantCalendarViewpager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
 		setViewPager();

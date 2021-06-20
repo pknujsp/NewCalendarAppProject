@@ -28,7 +28,6 @@ public class AirConditionDialogFragment extends DialogFragment {
 	private AirConditionProcessing airConditionProcessing;
 	private String latitude;
 	private String longitude;
-	private ViewProgress viewProgress;
 
 	private final OnUpdateListener onUpdateListener;
 
@@ -57,10 +56,8 @@ public class AirConditionDialogFragment extends DialogFragment {
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-
-		viewProgress = new ViewProgress(binding.valueLayout, binding.weatherProgressLayout.progressBar,
-				binding.weatherProgressLayout.progressStatusTextview, binding.weatherProgressLayout.getRoot());
-		viewProgress.onStartedProcessingData();
+		binding.customProgressView.setContentView(binding.valueLayout);
+		binding.customProgressView.onStartedProcessingData();
 
 		binding.stationName.setText("");
 		binding.pm25Status.setText("");
@@ -73,7 +70,7 @@ public class AirConditionDialogFragment extends DialogFragment {
 		binding.refresh.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				viewProgress.onStartedProcessingData();
+				binding.customProgressView.onStartedProcessingData();
 				airConditionProcessing.refresh(new WeatherDataCallback<AirConditionResult>() {
 					@Override
 					public void isSuccessful(AirConditionResult e) {
@@ -81,7 +78,7 @@ public class AirConditionDialogFragment extends DialogFragment {
 							@Override
 							public void run() {
 								setData(e);
-								viewProgress.onCompletedProcessingData(true);
+								binding.customProgressView.onSuccessfulProcessingData();
 								onUpdateListener.onUpdatedData();
 							}
 						});
@@ -92,7 +89,7 @@ public class AirConditionDialogFragment extends DialogFragment {
 						requireActivity().runOnUiThread(new Runnable() {
 							@Override
 							public void run() {
-								viewProgress.onCompletedProcessingData(false, e.getMessage());
+								binding.customProgressView.onFailedProcessingData(getString(R.string.error));
 								binding.updatedTime.setText(R.string.error);
 								onUpdateListener.onUpdatedData();
 							}
@@ -110,7 +107,7 @@ public class AirConditionDialogFragment extends DialogFragment {
 					@Override
 					public void run() {
 						setData(e);
-						viewProgress.onCompletedProcessingData(true);
+						binding.customProgressView.onSuccessfulProcessingData();
 					}
 				});
 			}
@@ -120,7 +117,7 @@ public class AirConditionDialogFragment extends DialogFragment {
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						viewProgress.onCompletedProcessingData(false, e.getMessage());
+						binding.customProgressView.onFailedProcessingData(getString(R.string.error));
 						binding.updatedTime.setText(R.string.error);
 					}
 				});

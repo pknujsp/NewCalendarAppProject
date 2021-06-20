@@ -109,6 +109,10 @@ public class CalendarProvider implements ICalendarProvider {
 	private final String EVENT_QUERY;
 	private final String CALENDARS_QUERY;
 
+	public static void close() {
+		instance = null;
+	}
+
 	public static CalendarProvider newInstance(Context context) {
 		instance = new CalendarProvider(context);
 		return instance;
