@@ -1,10 +1,9 @@
 package com.zerodsoft.scheduleweather.calendarview.interfaces;
 
-import android.content.ContentValues;
+import com.zerodsoft.scheduleweather.room.dto.SelectedCalendarDTO;
 
 import java.util.List;
 
-public interface IConnectedCalendars
-{
-    List<ContentValues> getConnectedCalendars();
+public interface IConnectedCalendars {
+	List<SelectedCalendarDTO> getConnectedCalendars();
 }

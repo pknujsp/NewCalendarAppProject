@@ -3,7 +3,6 @@ package com.zerodsoft.scheduleweather.calendarview;
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -33,6 +32,7 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.zerodsoft.scheduleweather.R;
@@ -40,6 +40,7 @@ import com.zerodsoft.scheduleweather.activity.editevent.activity.NewEventFragmen
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.CommonPopupMenu;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
+import com.zerodsoft.scheduleweather.calendar.selectedcalendar.SelectedCalendarViewModel;
 import com.zerodsoft.scheduleweather.calendarview.assistantcalendar.assistantcalendar.MonthAssistantCalendarFragment;
 import com.zerodsoft.scheduleweather.calendarview.day.DayFragment;
 import com.zerodsoft.scheduleweather.calendarview.instancedialog.InstanceListOnADayDialogFragment;
@@ -62,6 +63,7 @@ import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.event.main.NewInstanceMainFragment;
+import com.zerodsoft.scheduleweather.room.dto.SelectedCalendarDTO;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
@@ -70,6 +72,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -78,13 +81,15 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 		OnEventItemLongClickListener, OnDateTimeChangedListener {
 	// 달력 프래그먼트를 관리하는 프래그먼트
 	public static final int FIRST_VIEW_POSITION = Integer.MAX_VALUE / 2;
-
-	private final IConnectedCalendars iConnectedCalendars;
 	private final View.OnClickListener drawerLayoutOnClickListener;
 	private final SyncCalendar syncCalendar = new SyncCalendar();
 
 	private CalendarViewModel calendarViewModel;
 	private LocationViewModel locationViewModel;
+	private SelectedCalendarViewModel selectedCalendarViewModel;
+
+	private List<SelectedCalendarDTO> selectedCalendarDTOList;
+
 	private FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel;
 	private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
 	private CloseWindow closeWindow = new CloseWindow(new CloseWindow.OnBackKeyDoubleClickedListener() {
@@ -117,7 +122,6 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 					closeWindow.clicked(getActivity());
 				}
 			}
-
 
 		}
 	};
@@ -184,8 +188,7 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 
 	};
 
-	public EventTransactionFragment(Activity activity, CalendarViewType calendarViewType, View.OnClickListener drawerLayoutOnClickListener) {
-		this.iConnectedCalendars = (IConnectedCalendars) activity;
+	public EventTransactionFragment(CalendarViewType calendarViewType, View.OnClickListener drawerLayoutOnClickListener) {
 		this.calendarViewType = calendarViewType;
 		this.drawerLayoutOnClickListener = drawerLayoutOnClickListener;
 	}
@@ -201,6 +204,7 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 		super.onCreate(savedInstanceState);
 		networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback());
 
+		selectedCalendarViewModel = new ViewModelProvider(requireActivity()).get(SelectedCalendarViewModel.class);
 		calendarViewModel = new ViewModelProvider(requireActivity()).get(CalendarViewModel.class);
 		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 		foodCriteriaLocationInfoViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationInfoViewModel.class);
@@ -225,6 +229,27 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+
+		selectedCalendarViewModel.getOnListSelectedCalendarLiveData().observe(getViewLifecycleOwner(), new Observer<List<SelectedCalendarDTO>>() {
+			@Override
+			public void onChanged(List<SelectedCalendarDTO> selectedCalendarDTOS) {
+				selectedCalendarDTOList = selectedCalendarDTOS;
+			}
+		});
+
+		selectedCalendarViewModel.getOnAddedSelectedCalendarLiveData().observe(getViewLifecycleOwner(), new Observer<SelectedCalendarDTO>() {
+			@Override
+			public void onChanged(SelectedCalendarDTO selectedCalendarDTO) {
+				selectedCalendarDTOList.add(selectedCalendarDTO);
+			}
+		});
+
+		selectedCalendarViewModel.getOnDeletedSelectedCalendarLiveData().observe(getViewLifecycleOwner(), new Observer<List<SelectedCalendarDTO>>() {
+			@Override
+			public void onChanged(List<SelectedCalendarDTO> selectedCalendarDTOS) {
+				selectedCalendarDTOList = selectedCalendarDTOS;
+			}
+		});
 		init();
 	}
 
@@ -248,7 +273,7 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 
 		//보조 캘린더 프래그먼트 생성
 		binding.assistantCalendarContainer.setVisibility(View.GONE);
-		Fragment monthAssistantCalendarFragment = new MonthAssistantCalendarFragment(iConnectedCalendars, this);
+		Fragment monthAssistantCalendarFragment = new MonthAssistantCalendarFragment(this);
 		getChildFragmentManager().beginTransaction().add(binding.assistantCalendarContainer.getId(), monthAssistantCalendarFragment,
 				MonthAssistantCalendarFragment.TAG).hide(monthAssistantCalendarFragment).commitNow();
 
@@ -270,17 +295,17 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 
 		switch (fragmentTag) {
 			case MonthFragment.TAG:
-				currentFragment = new MonthFragment(this, this, iConnectedCalendars, calendarViewModel);
+				currentFragment = new MonthFragment(this, this, calendarViewModel);
 				if (childFragmentManager.findFragmentByTag(MonthAssistantCalendarFragment.TAG).isVisible()) {
 					binding.assistantCalendarContainer.setVisibility(View.GONE);
 					childFragmentManager.beginTransaction().hide((MonthAssistantCalendarFragment) childFragmentManager.findFragmentByTag(MonthAssistantCalendarFragment.TAG)).commit();
 				}
 				break;
 			case WeekFragment.TAG:
-				currentFragment = new WeekFragment(this, this, iConnectedCalendars);
+				currentFragment = new WeekFragment(this, this);
 				break;
 			case DayFragment.TAG:
-				currentFragment = new DayFragment(this, this, iConnectedCalendars);
+				currentFragment = new DayFragment(this, this);
 				break;
 		}
 		childFragmentManager.beginTransaction().replace(R.id.calendar_container_view, currentFragment,
@@ -311,12 +336,19 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 		bundle.putLong("begin", viewBegin);
 		bundle.putLong("end", viewEnd);
 
-		InstanceListOnADayDialogFragment fragment = new InstanceListOnADayDialogFragment(iConnectedCalendars, this);
+		InstanceListOnADayDialogFragment fragment = new InstanceListOnADayDialogFragment(instanceListDialogIConnectedCalendars, this);
 		fragment.setArguments(bundle);
 
 		//현재 표시중인 프래그먼트를 숨기고, 인스턴스 프래그먼트를 표시
 		fragment.show(getParentFragmentManager(), InstanceListOnADayDialogFragment.TAG);
 	}
+
+	private final IConnectedCalendars instanceListDialogIConnectedCalendars = new IConnectedCalendars() {
+		@Override
+		public List<SelectedCalendarDTO> getConnectedCalendars() {
+			return selectedCalendarDTOList;
+		}
+	};
 
 	@Override
 	public void onClicked(int calendarId, long instanceId, long eventId, long viewBegin, long viewEnd) {
@@ -362,6 +394,7 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 		} else if (currentFragment instanceof DayFragment) {
 			((DayFragment) currentFragment).refreshView();
 		}
+
 		MonthAssistantCalendarFragment monthAssistantCalendarFragment =
 				(MonthAssistantCalendarFragment) getChildFragmentManager().findFragmentByTag(MonthAssistantCalendarFragment.TAG);
 		monthAssistantCalendarFragment.refreshView();
@@ -425,6 +458,7 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 						//새로운 일정이 추가됨 -> 달력 이벤트 갱신 -> 추가한 이벤트의 첫번째 인스턴스가 있는 날짜로 달력을 이동
 					}
 				});
+
 				Bundle bundle = new Bundle();
 				bundle.putInt("requestCode", EventIntentCode.REQUEST_NEW_EVENT.value());
 				newEventFragment.setArguments(bundle);
@@ -474,7 +508,6 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 			onClickToolbar(view);
 		}
 	};
-
 
 
 	private final ActivityResultLauncher<Intent> accountsResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult()

@@ -1,6 +1,5 @@
 package com.zerodsoft.scheduleweather.calendarview.assistantcalendar.assistantcalendar;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,37 +8,40 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
+import com.zerodsoft.scheduleweather.calendar.selectedcalendar.SelectedCalendarViewModel;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.CalendarDateOnClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.databinding.FragmentMonthAssistantBinding;
+import com.zerodsoft.scheduleweather.room.dto.SelectedCalendarDTO;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
-import java.time.Clock;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-public class MonthAssistantCalendarFragment extends Fragment implements IControlEvent, IRefreshView {
+public class MonthAssistantCalendarFragment extends Fragment implements IControlEvent, IRefreshView, IConnectedCalendars {
 	public static final String TAG = "MonthAssistantCalendarFragment";
-	private final IConnectedCalendars iConnectedCalendars;
 	private final CalendarDateOnClickListener calendarDateOnClickListener;
 
 	private FragmentMonthAssistantBinding binding;
 	private MonthAssistantCalendarListAdapter adapter;
 
 	private CalendarViewModel calendarViewModel;
+	private SelectedCalendarViewModel selectedCalendarViewModel;
 
-	public MonthAssistantCalendarFragment(IConnectedCalendars iConnectedCalendars, CalendarDateOnClickListener calendarDateOnClickListener) {
-		this.iConnectedCalendars = iConnectedCalendars;
+	private List<SelectedCalendarDTO> selectedCalendarDTOList;
+
+	public MonthAssistantCalendarFragment(CalendarDateOnClickListener calendarDateOnClickListener) {
 		this.calendarDateOnClickListener = calendarDateOnClickListener;
 	}
 
@@ -47,6 +49,7 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
 	public void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		calendarViewModel = new ViewModelProvider(requireActivity()).get(CalendarViewModel.class);
+		selectedCalendarViewModel = new ViewModelProvider(requireActivity()).get(SelectedCalendarViewModel.class);
 	}
 
 	@Nullable
@@ -59,12 +62,7 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-
 		binding.monthAssistantCalendarViewpager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
-		setViewPager();
-
-		binding.currentMonth.setText(ClockUtil.YEAR_MONTH_FORMAT.format(adapter.getAsOfDate()));
-
 		binding.currentMonthButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
@@ -87,6 +85,38 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
 			}
 		});
 
+		selectedCalendarViewModel.getOnDeletedSelectedCalendarLiveData().observe(getViewLifecycleOwner(), new Observer<List<SelectedCalendarDTO>>() {
+			@Override
+			public void onChanged(List<SelectedCalendarDTO> selectedCalendarDTOS) {
+				selectedCalendarDTOList = selectedCalendarDTOS;
+				refreshView();
+			}
+		});
+
+		selectedCalendarViewModel.getOnAddedSelectedCalendarLiveData().observe(getViewLifecycleOwner(), new Observer<SelectedCalendarDTO>() {
+			@Override
+			public void onChanged(SelectedCalendarDTO selectedCalendarDTO) {
+				selectedCalendarDTOList.add(selectedCalendarDTO);
+				refreshView();
+			}
+		});
+
+		selectedCalendarViewModel.getOnListSelectedCalendarLiveData().observe(getViewLifecycleOwner(), new Observer<List<SelectedCalendarDTO>>() {
+			@Override
+			public void onChanged(List<SelectedCalendarDTO> selectedCalendarDTOS) {
+				selectedCalendarDTOList = selectedCalendarDTOS;
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						setViewPager();
+						binding.currentMonth.setText(ClockUtil.YEAR_MONTH_FORMAT.format(adapter.getAsOfDate()));
+					}
+				});
+
+			}
+		});
+
+		selectedCalendarViewModel.getSelectedCalendarList();
 	}
 
 	@Override
@@ -95,7 +125,7 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
 	}
 
 	private void setViewPager() {
-		adapter = new MonthAssistantCalendarListAdapter(this, calendarDateOnClickListener, iConnectedCalendars);
+		adapter = new MonthAssistantCalendarListAdapter(this, calendarDateOnClickListener, this);
 		binding.monthAssistantCalendarViewpager.setAdapter(adapter);
 		binding.monthAssistantCalendarViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
 		binding.monthAssistantCalendarViewpager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
@@ -148,5 +178,10 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
 				binding.monthAssistantCalendarViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
 			}
 		}
+	}
+
+	@Override
+	public List<SelectedCalendarDTO> getConnectedCalendars() {
+		return selectedCalendarDTOList;
 	}
 }

@@ -8,7 +8,6 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.zerodsoft.scheduleweather.calendar.dto.AccountDto;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendar.interfaces.ICalendarProvider;
 
@@ -74,7 +73,7 @@ public class CalendarViewModel extends AndroidViewModel implements ICalendarProv
 	}
 
 	@Override
-	public List<AccountDto> getGoogleAccounts() {
+	public List<ContentValues> getGoogleAccounts() {
 		return calendarProvider.getGoogleAccounts();
 	}
 

@@ -27,6 +27,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.OnDateTimeChangedLi
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
+import com.zerodsoft.scheduleweather.room.dto.SelectedCalendarDTO;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.ArrayList;
@@ -205,11 +206,11 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
 		}
 
 		//선택되지 않은 캘린더는 제외
-		List<ContentValues> connectedCalendars = iConnectedCalendars.getConnectedCalendars();
+		List<SelectedCalendarDTO> connectedCalendars = iConnectedCalendars.getConnectedCalendars();
 		Set<Integer> connectedCalendarIdSet = new HashSet<>();
 
-		for (ContentValues calendar : connectedCalendars) {
-			connectedCalendarIdSet.add(calendar.getAsInteger(CalendarContract.Calendars._ID));
+		for (SelectedCalendarDTO calendar : connectedCalendars) {
+			connectedCalendarIdSet.add(calendar.getCalendarId());
 		}
 
 		List<ContentValues> instances = new ArrayList<>();

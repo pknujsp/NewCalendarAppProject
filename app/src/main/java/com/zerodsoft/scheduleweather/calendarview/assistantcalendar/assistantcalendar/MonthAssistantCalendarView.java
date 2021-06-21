@@ -22,6 +22,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.calendarview.month.MonthCalendarView;
+import com.zerodsoft.scheduleweather.room.dto.SelectedCalendarDTO;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.ArrayList;
@@ -235,12 +236,12 @@ public class MonthAssistantCalendarView extends ViewGroup implements CalendarVie
         }
 
         //선택되지 않은 캘린더는 제외
-        List<ContentValues> connectedCalendars = iConnectedCalendars.getConnectedCalendars();
+        List<SelectedCalendarDTO> connectedCalendars = iConnectedCalendars.getConnectedCalendars();
         Set<Integer> connectedCalendarIdSet = new HashSet<>();
 
-        for (ContentValues calendar : connectedCalendars)
+        for (SelectedCalendarDTO selectedCalendarDTO : connectedCalendars)
         {
-            connectedCalendarIdSet.add(calendar.getAsInteger(CalendarContract.Calendars._ID));
+            connectedCalendarIdSet.add(selectedCalendarDTO.getCalendarId());
         }
 
         List<ContentValues> instances = new ArrayList<>();

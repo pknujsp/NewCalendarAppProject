@@ -16,7 +16,6 @@ import android.provider.CalendarContract;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.MutableLiveData;
 
-import com.zerodsoft.scheduleweather.calendar.dto.AccountDto;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendar.interfaces.ICalendarProvider;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
@@ -140,7 +139,7 @@ public class CalendarProvider implements ICalendarProvider {
 
 	// account
 	@Override
-	public List<AccountDto> getGoogleAccounts() {
+	public List<ContentValues> getGoogleAccounts() {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
 			final String[] PROJECTION = {
 					CalendarContract.Calendars.ACCOUNT_NAME, CalendarContract.Calendars.OWNER_ACCOUNT, CalendarContract.Calendars.ACCOUNT_TYPE,
@@ -150,7 +149,7 @@ public class CalendarProvider implements ICalendarProvider {
 			Cursor cursor = contentResolver.query(CalendarContract.Calendars.CONTENT_URI, PROJECTION, null, null, null);
 
 			final String GOOGLE_SECONDARY_CALENDAR = "@group.calendar.google.com";
-			List<AccountDto> accountList = new ArrayList<>();
+			List<ContentValues> accountList = new ArrayList<>();
 			Set<String> ownerAccountSet = new HashSet<>();
 
 			if (cursor != null) {
@@ -159,24 +158,24 @@ public class CalendarProvider implements ICalendarProvider {
 						// another || google primary calendar
 						if (!ownerAccountSet.contains(cursor.getString(1))) {
 							ownerAccountSet.add(cursor.getString(1));
-							AccountDto accountDto = new AccountDto();
+							ContentValues accountValues = new ContentValues();
 
-							accountDto.setAccountName(cursor.getString(0));
-							accountDto.setOwnerAccount(cursor.getString(1));
-							accountDto.setAccountType(cursor.getString(2));
+							accountValues.put(CalendarContract.Calendars.ACCOUNT_NAME, cursor.getString(0));
+							accountValues.put(CalendarContract.Calendars.OWNER_ACCOUNT, cursor.getString(1));
+							accountValues.put(CalendarContract.Calendars.ACCOUNT_TYPE, cursor.getString(2));
 
-							accountList.add(accountDto);
+							accountList.add(accountValues);
 						}
 					} else if (cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.OWNER_ACCOUNT)).contains(GOOGLE_SECONDARY_CALENDAR)) {
 						if (!ownerAccountSet.contains(cursor.getString(1))) {
 							ownerAccountSet.add(cursor.getString(1));
-							AccountDto accountDto = new AccountDto();
+							ContentValues accountValues = new ContentValues();
 
-							accountDto.setAccountName(cursor.getString(0));
-							accountDto.setOwnerAccount(cursor.getString(1));
-							accountDto.setAccountType(cursor.getString(2));
+							accountValues.put(CalendarContract.Calendars.ACCOUNT_NAME, cursor.getString(0));
+							accountValues.put(CalendarContract.Calendars.OWNER_ACCOUNT, cursor.getString(1));
+							accountValues.put(CalendarContract.Calendars.ACCOUNT_TYPE, cursor.getString(2));
 
-							accountList.add(accountDto);
+							accountList.add(accountValues);
 						}
 					}
 				}

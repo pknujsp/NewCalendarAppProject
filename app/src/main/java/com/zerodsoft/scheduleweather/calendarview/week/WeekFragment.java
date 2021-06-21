@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 
 import com.zerodsoft.scheduleweather.activity.main.AppMainActivity;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
+import com.zerodsoft.scheduleweather.calendar.selectedcalendar.SelectedCalendarViewModel;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
@@ -25,10 +26,12 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.OnDateTimeChangedLi
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
+import com.zerodsoft.scheduleweather.room.dto.SelectedCalendarDTO;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 
 public class WeekFragment extends Fragment implements IRefreshView, OnDateTimeChangedListener, IMoveViewpager {
@@ -41,19 +44,19 @@ public class WeekFragment extends Fragment implements IRefreshView, OnDateTimeCh
 	private final IToolbar iToolbar;
 	private final OnEventItemClickListener onEventItemClickListener;
 	private final OnEventItemLongClickListener onEventItemLongClickListener;
-	private final IConnectedCalendars iConnectedCalendars;
 	private CalendarViewModel calendarViewModel;
+	private SelectedCalendarViewModel selectedCalendarViewModel;
+	private List<SelectedCalendarDTO> selectedCalendarDTOList;
 
 	private static final int COLUMN_WIDTH = AppMainActivity.getDisplayWidth() / 8;
 
 	private OnPageChangeCallback onPageChangeCallback;
 
-	public WeekFragment(Fragment fragment, IToolbar iToolbar, IConnectedCalendars iConnectedCalendars) {
+	public WeekFragment(Fragment fragment, IToolbar iToolbar) {
 		this.iControlEvent = (IControlEvent) fragment;
 		this.onEventItemClickListener = (OnEventItemClickListener) fragment;
 		this.onEventItemLongClickListener = (OnEventItemLongClickListener) fragment;
 		this.iToolbar = iToolbar;
-		this.iConnectedCalendars = iConnectedCalendars;
 	}
 
 	public static int getColumnWidth() {
@@ -64,6 +67,7 @@ public class WeekFragment extends Fragment implements IRefreshView, OnDateTimeCh
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		calendarViewModel = new ViewModelProvider(requireActivity()).get(CalendarViewModel.class);
+		selectedCalendarViewModel = new ViewModelProvider(requireActivity()).get(SelectedCalendarViewModel.class);
 
 		calendarViewModel.getOnAddedNewEventLiveData().observe(this, new Observer<Long>() {
 			@Override
@@ -129,7 +133,31 @@ public class WeekFragment extends Fragment implements IRefreshView, OnDateTimeCh
 		weekViewPager = (ViewPager2) view.findViewById(R.id.week_viewpager);
 		weekViewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
 
-		setViewPager();
+		selectedCalendarViewModel.getOnDeletedSelectedCalendarLiveData().observe(getViewLifecycleOwner(), new Observer<List<SelectedCalendarDTO>>() {
+			@Override
+			public void onChanged(List<SelectedCalendarDTO> selectedCalendarDTOS) {
+
+				selectedCalendarDTOList = selectedCalendarDTOS;
+				refreshView();
+			}
+		});
+
+		selectedCalendarViewModel.getOnAddedSelectedCalendarLiveData().observe(getViewLifecycleOwner(), new Observer<SelectedCalendarDTO>() {
+			@Override
+			public void onChanged(SelectedCalendarDTO selectedCalendarDTO) {
+				selectedCalendarDTOList.add(selectedCalendarDTO);
+				refreshView();
+			}
+		});
+
+		selectedCalendarViewModel.getOnListSelectedCalendarLiveData().observe(getViewLifecycleOwner(), new Observer<List<SelectedCalendarDTO>>() {
+			@Override
+			public void onChanged(List<SelectedCalendarDTO> selectedCalendarDTOS) {
+				selectedCalendarDTOList = selectedCalendarDTOS;
+				setViewPager();
+			}
+		});
+
 	}
 
 	@Override
@@ -138,7 +166,13 @@ public class WeekFragment extends Fragment implements IRefreshView, OnDateTimeCh
 	}
 
 	private void setViewPager() {
-		weekViewPagerAdapter = new WeekViewPagerAdapter(iControlEvent, onEventItemLongClickListener, onEventItemClickListener, iToolbar, iConnectedCalendars);
+		weekViewPagerAdapter = new WeekViewPagerAdapter(iControlEvent, onEventItemLongClickListener, onEventItemClickListener, iToolbar,
+				new IConnectedCalendars() {
+					@Override
+					public List<SelectedCalendarDTO> getConnectedCalendars() {
+						return selectedCalendarDTOList;
+					}
+				});
 		weekViewPager.setAdapter(weekViewPagerAdapter);
 		weekViewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
 

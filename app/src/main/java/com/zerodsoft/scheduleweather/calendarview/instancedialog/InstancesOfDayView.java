@@ -25,6 +25,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickLis
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.common.view.CustomProgressView;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
+import com.zerodsoft.scheduleweather.room.dto.SelectedCalendarDTO;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.ArrayList;
@@ -185,11 +186,11 @@ public class InstancesOfDayView implements CalendarViewInitializer {
               이라서 20201010의 인스턴스로 잡힌다.
          */
 		//선택되지 않은 캘린더는 제외
-		List<ContentValues> connectedCalendars = iConnectedCalendars.getConnectedCalendars();
+		List<SelectedCalendarDTO> connectedCalendars = iConnectedCalendars.getConnectedCalendars();
 		Set<Integer> connectedCalendarIdSet = new HashSet<>();
 
-		for (ContentValues calendar : connectedCalendars) {
-			connectedCalendarIdSet.add(calendar.getAsInteger(CalendarContract.Calendars._ID));
+		for (SelectedCalendarDTO calendar : connectedCalendars) {
+			connectedCalendarIdSet.add(calendar.getCalendarId());
 		}
 
 		List<ContentValues> instances = new ArrayList<>();

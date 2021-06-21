@@ -10,6 +10,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
+import com.zerodsoft.scheduleweather.room.dto.SelectedCalendarDTO;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -70,11 +71,11 @@ public class WeekCalendarView implements CalendarViewInitializer {
 	public void setInstances(Map<Integer, CalendarInstance> resultMap) {
 		//선택되지 않은 캘린더는 제외
 		this.resultMap = resultMap;
-		List<ContentValues> connectedCalendars = iConnectedCalendars.getConnectedCalendars();
+		List<SelectedCalendarDTO> connectedCalendars = iConnectedCalendars.getConnectedCalendars();
 		Set<Integer> connectedCalendarIdSet = new HashSet<>();
 
-		for (ContentValues calendar : connectedCalendars) {
-			connectedCalendarIdSet.add(calendar.getAsInteger(CalendarContract.Calendars._ID));
+		for (SelectedCalendarDTO calendar : connectedCalendars) {
+			connectedCalendarIdSet.add(calendar.getCalendarId());
 		}
 
 		List<ContentValues> instances = new ArrayList<>();

@@ -1,8 +1,6 @@
 package com.zerodsoft.scheduleweather.calendarview.month;
 
-import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +15,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.interfaces.ICalendarProvider;
+import com.zerodsoft.scheduleweather.calendar.selectedcalendar.SelectedCalendarViewModel;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
@@ -26,10 +25,12 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnDateTimeChangedListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
+import com.zerodsoft.scheduleweather.room.dto.SelectedCalendarDTO;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 public class MonthFragment extends Fragment implements IRefreshView, OnDateTimeChangedListener, IMoveViewpager {
 	public static final String TAG = "MonthFragment";
@@ -37,7 +38,6 @@ public class MonthFragment extends Fragment implements IRefreshView, OnDateTimeC
 	private final IControlEvent iControlEvent;
 	private final IToolbar iToolbar;
 	private final OnEventItemClickListener onEventItemClickListener;
-	private final IConnectedCalendars iConnectedCalendars;
 	private final OnEventItemLongClickListener onEventItemLongClickListener;
 	private final ICalendarProvider iCalendarProvider;
 
@@ -45,22 +45,24 @@ public class MonthFragment extends Fragment implements IRefreshView, OnDateTimeC
 	private ViewPager2 viewPager;
 	private MonthViewPagerAdapter viewPagerAdapter;
 	private OnPageChangeCallback onPageChangeCallback;
+	private SelectedCalendarViewModel selectedCalendarViewModel;
+	private List<SelectedCalendarDTO> selectedCalendarDTOList;
 
 	private int currentPosition = EventTransactionFragment.FIRST_VIEW_POSITION;
 
-	public MonthFragment(Fragment fragment, IToolbar iToolbar, IConnectedCalendars iConnectedCalendars, ICalendarProvider iCalendarProvider) {
+	public MonthFragment(Fragment fragment, IToolbar iToolbar, ICalendarProvider iCalendarProvider) {
 		this.onEventItemLongClickListener = (OnEventItemLongClickListener) fragment;
 		this.iControlEvent = (IControlEvent) fragment;
 		this.onEventItemClickListener = (OnEventItemClickListener) fragment;
 		this.iCalendarProvider = iCalendarProvider;
 		this.iToolbar = iToolbar;
-		this.iConnectedCalendars = iConnectedCalendars;
 	}
 
 	@Override
 	public void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		calendarViewModel = new ViewModelProvider(requireActivity()).get(CalendarViewModel.class);
+		selectedCalendarViewModel = new ViewModelProvider(requireActivity()).get(SelectedCalendarViewModel.class);
 
 		calendarViewModel.getOnAddedNewEventLiveData().observe(this, new Observer<Long>() {
 			@Override
@@ -124,12 +126,41 @@ public class MonthFragment extends Fragment implements IRefreshView, OnDateTimeC
 		viewPager = (ViewPager2) view.findViewById(R.id.month_viewpager);
 		viewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
 
-		setViewPager();
+		selectedCalendarViewModel.getOnListSelectedCalendarLiveData().observe(getViewLifecycleOwner(), new Observer<List<SelectedCalendarDTO>>() {
+			@Override
+			public void onChanged(List<SelectedCalendarDTO> selectedCalendarDTOS) {
+				selectedCalendarDTOList = selectedCalendarDTOS;
+				setViewPager();
+			}
+		});
+
+		selectedCalendarViewModel.getOnAddedSelectedCalendarLiveData().observe(getViewLifecycleOwner(), new Observer<SelectedCalendarDTO>() {
+			@Override
+			public void onChanged(SelectedCalendarDTO selectedCalendarDTO) {
+				selectedCalendarDTOList.add(selectedCalendarDTO);
+				refreshView();
+			}
+		});
+
+		selectedCalendarViewModel.getOnDeletedSelectedCalendarLiveData().observe(getViewLifecycleOwner(), new Observer<List<SelectedCalendarDTO>>() {
+			@Override
+			public void onChanged(List<SelectedCalendarDTO> selectedCalendarDTOS) {
+				selectedCalendarDTOList = selectedCalendarDTOS;
+				refreshView();
+			}
+		});
+
+		selectedCalendarViewModel.getSelectedCalendarList();
 	}
 
 
 	private void setViewPager() {
-		viewPagerAdapter = new MonthViewPagerAdapter(iControlEvent, onEventItemLongClickListener, onEventItemClickListener, iToolbar, iConnectedCalendars);
+		viewPagerAdapter = new MonthViewPagerAdapter(iControlEvent, onEventItemLongClickListener, onEventItemClickListener, iToolbar, new IConnectedCalendars() {
+			@Override
+			public List<SelectedCalendarDTO> getConnectedCalendars() {
+				return selectedCalendarDTOList;
+			}
+		});
 		viewPager.setAdapter(viewPagerAdapter);
 		viewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
 

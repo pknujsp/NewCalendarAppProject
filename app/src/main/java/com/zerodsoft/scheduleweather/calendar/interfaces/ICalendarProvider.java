@@ -2,7 +2,6 @@ package com.zerodsoft.scheduleweather.calendar.interfaces;
 
 import android.content.ContentValues;
 
-import com.zerodsoft.scheduleweather.calendar.dto.AccountDto;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 
 import java.util.List;
@@ -10,7 +9,7 @@ import java.util.Map;
 
 public interface ICalendarProvider {
 	// account
-	public List<AccountDto> getGoogleAccounts();
+	public List<ContentValues> getGoogleAccounts();
 
 	// event - crud
 	public ContentValues getEvent(Long eventId);

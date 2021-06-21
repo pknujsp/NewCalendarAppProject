@@ -3,16 +3,18 @@ package com.zerodsoft.scheduleweather.room.dao;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
+import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 
+import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.SelectedCalendarDTO;
 
 import java.util.List;
 
 @Dao
 public interface SelectedCalendarDAO {
-	@Insert
-	int add(SelectedCalendarDTO selectedCalendarDTO);
+	@Insert(onConflict = OnConflictStrategy.IGNORE, entity = SelectedCalendarDTO.class)
+	long add(SelectedCalendarDTO selectedCalendarDTO);
 
 	@Query("SELECT * FROM selected_calendars_table")
 	List<SelectedCalendarDTO> getSelectedCalendarList();
@@ -20,7 +22,7 @@ public interface SelectedCalendarDAO {
 	@Query("SELECT * FROM selected_calendars_table WHERE id = :id")
 	SelectedCalendarDTO get(Integer id);
 
-	@Delete
-	void delete(SelectedCalendarDTO selectedCalendarDTO);
+	@Query("DELETE FROM selected_calendars_table WHERE calendar_id = :calendarId")
+	void delete(Integer calendarId);
 
 }
