@@ -224,12 +224,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		instance = calendarViewModel.getInstance(INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
 	}
 
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-		onBackPressedCallback.remove();
-		getChildFragmentManager().unregisterFragmentLifecycleCallbacks(fragmentLifecycleCallbacks);
-	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -291,6 +285,12 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		});
 	}
 
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		onBackPressedCallback.remove();
+		getChildFragmentManager().unregisterFragmentLifecycleCallbacks(fragmentLifecycleCallbacks);
+	}
 
 	private void setHeightOfBottomSheet(int height, LinearLayout bottomSheetView, BottomSheetBehavior bottomSheetBehavior) {
 		bottomSheetView.getLayoutParams().height = height;
@@ -498,15 +498,13 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 							requireActivity().runOnUiThread(new Runnable() {
 								@Override
 								public void run() {
-									binding.headerLayout.setVisibility(View.GONE);
-									binding.naverMapButtonsLayout.getRoot().setVisibility(View.GONE);
-									requireActivity().finish();
+									getParentFragmentManager().popBackStackImmediate();
 								}
 							});
 						}
 					});
 				} else {
-					requireActivity().finish();
+					getParentFragmentManager().popBackStackImmediate();
 				}
 			}
 		}, NewInstanceMainFragment.this, DEFAULT_HEIGHT_OF_BOTTOMSHEET,

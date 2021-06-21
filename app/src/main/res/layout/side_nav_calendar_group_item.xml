@@ -3,16 +3,20 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:padding="12dp">
+    android:paddingLeft="8dp"
+    android:paddingTop="12dp"
+    android:paddingRight="8dp"
+    android:paddingBottom="12dp">
+
 
     <TextView
         android:id="@+id/side_nav_account_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
-        android:gravity="center_vertical"
-        android:paddingLeft="?android:attr/expandableListPreferredItemPaddingLeft"
-        android:text="test"
+        android:layout_marginLeft="?android:attr/expandableListPreferredItemPaddingLeft"
+        android:text="accountName"
+        android:textColor="@color/gray_700"
         android:textSize="15sp" />
 
 </LinearLayout>

@@ -6,7 +6,8 @@
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/naver_map_fragment_root_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@color/white">
 
         <FrameLayout
             android:id="@+id/naver_map_view_layout"

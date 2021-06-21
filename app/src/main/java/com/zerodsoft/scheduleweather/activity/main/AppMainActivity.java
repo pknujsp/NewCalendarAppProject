@@ -1,7 +1,6 @@
 package com.zerodsoft.scheduleweather.activity.main;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -23,14 +22,13 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.activity.preferences.SettingsActivity;
 import com.zerodsoft.scheduleweather.calendar.CalendarProvider;
-import com.zerodsoft.scheduleweather.calendarview.CalendarsAdapter;
+import com.zerodsoft.scheduleweather.calendarview.SideBarCalendarListAdapter;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarview.day.DayFragment;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.ICalendarCheckBox;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.month.MonthFragment;
 import com.zerodsoft.scheduleweather.calendarview.week.WeekFragment;
-import com.zerodsoft.scheduleweather.common.classes.CloseWindow;
 import com.zerodsoft.scheduleweather.common.enums.CalendarViewType;
 import com.zerodsoft.scheduleweather.databinding.ActivityAppMainBinding;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
@@ -46,19 +44,15 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
-import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import lombok.SneakyThrows;
 
 public class AppMainActivity extends AppCompatActivity implements ICalendarCheckBox, IConnectedCalendars {
 	private static int DISPLAY_WIDTH = 0;
@@ -69,7 +63,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 
 	private ActivityAppMainBinding mainBinding;
 	private CalendarViewModel calendarViewModel;
-	private CalendarsAdapter calendarsAdapter;
+	private SideBarCalendarListAdapter sideBarCalendarListAdapter;
 
 	public static int getDisplayHeight() {
 		return DISPLAY_HEIGHT;
@@ -195,8 +189,8 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 		}
 
 		// 네비게이션 내 캘린더 리스트 구성
-		calendarsAdapter = new CalendarsAdapter(AppMainActivity.this, accountList, checkBoxStates);
-		mainBinding.sideNavCalendarList.setAdapter(calendarsAdapter);
+		sideBarCalendarListAdapter = new SideBarCalendarListAdapter(AppMainActivity.this, accountList, checkBoxStates);
+		mainBinding.sideNavCalendarList.setAdapter(sideBarCalendarListAdapter);
 		mainBinding.sideNavCalendarList.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
 			@Override
 			public boolean onGroupClick(ExpandableListView expandableListView, View view, int i, long l) {

@@ -85,13 +85,20 @@ public class EventFragment extends BottomSheetDialogFragment {
 	private CalendarViewModel calendarViewModel;
 	private LocationViewModel locationViewModel;
 
-
 	private AlertDialog attendeeDialog;
 
 	private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
 	private FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel;
 
 	private FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks = new FragmentManager.FragmentLifecycleCallbacks() {
+		@Override
+		public void onFragmentAttached(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @NonNull @NotNull Context context) {
+			super.onFragmentAttached(fm, f, context);
+			if (f instanceof SelectionDetailLocationFragment) {
+				getDialog().hide();
+			}
+		}
+
 		@Override
 		public void onFragmentDestroyed(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
 			super.onFragmentDestroyed(fm, f);
@@ -102,7 +109,7 @@ public class EventFragment extends BottomSheetDialogFragment {
 	};
 
 	public void showSetLocationDialog() {
-		MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getActivity())
+		MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireActivity())
 				.setTitle(getString(R.string.request_select_location_title))
 				.setMessage(getString(R.string.request_select_location_description))
 				.setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
@@ -213,7 +220,7 @@ public class EventFragment extends BottomSheetDialogFragment {
 		View bottomSheet = getDialog().findViewById(R.id.design_bottom_sheet);
 		bottomSheet.getLayoutParams().height = VIEW_HEIGHT;
 
-		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
+		locationViewModel = new ViewModelProvider(getParentFragment()).get(LocationViewModel.class);
 		foodCriteriaLocationHistoryViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationHistoryViewModel.class);
 		foodCriteriaLocationInfoViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationInfoViewModel.class);
 
@@ -276,12 +283,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 												selectionDetailLocationFragment.setArguments(bundle);
 												getParentFragmentManager().beginTransaction().add(R.id.fragment_container, selectionDetailLocationFragment,
 														getString(R.string.tag_detail_location_selection_fragment)).addToBackStack(getString(R.string.tag_detail_location_selection_fragment)).commit();
-												requireActivity().runOnUiThread(new Runnable() {
-													@Override
-													public void run() {
-														getDialog().hide();
-													}
-												});
 											}
 										}
 
@@ -746,7 +747,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 					@Override
 					public void run() {
 						iRefreshView.refreshView();
-						dismiss();
 					}
 				});
 
@@ -770,8 +770,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 					@Override
 					public void run() {
 						iRefreshView.refreshView();
-						dismiss();
-
 					}
 				});
 			}
@@ -791,7 +789,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 					@Override
 					public void run() {
 						iRefreshView.refreshView();
-						dismiss();
 					}
 				});
 

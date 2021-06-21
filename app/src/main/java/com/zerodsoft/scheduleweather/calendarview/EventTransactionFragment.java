@@ -475,32 +475,7 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 		}
 	};
 
-	private final ActivityResultLauncher<Intent> instanceActivityResultLauncher = registerForActivityResult(
-			new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-				@Override
-				public void onActivityResult(ActivityResult result) {
-					try {
-						EventIntentCode resultCode = EventIntentCode.enumOf(result.getResultCode());
-						switch (resultCode) {
-							case RESULT_DELETED:
-								refreshView();
-							case RESULT_EXCEPTED_INSTANCE:
-								refreshView();
-								break;
-							case RESULT_MODIFIED_AFTER_INSTANCE_INCLUDING_THIS_INSTANCE:
-							case RESULT_MODIFIED_THIS_INSTANCE:
-							case RESULT_MODIFIED_EVENT:
-								refreshView();
-								break;
-						}
-					} catch (IllegalArgumentException e) {
 
-					}
-
-
-				}
-			}
-	);
 
 	private final ActivityResultLauncher<Intent> accountsResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult()
 			, new ActivityResultCallback<ActivityResult>() {
