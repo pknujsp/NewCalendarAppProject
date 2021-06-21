@@ -1546,12 +1546,11 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						if (list.isEmpty()) {
-
-						} else {
-						}
 						createFavoriteLocationsPoiItems(list);
-						showMarkers(MarkerType.FAVORITE, App.isPreference_key_show_favorite_locations_markers_on_map());
+
+						if (!list.isEmpty()) {
+							showMarkers(MarkerType.FAVORITE, App.isPreference_key_show_favorite_locations_markers_on_map());
+						}
 					}
 				});
 			}

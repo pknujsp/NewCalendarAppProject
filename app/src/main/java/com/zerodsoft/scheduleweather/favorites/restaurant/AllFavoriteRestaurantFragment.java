@@ -27,37 +27,12 @@ import org.jetbrains.annotations.NotNull;
 public class AllFavoriteRestaurantFragment extends FavoriteRestaurantBaseFragment {
 	@Override
 	protected void onAddedFavoriteRestaurant(FavoriteLocationDTO addedFavoriteRestaurant) {
-		Fragment primaryNavFragment = getParentFragment().getParentFragmentManager().getPrimaryNavigationFragment();
-
-		if (!(primaryNavFragment instanceof AllFavoriteRestaurantHostFragment)) {
-			try {
-				if (getActivity() != null) {
-					refreshList();
-				}
-			} catch (Exception e) {
-			}
-
-		} else {
-			refreshList();
-		}
+		addFavoriteRestaurant(addedFavoriteRestaurant);
 	}
 
 	@Override
 	protected void onRemovedFavoriteRestaurant(FavoriteLocationDTO removedFavoriteRestaurant) {
-		Fragment primaryNavFragment = getParentFragment().getParentFragmentManager().getPrimaryNavigationFragment();
-
-		if (!(primaryNavFragment instanceof AllFavoriteRestaurantHostFragment)) {
-			try {
-				if (getActivity() != null) {
-					refreshList();
-				}
-			} catch (Exception e) {
-
-			}
-
-		} else {
-			removeFavoriteRestaurant(removedFavoriteRestaurant);
-		}
+		removeFavoriteRestaurant(removedFavoriteRestaurant);
 	}
 
 	@Override

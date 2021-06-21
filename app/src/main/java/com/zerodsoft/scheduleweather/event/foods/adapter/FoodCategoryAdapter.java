@@ -86,7 +86,6 @@ public class FoodCategoryAdapter extends RecyclerView.Adapter<FoodCategoryAdapte
 			foodCategoryNameTextView.requestLayout();
 			foodCategoryNameTextView.invalidate();
 
-
 			itemView.getRootView().setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View view) {

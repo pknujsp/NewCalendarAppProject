@@ -42,7 +42,6 @@ import java.util.List;
 public class FoodsMenuListFragment extends Fragment implements OnClickedCategoryItem, OnClickedListItem<FoodCategoryItem>,
 		IRefreshView {
 	private final int COLUMN_COUNT = 5;
-	private Long eventId;
 
 	private FragmentFoodMenusBinding binding;
 
@@ -88,8 +87,6 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 		restaurantSharedViewModel = new ViewModelProvider(getParentFragment().getParentFragment()).get(RestaurantSharedViewModel.class);
 		customFoodCategoryViewModel = new ViewModelProvider(this).get(CustomFoodMenuViewModel.class);
 
-		eventId = restaurantSharedViewModel.getEventId();
-
 		iOnSetView = (IOnSetView) getParentFragment();
 		iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.HEADER, View.VISIBLE);
 
@@ -131,6 +128,7 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+		binding.customProgressView.setContentView(binding.categoryGridview);
 
 		FragmentManager parentFragmentManager = getParentFragmentManager();
 		if (parentFragmentManager.findFragmentByTag(getString(R.string.tag_restaurant_header_criteria_location_fragment)) == null) {
@@ -150,6 +148,12 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 	}
 
 	private void setCategories() {
+		requireActivity().runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				binding.customProgressView.onStartedProcessingData(getString(R.string.loading_food_menu_list));
+			}
+		});
 		customFoodCategoryViewModel.select(new DbQueryCallback<List<CustomFoodMenuDTO>>() {
 			@Override
 			public void onResultSuccessful(List<CustomFoodMenuDTO> resultList) {
@@ -176,6 +180,7 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 					@Override
 					public void run() {
 						foodCategoryAdapter.notifyDataSetChanged();
+						binding.customProgressView.onSuccessfulProcessingData();
 					}
 				});
 			}

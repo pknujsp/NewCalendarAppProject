@@ -530,8 +530,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		LatLng latLng = new LatLng(Double.parseDouble(selectedLocationDtoInEvent.getLatitude()),
 				Double.parseDouble(selectedLocationDtoInEvent.getLongitude()));
 
-		final int markerWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
-		final int markerHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 36f, getResources().getDisplayMetrics());
+		final int markerWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 36f, getResources().getDisplayMetrics());
+		final int markerHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 42f, getResources().getDisplayMetrics());
 
 		if (selectedLocationInEventMarker != null) {
 			selectedLocationInEventMarker.setMap(null);
@@ -896,8 +896,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	@Override
 	public void createCriteriaLocationMarker(String name, String latitude, String longitude) {
 		LatLng latLng = new LatLng(Double.parseDouble(latitude), Double.parseDouble(longitude));
-		final int markerWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
-		final int markerHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 36f, getResources().getDisplayMetrics());
+		final int markerWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 36f, getResources().getDisplayMetrics());
+		final int markerHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 42f, getResources().getDisplayMetrics());
 
 		Marker criteriaLocationForRestaurantsMarker = new Marker(latLng);
 		criteriaLocationForRestaurantsMarker.setMap(naverMap);
@@ -906,11 +906,11 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		criteriaLocationForRestaurantsMarker.setIcon(OverlayImage.fromResource(R.drawable.criteria_location_svg));
 		criteriaLocationForRestaurantsMarker.setForceShowIcon(true);
 		criteriaLocationForRestaurantsMarker.setCaptionColor(Color.BLACK);
-		criteriaLocationForRestaurantsMarker.setCaptionTextSize(12f);
+		criteriaLocationForRestaurantsMarker.setCaptionTextSize(13f);
 		criteriaLocationForRestaurantsMarker.setCaptionText(name);
 		criteriaLocationForRestaurantsMarker.setSubCaptionText(getString(R.string.criteria_location));
 		criteriaLocationForRestaurantsMarker.setSubCaptionTextSize(11f);
-		criteriaLocationForRestaurantsMarker.setSubCaptionColor(Color.BLACK);
+		criteriaLocationForRestaurantsMarker.setSubCaptionColor(Color.BLUE);
 
 		if (!markersMap.containsKey(MarkerType.CRITERIA_LOCATION_FOR_RESTAURANTS)) {
 			markersMap.put(MarkerType.CRITERIA_LOCATION_FOR_RESTAURANTS, new ArrayList<>());

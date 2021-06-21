@@ -20,7 +20,6 @@ import android.view.ViewGroup;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
-import com.zerodsoft.scheduleweather.common.interfaces.OnProgressViewListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantListBinding;
 import com.zerodsoft.scheduleweather.event.foods.adapter.RestaurantListAdapter;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
@@ -43,7 +42,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 	protected RestaurantListAdapter adapter;
 	protected RecyclerView.AdapterDataObserver adapterDataObserver;
 	protected FavoriteLocationViewModel favoriteRestaurantViewModel;
-	protected RestaurantSharedViewModel sharedViewModel;
+	protected RestaurantSharedViewModel restaurantSharedViewModel;
 	protected IOnSetView iOnSetView;
 
 	protected String criteriaLatitude;
@@ -65,7 +64,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 
 		favoriteRestaurantViewModel =
 				new ViewModelProvider(getParentFragment().getParentFragment().getParentFragment().getParentFragment()).get(FavoriteLocationViewModel.class);
-		sharedViewModel = new ViewModelProvider(getParentFragment().getParentFragment().getParentFragment()).get(RestaurantSharedViewModel.class);
+		restaurantSharedViewModel = new ViewModelProvider(getParentFragment().getParentFragment().getParentFragment()).get(RestaurantSharedViewModel.class);
 
 		favoriteRestaurantViewModel.getAddedFavoriteLocationMutableLiveData().observe(this,
 				new Observer<FavoriteLocationDTO>() {
@@ -166,8 +165,8 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 
 	private final FavoriteLocationQuery favoriteLocationQuery = new FavoriteLocationQuery() {
 		@Override
-		public void addNewFavoriteLocation(FavoriteLocationDTO favoriteLocationDTO, DbQueryCallback<FavoriteLocationDTO> callback) {
-			favoriteRestaurantViewModel.addNewFavoriteLocation(favoriteLocationDTO, callback);
+		public void addNewFavoriteLocation(FavoriteLocationDTO favoriteLocationDTO, @org.jetbrains.annotations.Nullable DbQueryCallback<FavoriteLocationDTO> callback) {
+			favoriteRestaurantViewModel.addNewFavoriteLocation(favoriteLocationDTO, null);
 		}
 
 		@Override
@@ -181,8 +180,8 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 		}
 
 		@Override
-		public void delete(FavoriteLocationDTO favoriteLocationDTO, DbQueryCallback<Boolean> callback) {
-			favoriteRestaurantViewModel.delete(favoriteLocationDTO, callback);
+		public void delete(FavoriteLocationDTO favoriteLocationDTO, @org.jetbrains.annotations.Nullable DbQueryCallback<Boolean> callback) {
+			favoriteRestaurantViewModel.delete(favoriteLocationDTO, null);
 		}
 
 		@Override
@@ -197,28 +196,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 
 		@Override
 		public void contains(String placeId, String latitude, String longitude, DbQueryCallback<FavoriteLocationDTO> callback) {
-			favoriteRestaurantViewModel.contains(placeId, latitude, longitude, new DbQueryCallback<FavoriteLocationDTO>() {
-				@Override
-				public void onResultSuccessful(FavoriteLocationDTO result) {
-					requireActivity().runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							callback.onResultSuccessful(result);
-						}
-					});
-				}
-
-				@Override
-				public void onResultNoData() {
-					requireActivity().runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							callback.onResultNoData();
-						}
-					});
-				}
-			});
-
+			favoriteRestaurantViewModel.contains(placeId, latitude, longitude, callback);
 		}
 	};
 
@@ -244,14 +222,10 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 			}
 		});
 		kakaoRestaurantsViewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<PlaceDocuments>>() {
-			boolean isFirst = true;
-
 			@Override
 			public void onChanged(PagedList<PlaceDocuments> placeDocuments) {
 				adapter.submitList(placeDocuments);
 			}
-
-
 		});
 	}
 

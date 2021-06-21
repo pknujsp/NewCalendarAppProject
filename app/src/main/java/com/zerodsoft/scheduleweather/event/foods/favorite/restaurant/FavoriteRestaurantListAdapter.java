@@ -44,6 +44,7 @@ public class FavoriteRestaurantListAdapter extends BaseExpandableListAdapter {
 
 
 	public void setPlaceIdSet() {
+		placeIdSet.clear();
 		Set<String> keySet = restaurantListMap.keySet();
 		for (String key : keySet) {
 			List<PlaceDocuments> placeDocumentsList = restaurantListMap.get(key);
@@ -103,7 +104,7 @@ public class FavoriteRestaurantListAdapter extends BaseExpandableListAdapter {
 
 			groupViewHolder = new GroupViewHolder();
 			groupViewHolder.foodMenuName = (TextView) view.findViewById(R.id.group_name);
-			groupViewHolder.foodMenuName.setTextColor(R.color.colorPrimary);
+			groupViewHolder.foodMenuName.setTextColor(ContextCompat.getColor(context, R.color.colorPrimary));
 
 			view.setTag(groupViewHolder);
 		} else {
@@ -152,6 +153,7 @@ public class FavoriteRestaurantListAdapter extends BaseExpandableListAdapter {
 			@Override
 			public void onClick(View view) {
 				PlaceDocuments placeDocument = restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition);
+
 				favoriteLocationQuery.contains(placeDocument.getId(), placeDocument.getY(), placeDocument.getX()
 						, new DbQueryCallback<FavoriteLocationDTO>() {
 							@Override

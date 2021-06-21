@@ -13,6 +13,11 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
+        <com.zerodsoft.scheduleweather.common.view.CustomProgressView
+            android:id="@+id/custom_progress_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
     </LinearLayout>
 
 

@@ -165,17 +165,20 @@ public abstract class FavoriteLocationsBaseFragment extends Fragment implements 
 			@Override
 			public void onResultSuccessful(List<FavoriteLocationDTO> list) {
 				onLoadedFavoriteLocationsList(list);
+				if (list.isEmpty()) {
+					requireActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							binding.customProgressViewForFavoriteAddressPlace.onFailedProcessingData(getString(R.string.empty_favorite_locations_list));
+							binding.editButton.setVisibility(View.GONE);
+						}
+					});
+				}
 			}
 
 			@Override
 			public void onResultNoData() {
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						binding.customProgressViewForFavoriteAddressPlace.onFailedProcessingData(getString(R.string.empty_favorite_locations_list));
-						binding.editButton.setVisibility(View.GONE);
-					}
-				});
+
 			}
 		});
 	}
