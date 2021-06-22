@@ -70,6 +70,7 @@ import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -80,7 +81,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 
-public class EventTransactionFragment extends Fragment implements IControlEvent, OnEventItemClickListener, IRefreshView, IToolbar,
+public class EventTransactionFragment extends Fragment implements OnEventItemClickListener, IRefreshView, IToolbar,
 		CalendarDateOnClickListener,
 		OnEventItemLongClickListener, OnDateTimeChangedListener {
 	// 달력 프래그먼트를 관리하는 프래그먼트
@@ -316,12 +317,6 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 				fragmentTag).setPrimaryNavigationFragment(currentFragment).commit();
 	}
 
-	@Override
-	public Map<Integer, CalendarInstance> getInstances(long begin, long end) {
-		// 선택된 캘린더 목록
-		return calendarViewModel.getInstances(begin, end);
-	}
-
 	public void goToToday() {
 		if (currentFragment instanceof MonthFragment) {
 			((MonthFragment) currentFragment).goToToday();
@@ -519,14 +514,13 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 				@Override
 				public void onActivityResult(ActivityResult result) {
 					if (result.getData() != null) {
-						Account[] accounts = AccountManager.get(getContext()).getAccounts();
-						int accountsSize = accounts.length;
+
 					}
 				}
 			});
 
 	final class SyncCalendar {
-		private Account[] accounts;
+		private List<Account> accountList = new ArrayList<>();
 
 		class CalendarSyncStatusObserver implements SyncStatusObserver {
 			private final int PENDING = 0;
@@ -553,7 +547,7 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 
 			@Override
 			public void onStatusChanged(int which) {
-				for (Account account : accounts) {
+				for (Account account : accountList) {
 					if (which == ContentResolver.SYNC_OBSERVER_TYPE_PENDING) {
 						if (ContentResolver.isSyncPending(account, mCalendarAuthority)) {
 							// There is now a pending sync.
@@ -573,11 +567,11 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 					}
 				}
 
-				// We haven't finished processing sync states for all accounts yet
-				if (accounts.length != mAccountSyncState.size())
+				// We haven't finished processing sync states for all accountList yet
+				if (accountList.size() != mAccountSyncState.size())
 					return;
 
-				// Check if any accounts are not finished syncing yet. If so bail
+				// Check if any accountList are not finished syncing yet. If so bail
 				for (Integer syncState : mAccountSyncState.values()) {
 					if (syncState != FINISHED)
 						return;
@@ -598,9 +592,8 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 		}
 
 		public void syncCalendars(SyncCallback syncCallback) {
-
-
-			accounts = AccountManager.get(getContext()).getAccountsByType("com.google");
+/*
+			accountList = AccountManager.get(getContext()).getAccountsByType("com.google");
 			List<ContentValues> allGoogleAccountList = calendarViewModel.getGoogleAccounts();
 			Set<String> allGoogleAccountEmailSet = new HashSet<>();
 
@@ -608,7 +601,7 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 				allGoogleAccountEmailSet.add(googleAccount.getAsString(CalendarContract.Calendars.ACCOUNT_NAME));
 			}
 
-			if (accounts.length != allGoogleAccountEmailSet.size()) {
+			if (accountList.length != allGoogleAccountEmailSet.size()) {
 				Intent intent = AccountManager.newChooseAccountIntent(null, null, new String[]{"com.google"}, null, null, null, null);
 				accountsResultLauncher.launch(intent);
 			} else {
@@ -616,23 +609,35 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 
 				try {
 					GoogleAuthUtil.requestGoogleAccountsAccess(getContext());
-					GoogleAuthUtil.
-
 				} catch (Exception e) {
 
 				}
 			}
-
-
+*/
 			//-------------------------------------------------------------------------------------------
 			syncCallback.onSyncStarted();
 
+			accountList.clear();
+			List<ContentValues> allGoogleAccountList = calendarViewModel.getGoogleAccounts();
+			Set<String> accountNameSet = new HashSet<>();
+
+			for (ContentValues contentValues : allGoogleAccountList) {
+				if (contentValues.getAsString(CalendarContract.Calendars.ACCOUNT_TYPE).equals("com.google")) {
+					if (!accountNameSet.contains(contentValues.getAsString(CalendarContract.Calendars.ACCOUNT_NAME))) {
+						Account account = new Account(contentValues.getAsString(CalendarContract.Calendars.ACCOUNT_NAME)
+								, contentValues.getAsString(CalendarContract.Calendars.ACCOUNT_TYPE));
+
+						accountNameSet.add(account.name);
+						accountList.add(account);
+					}
+				}
+			}
 			CalendarSyncStatusObserver calendarSyncStatusObserver = new CalendarSyncStatusObserver();
 			calendarSyncStatusObserver.setProviderHandle(ContentResolver.addStatusChangeListener(ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE |
 					ContentResolver.SYNC_OBSERVER_TYPE_PENDING, calendarSyncStatusObserver));
 			calendarSyncStatusObserver.setSyncCallback(syncCallback);
 
-			for (Account account : accounts) {
+			for (Account account : accountList) {
 				Bundle extras = new Bundle();
 				extras.putBoolean(
 						ContentResolver.SYNC_EXTRAS_MANUAL, true);

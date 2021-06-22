@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.activity.main;
 
 import android.Manifest;
+import android.accounts.Account;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;

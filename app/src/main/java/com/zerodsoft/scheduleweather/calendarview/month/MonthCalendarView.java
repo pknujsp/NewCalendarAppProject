@@ -336,7 +336,6 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
 		@Override
 		public void onClick(View view) {
 			MonthCalendarItemView itemView = ((MonthCalendarItemView) view);
-
 			onEventItemClickListener.onClicked(itemView.getStartDate().getTime(), itemView.getEndDate().getTime());
 		}
 	};
@@ -436,7 +435,7 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
 		}
 	}
 
-	static class ItemCell {
+	static final class ItemCell {
 		boolean[] row;
 		int eventsNum;
 

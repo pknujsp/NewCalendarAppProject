@@ -14,6 +14,7 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
+import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendar.interfaces.ICalendarProvider;
 import com.zerodsoft.scheduleweather.calendar.selectedcalendar.SelectedCalendarViewModel;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
@@ -28,14 +29,15 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClic
 import com.zerodsoft.scheduleweather.room.dto.SelectedCalendarDTO;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 public class MonthFragment extends Fragment implements IRefreshView, OnDateTimeChangedListener, IMoveViewpager {
 	public static final String TAG = "MonthFragment";
 
-	private final IControlEvent iControlEvent;
 	private final IToolbar iToolbar;
 	private final OnEventItemClickListener onEventItemClickListener;
 	private final OnEventItemLongClickListener onEventItemLongClickListener;
@@ -46,14 +48,13 @@ public class MonthFragment extends Fragment implements IRefreshView, OnDateTimeC
 	private MonthViewPagerAdapter viewPagerAdapter;
 	private OnPageChangeCallback onPageChangeCallback;
 	private SelectedCalendarViewModel selectedCalendarViewModel;
-	private List<SelectedCalendarDTO> selectedCalendarDTOList;
+	private List<SelectedCalendarDTO> selectedCalendarDTOList = new ArrayList<>();
 	private boolean initializing = true;
 
 	private int currentPosition = EventTransactionFragment.FIRST_VIEW_POSITION;
 
 	public MonthFragment(Fragment fragment, IToolbar iToolbar, ICalendarProvider iCalendarProvider) {
 		this.onEventItemLongClickListener = (OnEventItemLongClickListener) fragment;
-		this.iControlEvent = (IControlEvent) fragment;
 		this.onEventItemClickListener = (OnEventItemClickListener) fragment;
 		this.iCalendarProvider = iCalendarProvider;
 		this.iToolbar = iToolbar;
@@ -123,7 +124,8 @@ public class MonthFragment extends Fragment implements IRefreshView, OnDateTimeC
 		@Override
 		public void onChanged(List<SelectedCalendarDTO> selectedCalendarDTOS) {
 			if (!initializing) {
-				selectedCalendarDTOList = selectedCalendarDTOS;
+				selectedCalendarDTOList.clear();
+				selectedCalendarDTOList.addAll(selectedCalendarDTOS);
 				refreshView();
 			}
 		}
@@ -143,7 +145,7 @@ public class MonthFragment extends Fragment implements IRefreshView, OnDateTimeC
 		@Override
 		public void onChanged(List<SelectedCalendarDTO> selectedCalendarDTOS) {
 			initializing = false;
-			selectedCalendarDTOList = selectedCalendarDTOS;
+			selectedCalendarDTOList.addAll(selectedCalendarDTOS);
 			setViewPager();
 		}
 	};
@@ -163,14 +165,19 @@ public class MonthFragment extends Fragment implements IRefreshView, OnDateTimeC
 	}
 
 
-
 	private void setViewPager() {
-		viewPagerAdapter = new MonthViewPagerAdapter(iControlEvent, onEventItemLongClickListener, onEventItemClickListener, iToolbar, new IConnectedCalendars() {
+		viewPagerAdapter = new MonthViewPagerAdapter(new IControlEvent() {
 			@Override
-			public List<SelectedCalendarDTO> getConnectedCalendars() {
-				return selectedCalendarDTOList;
+			public Map<Integer, CalendarInstance> getInstances(long begin, long end) {
+				return calendarViewModel.getInstances(begin, end);
 			}
-		});
+		}, onEventItemLongClickListener, onEventItemClickListener, iToolbar,
+				new IConnectedCalendars() {
+					@Override
+					public List<SelectedCalendarDTO> getConnectedCalendars() {
+						return selectedCalendarDTOList;
+					}
+				});
 		viewPager.setAdapter(viewPagerAdapter);
 		viewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
 

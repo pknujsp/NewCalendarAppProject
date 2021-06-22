@@ -52,7 +52,7 @@ public class EventFunctionItemView extends LinearLayout {
 
 		setClickable(true);
 		setOrientation(HORIZONTAL);
-		int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12f, getResources().getDisplayMetrics());
+		int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 36f, getResources().getDisplayMetrics());
 		setPadding(padding, padding, padding, padding);
 		setBackground(ContextCompat.getDrawable(getContext(), R.drawable.textview_underline));
 		imgView = new ImageView(getContext());
