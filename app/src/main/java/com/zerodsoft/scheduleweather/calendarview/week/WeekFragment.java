@@ -47,6 +47,8 @@ public class WeekFragment extends Fragment implements IRefreshView, OnDateTimeCh
 	private CalendarViewModel calendarViewModel;
 	private SelectedCalendarViewModel selectedCalendarViewModel;
 	private List<SelectedCalendarDTO> selectedCalendarDTOList;
+	private boolean initializing = true;
+
 
 	private static final int COLUMN_WIDTH = AppMainActivity.getDisplayWidth() / 8;
 
@@ -118,7 +120,41 @@ public class WeekFragment extends Fragment implements IRefreshView, OnDateTimeCh
 			}
 		});
 
+
+		selectedCalendarViewModel.getOnDeletedSelectedCalendarLiveData().observe(this, onDeletedSelectedCalendarObserver);
+		selectedCalendarViewModel.getOnAddedSelectedCalendarLiveData().observe(this, onAddedSelectedCalendarObserver);
+		selectedCalendarViewModel.getOnListSelectedCalendarLiveData().observe(this, onListSelectedCalendarObserver);
 	}
+
+	private final Observer<List<SelectedCalendarDTO>> onDeletedSelectedCalendarObserver = new Observer<List<SelectedCalendarDTO>>() {
+		@Override
+		public void onChanged(List<SelectedCalendarDTO> selectedCalendarDTOS) {
+			if (!initializing) {
+				selectedCalendarDTOList = selectedCalendarDTOS;
+				refreshView();
+			}
+		}
+	};
+
+	private final Observer<SelectedCalendarDTO> onAddedSelectedCalendarObserver = new Observer<SelectedCalendarDTO>() {
+		@Override
+		public void onChanged(SelectedCalendarDTO selectedCalendarDTO) {
+			if (!initializing) {
+				selectedCalendarDTOList.add(selectedCalendarDTO);
+				refreshView();
+			}
+		}
+	};
+
+	private final Observer<List<SelectedCalendarDTO>> onListSelectedCalendarObserver = new Observer<List<SelectedCalendarDTO>>() {
+		@Override
+		public void onChanged(List<SelectedCalendarDTO> selectedCalendarDTOS) {
+			initializing = false;
+			selectedCalendarDTOList = selectedCalendarDTOS;
+			setViewPager();
+		}
+	};
+
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -133,36 +169,7 @@ public class WeekFragment extends Fragment implements IRefreshView, OnDateTimeCh
 		weekViewPager = (ViewPager2) view.findViewById(R.id.week_viewpager);
 		weekViewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
 
-		selectedCalendarViewModel.getOnDeletedSelectedCalendarLiveData().observe(getViewLifecycleOwner(), new Observer<List<SelectedCalendarDTO>>() {
-			@Override
-			public void onChanged(List<SelectedCalendarDTO> selectedCalendarDTOS) {
-
-				selectedCalendarDTOList = selectedCalendarDTOS;
-				refreshView();
-			}
-		});
-
-		selectedCalendarViewModel.getOnAddedSelectedCalendarLiveData().observe(getViewLifecycleOwner(), new Observer<SelectedCalendarDTO>() {
-			@Override
-			public void onChanged(SelectedCalendarDTO selectedCalendarDTO) {
-				selectedCalendarDTOList.add(selectedCalendarDTO);
-				refreshView();
-			}
-		});
-
-		selectedCalendarViewModel.getOnListSelectedCalendarLiveData().observe(getViewLifecycleOwner(), new Observer<List<SelectedCalendarDTO>>() {
-			@Override
-			public void onChanged(List<SelectedCalendarDTO> selectedCalendarDTOS) {
-				selectedCalendarDTOList = selectedCalendarDTOS;
-				setViewPager();
-			}
-		});
-
-	}
-
-	@Override
-	public void onStart() {
-		super.onStart();
+		selectedCalendarViewModel.getSelectedCalendarList();
 	}
 
 	private void setViewPager() {

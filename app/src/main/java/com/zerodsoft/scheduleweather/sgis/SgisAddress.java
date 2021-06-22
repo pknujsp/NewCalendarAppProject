@@ -43,7 +43,6 @@ public class SgisAddress {
 			@SneakyThrows
 			@Override
 			public void onResponse(Call<ReverseGeoCodingResponse> call, Response<ReverseGeoCodingResponse> response) {
-
 				callback.processResult(response);
 			}
 

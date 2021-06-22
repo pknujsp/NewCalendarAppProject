@@ -35,6 +35,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.android.gms.auth.GoogleAuthUtil;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.editevent.activity.NewEventFragment;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
@@ -72,8 +73,11 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 
 public class EventTransactionFragment extends Fragment implements IControlEvent, OnEventItemClickListener, IRefreshView, IToolbar,
@@ -594,16 +598,39 @@ public class EventTransactionFragment extends Fragment implements IControlEvent,
 		}
 
 		public void syncCalendars(SyncCallback syncCallback) {
+
+
+			accounts = AccountManager.get(getContext()).getAccountsByType("com.google");
+			List<ContentValues> allGoogleAccountList = calendarViewModel.getGoogleAccounts();
+			Set<String> allGoogleAccountEmailSet = new HashSet<>();
+
+			for (ContentValues googleAccount : allGoogleAccountList) {
+				allGoogleAccountEmailSet.add(googleAccount.getAsString(CalendarContract.Calendars.ACCOUNT_NAME));
+			}
+
+			if (accounts.length != allGoogleAccountEmailSet.size()) {
+				Intent intent = AccountManager.newChooseAccountIntent(null, null, new String[]{"com.google"}, null, null, null, null);
+				accountsResultLauncher.launch(intent);
+			} else {
+
+
+				try {
+					GoogleAuthUtil.requestGoogleAccountsAccess(getContext());
+					GoogleAuthUtil.
+
+				} catch (Exception e) {
+
+				}
+			}
+
+
+			//-------------------------------------------------------------------------------------------
 			syncCallback.onSyncStarted();
-			//Intent intent = AccountManager.newChooseAccountIntent(null, null, new String[]{"com.google"}, null, null, null, null);
-			//accountsResultLauncher.launch(intent);
 
 			CalendarSyncStatusObserver calendarSyncStatusObserver = new CalendarSyncStatusObserver();
 			calendarSyncStatusObserver.setProviderHandle(ContentResolver.addStatusChangeListener(ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE |
 					ContentResolver.SYNC_OBSERVER_TYPE_PENDING, calendarSyncStatusObserver));
 			calendarSyncStatusObserver.setSyncCallback(syncCallback);
-
-			accounts = AccountManager.get(getContext()).getAccountsByType("com.google");
 
 			for (Account account : accounts) {
 				Bundle extras = new Bundle();

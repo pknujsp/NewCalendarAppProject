@@ -40,6 +40,7 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
 	private SelectedCalendarViewModel selectedCalendarViewModel;
 
 	private List<SelectedCalendarDTO> selectedCalendarDTOList;
+	private boolean initializing = true;
 
 	public MonthAssistantCalendarFragment(CalendarDateOnClickListener calendarDateOnClickListener) {
 		this.calendarDateOnClickListener = calendarDateOnClickListener;
@@ -51,6 +52,36 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
 		calendarViewModel = new ViewModelProvider(requireActivity()).get(CalendarViewModel.class);
 		selectedCalendarViewModel = new ViewModelProvider(requireActivity()).get(SelectedCalendarViewModel.class);
 	}
+
+	private final Observer<List<SelectedCalendarDTO>> onDeletedSelectedCalendarObserver = new Observer<List<SelectedCalendarDTO>>() {
+		@Override
+		public void onChanged(List<SelectedCalendarDTO> selectedCalendarDTOS) {
+			if (!initializing) {
+				selectedCalendarDTOList = selectedCalendarDTOS;
+				refreshView();
+			}
+		}
+	};
+
+	private final Observer<SelectedCalendarDTO> onAddedSelectedCalendarObserver = new Observer<SelectedCalendarDTO>() {
+		@Override
+		public void onChanged(SelectedCalendarDTO selectedCalendarDTO) {
+			if (!initializing) {
+				selectedCalendarDTOList.add(selectedCalendarDTO);
+				refreshView();
+			}
+		}
+	};
+
+	private final Observer<List<SelectedCalendarDTO>> onListSelectedCalendarObserver = new Observer<List<SelectedCalendarDTO>>() {
+		@Override
+		public void onChanged(List<SelectedCalendarDTO> selectedCalendarDTOS) {
+			initializing = false;
+			selectedCalendarDTOList = selectedCalendarDTOS;
+			setViewPager();
+			binding.currentMonth.setText(ClockUtil.YEAR_MONTH_FORMAT.format(adapter.getAsOfDate()));
+		}
+	};
 
 	@Nullable
 	@Override
@@ -85,44 +116,12 @@ public class MonthAssistantCalendarFragment extends Fragment implements IControl
 			}
 		});
 
-		selectedCalendarViewModel.getOnDeletedSelectedCalendarLiveData().observe(getViewLifecycleOwner(), new Observer<List<SelectedCalendarDTO>>() {
-			@Override
-			public void onChanged(List<SelectedCalendarDTO> selectedCalendarDTOS) {
-				selectedCalendarDTOList = selectedCalendarDTOS;
-				refreshView();
-			}
-		});
-
-		selectedCalendarViewModel.getOnAddedSelectedCalendarLiveData().observe(getViewLifecycleOwner(), new Observer<SelectedCalendarDTO>() {
-			@Override
-			public void onChanged(SelectedCalendarDTO selectedCalendarDTO) {
-				selectedCalendarDTOList.add(selectedCalendarDTO);
-				refreshView();
-			}
-		});
-
-		selectedCalendarViewModel.getOnListSelectedCalendarLiveData().observe(getViewLifecycleOwner(), new Observer<List<SelectedCalendarDTO>>() {
-			@Override
-			public void onChanged(List<SelectedCalendarDTO> selectedCalendarDTOS) {
-				selectedCalendarDTOList = selectedCalendarDTOS;
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						setViewPager();
-						binding.currentMonth.setText(ClockUtil.YEAR_MONTH_FORMAT.format(adapter.getAsOfDate()));
-					}
-				});
-
-			}
-		});
-
+		selectedCalendarViewModel.getOnDeletedSelectedCalendarLiveData().observe(getViewLifecycleOwner(), onDeletedSelectedCalendarObserver);
+		selectedCalendarViewModel.getOnAddedSelectedCalendarLiveData().observe(getViewLifecycleOwner(), onAddedSelectedCalendarObserver);
+		selectedCalendarViewModel.getOnListSelectedCalendarLiveData().observe(getViewLifecycleOwner(), onListSelectedCalendarObserver);
 		selectedCalendarViewModel.getSelectedCalendarList();
 	}
 
-	@Override
-	public void onStart() {
-		super.onStart();
-	}
 
 	private void setViewPager() {
 		adapter = new MonthAssistantCalendarListAdapter(this, calendarDateOnClickListener, this);

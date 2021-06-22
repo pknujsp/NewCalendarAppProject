@@ -130,6 +130,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 
 		SharedPreferences preferences = getSharedPreferences(getString(R.string.preferences_selected_calendar_type_key), Context.MODE_PRIVATE);
 		int type = preferences.getInt(getString(R.string.preferences_selected_calendar_type_key), CalendarViewType.MONTH.value());
+		setSelectedCalendarType(CalendarViewType.enumOf(type));
 
 		eventTransactionFragment = new EventTransactionFragment(CalendarViewType.enumOf(type), drawLayoutBtnOnClickListener);
 
@@ -207,28 +208,33 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 	private void changeCalendar(CalendarViewType calendarViewType) {
 		String fragmentTag = null;
 
+		setSelectedCalendarType(calendarViewType);
 		if (calendarViewType == CalendarViewType.DAY) {
-			mainBinding.sideNavCalendarTypes.dayRadio.setVisibility(View.VISIBLE);
-			mainBinding.sideNavCalendarTypes.weekRadio.setVisibility(View.GONE);
-			mainBinding.sideNavCalendarTypes.monthRadio.setVisibility(View.GONE);
-
 			fragmentTag = DayFragment.TAG;
 		} else if (calendarViewType == CalendarViewType.WEEK) {
-			mainBinding.sideNavCalendarTypes.dayRadio.setVisibility(View.GONE);
-			mainBinding.sideNavCalendarTypes.weekRadio.setVisibility(View.VISIBLE);
-			mainBinding.sideNavCalendarTypes.monthRadio.setVisibility(View.GONE);
-
 			fragmentTag = WeekFragment.TAG;
 		} else if (calendarViewType == CalendarViewType.MONTH) {
-			mainBinding.sideNavCalendarTypes.dayRadio.setVisibility(View.GONE);
-			mainBinding.sideNavCalendarTypes.weekRadio.setVisibility(View.GONE);
-			mainBinding.sideNavCalendarTypes.monthRadio.setVisibility(View.VISIBLE);
-
 			fragmentTag = MonthFragment.TAG;
 		}
 
 		if (eventTransactionFragment != null) {
 			eventTransactionFragment.replaceFragment(fragmentTag);
+		}
+	}
+
+	private void setSelectedCalendarType(CalendarViewType calendarViewType) {
+		if (calendarViewType == CalendarViewType.DAY) {
+			mainBinding.sideNavCalendarTypes.dayRadio.setVisibility(View.VISIBLE);
+			mainBinding.sideNavCalendarTypes.weekRadio.setVisibility(View.GONE);
+			mainBinding.sideNavCalendarTypes.monthRadio.setVisibility(View.GONE);
+		} else if (calendarViewType == CalendarViewType.WEEK) {
+			mainBinding.sideNavCalendarTypes.dayRadio.setVisibility(View.GONE);
+			mainBinding.sideNavCalendarTypes.weekRadio.setVisibility(View.VISIBLE);
+			mainBinding.sideNavCalendarTypes.monthRadio.setVisibility(View.GONE);
+		} else if (calendarViewType == CalendarViewType.MONTH) {
+			mainBinding.sideNavCalendarTypes.dayRadio.setVisibility(View.GONE);
+			mainBinding.sideNavCalendarTypes.weekRadio.setVisibility(View.GONE);
+			mainBinding.sideNavCalendarTypes.monthRadio.setVisibility(View.VISIBLE);
 		}
 	}
 
@@ -261,16 +267,10 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 				}
 			});
 
-	@Override
-	protected void onStart() {
-		super.onStart();
-	}
-
 
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		calendarViewModel = null;
 		CalendarProvider.close();
 	}
 

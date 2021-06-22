@@ -47,6 +47,7 @@ public class MonthFragment extends Fragment implements IRefreshView, OnDateTimeC
 	private OnPageChangeCallback onPageChangeCallback;
 	private SelectedCalendarViewModel selectedCalendarViewModel;
 	private List<SelectedCalendarDTO> selectedCalendarDTOList;
+	private boolean initializing = true;
 
 	private int currentPosition = EventTransactionFragment.FIRST_VIEW_POSITION;
 
@@ -113,7 +114,39 @@ public class MonthFragment extends Fragment implements IRefreshView, OnDateTimeC
 			}
 		});
 
+		selectedCalendarViewModel.getOnListSelectedCalendarLiveData().observe(this, onListSelectedCalendarObserver);
+		selectedCalendarViewModel.getOnAddedSelectedCalendarLiveData().observe(this, onAddedSelectedCalendarObserver);
+		selectedCalendarViewModel.getOnDeletedSelectedCalendarLiveData().observe(this, onDeletedSelectedCalendarObserver);
 	}
+
+	private final Observer<List<SelectedCalendarDTO>> onDeletedSelectedCalendarObserver = new Observer<List<SelectedCalendarDTO>>() {
+		@Override
+		public void onChanged(List<SelectedCalendarDTO> selectedCalendarDTOS) {
+			if (!initializing) {
+				selectedCalendarDTOList = selectedCalendarDTOS;
+				refreshView();
+			}
+		}
+	};
+
+	private final Observer<SelectedCalendarDTO> onAddedSelectedCalendarObserver = new Observer<SelectedCalendarDTO>() {
+		@Override
+		public void onChanged(SelectedCalendarDTO selectedCalendarDTO) {
+			if (!initializing) {
+				selectedCalendarDTOList.add(selectedCalendarDTO);
+				refreshView();
+			}
+		}
+	};
+
+	private final Observer<List<SelectedCalendarDTO>> onListSelectedCalendarObserver = new Observer<List<SelectedCalendarDTO>>() {
+		@Override
+		public void onChanged(List<SelectedCalendarDTO> selectedCalendarDTOS) {
+			initializing = false;
+			selectedCalendarDTOList = selectedCalendarDTOS;
+			setViewPager();
+		}
+	};
 
 	@Override
 	public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -126,32 +159,9 @@ public class MonthFragment extends Fragment implements IRefreshView, OnDateTimeC
 		viewPager = (ViewPager2) view.findViewById(R.id.month_viewpager);
 		viewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
 
-		selectedCalendarViewModel.getOnListSelectedCalendarLiveData().observe(getViewLifecycleOwner(), new Observer<List<SelectedCalendarDTO>>() {
-			@Override
-			public void onChanged(List<SelectedCalendarDTO> selectedCalendarDTOS) {
-				selectedCalendarDTOList = selectedCalendarDTOS;
-				setViewPager();
-			}
-		});
-
-		selectedCalendarViewModel.getOnAddedSelectedCalendarLiveData().observe(getViewLifecycleOwner(), new Observer<SelectedCalendarDTO>() {
-			@Override
-			public void onChanged(SelectedCalendarDTO selectedCalendarDTO) {
-				selectedCalendarDTOList.add(selectedCalendarDTO);
-				refreshView();
-			}
-		});
-
-		selectedCalendarViewModel.getOnDeletedSelectedCalendarLiveData().observe(getViewLifecycleOwner(), new Observer<List<SelectedCalendarDTO>>() {
-			@Override
-			public void onChanged(List<SelectedCalendarDTO> selectedCalendarDTOS) {
-				selectedCalendarDTOList = selectedCalendarDTOS;
-				refreshView();
-			}
-		});
-
 		selectedCalendarViewModel.getSelectedCalendarList();
 	}
+
 
 
 	private void setViewPager() {

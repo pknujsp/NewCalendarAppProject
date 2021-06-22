@@ -802,28 +802,32 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			new JsonDownloader<ReverseGeoCodingResponse>() {
 				@Override
 				public void onResponseSuccessful(ReverseGeoCodingResponse result) {
-					requireActivity().runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							if (result.getResult() != null) {
-								if (!result.getResult().isEmpty()) {
-									binding.naverMapButtonsLayout.currentAddress.setText(result.getResult().get(0).getFullAddress());
-									return;
+					if (getActivity() != null) {
+						requireActivity().runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								if (result.getResult() != null) {
+									if (!result.getResult().isEmpty()) {
+										binding.naverMapButtonsLayout.currentAddress.setText(result.getResult().get(0).getFullAddress());
+									}
+								} else {
+									binding.naverMapButtonsLayout.currentAddress.setText("");
 								}
 							}
-							binding.naverMapButtonsLayout.currentAddress.setText("");
-						}
-					});
+						});
+					}
 				}
 
 				@Override
 				public void onResponseFailed(Exception e) {
-					requireActivity().runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							binding.naverMapButtonsLayout.currentAddress.setText("");
-						}
-					});
+					if (getActivity() != null) {
+						requireActivity().runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								binding.naverMapButtonsLayout.currentAddress.setText("");
+							}
+						});
+					}
 				}
 			};
 

@@ -230,13 +230,12 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 		String locationName = location.getLocationType() == LocationType.PLACE ? location.getPlaceName() : location.getAddressName();
 		Toast.makeText(getContext(), locationName + " - " + getString(R.string.selected_location), Toast.LENGTH_SHORT).show();
 
-		getParentFragmentManager().popBackStackImmediate();
-
 		if (requestCode == LocationIntentCode.REQUEST_CODE_CHANGE_LOCATION) {
 			onDetailLocationSelectionResultListener.onResultChangedLocation(location);
 		} else {
 			onDetailLocationSelectionResultListener.onResultSelectedLocation(location);
 		}
+		getParentFragmentManager().popBackStackImmediate();
 	}
 
 	@Override
@@ -248,8 +247,8 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 
 		Toast.makeText(getContext(), R.string.canceled_location, Toast.LENGTH_SHORT).show();
 
-		getParentFragmentManager().popBackStackImmediate();
 		onDetailLocationSelectionResultListener.onResultUnselectedLocation();
+		getParentFragmentManager().popBackStackImmediate();
 	}
 
 	@Override

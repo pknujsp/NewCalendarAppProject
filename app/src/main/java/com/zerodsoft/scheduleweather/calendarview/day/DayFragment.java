@@ -47,6 +47,7 @@ public class DayFragment extends Fragment implements IRefreshView, OnDateTimeCha
 
 	private OnPageChangeCallback onPageChangeCallback;
 	private int currentPosition = EventTransactionFragment.FIRST_VIEW_POSITION;
+	private boolean initializing = true;
 
 
 	public DayFragment(Fragment fragment, IToolbar iToolbar) {
@@ -111,7 +112,41 @@ public class DayFragment extends Fragment implements IRefreshView, OnDateTimeCha
 			}
 		});
 
+		selectedCalendarViewModel.getOnListSelectedCalendarLiveData().observe(this, onListSelectedCalendarObserver);
+		selectedCalendarViewModel.getOnAddedSelectedCalendarLiveData().observe(this, onAddedSelectedCalendarObserver);
+		selectedCalendarViewModel.getOnDeletedSelectedCalendarLiveData().observe(this, onDeletedSelectedCalendarObserver);
+
 	}
+
+	private final Observer<List<SelectedCalendarDTO>> onDeletedSelectedCalendarObserver = new Observer<List<SelectedCalendarDTO>>() {
+		@Override
+		public void onChanged(List<SelectedCalendarDTO> selectedCalendarDTOS) {
+			if (!initializing) {
+				selectedCalendarDTOList = selectedCalendarDTOS;
+				refreshView();
+			}
+		}
+	};
+
+	private final Observer<SelectedCalendarDTO> onAddedSelectedCalendarObserver = new Observer<SelectedCalendarDTO>() {
+		@Override
+		public void onChanged(SelectedCalendarDTO selectedCalendarDTO) {
+			if (!initializing) {
+				selectedCalendarDTOList.add(selectedCalendarDTO);
+				refreshView();
+			}
+		}
+	};
+
+	private final Observer<List<SelectedCalendarDTO>> onListSelectedCalendarObserver = new Observer<List<SelectedCalendarDTO>>() {
+		@Override
+		public void onChanged(List<SelectedCalendarDTO> selectedCalendarDTOS) {
+			initializing = false;
+			selectedCalendarDTOList = selectedCalendarDTOS;
+			setViewPager();
+		}
+	};
+
 
 	@Nullable
 	@Override
@@ -125,31 +160,6 @@ public class DayFragment extends Fragment implements IRefreshView, OnDateTimeCha
 
 		dayViewPager = (ViewPager2) view.findViewById(R.id.day_viewpager);
 		dayViewPager.setOrientation(ViewPager2.ORIENTATION_HORIZONTAL);
-
-
-		selectedCalendarViewModel.getOnListSelectedCalendarLiveData().observe(getViewLifecycleOwner(), new Observer<List<SelectedCalendarDTO>>() {
-			@Override
-			public void onChanged(List<SelectedCalendarDTO> selectedCalendarDTOS) {
-				selectedCalendarDTOList = selectedCalendarDTOS;
-				setViewPager();
-			}
-		});
-
-		selectedCalendarViewModel.getOnAddedSelectedCalendarLiveData().observe(getViewLifecycleOwner(), new Observer<SelectedCalendarDTO>() {
-			@Override
-			public void onChanged(SelectedCalendarDTO selectedCalendarDTO) {
-				selectedCalendarDTOList.add(selectedCalendarDTO);
-				refreshView();
-			}
-		});
-
-		selectedCalendarViewModel.getOnDeletedSelectedCalendarLiveData().observe(getViewLifecycleOwner(), new Observer<List<SelectedCalendarDTO>>() {
-			@Override
-			public void onChanged(List<SelectedCalendarDTO> selectedCalendarDTOS) {
-				selectedCalendarDTOList = selectedCalendarDTOS;
-				refreshView();
-			}
-		});
 
 		selectedCalendarViewModel.getSelectedCalendarList();
 	}
@@ -170,13 +180,11 @@ public class DayFragment extends Fragment implements IRefreshView, OnDateTimeCha
 	}
 
 	@Override
-	public void onStart() {
-		super.onStart();
-	}
-
-	@Override
-	public void onStop() {
-		super.onStop();
+	public void onDestroy() {
+		super.onDestroy();
+		selectedCalendarViewModel.getOnListSelectedCalendarLiveData().removeObserver(onListSelectedCalendarObserver);
+		selectedCalendarViewModel.getOnDeletedSelectedCalendarLiveData().removeObserver(onDeletedSelectedCalendarObserver);
+		selectedCalendarViewModel.getOnAddedSelectedCalendarLiveData().removeObserver(onAddedSelectedCalendarObserver);
 	}
 
 	public void goToToday(Date date) {
