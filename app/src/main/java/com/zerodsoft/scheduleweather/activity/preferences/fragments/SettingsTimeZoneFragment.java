@@ -6,17 +6,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.editevent.fragments.TimeZoneFragment;
-import com.zerodsoft.scheduleweather.activity.editevent.interfaces.ITimeZone;
-import com.zerodsoft.scheduleweather.activity.preferences.SettingsActivity;
-import com.zerodsoft.scheduleweather.activity.preferences.interfaces.IPreferenceFragment;
-
-import java.util.TimeZone;
 
 public class SettingsTimeZoneFragment extends TimeZoneFragment {
 	public SettingsTimeZoneFragment(OnTimeZoneResultListener onTimeZoneResultListener) {

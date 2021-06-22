@@ -1,7 +1,6 @@
 package com.zerodsoft.scheduleweather.activity.main;
 
 import android.Manifest;
-import android.accounts.Account;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -21,8 +20,8 @@ import android.widget.Toast;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
-import com.zerodsoft.scheduleweather.activity.preferences.SettingsActivity;
-import com.zerodsoft.scheduleweather.calendar.CalendarProvider;
+import com.zerodsoft.scheduleweather.activity.preferences.fragments.SettingsFragment;
+import com.zerodsoft.scheduleweather.activity.preferences.fragments.SettingsMainFragment;
 import com.zerodsoft.scheduleweather.calendar.selectedcalendar.SelectedCalendarViewModel;
 import com.zerodsoft.scheduleweather.calendarview.SideBarCalendarListAdapter;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
@@ -260,22 +259,16 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 							.commit();
 					break;
 				case R.id.settings:
-					Intent intent = new Intent(AppMainActivity.this, SettingsActivity.class);
-					settingsActivityResultLauncher.launch(intent);
+					SettingsMainFragment settingsMainFragment = new SettingsMainFragment();
+					getSupportFragmentManager().beginTransaction().hide(getSupportFragmentManager().findFragmentByTag(getString(R.string.tag_calendar_transaction_fragment)))
+							.add(mainBinding.fragmentContainer.getId(), settingsMainFragment,
+									getString(R.string.tag_settings_fragment)).addToBackStack(getString(R.string.tag_settings_fragment))
+							.commit();
 					break;
 			}
 			mainBinding.drawerLayout.closeDrawer(mainBinding.sideNavigation);
 		}
 	};
-
-
-	private final ActivityResultLauncher<Intent> settingsActivityResultLauncher =
-			registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-				@Override
-				public void onActivityResult(ActivityResult result) {
-
-				}
-			});
 
 
 	private final ActivityResultLauncher<Intent> addAccountActivityResultLauncher =

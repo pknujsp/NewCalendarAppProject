@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.provider.CalendarContract;
 import android.util.ArrayMap;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,23 +30,15 @@ public class SideBarCalendarListAdapter extends BaseExpandableListAdapter {
 	private ICalendarCheckBox iCalendarCheckBox;
 	private LayoutInflater layoutInflater;
 
-	private GroupViewHolder groupViewHolder;
-	private ChildViewHolder childViewHolder;
-
-	private String accountName;
-	private String calendarDisplayName;
-	private int calendarColor;
-	private int calendarId;
-
 	private Set<Integer> selectedCalendarIdSet = new HashSet<>();
 	private Set<Integer> allCalendarIdSet = new HashSet<>();
 	private List<ContentValues> calendarList = new ArrayList<>();
 	private ArrayMap<String, List<ContentValues>> accountArrMap = new ArrayMap<>();
 
-	public SideBarCalendarListAdapter(Activity context, ICalendarCheckBox iCalendarCheckBox) {
-		this.context = context;
+	public SideBarCalendarListAdapter(Activity activity, ICalendarCheckBox iCalendarCheckBox) {
+		this.context = activity;
 		this.iCalendarCheckBox = iCalendarCheckBox;
-		this.layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		this.layoutInflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 	}
 
 	public void setCalendarList(List<ContentValues> calendarList) {
@@ -103,12 +96,12 @@ public class SideBarCalendarListAdapter extends BaseExpandableListAdapter {
 	}
 
 	@Override
-	public Object getGroup(int i) {
+	public String getGroup(int i) {
 		return accountArrMap.keyAt(i);
 	}
 
 	@Override
-	public Object getChild(int groupPosition, int childPosition) {
+	public ContentValues getChild(int groupPosition, int childPosition) {
 		return accountArrMap.valueAt(groupPosition).get(childPosition);
 	}
 
@@ -124,12 +117,13 @@ public class SideBarCalendarListAdapter extends BaseExpandableListAdapter {
 
 	@Override
 	public boolean hasStableIds() {
-		return true;
+		return false;
 	}
 
 	@Override
 	public View getGroupView(int groupPosition, boolean b, View view, ViewGroup viewGroup) {
-		accountName = accountArrMap.keyAt(groupPosition);
+		String accountName = accountArrMap.keyAt(groupPosition);
+		GroupViewHolder groupViewHolder = null;
 
 		if (view == null) {
 			view = layoutInflater.inflate(R.layout.side_nav_calendar_group_item, null);
@@ -146,25 +140,32 @@ public class SideBarCalendarListAdapter extends BaseExpandableListAdapter {
 
 	@Override
 	public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View view, ViewGroup viewGroup) {
-		calendarDisplayName = accountArrMap.valueAt(groupPosition).get(childPosition).getAsString(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME);
-		calendarColor = EventUtil.getColor(accountArrMap.valueAt(groupPosition).get(childPosition).getAsInteger(CalendarContract.Calendars.CALENDAR_COLOR));
-		calendarId = accountArrMap.valueAt(groupPosition).get(childPosition).getAsInteger(CalendarContract.Calendars._ID);
+		String calendarDisplayName =
+				accountArrMap.valueAt(groupPosition).get(childPosition).getAsString(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME);
+		int calendarColor =
+				EventUtil.getColor(accountArrMap.valueAt(groupPosition).get(childPosition).getAsInteger(CalendarContract.Calendars.CALENDAR_COLOR));
+		int calendarId = accountArrMap.valueAt(groupPosition).get(childPosition).getAsInteger(CalendarContract.Calendars._ID);
+
+		ChildViewHolder childViewHolder = null;
 
 		if (view == null) {
 			view = layoutInflater.inflate(R.layout.side_nav_calendar_child_item, null);
-			childViewHolder = new ChildViewHolder((MaterialCheckBox) view.findViewById(R.id.side_nav_calendar_checkbox), groupPosition, childPosition);
-			childViewHolder.checkBox.setTag(childViewHolder);
+
+			childViewHolder = new ChildViewHolder((MaterialCheckBox) view.findViewById(R.id.side_nav_calendar_checkbox));
 			view.setTag(childViewHolder);
 		} else {
 			childViewHolder = (ChildViewHolder) view.getTag();
 		}
+
+		CheckBoxViewHolder checkBoxViewHolder = new CheckBoxViewHolder(groupPosition, childPosition);
+		childViewHolder.checkBox.setTag(null);
+		childViewHolder.checkBox.setTag(checkBoxViewHolder);
 
 		childViewHolder.checkBox.setText(calendarDisplayName);
 		childViewHolder.checkBox.setButtonTintList(ColorStateList.valueOf(EventUtil.getColor(calendarColor)));
 
 		childViewHolder.checkBox.setOnCheckedChangeListener(null);
 		childViewHolder.checkBox.setChecked(selectedCalendarIdSet.contains(calendarId));
-
 		childViewHolder.checkBox.setOnCheckedChangeListener(onCheckedChangeListener);
 
 		return view;
@@ -173,22 +174,30 @@ public class SideBarCalendarListAdapter extends BaseExpandableListAdapter {
 	private final CompoundButton.OnCheckedChangeListener onCheckedChangeListener = new CompoundButton.OnCheckedChangeListener() {
 		@Override
 		public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-			ChildViewHolder childViewHolder = (ChildViewHolder) buttonView.getTag();
+			CheckBoxViewHolder checkBoxViewHolder = (CheckBoxViewHolder) buttonView.getTag();
 
-			iCalendarCheckBox.onCheckedBox(accountArrMap.valueAt(childViewHolder.groupPosition).get(childViewHolder.childPosition),
+			iCalendarCheckBox.onCheckedBox(accountArrMap.valueAt(checkBoxViewHolder.groupPosition).get(checkBoxViewHolder.childPosition),
 					isChecked);
 
+			int calendarId =
+					accountArrMap.valueAt(checkBoxViewHolder.groupPosition).get(checkBoxViewHolder.childPosition).getAsInteger(CalendarContract.Calendars._ID);
+
 			if (isChecked) {
-				selectedCalendarIdSet.add(accountArrMap.valueAt(childViewHolder.groupPosition).get(childViewHolder.childPosition).getAsInteger(CalendarContract.Calendars._ID));
+				selectedCalendarIdSet.add(accountArrMap.valueAt(checkBoxViewHolder.groupPosition).get(checkBoxViewHolder.childPosition).getAsInteger(CalendarContract.Calendars._ID));
 			} else {
-				selectedCalendarIdSet.remove(accountArrMap.valueAt(childViewHolder.groupPosition).get(childViewHolder.childPosition).getAsInteger(CalendarContract.Calendars._ID));
+				selectedCalendarIdSet.remove(accountArrMap.valueAt(checkBoxViewHolder.groupPosition).get(checkBoxViewHolder.childPosition).getAsInteger(CalendarContract.Calendars._ID));
 			}
+
+			Log.e("체크박스 클릭됨",
+					"calendarId : " + calendarId + " calendarDisplayName : " +
+							accountArrMap.valueAt(checkBoxViewHolder.groupPosition).get(checkBoxViewHolder.childPosition).getAsString(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME)
+							+ " group : " + checkBoxViewHolder.groupPosition + " child : " + checkBoxViewHolder.childPosition);
 		}
 	};
 
 	@Override
 	public boolean isChildSelectable(int i, int i1) {
-		return true;
+		return false;
 	}
 
 	static final class GroupViewHolder {
@@ -201,11 +210,17 @@ public class SideBarCalendarListAdapter extends BaseExpandableListAdapter {
 
 	static final class ChildViewHolder {
 		final MaterialCheckBox checkBox;
+
+		public ChildViewHolder(MaterialCheckBox checkBox) {
+			this.checkBox = checkBox;
+		}
+	}
+
+	static final class CheckBoxViewHolder {
 		final int groupPosition;
 		final int childPosition;
 
-		public ChildViewHolder(MaterialCheckBox checkBox, int groupPosition, int childPosition) {
-			this.checkBox = checkBox;
+		public CheckBoxViewHolder(int groupPosition, int childPosition) {
 			this.groupPosition = groupPosition;
 			this.childPosition = childPosition;
 		}

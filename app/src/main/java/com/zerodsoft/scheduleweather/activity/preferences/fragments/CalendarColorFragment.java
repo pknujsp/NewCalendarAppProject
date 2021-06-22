@@ -27,7 +27,6 @@ import androidx.preference.PreferenceScreen;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.preferences.ColorListAdapter;
-import com.zerodsoft.scheduleweather.activity.preferences.SettingsActivity;
 import com.zerodsoft.scheduleweather.activity.preferences.custom.ColorPreference;
 import com.zerodsoft.scheduleweather.activity.preferences.interfaces.PreferenceListener;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
@@ -60,22 +59,6 @@ public class CalendarColorFragment extends PreferenceFragmentCompat implements P
         setPreferencesFromResource(R.xml.app_settings_calendar_color_preference, rootKey);
     }
 
-    @Override
-    public void onAttach(@NonNull Context context)
-    {
-        super.onAttach(context);
-        onBackPressedCallback = new OnBackPressedCallback(true)
-        {
-            @Override
-            public void handleOnBackPressed()
-            {
-                getParentFragmentManager().popBackStack();
-                ((SettingsActivity) getActivity()).getSupportActionBar().setTitle(R.string.app_settings);
-                onBackPressedCallback.remove();
-            }
-        };
-        requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState)

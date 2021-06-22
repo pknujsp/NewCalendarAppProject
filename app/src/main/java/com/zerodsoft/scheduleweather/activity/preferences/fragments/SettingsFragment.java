@@ -2,7 +2,6 @@ package com.zerodsoft.scheduleweather.activity.preferences.fragments;
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.TypedValue;
@@ -26,12 +25,9 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.slider.Slider;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
-import com.zerodsoft.scheduleweather.activity.editevent.fragments.TimeZoneFragment;
-import com.zerodsoft.scheduleweather.activity.preferences.SettingsActivity;
 import com.zerodsoft.scheduleweather.activity.preferences.custom.RadiusPreference;
 import com.zerodsoft.scheduleweather.activity.preferences.custom.SearchBuildingRangeRadiusPreference;
 import com.zerodsoft.scheduleweather.activity.preferences.custom.TimeZonePreference;
-import com.zerodsoft.scheduleweather.activity.preferences.interfaces.IPreferenceFragment;
 import com.zerodsoft.scheduleweather.activity.preferences.interfaces.PreferenceListener;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
@@ -42,8 +38,8 @@ import java.text.DecimalFormat;
 import java.util.TimeZone;
 
 public class SettingsFragment extends PreferenceFragmentCompat implements PreferenceListener {
+	private final IFragmentTitle iFragmentTitle;
 	private SharedPreferences preferences;
-	private OnBackPressedCallback onBackPressedCallback;
 
 	private SwitchPreference useDefaultTimeZoneSwitchPreference;
 	private TimeZonePreference customTimeZonePreference;
@@ -61,9 +57,14 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 	private FavoriteLocationViewModel favoriteLocationViewModel;
 	private WeatherDbViewModel weatherDbViewModel;
 
+	public SettingsFragment(IFragmentTitle iFragmentTitle) {
+		this.iFragmentTitle = iFragmentTitle;
+	}
+
 	@Override
 	public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
 		setPreferencesFromResource(R.xml.app_settings_main_preference, rootKey);
+
 
 		preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
 		preferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
@@ -187,18 +188,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 		});
 	}
 
-	@Override
-	public void onAttach(@NonNull Context context) {
-		super.onAttach(context);
-		onBackPressedCallback = new OnBackPressedCallback(true) {
-			@Override
-			public void handleOnBackPressed() {
-				getActivity().finish();
-				onBackPressedCallback.remove();
-			}
-		};
-		requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-	}
 
 	private final SharedPreferences.OnSharedPreferenceChangeListener onSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
 		@Override
@@ -210,6 +199,22 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 	};
 
 	private void initPreference() {
+		//캘린더 색상
+		calendarColorListPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+			@Override
+			public boolean onPreferenceClick(Preference preference) {
+				iFragmentTitle.setTitle(getString(R.string.preference_title_calendar_color));
+
+				CalendarColorFragment calendarColorFragment = new CalendarColorFragment();
+				getParentFragmentManager().beginTransaction().hide(SettingsFragment.this)
+						.add(R.id.fragment_container, calendarColorFragment, getString(R.string.tag_calendar_color_fragment))
+						.addToBackStack(getString(R.string.tag_calendar_color_fragment)).commit();
+
+				return true;
+			}
+		});
+
+
 		//커스텀 시간대
 		customTimeZonePreference = new TimeZonePreference(getContext());
 		customTimeZonePreference.setKey(getString(R.string.preference_key_custom_timezone));
@@ -463,4 +468,16 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 	public void onCreatedPreferenceView() {
 	}
 
+	@Override
+	public void onHiddenChanged(boolean hidden) {
+		super.onHiddenChanged(hidden);
+		if (!hidden) {
+			iFragmentTitle.setTitle(getString(R.string.settings));
+		}
+	}
+
+
+	public interface IFragmentTitle {
+		void setTitle(String title);
+	}
 }
