@@ -9,6 +9,7 @@ import android.os.Bundle;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
@@ -29,6 +30,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
@@ -38,6 +40,7 @@ import android.widget.TextView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.naver.maps.geometry.LatLng;
 import com.naver.maps.map.CameraUpdate;
 import com.naver.maps.map.NaverMap;
@@ -94,8 +97,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 
 	private ContentValues instance;
 	private LocationDTO selectedLocationDtoInEvent;
-	private EventFunctionItemView[] functionButtons;
-	private ImageView functionButton;
+	private Button[] functionButtons;
+	private TextView functionButton;
 	private Marker selectedLocationInEventMarker;
 	private InfoWindow selectedLocationInEventInfoWindow;
 
@@ -110,6 +113,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	private String selectedPlaceCategoryCode;
 	private OnExtraListDataListener<String> placeCategoryOnExtraListDataListener;
 	private Set<PlaceCategoryDTO> savedPlaceCategorySet = new HashSet<>();
+
+	private AlertDialog functionDialog;
 
 	private LinearLayout chipsLayout;
 	private ViewGroup functionItemsView;
@@ -306,15 +311,16 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 
 	private void createFunctionList() {
 		//이벤트 정보, 날씨, 음식점
-		functionButton = new ImageView(getContext());
+		functionButton = new TextView(getContext());
 		functionButton.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.map_button_rect));
-		functionButton.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.expand_less_icon));
-		functionButton.setElevation(3f);
+		functionButton.setElevation(4f);
 		functionButton.setClickable(true);
+		functionButton.setText(R.string.show_functions);
 		functionButton.setId(R.id.function_btn_in_instance_main_fragment);
 
-		final int btnPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
-		functionButton.setPadding(btnPadding, btnPadding, btnPadding, btnPadding);
+		final int btnPaddingLR = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
+		final int btnPaddingTB = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 6f, getResources().getDisplayMetrics());
+		functionButton.setPadding(btnPaddingLR, btnPaddingTB, btnPaddingLR, btnPaddingTB);
 
 		ConstraintLayout.LayoutParams functionBtnLayoutParams = new ConstraintLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
 				ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -326,45 +332,30 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 
 		binding.naverMapButtonsLayout.getRoot().addView(functionButton, functionBtnLayoutParams);
 		functionButton.setOnClickListener(new View.OnClickListener() {
-			boolean isExpanded = true;
 
 			@Override
 			public void onClick(View view) {
-				functionButton.setImageDrawable(isExpanded ? ContextCompat.getDrawable(getContext(), R.drawable.expand_more_icon)
-						: ContextCompat.getDrawable(getContext(), R.drawable.expand_less_icon));
-
-				if (isExpanded) {
-					collapseFunctions();
-				} else {
-					expandFunctions();
-				}
-				isExpanded = !isExpanded;
+				functionDialog.show();
 			}
 		});
 
 		//기능 세부 버튼
-		functionItemsView = (LinearLayout) getLayoutInflater().inflate(R.layout.event_function_items_view,
-				binding.naverMapButtonsLayout.getRoot(), false);
+		functionItemsView = (ViewGroup) getLayoutInflater().inflate(R.layout.event_function_items_view,
+				null);
 
-		functionButtons = new EventFunctionItemView[]{functionItemsView.findViewById(R.id.function_event_info)
+		functionButtons = new Button[]{functionItemsView.findViewById(R.id.function_event_info)
 				, functionItemsView.findViewById(R.id.function_weather)
 				, functionItemsView.findViewById(R.id.function_restaurant)};
 
-		ConstraintLayout.LayoutParams functionItemsViewLayoutParams = new ConstraintLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-				ViewGroup.LayoutParams.WRAP_CONTENT);
-		final int marginBottomFunctionBtnsLayout = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f,
-				getResources().getDisplayMetrics());
-
-		functionItemsViewLayoutParams.bottomMargin = marginBottomFunctionBtnsLayout;
-		functionItemsViewLayoutParams.bottomToTop = functionButton.getId();
-		functionItemsViewLayoutParams.leftToLeft = binding.naverMapButtonsLayout.getRoot().getId();
-
-		binding.naverMapButtonsLayout.getRoot().addView(functionItemsView, functionItemsViewLayoutParams);
+		functionDialog = new MaterialAlertDialogBuilder(requireActivity())
+				.setView(functionItemsView)
+				.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.transparent_background))
+				.create();
 
 		functionButtons[0].setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				functionButton.callOnClick();
+				functionDialog.dismiss();
 				onClickedOpenEventFragmentBtn();
 			}
 		});
@@ -373,7 +364,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 			@Override
 			public void onClick(View view) {
 				//날씨
-				functionButton.callOnClick();
+				functionDialog.dismiss();
 
 				WeatherMainFragment weatherMainFragment = new WeatherMainFragment(new DialogInterface() {
 					@Override
@@ -401,7 +392,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 			@Override
 			public void onClick(View view) {
 				//음식점
-				functionButton.callOnClick();
+				functionDialog.dismiss();
 
 				FragmentManager fragmentManager = getChildFragmentManager();
 
@@ -514,21 +505,11 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		eventFragment.show(getChildFragmentManager(), getString(R.string.tag_event_fragment));
 	}
 
-
-	private void collapseFunctions() {
-		functionItemsView.setVisibility(View.GONE);
-	}
-
-
-	private void expandFunctions() {
-		functionItemsView.setVisibility(View.VISIBLE);
-	}
-
 	private void createSelectedLocationMarker() {
 		LatLng latLng = new LatLng(Double.parseDouble(selectedLocationDtoInEvent.getLatitude()),
 				Double.parseDouble(selectedLocationDtoInEvent.getLongitude()));
 
-		final int markerWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 36f, getResources().getDisplayMetrics());
+		final int markerWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 38f, getResources().getDisplayMetrics());
 		final int markerHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 42f, getResources().getDisplayMetrics());
 
 		if (selectedLocationInEventMarker != null) {
@@ -894,7 +875,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	@Override
 	public void createCriteriaLocationMarker(String name, String latitude, String longitude) {
 		LatLng latLng = new LatLng(Double.parseDouble(latitude), Double.parseDouble(longitude));
-		final int markerWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 36f, getResources().getDisplayMetrics());
+		final int markerWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 38f, getResources().getDisplayMetrics());
 		final int markerHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 42f, getResources().getDisplayMetrics());
 
 		Marker criteriaLocationForRestaurantsMarker = new Marker(latLng);

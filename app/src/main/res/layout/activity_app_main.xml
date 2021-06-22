@@ -34,19 +34,39 @@
                         android:id="@+id/side_nav_calendar_types"
                         layout="@layout/side_nav_calendar_types" />
 
-                    <TextView
-                        style="@style/Preference.Category"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:paddingLeft="16dp"
-                        android:paddingTop="8dp"
-                        android:paddingBottom="8dp"
-                        android:text="@string/calendar" />
+                        android:layout_marginTop="8dp"
+                        android:orientation="vertical">
 
-                    <com.zerodsoft.scheduleweather.activity.main.sidenav.NotScrollExpandableListView
-                        android:id="@+id/side_nav_calendar_list"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
+                        <TextView
+                            style="@style/Preference.Category"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:paddingLeft="16dp"
+                            android:paddingTop="8dp"
+                            android:paddingBottom="8dp"
+                            android:text="@string/calendar" />
+
+
+                        <com.zerodsoft.scheduleweather.activity.main.sidenav.NotScrollExpandableListView
+                            android:id="@+id/side_nav_calendar_list"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+
+                        <Button
+                            android:id="@+id/add_account_btn"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="?attr/selectableItemBackground"
+                            android:gravity="center_vertical"
+                            android:paddingLeft="16dp"
+                            android:text="@string/add_account"
+                            android:textColor="@color/light_blue_600"
+                            android:visibility="visible" />
+                    </LinearLayout>
+
 
                     <include
                         android:id="@+id/side_nav_menu"

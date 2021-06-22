@@ -31,8 +31,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class CalendarProvider implements ICalendarProvider {
-	private static CalendarProvider instance;
-	private static Context context;
+	private Context context;
 
 	private MutableLiveData<Long> onAddedNewEventLiveData = new MutableLiveData<>();
 	private MutableLiveData<Boolean> onRemovedEventLiveData = new MutableLiveData<>();
@@ -107,19 +106,6 @@ public class CalendarProvider implements ICalendarProvider {
 	private final String EVENTS_QUERY;
 	private final String EVENT_QUERY;
 	private final String CALENDARS_QUERY;
-
-	public static void close() {
-		instance = null;
-	}
-
-	public static CalendarProvider newInstance(Context context) {
-		instance = new CalendarProvider(context);
-		return instance;
-	}
-
-	public static CalendarProvider getInstance() {
-		return instance;
-	}
 
 	public CalendarProvider(Context context) {
 		this.context = context;

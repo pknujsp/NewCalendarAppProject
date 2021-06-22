@@ -12,6 +12,7 @@ import android.content.pm.Signature;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.provider.CalendarContract;
+import android.provider.Settings;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -86,6 +87,9 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 		DISPLAY_WIDTH = point.x;
 		DISPLAY_HEIGHT = point.y;
 
+		sideBarCalendarListAdapter = new SideBarCalendarListAdapter(AppMainActivity.this, AppMainActivity.this);
+		mainBinding.sideNavCalendarList.setAdapter(sideBarCalendarListAdapter);
+
 		selectedCalendarViewModel.getOnListSelectedCalendarLiveData().observe(this, new Observer<List<SelectedCalendarDTO>>() {
 			@Override
 			public void onChanged(List<SelectedCalendarDTO> selectedCalendarDTOS) {
@@ -95,6 +99,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 
 		if (AppPermission.grantedPermissions(getApplicationContext(), Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR)) {
 			//권한 확인
+			sideBarCalendarListAdapter.setCalendarList(calendarViewModel.getAllCalendars());
 			selectedCalendarViewModel.getSelectedCalendarList();
 			init();
 		} else {
@@ -125,6 +130,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 
 		mainBinding.sideNavMenu.favoriteLocation.setOnClickListener(sideNavOnClickListener);
 		mainBinding.sideNavMenu.settings.setOnClickListener(sideNavOnClickListener);
+		mainBinding.addAccountBtn.setOnClickListener(sideNavOnClickListener);
 		mainBinding.sideNavCalendarTypes.calendarTypeDay.setOnClickListener(calendarTypeOnClickListener);
 		mainBinding.sideNavCalendarTypes.calendarTypeWeek.setOnClickListener(calendarTypeOnClickListener);
 		mainBinding.sideNavCalendarTypes.calendarTypeMonth.setOnClickListener(calendarTypeOnClickListener);
@@ -142,7 +148,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 
 
 	private void initSideCalendars(List<SelectedCalendarDTO> selectedCalendarList) {
-		List<ContentValues> allCalendarList = calendarViewModel.getAllCalendars();
+		List<ContentValues> allCalendarList = sideBarCalendarListAdapter.getCalendarList();
 		//선택된 캘린더 중에 현재 없어진 캘린더는 없는지 확인하고 있으면 선택해제
 		Set<Integer> calendarIdSet = new HashSet<>();
 		for (ContentValues calendar : allCalendarList) {
@@ -169,11 +175,9 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 				}
 			}, removeCalendarIdSet.toArray(new Integer[removeCalendarIdSet.size()]));
 		} else {
-			sideBarCalendarListAdapter = new SideBarCalendarListAdapter(AppMainActivity.this, AppMainActivity.this);
-			sideBarCalendarListAdapter.setCalendarList(allCalendarList);
 			sideBarCalendarListAdapter.setSelectedCalendarList(selectedCalendarList);
+			sideBarCalendarListAdapter.notifyDataSetChanged();
 
-			mainBinding.sideNavCalendarList.setAdapter(sideBarCalendarListAdapter);
 			mainBinding.sideNavCalendarList.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
 				@Override
 				public boolean onGroupClick(ExpandableListView expandableListView, View view, int i, long l) {
@@ -243,6 +247,11 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 		@Override
 		public void onClick(View view) {
 			switch (view.getId()) {
+				case R.id.add_account_btn:
+					Intent accountIntent = new Intent(Settings.ACTION_ADD_ACCOUNT);
+					accountIntent.putExtra(Settings.EXTRA_ACCOUNT_TYPES, new String[]{"com.google"});
+					addAccountActivityResultLauncher.launch(accountIntent);
+					break;
 				case R.id.favorite_location:
 					AllFavoritesHostFragment allFavoritesHostFragment = new AllFavoritesHostFragment();
 					getSupportFragmentManager().beginTransaction().hide(getSupportFragmentManager().findFragmentByTag(getString(R.string.tag_calendar_transaction_fragment)))
@@ -269,11 +278,21 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 			});
 
 
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		CalendarProvider.close();
-	}
+	private final ActivityResultLauncher<Intent> addAccountActivityResultLauncher =
+			registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+				@Override
+				public void onActivityResult(ActivityResult result) {
+					//아무것도 안하고 취소하면 resultCode == CANCELED
+					//계정 등록해도 CANCELED//
+					//추가된 계정이 있는지 확인
+					List<ContentValues> newCalendarList = calendarViewModel.getAllCalendars();
+					if (newCalendarList.size() != sideBarCalendarListAdapter.getCalendarList().size()) {
+						sideBarCalendarListAdapter.setCalendarList(newCalendarList);
+						sideBarCalendarListAdapter.notifyDataSetChanged();
+					}
+				}
+			});
+
 
 	private final ActivityResultLauncher<String[]> permissionsResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
 			new ActivityResultCallback<Map<String, Boolean>>() {
@@ -281,6 +300,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 				public void onActivityResult(Map<String, Boolean> result) {
 					if (result.get(Manifest.permission.READ_CALENDAR)) {
 						// 권한 허용됨
+						sideBarCalendarListAdapter.setCalendarList(calendarViewModel.getAllCalendars());
 						selectedCalendarViewModel.getSelectedCalendarList();
 						init();
 					} else {

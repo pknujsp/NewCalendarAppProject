@@ -27,21 +27,16 @@ public class CalendarViewModel extends AndroidViewModel implements ICalendarProv
 
 	public CalendarViewModel(Application application) {
 		super(application);
-		Log.e("VIEWMODEL ERROR : ", CalendarProvider.getInstance() == null ? "null" : "not null");
 
-		if (CalendarProvider.getInstance() == null) {
-			this.calendarProvider = CalendarProvider.newInstance(application.getApplicationContext());
+		this.calendarProvider = new CalendarProvider(application.getApplicationContext());
 
-			onAddedNewEventLiveData = calendarProvider.getOnAddedNewEventLiveData();
-			onRemovedEventLiveData = calendarProvider.getOnRemovedEventLiveData();
-			onExceptedInstanceLiveData = calendarProvider.getOnExceptedInstanceLiveData();
-			onRemovedFutureInstancesLiveData = calendarProvider.getOnRemovedFutureInstancesLiveData();
-			onModifiedInstanceLiveData = calendarProvider.getOnModifiedInstanceLiveData();
-			onModifiedEventLiveData = calendarProvider.getOnModifiedEventLiveData();
-			onModifiedFutureInstancesLiveData = calendarProvider.getOnModifiedFutureInstancesLiveData();
-		} else {
-			this.calendarProvider = CalendarProvider.getInstance();
-		}
+		onAddedNewEventLiveData = calendarProvider.getOnAddedNewEventLiveData();
+		onRemovedEventLiveData = calendarProvider.getOnRemovedEventLiveData();
+		onExceptedInstanceLiveData = calendarProvider.getOnExceptedInstanceLiveData();
+		onRemovedFutureInstancesLiveData = calendarProvider.getOnRemovedFutureInstancesLiveData();
+		onModifiedInstanceLiveData = calendarProvider.getOnModifiedInstanceLiveData();
+		onModifiedEventLiveData = calendarProvider.getOnModifiedEventLiveData();
+		onModifiedFutureInstancesLiveData = calendarProvider.getOnModifiedFutureInstancesLiveData();
 	}
 
 	public LiveData<Long> getOnAddedNewEventLiveData() {

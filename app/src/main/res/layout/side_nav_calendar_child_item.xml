@@ -7,10 +7,8 @@
 
     <com.google.android.material.checkbox.MaterialCheckBox
         android:id="@+id/side_nav_calendar_checkbox"
-        style="?attr/checkboxStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:checked="false"
         android:text="calendarName" />
 
 </FrameLayout>

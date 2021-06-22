@@ -609,4 +609,6 @@
     <string name="tag_map_fragment">tag_map_fragment</string>
     <string name="tag_nearby_msrstn_list_on_map">tag_nearby_msrstn_list_on_map</string>
     <string name="loading_food_menu_list">음식 메뉴 목록 로딩</string>
+    <string name="add_account">계정 추가</string>
+    <string name="show_functions">기능 보기</string>
 </resources>

@@ -509,16 +509,6 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 	};
 
 
-	private final ActivityResultLauncher<Intent> accountsResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult()
-			, new ActivityResultCallback<ActivityResult>() {
-				@Override
-				public void onActivityResult(ActivityResult result) {
-					if (result.getData() != null) {
-
-					}
-				}
-			});
-
 	final class SyncCalendar {
 		private List<Account> accountList = new ArrayList<>();
 

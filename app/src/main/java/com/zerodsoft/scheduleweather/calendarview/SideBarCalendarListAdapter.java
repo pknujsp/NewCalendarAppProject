@@ -134,9 +134,7 @@ public class SideBarCalendarListAdapter extends BaseExpandableListAdapter {
 		if (view == null) {
 			view = layoutInflater.inflate(R.layout.side_nav_calendar_group_item, null);
 
-			groupViewHolder = new GroupViewHolder();
-			groupViewHolder.accountName = (TextView) view.findViewById(R.id.side_nav_account_name);
-
+			groupViewHolder = new GroupViewHolder((TextView) view.findViewById(R.id.side_nav_account_name));
 			view.setTag(groupViewHolder);
 		} else {
 			groupViewHolder = (GroupViewHolder) view.getTag();
@@ -148,46 +146,45 @@ public class SideBarCalendarListAdapter extends BaseExpandableListAdapter {
 
 	@Override
 	public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View view, ViewGroup viewGroup) {
-		final int mGroupPosition = groupPosition;
-		final int mChildPosition = childPosition;
-
-		calendarDisplayName = ((ContentValues) getChild(mGroupPosition, mChildPosition)).getAsString(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME);
-		calendarColor = EventUtil.getColor(((ContentValues) getChild(mGroupPosition, mChildPosition)).getAsInteger(CalendarContract.Calendars.CALENDAR_COLOR));
-		calendarId = EventUtil.getColor(((ContentValues) getChild(mGroupPosition, mChildPosition)).getAsInteger(CalendarContract.Calendars._ID));
+		calendarDisplayName = accountArrMap.valueAt(groupPosition).get(childPosition).getAsString(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME);
+		calendarColor = EventUtil.getColor(accountArrMap.valueAt(groupPosition).get(childPosition).getAsInteger(CalendarContract.Calendars.CALENDAR_COLOR));
+		calendarId = accountArrMap.valueAt(groupPosition).get(childPosition).getAsInteger(CalendarContract.Calendars._ID);
 
 		if (view == null) {
 			view = layoutInflater.inflate(R.layout.side_nav_calendar_child_item, null);
-
-			MaterialCheckBox checkBox = (MaterialCheckBox) view.findViewById(R.id.side_nav_calendar_checkbox);
-			childViewHolder = new ChildViewHolder();
-			childViewHolder.checkBox = checkBox;
-
-			view.setTag(R.layout.side_nav_calendar_child_item, childViewHolder);
+			childViewHolder = new ChildViewHolder((MaterialCheckBox) view.findViewById(R.id.side_nav_calendar_checkbox), groupPosition, childPosition);
+			childViewHolder.checkBox.setTag(childViewHolder);
+			view.setTag(childViewHolder);
 		} else {
-			childViewHolder = (ChildViewHolder) view.getTag(R.layout.side_nav_calendar_child_item);
+			childViewHolder = (ChildViewHolder) view.getTag();
 		}
 
 		childViewHolder.checkBox.setText(calendarDisplayName);
 		childViewHolder.checkBox.setButtonTintList(ColorStateList.valueOf(EventUtil.getColor(calendarColor)));
 
 		childViewHolder.checkBox.setOnCheckedChangeListener(null);
-		childViewHolder.checkBox.setChecked(selectedCalendarIdSet.contains(calendarId) ? true : false);
+		childViewHolder.checkBox.setChecked(selectedCalendarIdSet.contains(calendarId));
 
-		childViewHolder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-			@Override
-			public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-				if (isChecked) {
-					selectedCalendarIdSet.remove(calendarId);
-				} else {
-					selectedCalendarIdSet.add(calendarId);
-				}
-
-				iCalendarCheckBox.onCheckedBox(accountArrMap.valueAt(mGroupPosition).get(mChildPosition), isChecked);
-			}
-		});
+		childViewHolder.checkBox.setOnCheckedChangeListener(onCheckedChangeListener);
 
 		return view;
 	}
+
+	private final CompoundButton.OnCheckedChangeListener onCheckedChangeListener = new CompoundButton.OnCheckedChangeListener() {
+		@Override
+		public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+			ChildViewHolder childViewHolder = (ChildViewHolder) buttonView.getTag();
+
+			iCalendarCheckBox.onCheckedBox(accountArrMap.valueAt(childViewHolder.groupPosition).get(childViewHolder.childPosition),
+					isChecked);
+
+			if (isChecked) {
+				selectedCalendarIdSet.add(accountArrMap.valueAt(childViewHolder.groupPosition).get(childViewHolder.childPosition).getAsInteger(CalendarContract.Calendars._ID));
+			} else {
+				selectedCalendarIdSet.remove(accountArrMap.valueAt(childViewHolder.groupPosition).get(childViewHolder.childPosition).getAsInteger(CalendarContract.Calendars._ID));
+			}
+		}
+	};
 
 	@Override
 	public boolean isChildSelectable(int i, int i1) {
@@ -195,10 +192,22 @@ public class SideBarCalendarListAdapter extends BaseExpandableListAdapter {
 	}
 
 	static final class GroupViewHolder {
-		TextView accountName;
+		final TextView accountName;
+
+		public GroupViewHolder(TextView accountName) {
+			this.accountName = accountName;
+		}
 	}
 
 	static final class ChildViewHolder {
-		MaterialCheckBox checkBox;
+		final MaterialCheckBox checkBox;
+		final int groupPosition;
+		final int childPosition;
+
+		public ChildViewHolder(MaterialCheckBox checkBox, int groupPosition, int childPosition) {
+			this.checkBox = checkBox;
+			this.groupPosition = groupPosition;
+			this.childPosition = childPosition;
+		}
 	}
 }

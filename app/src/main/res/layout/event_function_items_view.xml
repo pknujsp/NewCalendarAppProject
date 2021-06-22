@@ -6,29 +6,33 @@
     android:background="@color/transparent"
     android:orientation="vertical">
 
-    <com.zerodsoft.scheduleweather.event.main.EventFunctionItemView
+    <Button
         android:id="@+id/function_event_info"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        app:img="@drawable/event_svg"
-        app:title="@string/instance_info" />
+        android:drawableLeft="@drawable/event_svg"
+        android:drawableTint="@color/white"
+        android:text="@string/instance_info" />
 
-    <com.zerodsoft.scheduleweather.event.main.EventFunctionItemView
+    <Button
         android:id="@+id/function_weather"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        app:img="@drawable/sunny_day_svg"
+        android:drawableLeft="@drawable/sunny_day_svg"
+        android:drawableTint="@color/white"
 
-        app:title="@string/weather" />
+        android:text="@string/weather" />
 
-    <com.zerodsoft.scheduleweather.event.main.EventFunctionItemView
+    <Button
         android:id="@+id/function_restaurant"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:img="@drawable/restaurant_svg"
-        app:title="@string/restaurant" />
+        android:drawableLeft="@drawable/restaurant_svg"
+        android:drawableTint="@color/white"
+
+        android:text="@string/restaurant" />
 
 
 </LinearLayout>
