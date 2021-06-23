@@ -95,6 +95,10 @@ public class EventFragment extends BottomSheetDialogFragment {
 		public void onFragmentAttached(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @NonNull @NotNull Context context) {
 			super.onFragmentAttached(fm, f, context);
 			if (f instanceof SelectionDetailLocationFragment) {
+				if (fm.findFragmentByTag(getString(R.string.tag_modify_instance_fragment)) == null) {
+					getDialog().hide();
+				}
+			} else if (f instanceof ModifyInstanceFragment) {
 				getDialog().hide();
 			}
 		}
@@ -103,6 +107,10 @@ public class EventFragment extends BottomSheetDialogFragment {
 		public void onFragmentDestroyed(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
 			super.onFragmentDestroyed(fm, f);
 			if (f instanceof SelectionDetailLocationFragment) {
+				if (fm.findFragmentByTag(getString(R.string.tag_modify_instance_fragment)) == null) {
+					getDialog().show();
+				}
+			} else if (f instanceof ModifyInstanceFragment) {
 				getDialog().show();
 			}
 		}
@@ -310,32 +318,14 @@ public class EventFragment extends BottomSheetDialogFragment {
 		binding.modifyEventFab.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				/*
-				Intent intent = new Intent(getContext(), ModifyInstanceActivity.class);
-				intent.putExtra("requestCode", EventIntentCode.REQUEST_MODIFY_EVENT.value());
-				intent.putExtra(CalendarContract.Instances.CALENDAR_ID, CALENDAR_ID);
-				intent.putExtra(CalendarContract.Instances.EVENT_ID, EVENT_ID);
-				intent.putExtra(CalendarContract.Instances._ID, INSTANCE_ID);
-				intent.putExtra(CalendarContract.Instances.BEGIN, instanceValues.getAsLong(CalendarContract.Instances.BEGIN));
-				intent.putExtra(CalendarContract.Instances.END, instanceValues.getAsLong(CalendarContract.Instances.END));
-				intent.putExtra(CalendarContract.Instances.RRULE, instanceValues.getAsString(CalendarContract.Instances.RRULE));
-
-				editInstanceActivityResultLauncher.launch(intent);
-
-				Bundle bundle = new Bundle();
 				ModifyInstanceFragment modifyInstanceFragment = new ModifyInstanceFragment(new ModifyInstanceFragment.OnModifyInstanceResultListener() {
 					@Override
 					public void onResultModifiedEvent(long eventId, long begin) {
-		setInstanceData();
-								requireActivity().getIntent().putExtras(result.getData());
-								getDialog().show();
+
 					}
 
 					@Override
 					public void onResultModifiedThisInstance() {
-								setInstanceData();
-								requireActivity().getIntent().putExtras(result.getData());
-																getDialog().show();
 
 					}
 
@@ -344,14 +334,16 @@ public class EventFragment extends BottomSheetDialogFragment {
 
 					}
 				});
+				Bundle bundle = new Bundle();
+
+				bundle.putLong(CalendarContract.Instances.EVENT_ID, EVENT_ID);
+				bundle.putLong(CalendarContract.Instances._ID, INSTANCE_ID);
+				bundle.putLong(CalendarContract.Instances.BEGIN, ORIGINAL_BEGIN);
+				bundle.putLong(CalendarContract.Instances.END, ORIGINAL_END);
+
 				modifyInstanceFragment.setArguments(bundle);
 				getParentFragmentManager().beginTransaction().add(R.id.fragment_container, modifyInstanceFragment,
 						getString(R.string.tag_modify_instance_fragment)).addToBackStack(getString(R.string.tag_modify_instance_fragment)).commit();
-
-														getDialog().hide();
-
-				 */
-				Toast.makeText(getContext(), "Working", Toast.LENGTH_SHORT).show();
 			}
 		});
 

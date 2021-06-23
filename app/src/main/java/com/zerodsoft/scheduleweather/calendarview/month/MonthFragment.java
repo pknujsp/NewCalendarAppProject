@@ -69,49 +69,63 @@ public class MonthFragment extends Fragment implements IRefreshView, OnDateTimeC
 		calendarViewModel.getOnAddedNewEventLiveData().observe(this, new Observer<Long>() {
 			@Override
 			public void onChanged(Long start) {
-				moveCurrentViewForBegin(start);
+				if (!initializing) {
+					moveCurrentViewForBegin(start);
+				}
 			}
 		});
 
 		calendarViewModel.getOnModifiedEventLiveData().observe(this, new Observer<Long>() {
 			@Override
 			public void onChanged(Long start) {
-				moveCurrentViewForBegin(start);
+				if (!initializing) {
+					moveCurrentViewForBegin(start);
+				}
 			}
 		});
 
 		calendarViewModel.getOnModifiedFutureInstancesLiveData().observe(this, new Observer<Long>() {
 			@Override
 			public void onChanged(Long begin) {
-				moveCurrentViewForBegin(begin);
+				if (!initializing) {
+					moveCurrentViewForBegin(begin);
+				}
 			}
 		});
 
 		calendarViewModel.getOnModifiedInstanceLiveData().observe(this, new Observer<Long>() {
 			@Override
 			public void onChanged(Long begin) {
-				moveCurrentViewForBegin(begin);
+				if (!initializing) {
+					moveCurrentViewForBegin(begin);
+				}
 			}
 		});
 
 		calendarViewModel.getOnExceptedInstanceLiveData().observe(this, new Observer<Boolean>() {
 			@Override
 			public void onChanged(Boolean aBoolean) {
-				refreshView();
+				if (!initializing) {
+					refreshView();
+				}
 			}
 		});
 
 		calendarViewModel.getOnRemovedFutureInstancesLiveData().observe(this, new Observer<Boolean>() {
 			@Override
 			public void onChanged(Boolean aBoolean) {
-				refreshView();
+				if (!initializing) {
+					refreshView();
+				}
 			}
 		});
 
 		calendarViewModel.getOnRemovedEventLiveData().observe(this, new Observer<Boolean>() {
 			@Override
 			public void onChanged(Boolean aBoolean) {
-				refreshView();
+				if (!initializing) {
+					refreshView();
+				}
 			}
 		});
 
@@ -219,6 +233,7 @@ public class MonthFragment extends Fragment implements IRefreshView, OnDateTimeC
 	@Override
 	public void receivedTimeTick(Date date) {
 		//month에서는 불필요
+
 	}
 
 	@Override

@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.Bundle;
 import android.provider.CalendarContract;
 import android.view.MenuItem;
 import android.view.View;
@@ -13,6 +14,7 @@ import android.widget.Toast;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.editevent.activity.ModifyInstanceFragment;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
@@ -38,15 +40,31 @@ public abstract class CommonPopupMenu {
 			public boolean onMenuItemClick(MenuItem menuItem) {
 				switch (menuItem.getItemId()) {
 					case R.id.edit_instance: {
-						//인스턴스 수정 액티비티 실행
-                        /*
-                        Intent intent = new Intent(EventActivity.this, EditEventActivity.class);
-                        intent.putExtra("requestCode", EventDataController.MODIFY_EVENT);
-                        intent.putExtra("calendarId", calendarId.intValue());
-                        intent.putExtra("eventId", eventId.longValue());
-                        startActivity(intent);
-                         */
-						Toast.makeText(activity, "작성 중", Toast.LENGTH_SHORT).show();
+						ModifyInstanceFragment modifyInstanceFragment = new ModifyInstanceFragment(new ModifyInstanceFragment.OnModifyInstanceResultListener() {
+							@Override
+							public void onResultModifiedEvent(long eventId, long begin) {
+
+							}
+
+							@Override
+							public void onResultModifiedThisInstance() {
+
+							}
+
+							@Override
+							public void onResultModifiedAfterAllInstancesIncludingThisInstance() {
+
+							}
+						});
+						Bundle bundle = new Bundle();
+
+						bundle.putLong(CalendarContract.Instances.EVENT_ID, instance.getAsLong(CalendarContract.Instances.EVENT_ID));
+						bundle.putLong(CalendarContract.Instances._ID, instance.getAsLong(CalendarContract.Instances._ID));
+						bundle.putLong(CalendarContract.Instances.BEGIN, instance.getAsLong(CalendarContract.Instances.BEGIN));
+						bundle.putLong(CalendarContract.Instances.END, instance.getAsLong(CalendarContract.Instances.END));
+
+						modifyInstanceFragment.setArguments(bundle);
+
 						break;
 					}
 					case R.id.delete_instance: {

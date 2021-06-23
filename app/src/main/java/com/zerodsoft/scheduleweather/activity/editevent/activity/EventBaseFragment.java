@@ -1,9 +1,5 @@
 package com.zerodsoft.scheduleweather.activity.editevent.activity;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -12,14 +8,12 @@ import androidx.fragment.app.Fragment;
 
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
-import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.provider.CalendarContract;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.ArraySet;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -62,11 +56,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.TimeZone;
 
 public abstract class EventBaseFragment extends Fragment implements IEventRepeat {
@@ -82,7 +73,6 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 	protected MaterialTimePicker timePicker;
 	protected MaterialDatePicker<Pair<Long, Long>> datePicker;
 
-	protected EventIntentCode requestCode;
 	protected LocationDTO locationDTO;
 	protected NetworkStatus networkStatus;
 
@@ -104,9 +94,6 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 	@Override
 	public void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		Bundle arguments = getArguments();
-
-		requestCode = EventIntentCode.enumOf(arguments.getInt("requestCode", 0));
 		networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback());
 	}
 
@@ -123,11 +110,6 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		setViewOnClickListeners();
 	}
 
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-		permissionResultLauncher.unregister();
-	}
 
 	protected abstract void loadInitData();
 
@@ -184,7 +166,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 				List<ContentValues> colors = calendarViewModel.getEventColors(accountName);
 
 				GridView gridView = new GridView(getContext());
-				gridView.setAdapter(new ColorListAdapter(eventDataViewModel.getEVENT().getAsString(CalendarContract.Events.EVENT_COLOR_KEY), colors,
+				gridView.setAdapter(new ColorListAdapter(eventDataViewModel.getNEW_EVENT().getAsString(CalendarContract.Events.EVENT_COLOR_KEY), colors,
 						getContext()));
 				gridView.setNumColumns(5);
 				gridView.setGravity(Gravity.CENTER);
@@ -256,11 +238,11 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		{
 			Bundle bundle = new Bundle();
 			// 반복 룰과 이벤트의 시작 시간 전달
-			String rRule = eventDataViewModel.getEVENT().containsKey(CalendarContract.Events.RRULE)
-					? eventDataViewModel.getEVENT().getAsString(CalendarContract.Events.RRULE) : "";
+			String rRule = eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.RRULE)
+					? eventDataViewModel.getNEW_EVENT().getAsString(CalendarContract.Events.RRULE) : "";
 
 			bundle.putString(CalendarContract.Events.RRULE, rRule);
-			bundle.putLong(CalendarContract.Events.DTSTART, eventDataViewModel.getEVENT().getAsLong(CalendarContract.Events.DTSTART));
+			bundle.putLong(CalendarContract.Events.DTSTART, eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTSTART));
 
 			EventRecurrenceFragment eventRecurrenceFragment = new EventRecurrenceFragment(new EventRecurrenceFragment.OnEventRecurrenceResultListener() {
 				@Override
@@ -281,7 +263,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
          */
 		binding.accesslevelLayout.eventAccessLevel.setOnClickListener(view ->
 		{
-			int checkedItem = eventDataViewModel.getEVENT().getAsInteger(CalendarContract.Events.ACCESS_LEVEL);
+			int checkedItem = eventDataViewModel.getNEW_EVENT().getAsInteger(CalendarContract.Events.ACCESS_LEVEL);
 
 			if (checkedItem == 3) {
 				checkedItem = 1;
@@ -317,7 +299,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
          */
 		binding.availabilityLayout.eventAvailability.setOnClickListener(view ->
 		{
-			int checkedItem = eventDataViewModel.getEVENT().getAsInteger(CalendarContract.Events.AVAILABILITY);
+			int checkedItem = eventDataViewModel.getNEW_EVENT().getAsInteger(CalendarContract.Events.AVAILABILITY);
 
 			MaterialAlertDialogBuilder dialogBuilder = new MaterialAlertDialogBuilder(requireActivity());
 			dialogBuilder.setSingleChoiceItems(EventUtil.getAvailabilityItems(getContext()), checkedItem, (dialogInterface, item) ->
@@ -512,16 +494,16 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 				bundle.putParcelableArrayList("attendeeList", (ArrayList<? extends Parcelable>) eventDataViewModel.getATTENDEES());
 				bundle.putParcelable("organizer", organizer);
 				bundle.putBoolean(CalendarContract.Events.GUESTS_CAN_MODIFY,
-						eventDataViewModel.getEVENT().getAsBoolean(CalendarContract.Events.GUESTS_CAN_MODIFY) != null
-								&& (eventDataViewModel.getEVENT().getAsInteger(CalendarContract.Events.GUESTS_CAN_MODIFY) == 1));
+						eventDataViewModel.getNEW_EVENT().getAsBoolean(CalendarContract.Events.GUESTS_CAN_MODIFY) != null
+								&& (eventDataViewModel.getNEW_EVENT().getAsInteger(CalendarContract.Events.GUESTS_CAN_MODIFY) == 1));
 
 				bundle.putBoolean(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS,
-						eventDataViewModel.getEVENT().getAsBoolean(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS)
-								!= null && (eventDataViewModel.getEVENT().getAsInteger(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS) == 1));
+						eventDataViewModel.getNEW_EVENT().getAsBoolean(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS)
+								!= null && (eventDataViewModel.getNEW_EVENT().getAsInteger(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS) == 1));
 
 				bundle.putBoolean(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS,
-						eventDataViewModel.getEVENT().getAsBoolean(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS)
-								!= null && (eventDataViewModel.getEVENT().getAsInteger(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS) == 1));
+						eventDataViewModel.getNEW_EVENT().getAsBoolean(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS)
+								!= null && (eventDataViewModel.getNEW_EVENT().getAsInteger(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS) == 1));
 
 				AttendeesFragment attendeesFragment = new AttendeesFragment(new AttendeesFragment.OnAttendeesResultListener() {
 					@Override
@@ -824,8 +806,8 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		MaterialDatePicker.Builder<Pair<Long, Long>> builder = MaterialDatePicker.Builder.dateRangePicker();
 
 		datePicker = builder.setTitleText(R.string.datepicker)
-				.setSelection(new Pair<>(eventDataViewModel.getEVENT().getAsLong(CalendarContract.Events.DTSTART)
-						, eventDataViewModel.getEVENT().getAsLong(CalendarContract.Events.DTEND)))
+				.setSelection(new Pair<>(eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTSTART)
+						, eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTEND)))
 				.setInputMode(MaterialDatePicker.INPUT_MODE_CALENDAR)
 				.build();
 		datePicker.addOnPositiveButtonClickListener(new MaterialPickerOnPositiveButtonClickListener<Pair<Long, Long>>() {
@@ -836,7 +818,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 				int previousMinute = 0;
 
 				if (selection.first != null) {
-					calendar.setTimeInMillis(eventDataViewModel.getEVENT().getAsLong(CalendarContract.Events.DTSTART));
+					calendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTSTART));
 					previousHour = calendar.get(Calendar.HOUR_OF_DAY);
 					previousMinute = calendar.get(Calendar.MINUTE);
 
@@ -848,7 +830,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 					setDateText(DateTimeType.START, calendar.getTimeInMillis());
 				}
 				if (selection.second != null) {
-					calendar.setTimeInMillis(eventDataViewModel.getEVENT().getAsLong(CalendarContract.Events.DTEND));
+					calendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTEND));
 					previousHour = calendar.get(Calendar.HOUR_OF_DAY);
 					previousMinute = calendar.get(Calendar.MINUTE);
 
@@ -875,9 +857,9 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		Calendar calendar = Calendar.getInstance();
 
 		if (dateType == DateTimeType.START) {
-			calendar.setTimeInMillis(eventDataViewModel.getEVENT().getAsLong(CalendarContract.Events.DTSTART));
+			calendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTSTART));
 		} else if (dateType == DateTimeType.END) {
-			calendar.setTimeInMillis(eventDataViewModel.getEVENT().getAsLong(CalendarContract.Events.DTEND));
+			calendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTEND));
 		}
 
 		MaterialTimePicker.Builder builder = new MaterialTimePicker.Builder();
@@ -891,13 +873,13 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		timePicker.addOnPositiveButtonClickListener(view ->
 		{
 			Calendar newCalendar = Calendar.getInstance();
-			newCalendar.setTimeInMillis(dateType == DateTimeType.START ? eventDataViewModel.getEVENT().getAsLong(CalendarContract.Events.DTSTART)
-					: eventDataViewModel.getEVENT().getAsLong(CalendarContract.Events.DTEND));
+			newCalendar.setTimeInMillis(dateType == DateTimeType.START ? eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTSTART)
+					: eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTEND));
 			newCalendar.set(Calendar.HOUR_OF_DAY, timePicker.getHour());
 			newCalendar.set(Calendar.MINUTE, timePicker.getMinute());
 
 			if (dateType == DateTimeType.START) {
-				if (newCalendar.getTimeInMillis() <= eventDataViewModel.getEVENT().getAsLong(CalendarContract.Events.DTEND)) {
+				if (newCalendar.getTimeInMillis() <= eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTEND)) {
 					eventDataViewModel.setDtStart(newCalendar.getTime());
 					setTimeText(dateType, newCalendar.getTimeInMillis());
 				} else {
@@ -906,7 +888,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 					Toast.makeText(getContext(), msg, Toast.LENGTH_LONG).show();
 				}
 			} else if (dateType == DateTimeType.END) {
-				if (newCalendar.getTimeInMillis() >= eventDataViewModel.getEVENT().getAsLong(CalendarContract.Events.DTSTART)) {
+				if (newCalendar.getTimeInMillis() >= eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTSTART)) {
 					eventDataViewModel.setDtEnd(newCalendar.getTime());
 					setTimeText(dateType, newCalendar.getTimeInMillis());
 				} else {
@@ -933,37 +915,5 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		binding.availabilityLayout.eventAvailability.setText(EventUtil.convertAvailability(availability, getContext()));
 	}
 
-	protected final ActivityResultLauncher<String> permissionResultLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(),
-			new ActivityResultCallback<Boolean>() {
-				@Override
-				public void onActivityResult(Boolean result) {
-					if (result) {
-						loadInitData();
-					} else {
-						Toast.makeText(getContext(), getString(R.string.message_needs_calendar_permission), Toast.LENGTH_SHORT).show();
-					}
-				}
-			});
-
-
-	static class AttendeeSet extends HashSet<ContentValues> {
-		public boolean removeAll(Set<ContentValues> collection) {
-			Iterator<ContentValues> itr = this.iterator();
-			Set<ContentValues> removeAttendee = new ArraySet<>();
-
-			while (itr.hasNext()) {
-				ContentValues attendee = itr.next();
-
-				for (ContentValues attendee2 : collection) {
-					if (attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL).equals(attendee2.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL))) {
-						removeAttendee.add(attendee);
-						break;
-					}
-				}
-			}
-
-			return removeAll(removeAttendee);
-		}
-	}
 }
 

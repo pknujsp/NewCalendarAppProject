@@ -19,6 +19,7 @@ import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.CalendarDateOnClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.IMoveViewpager;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.databinding.FragmentMonthAssistantBinding;
 import com.zerodsoft.scheduleweather.room.dto.SelectedCalendarDTO;
@@ -30,7 +31,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-public class MonthAssistantCalendarFragment extends Fragment implements IRefreshView, IConnectedCalendars {
+public class MonthAssistantCalendarFragment extends Fragment implements IRefreshView, IConnectedCalendars, IMoveViewpager {
 	public static final String TAG = "MonthAssistantCalendarFragment";
 	private final CalendarDateOnClickListener calendarDateOnClickListener;
 
@@ -52,6 +53,69 @@ public class MonthAssistantCalendarFragment extends Fragment implements IRefresh
 		super.onCreate(savedInstanceState);
 		calendarViewModel = new ViewModelProvider(requireActivity()).get(CalendarViewModel.class);
 		selectedCalendarViewModel = new ViewModelProvider(requireActivity()).get(SelectedCalendarViewModel.class);
+
+		calendarViewModel.getOnAddedNewEventLiveData().observe(this, new Observer<Long>() {
+			@Override
+			public void onChanged(Long start) {
+				if (!initializing) {
+					moveCurrentViewForBegin(start);
+				}
+			}
+		});
+
+		calendarViewModel.getOnModifiedEventLiveData().observe(this, new Observer<Long>() {
+			@Override
+			public void onChanged(Long start) {
+				if (!initializing) {
+					moveCurrentViewForBegin(start);
+				}
+			}
+		});
+
+		calendarViewModel.getOnModifiedFutureInstancesLiveData().observe(this, new Observer<Long>() {
+			@Override
+			public void onChanged(Long begin) {
+				if (!initializing) {
+					moveCurrentViewForBegin(begin);
+				}
+			}
+		});
+
+		calendarViewModel.getOnModifiedInstanceLiveData().observe(this, new Observer<Long>() {
+			@Override
+			public void onChanged(Long begin) {
+				if (!initializing) {
+					moveCurrentViewForBegin(begin);
+				}
+			}
+		});
+
+		calendarViewModel.getOnExceptedInstanceLiveData().observe(this, new Observer<Boolean>() {
+			@Override
+			public void onChanged(Boolean aBoolean) {
+				if (!initializing) {
+					refreshView();
+				}
+			}
+		});
+
+		calendarViewModel.getOnRemovedFutureInstancesLiveData().observe(this, new Observer<Boolean>() {
+			@Override
+			public void onChanged(Boolean aBoolean) {
+				if (!initializing) {
+					refreshView();
+				}
+			}
+		});
+
+		calendarViewModel.getOnRemovedEventLiveData().observe(this, new Observer<Boolean>() {
+			@Override
+			public void onChanged(Boolean aBoolean) {
+				if (!initializing) {
+					refreshView();
+				}
+			}
+		});
 	}
 
 	private final Observer<List<SelectedCalendarDTO>> onDeletedSelectedCalendarObserver = new Observer<List<SelectedCalendarDTO>>() {
@@ -170,6 +234,16 @@ public class MonthAssistantCalendarFragment extends Fragment implements IRefresh
 		}
 	}
 
+	@Override
+	public void moveCurrentViewForBegin(long begin) {
+		refreshView();
+		int movePosition = ClockUtil.calcMonthDifference(new Date(begin), adapter.getCALENDAR().getTime());
+		if (movePosition != 0) {
+			binding.monthAssistantCalendarViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION + movePosition, true);
+		}
+	}
+
+	@Override
 	public void goToToday() {
 		if (!ClockUtil.areSameDate(System.currentTimeMillis(), adapter.getCurrentDateTime().getTime())) {
 			setViewPager();

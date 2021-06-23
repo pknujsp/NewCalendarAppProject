@@ -329,7 +329,7 @@ public class CalendarProvider implements ICalendarProvider {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
 			Uri uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, event.getAsLong(CalendarContract.Events._ID));
 			int result = context.getContentResolver().update(uri, event, null, null);
-			onModifiedEventLiveData.setValue(event.getAsLong(CalendarContract.Events.DTSTART));
+			onModifiedEventLiveData.setValue(event.getAsLong(CalendarContract.Instances.DTSTART));
 			return result;
 		} else {
 			return -1;
@@ -637,10 +637,6 @@ public class CalendarProvider implements ICalendarProvider {
 	@Override
 	public ContentValues getInstance(Long instanceId, Long begin, Long end) {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
-
-			// 화면에 이벤트 정보를 표시하기 위해 기본적인 데이터만 가져온다.
-			// 요청 매개변수 : ID, 캘린더 ID, 오너 계정, 조직자
-			// 표시할 데이터 : 제목, 일정 기간, 반복, 위치, 알림, 설명, 소유 계정, 참석자, 바쁨/한가함, 공개 범위 참석 여부 확인 창, 색상
 			String selection = "Instances._id = ?";
 			String[] selectionArgs = {instanceId.toString()};
 
@@ -652,16 +648,14 @@ public class CalendarProvider implements ICalendarProvider {
 			Cursor cursor = contentResolver.query(builder.build(), null, selection, selectionArgs, null);
 			ContentValues instance = new ContentValues();
 
-			if (cursor != null) {
-				while (cursor.moveToNext()) {
-					String[] keys = cursor.getColumnNames();
-					for (String key : keys) {
-						instance.put(key, cursor.getString(cursor.getColumnIndex(key)));
-					}
-
+			while (cursor.moveToNext()) {
+				String[] keys = cursor.getColumnNames();
+				for (String key : keys) {
+					instance.put(key, cursor.getString(cursor.getColumnIndex(key)));
 				}
-				cursor.close();
+
 			}
+			cursor.close();
 			return instance;
 		} else {
 			return new ContentValues();

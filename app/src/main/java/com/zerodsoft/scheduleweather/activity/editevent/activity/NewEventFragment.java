@@ -1,23 +1,19 @@
 package com.zerodsoft.scheduleweather.activity.editevent.activity;
 
-import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.os.Bundle;
 import android.provider.CalendarContract;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
-import com.zerodsoft.scheduleweather.common.enums.EventIntentCode;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
@@ -129,13 +125,15 @@ public class NewEventFragment extends EventBaseFragment {
 
 		// 참석자 버튼 텍스트 수정
 		binding.attendeeLayout.showAttendeesDetail.setText(getString(R.string.add_attendee));
+
+		eventDataViewModel.setIsAllDay(false);
 	}
 
 
 	protected void saveNewEvent() {
 		// 시간이 바뀌는 경우, 알림 데이터도 변경해야함.
 		// 알림 재설정
-		ContentValues newEvent = eventDataViewModel.getEVENT();
+		ContentValues newEvent = eventDataViewModel.getNEW_EVENT();
 		List<ContentValues> newReminderList = eventDataViewModel.getREMINDERS();
 		List<ContentValues> newAttendeeList = eventDataViewModel.getATTENDEES();
 

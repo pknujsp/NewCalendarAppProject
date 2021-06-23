@@ -54,6 +54,10 @@ public class MonthAssistantCalendarListAdapter extends RecyclerView.Adapter<Mont
 		CALENDAR.set(Calendar.SECOND, 0);
 	}
 
+	public Calendar getCALENDAR() {
+		return CALENDAR;
+	}
+
 	public Date getAsOfDate() {
 		return CALENDAR.getTime();
 	}

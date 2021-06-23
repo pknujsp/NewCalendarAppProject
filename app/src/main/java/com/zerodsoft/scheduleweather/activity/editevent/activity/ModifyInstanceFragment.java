@@ -1,25 +1,20 @@
 package com.zerodsoft.scheduleweather.activity.editevent.activity;
 
-import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
 import android.provider.CalendarContract;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
-import com.zerodsoft.scheduleweather.common.enums.EventIntentCode;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
@@ -27,14 +22,14 @@ import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 public class ModifyInstanceFragment extends EventBaseFragment {
 	private OnModifyInstanceResultListener onModifyInstanceResultListener;
-	private ContentValues originalInstance = new ContentValues();
-	private boolean originalHasAttendeeList;
-	private boolean originalHasReminderList;
+	private ContentValues originalInstance;
 
 	public ModifyInstanceFragment(OnModifyInstanceResultListener onModifyInstanceResultListener) {
 		this.onModifyInstanceResultListener = onModifyInstanceResultListener;
@@ -59,116 +54,11 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		super.onViewCreated(view, savedInstanceState);
 		loadInitData();
 		initializing = false;
-	}
 
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-	}
-
-	@Override
-	protected void loadInitData() {
-		Bundle arguments = getArguments();
-
-		final long eventId = arguments.getLong(CalendarContract.Instances.EVENT_ID, 0);
-		final long instanceId = arguments.getLong(CalendarContract.Instances._ID, 0);
-		final long begin = arguments.getLong(CalendarContract.Instances.BEGIN, 0);
-		final long end = arguments.getLong(CalendarContract.Instances.END, 0);
-		final String rrule = arguments.getString(CalendarContract.Instances.RRULE);
-
-		//이벤트와 인스턴스를 구분해서 데이터를 가져온다
-
-		// 이벤트, 알림을 가져온다
-		originalInstance = calendarViewModel.getInstance(instanceId, begin, end);
-		ContentValues originalEventValues = calendarViewModel.getEvent(eventId);
-		selectedCalendarValues = calendarViewModel.getCalendar(originalInstance.getAsInteger(CalendarContract.Instances.CALENDAR_ID));
-		eventDataViewModel.getATTENDEES().addAll(calendarViewModel.getAttendees(eventId));
-
-		if (!eventDataViewModel.getATTENDEES().isEmpty()) {
-			originalHasAttendeeList = true;
-			setAttendeesText(eventDataViewModel.getATTENDEES());
-		} else {
-			// 참석자 버튼 텍스트 수정
-			binding.attendeeLayout.showAttendeesDetail.setText(getString(R.string.add_attendee));
-		}
-
-		//제목, 캘린더, 시간, 시간대, 반복, 알림, 설명, 위치, 공개범위, 유효성, 참석자
-		//알림, 참석자 정보는 따로 불러온다.
-		binding.titleLayout.eventColor.setBackgroundColor(EventUtil.getColor(originalInstance.getAsInteger(CalendarContract.Instances.EVENT_COLOR)));
-
-		//제목
-		binding.titleLayout.title.setText(originalInstance.getAsString(CalendarContract.Instances.TITLE));
-
-		// allday switch
-		final boolean isAllDay = originalInstance.getAsInteger(CalendarContract.Instances.ALL_DAY) == 1;
-		binding.timeLayout.timeAlldaySwitch.setChecked(isAllDay);
-
-		if (isAllDay) {
-			binding.timeLayout.eventTimezone.setText(originalInstance.getAsString(CalendarContract.Events.CALENDAR_TIME_ZONE));
-		} else {
-			binding.timeLayout.eventTimezone.setText(originalInstance.getAsString(CalendarContract.Events.EVENT_TIMEZONE));
-		}
-
-		eventDataViewModel.setDtStart(new Date(begin));
-		eventDataViewModel.setDtEnd(new Date(end));
-		eventDataViewModel.setTimezone(originalInstance.getAsString(CalendarContract.Instances.EVENT_TIMEZONE));
-
-		//시각
-		setDateText(DateTimeType.START, begin);
-		setDateText(DateTimeType.END, end);
-		setTimeText(DateTimeType.START, begin);
-		setTimeText(DateTimeType.END, end);
-
-		//캘린더
-		eventDataViewModel.setCalendar(selectedCalendarValues.getAsInteger(CalendarContract.Calendars._ID));
-		setCalendarText(selectedCalendarValues.getAsInteger(CalendarContract.Calendars.CALENDAR_COLOR),
-				selectedCalendarValues.getAsString(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME),
-				selectedCalendarValues.getAsString(CalendarContract.Calendars.ACCOUNT_NAME));
-
-		// 반복
-		setRecurrenceText(originalInstance.getAsString(CalendarContract.Instances.RRULE));
-
-		// 알림
-		if (originalInstance.getAsBoolean(CalendarContract.Instances.HAS_ALARM)) {
-			originalHasReminderList = true;
-			List<ContentValues> originalReminderList = calendarViewModel.getReminders(eventId);
-			eventDataViewModel.getREMINDERS().addAll(originalReminderList);
-
-			for (ContentValues reminder : originalReminderList) {
-				addReminderItemView(reminder);
-			}
-		}
-
-		// 설명
-		binding.descriptionLayout.descriptionEdittext.setText(originalInstance.getAsString(CalendarContract.Instances.DESCRIPTION));
-
-		// 위치
-		binding.locationLayout.eventLocation.setText(originalInstance.getAsString(CalendarContract.Instances.EVENT_LOCATION));
-		locationViewModel.getLocation(eventId, new DbQueryCallback<LocationDTO>() {
+		binding.saveBtn.setOnClickListener(new View.OnClickListener() {
 			@Override
-			public void onResultSuccessful(LocationDTO result) {
-				locationDTO = result;
-			}
-
-			@Override
-			public void onResultNoData() {
-
-			}
-		});
-
-		// 접근 범위
-		setAccessLevelText(originalInstance.getAsInteger(CalendarContract.Instances.ACCESS_LEVEL));
-
-		// 유효성
-		setAvailabilityText(originalInstance.getAsInteger(CalendarContract.Instances.AVAILABILITY));
-	}
-
-	@SuppressLint("NonConstantResourceId")
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-			case R.id.save_schedule_button:
-				if (eventDataViewModel.getEVENT().getAsString(CalendarContract.Instances.RRULE) != null) {
+			public void onClick(View view) {
+				if (eventDataViewModel.getNEW_EVENT().getAsString(CalendarContract.Instances.RRULE) != null) {
 					String[] dialogMenus = {
 							getString(R.string.save_only_current_event),
 							getString(R.string.save_all_future_events_including_current_event),
@@ -199,19 +89,138 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 				} else {
 					updateEvent();
 				}
-		}
-		return super.onOptionsItemSelected(item);
+			}
+		});
 	}
 
-	protected void updateThisInstance() {
-		final long originalEventId = originalInstance.getAsLong(CalendarContract.Instances.EVENT_ID);
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+	}
 
-		ContentValues modifiedInstance = eventDataViewModel.getEVENT();
+	@Override
+	protected void loadInitData() {
+		Bundle arguments = getArguments();
+
+		final long eventId = arguments.getLong(CalendarContract.Instances.EVENT_ID, 0);
+		final long instanceId = arguments.getLong(CalendarContract.Instances._ID, 0);
+		final long begin = arguments.getLong(CalendarContract.Instances.BEGIN, 0);
+		final long end = arguments.getLong(CalendarContract.Instances.END, 0);
+
+		//이벤트와 인스턴스를 구분해서 데이터를 가져온다
+
+		// 이벤트, 알림을 가져온다
+		originalInstance = calendarViewModel.getInstance(instanceId, begin, end);
+		selectedCalendarValues =
+				calendarViewModel.getCalendar(originalInstance.getAsInteger(CalendarContract.Instances.CALENDAR_ID));
+
+		eventDataViewModel.getREMINDERS().addAll(calendarViewModel.getReminders(eventId));
+		eventDataViewModel.getATTENDEES().addAll(calendarViewModel.getAttendees(eventId));
+
+		if (!eventDataViewModel.getATTENDEES().isEmpty()) {
+			setAttendeesText(eventDataViewModel.getATTENDEES());
+		} else {
+			// 참석자 버튼 텍스트 수정
+			binding.attendeeLayout.showAttendeesDetail.setText(getString(R.string.add_attendee));
+		}
+
+		//제목, 캘린더, 시간, 시간대, 반복, 알림, 설명, 위치, 공개범위, 유효성, 참석자
+		//알림, 참석자 정보는 따로 불러온다.
+		binding.titleLayout.eventColor.setBackgroundColor(EventUtil.getColor(originalInstance.getAsInteger(CalendarContract.Instances.EVENT_COLOR)));
+
+		//제목
+		binding.titleLayout.title.setText(originalInstance.getAsString(CalendarContract.Instances.TITLE));
+
+		// allday switch
+		final boolean isAllDay = originalInstance.getAsInteger(CalendarContract.Instances.ALL_DAY) == 1;
+		binding.timeLayout.timeAlldaySwitch.setChecked(isAllDay);
+
+		if (originalInstance.getAsString(CalendarContract.Instances.EVENT_TIMEZONE) != null) {
+			eventDataViewModel.setTimezone(originalInstance.getAsString(CalendarContract.Instances.EVENT_TIMEZONE));
+		}
+		eventDataViewModel.setDtStart(new Date(originalInstance.getAsLong(CalendarContract.Instances.BEGIN)));
+		eventDataViewModel.setDtEnd(new Date(originalInstance.getAsLong(CalendarContract.Instances.END)));
+
+		if (isAllDay) {
+			int startDay = originalInstance.getAsInteger(CalendarContract.Instances.START_DAY);
+			int endDay = originalInstance.getAsInteger(CalendarContract.Instances.END_DAY);
+			int dayDifference = endDay - startDay;
+
+			Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+			calendar.setTimeInMillis(originalInstance.getAsLong(CalendarContract.Instances.BEGIN));
+
+			setTimeZoneText(originalInstance.getAsString(CalendarContract.Events.CALENDAR_TIME_ZONE));
+
+			setDateText(DateTimeType.START, calendar.getTime().getTime());
+			setTimeText(DateTimeType.START, calendar.getTime().getTime());
+
+			calendar.add(Calendar.DAY_OF_YEAR, dayDifference);
+
+			setDateText(DateTimeType.END, calendar.getTime().getTime());
+			setTimeText(DateTimeType.END, calendar.getTime().getTime());
+		} else {
+			setTimeZoneText(originalInstance.getAsString(CalendarContract.Events.EVENT_TIMEZONE));
+
+			setDateText(DateTimeType.START, originalInstance.getAsLong(CalendarContract.Instances.BEGIN));
+			setDateText(DateTimeType.END, originalInstance.getAsLong(CalendarContract.Instances.END));
+			setTimeText(DateTimeType.START, originalInstance.getAsLong(CalendarContract.Instances.BEGIN));
+			setTimeText(DateTimeType.END, originalInstance.getAsLong(CalendarContract.Instances.END));
+		}
+
+
+		//캘린더
+		setCalendarText(originalInstance.getAsInteger(CalendarContract.Instances.CALENDAR_COLOR),
+				originalInstance.getAsString(CalendarContract.Instances.CALENDAR_DISPLAY_NAME),
+				selectedCalendarValues.getAsString(CalendarContract.Calendars.ACCOUNT_NAME));
+
+		// 반복
+		if (originalInstance.getAsString(CalendarContract.Instances.RRULE) != null) {
+			setRecurrenceText(originalInstance.getAsString(CalendarContract.Instances.RRULE));
+		}
+
+		// 알림
+		if (originalInstance.getAsInteger(CalendarContract.Instances.HAS_ALARM) == 1) {
+			List<ContentValues> originalReminderList = eventDataViewModel.getREMINDERS();
+
+			for (ContentValues reminder : originalReminderList) {
+				addReminderItemView(reminder);
+			}
+		}
+
+		// 설명
+		binding.descriptionLayout.descriptionEdittext.setText(originalInstance.getAsString(CalendarContract.Instances.DESCRIPTION));
+
+		// 위치
+		binding.locationLayout.eventLocation.setText(originalInstance.getAsString(CalendarContract.Instances.EVENT_LOCATION));
+		locationViewModel.getLocation(eventId, new DbQueryCallback<LocationDTO>() {
+			@Override
+			public void onResultSuccessful(LocationDTO result) {
+				locationDTO = result;
+			}
+
+			@Override
+			public void onResultNoData() {
+
+			}
+		});
+
+		// 접근 범위
+		setAccessLevelText(originalInstance.getAsInteger(CalendarContract.Instances.ACCESS_LEVEL));
+
+		// 유효성
+		setAvailabilityText(originalInstance.getAsInteger(CalendarContract.Instances.AVAILABILITY));
+	}
+
+
+	protected void updateThisInstance() {
+		final long originalEventId = eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Instances.EVENT_ID);
+
+		ContentValues modifiedInstance = eventDataViewModel.getNEW_EVENT();
 		ContentValues newEvent = new ContentValues();
 		newEvent.putAll(modifiedInstance);
 
 		//인스턴스를 이벤트에서 제외
-		calendarViewModel.deleteInstance(originalInstance.getAsLong(CalendarContract.Instances.BEGIN), originalEventId);
+		calendarViewModel.deleteInstance(eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Instances.BEGIN), originalEventId);
 
 		//반복 삭제, 그외 값 초기화
 		newEvent.remove(CalendarContract.Events.RRULE);
@@ -264,32 +273,36 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 	}
 
 	protected void updateAfterInstanceIncludingThisInstance() {
-		ContentValues event = eventDataViewModel.getEVENT();
-		calendarViewModel.updateAllFutureInstances(event, originalInstance);
+		ContentValues event = eventDataViewModel.getNEW_EVENT();
+		calendarViewModel.updateAllFutureInstances(event, eventDataViewModel.getNEW_EVENT());
 
 		onModifyInstanceResultListener.onResultModifiedAfterAllInstancesIncludingThisInstance();
 		getParentFragmentManager().popBackStack();
 	}
 
 	protected void updateEvent() {
-		ContentValues event = eventDataViewModel.getEVENT();
-		final int calendarId = originalInstance.getAsInteger(CalendarContract.Instances.CALENDAR_ID);
-		final long eventId = originalInstance.getAsInteger(CalendarContract.Instances.EVENT_ID);
-
-		event.put(CalendarContract.Events._ID, eventId);
-		calendarViewModel.updateEvent(event);
-
-		if (originalHasAttendeeList) {
-			calendarViewModel.deleteAllAttendees(eventId);
-		}
-		if (originalHasReminderList) {
-			calendarViewModel.deleteAllReminders(eventId);
-		}
-
+		/*
+		수정가능한 column :
+		title, calendarId, allDay, dtStart, dtEnd, eventTimeZone,
+		rrule, reminders, description, eventLocation, attendees,
+		guestCan~~ 3개, availability, accessLevel
+		 */
+		ContentValues modifiedEvent = eventDataViewModel.getNEW_EVENT();
 		List<ContentValues> reminderList = eventDataViewModel.getREMINDERS();
 		List<ContentValues> attendeeList = eventDataViewModel.getATTENDEES();
 
+		final long eventId = originalInstance.getAsInteger(CalendarContract.Instances.EVENT_ID);
+
+		modifiedEvent.put(CalendarContract.Events._ID, eventId);
+		if (!modifiedEvent.containsKey(CalendarContract.Events.CALENDAR_ID)) {
+			modifiedEvent.put(CalendarContract.Events._ID, originalInstance.getAsLong(CalendarContract.Instances.EVENT_ID));
+		}
+
+		calendarViewModel.updateEvent(modifiedEvent);
+
+
 		// 알람 목록 갱신
+		calendarViewModel.deleteAllReminders(eventId);
 		if (!reminderList.isEmpty()) {
 			for (ContentValues reminder : reminderList) {
 				reminder.put(CalendarContract.Reminders.EVENT_ID, eventId);
@@ -298,6 +311,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		}
 
 		// 참석자 목록 갱신
+		calendarViewModel.deleteAllAttendees(eventId);
 		if (!attendeeList.isEmpty()) {
 			for (ContentValues addedAttendee : attendeeList) {
 				addedAttendee.put(CalendarContract.Attendees.EVENT_ID, eventId);
@@ -305,8 +319,26 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 			calendarViewModel.addAttendees(attendeeList);
 		}
 
-		onModifyInstanceResultListener.onResultModifiedEvent(event.getAsLong(CalendarContract.Events._ID), event.getAsLong(CalendarContract.Events.DTSTART));
-		getParentFragmentManager().popBackStack();
+		if (modifiedEvent.containsKey(CalendarContract.Events.EVENT_LOCATION)) {
+			locationDTO.setEventId(eventId);
+			locationViewModel.addLocation(locationDTO, new DbQueryCallback<LocationDTO>() {
+				@Override
+				public void onResultSuccessful(LocationDTO result) {
+					onModifyInstanceResultListener.onResultModifiedEvent(modifiedEvent.getAsLong(CalendarContract.Events._ID), modifiedEvent.getAsLong(CalendarContract.Events.DTSTART));
+					getParentFragmentManager().popBackStack();
+				}
+
+				@Override
+				public void onResultNoData() {
+
+				}
+			});
+		} else {
+			onModifyInstanceResultListener.onResultModifiedEvent(modifiedEvent.getAsLong(CalendarContract.Events._ID), modifiedEvent.getAsLong(CalendarContract.Events.DTSTART));
+			getParentFragmentManager().popBackStack();
+		}
+
+
 	}
 
 
