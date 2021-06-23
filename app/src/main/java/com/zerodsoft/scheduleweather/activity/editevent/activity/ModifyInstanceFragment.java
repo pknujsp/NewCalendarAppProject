@@ -1,7 +1,13 @@
 package com.zerodsoft.scheduleweather.activity.editevent.activity;
 
+import android.Manifest;
+import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.CalendarContract;
 import android.view.LayoutInflater;
@@ -10,6 +16,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -19,6 +26,8 @@ import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
+import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -273,12 +282,121 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 	}
 
 	protected void updateAfterInstanceIncludingThisInstance() {
-		ContentValues event = eventDataViewModel.getNEW_EVENT();
-		calendarViewModel.updateAllFutureInstances(event, eventDataViewModel.getNEW_EVENT());
+		/*
+		이벤트의 반복 종료일을 수정한 인스턴스의 일정 종료일로 설정
+		수정한 인스턴스를 새로운 인스턴스로 추가
+		 */
+		ContentValues modifiedInstance = eventDataViewModel.getNEW_EVENT();
+		List<ContentValues> modifiedReminderList = eventDataViewModel.getREMINDERS();
+		List<ContentValues> modifiedAttendeeList = eventDataViewModel.getATTENDEES();
 
-		onModifyInstanceResultListener.onResultModifiedAfterAllInstancesIncludingThisInstance();
-		getParentFragmentManager().popBackStack();
+		final long eventId = originalInstance.getAsInteger(CalendarContract.Instances.EVENT_ID);
+		ContentResolver contentResolver = getContext().getContentResolver();
+
+		//수정한 인스턴스의 종료일 가져오기
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTimeInMillis(modifiedInstance.getAsLong(CalendarContract.Instances.END));
+		final Date endOfModifiedInstance = calendar.getTime();
+
+		//기존 이벤트의 반복 종료일을 수정한 인스턴스의 종료일로 설정
+		//기존 이벤트의 rrule을 수정
+		RecurrenceRule recurrenceRule = new RecurrenceRule();
+		recurrenceRule.separateValues(originalInstance.getAsString(CalendarContract.Instances.RRULE));
+
+		if (recurrenceRule.containsKey(RecurrenceRule.UNTIL)) {
+			recurrenceRule.removeValue(RecurrenceRule.UNTIL);
+		}
+		recurrenceRule.putValue(RecurrenceRule.UNTIL, ClockUtil.yyyyMMdd.format(endOfModifiedInstance));
+		ContentValues originalEventValues = new ContentValues();
+		originalEventValues.put(CalendarContract.Events.RRULE, recurrenceRule.getRule());
+
+		contentResolver.update(ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventId),
+				originalEventValues, null, null);
+
+		//수정된 인스턴스를 새로운 이벤트로 저장
+		if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
+			return;
+		}
+
+		ContentValues newEventValues = new ContentValues();
+
+		/*
+			title, calendarId, allDay, dtStart, dtEnd, eventTimeZone,
+		rrule, reminders, description, eventLocation, attendees,
+		guestCan~~ 3개, availability, accessLevel
+		 */
+
+		setNewEventValues(CalendarContract.Events.TITLE, newEventValues, modifiedInstance);
+		setNewEventValues(CalendarContract.Events.EVENT_COLOR_KEY, newEventValues, modifiedInstance);
+		setNewEventValues(CalendarContract.Events.EVENT_COLOR, newEventValues, modifiedInstance);
+		setNewEventValues(CalendarContract.Events.CALENDAR_ID, newEventValues, modifiedInstance);
+		setNewEventValues(CalendarContract.Events.ALL_DAY, newEventValues, modifiedInstance);
+		setNewEventValues(CalendarContract.Events.DTSTART, newEventValues, modifiedInstance);
+		setNewEventValues(CalendarContract.Events.DTEND, newEventValues, modifiedInstance);
+		setNewEventValues(CalendarContract.Events.EVENT_TIMEZONE, newEventValues, modifiedInstance);
+		setNewEventValues(CalendarContract.Events.RRULE, newEventValues, modifiedInstance);
+		setNewEventValues(CalendarContract.Events.DESCRIPTION, newEventValues, modifiedInstance);
+		setNewEventValues(CalendarContract.Events.EVENT_LOCATION, newEventValues, modifiedInstance);
+		setNewEventValues(CalendarContract.Events.AVAILABILITY, newEventValues, modifiedInstance);
+		setNewEventValues(CalendarContract.Events.ACCESS_LEVEL, newEventValues, modifiedInstance);
+		setNewEventValues(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS, newEventValues, modifiedInstance);
+		setNewEventValues(CalendarContract.Events.GUESTS_CAN_MODIFY, newEventValues, modifiedInstance);
+		setNewEventValues(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS, newEventValues, modifiedInstance);
+
+		Uri uri = contentResolver.insert(CalendarContract.Events.CONTENT_URI, newEventValues);
+		final long newEventId = Long.parseLong(uri.getLastPathSegment());
+
+		// 알람 목록 갱신
+		if (!modifiedReminderList.isEmpty()) {
+			for (ContentValues reminder : modifiedReminderList) {
+				reminder.put(CalendarContract.Reminders.EVENT_ID, newEventId);
+			}
+			calendarViewModel.addReminders(modifiedReminderList);
+		}
+
+		if (!modifiedAttendeeList.isEmpty()) {
+			for (ContentValues addedAttendee : modifiedAttendeeList) {
+				addedAttendee.put(CalendarContract.Attendees.EVENT_ID, newEventId);
+			}
+			calendarViewModel.addAttendees(modifiedAttendeeList);
+		}
+
+		if (newEventValues.containsKey(CalendarContract.Events.EVENT_LOCATION)) {
+			if (locationDTO == null) {
+				//위치를 바꾸지 않고, 기존 이벤트의 값을 그대로 유지
+				locationViewModel.getLocation(eventId, new DbQueryCallback<LocationDTO>() {
+					@Override
+					public void onResultSuccessful(LocationDTO savedLocationDto) {
+						savedLocationDto.setEventId(newEventId);
+						locationViewModel.addLocation(savedLocationDto, locationDbQueryCallback);
+					}
+
+					@Override
+					public void onResultNoData() {
+						onModifyInstanceResultListener.onResultModifiedAfterAllInstancesIncludingThisInstance();
+						getParentFragmentManager().popBackStack();
+					}
+				});
+			} else {
+				//위치를 변경함
+				locationDTO.setEventId(newEventId);
+				locationViewModel.addLocation(locationDTO, locationDbQueryCallback);
+			}
+		}
 	}
+
+	private final DbQueryCallback<LocationDTO> locationDbQueryCallback = new DbQueryCallback<LocationDTO>() {
+		@Override
+		public void onResultSuccessful(LocationDTO result) {
+			onModifyInstanceResultListener.onResultModifiedAfterAllInstancesIncludingThisInstance();
+			getParentFragmentManager().popBackStack();
+		}
+
+		@Override
+		public void onResultNoData() {
+
+		}
+	};
 
 	protected void updateEvent() {
 		/*
@@ -300,7 +418,6 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 		calendarViewModel.updateEvent(modifiedEvent);
 
-
 		// 알람 목록 갱신
 		calendarViewModel.deleteAllReminders(eventId);
 		if (!reminderList.isEmpty()) {
@@ -318,6 +435,8 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 			}
 			calendarViewModel.addAttendees(attendeeList);
 		}
+
+		locationViewModel.removeLocation(eventId, null);
 
 		if (modifiedEvent.containsKey(CalendarContract.Events.EVENT_LOCATION)) {
 			locationDTO.setEventId(eventId);
@@ -341,70 +460,12 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 	}
 
-
-	protected void modifyEvent(int action) {
-		/*
-		if (modifiedEventData.getEVENT().getAsString(CalendarContract.Events.EVENT_LOCATION) != null) {
-			// 위치가 추가 | 변경된 경우
-			locationDTO.setCalendarId(CALENDAR_ID);
-			locationDTO.setEventId(ORIGINAL_EVENT_ID);
-
-			//상세 위치가 지정되어 있는지 확인
-			locationViewModel.hasDetailLocation(CALENDAR_ID, ORIGINAL_EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>() {
-				@Override
-				public void onReceiveResult(@NonNull Boolean aBoolean) {
-					if (aBoolean) {
-						// 상세위치가 지정되어 있고, 현재 위치를 변경하려는 상태
-						locationViewModel.modifyLocation(locationDTO, new CarrierMessagingService.ResultCallback<Boolean>() {
-							@Override
-							public void onReceiveResult(@NonNull Boolean aBoolean) {
-								setResult(RESULT_OK);
-								finish();
-							}
-						});
-					} else {
-						// 상세위치를 추가하는 경우
-						locationViewModel.addLocation(locationDTO, new CarrierMessagingService.ResultCallback<Boolean>() {
-							@Override
-							public void onReceiveResult(@NonNull Boolean aBoolean) {
-								setResult(RESULT_OK);
-								finish();
-							}
-						});
-					}
-				}
-			});
-
-		} else {
-			if (savedEventData.getEVENT().getAsString(CalendarContract.Events.EVENT_LOCATION) != null) {
-				// 현재 위치를 삭제하려고 하는 상태
-				locationViewModel.hasDetailLocation(CALENDAR_ID, ORIGINAL_EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>() {
-					@Override
-					public void onReceiveResult(@NonNull Boolean aBoolean) {
-						if (aBoolean) {
-							// 기존의 상세 위치를 제거
-							locationViewModel.removeLocation(CALENDAR_ID, ORIGINAL_EVENT_ID, new CarrierMessagingService.ResultCallback<Boolean>() {
-								@Override
-								public void onReceiveResult(@NonNull Boolean aBoolean) {
-									setResult(RESULT_OK);
-									finish();
-								}
-							});
-						} else {
-							// 상세 위치가 지정되어 있지 않음
-							setResult(RESULT_OK);
-							finish();
-						}
-					}
-				});
-
-			} else {
-				//위치를 원래 설정하지 않은 경우
-				setResult(RESULT_OK);
-				finish();
-			}
+	private void setNewEventValues(String key, ContentValues newEventValues, ContentValues modifiedInstance) {
+		if (modifiedInstance.containsKey(key)) {
+			newEventValues.put(key, modifiedInstance.getAsString(key));
+		} else if (originalInstance.containsKey(key)) {
+			newEventValues.put(key, originalInstance.getAsString(key));
 		}
-*/
 	}
 
 	@Override
