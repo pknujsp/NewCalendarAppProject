@@ -96,7 +96,7 @@ public class TimeZoneFragment extends Fragment implements OnClickedListItem<Time
 
 	@Override
 	public void onClickedListItem(TimeZone e, int position) {
-
+		onTimeZoneResultListener.onResult(e);
 	}
 
 	@Override

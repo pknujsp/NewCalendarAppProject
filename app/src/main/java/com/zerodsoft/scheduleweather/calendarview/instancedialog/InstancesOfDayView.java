@@ -5,7 +5,6 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.provider.CalendarContract;
 import android.view.View;
-import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -53,6 +52,8 @@ public class InstancesOfDayView implements CalendarViewInitializer {
 	private IRefreshView iRefreshView;
 	private DeleteEventsListener deleteEventsListener;
 
+	private boolean moreBtnChecked = false;
+
 	private Long begin;
 	private Long end;
 
@@ -75,16 +76,15 @@ public class InstancesOfDayView implements CalendarViewInitializer {
 		deleteInstancesBtn.setVisibility(View.GONE);
 
 		moreButton.setOnClickListener(new View.OnClickListener() {
-			boolean isChecked = false;
 
 			@Override
 			public void onClick(View view) {
 				if (adapter == null) {
 					return;
 				}
-				isChecked = !isChecked;
+				moreBtnChecked = !moreBtnChecked;
 
-				if (isChecked) {
+				if (moreBtnChecked) {
 					deleteInstancesBtn.setVisibility(View.VISIBLE);
 					adapter.setCheckBoxVisibility(View.VISIBLE);
 				} else {
@@ -131,6 +131,13 @@ public class InstancesOfDayView implements CalendarViewInitializer {
 		begin = copiedCalendar.getTimeInMillis();
 		copiedCalendar.add(Calendar.DATE, 1);
 		end = copiedCalendar.getTimeInMillis();
+
+		if (moreBtnChecked) {
+			moreBtnChecked = false;
+			deleteInstancesBtn.setVisibility(View.GONE);
+			adapter.setCheckBoxVisibility(View.GONE);
+			checkedInstanceSet.clear();
+		}
 
 		dayTextView.setText(ClockUtil.YYYY_M_D_E.format(begin));
 		adapter = new EventsInfoRecyclerViewAdapter(onEventItemLongClickListener, onEventItemClickListener, checkBoxOnCheckedChangeListener, begin, end);

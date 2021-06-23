@@ -154,6 +154,12 @@ public class InstanceListOnADayDialogFragment extends DialogFragment implements 
 			}
 		});
 		binding.instancesDialogViewpager.setPageTransformer(compositePageTransformer);
+		binding.instancesDialogViewpager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+			@Override
+			public void onPageSelected(int position) {
+				super.onPageSelected(position);
+			}
+		});
 
 		adapter = new InstancesOfDayAdapter(begin, end, onEventItemClickListener, iConnectedCalendars, this);
 		binding.instancesDialogViewpager.setAdapter(adapter);

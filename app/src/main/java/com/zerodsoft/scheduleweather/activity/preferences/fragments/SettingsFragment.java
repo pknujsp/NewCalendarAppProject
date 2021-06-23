@@ -9,6 +9,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
@@ -25,14 +26,19 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.slider.Slider;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
+import com.zerodsoft.scheduleweather.activity.editevent.fragments.TimeZoneFragment;
+import com.zerodsoft.scheduleweather.activity.placecategory.PlaceCategorySettingsFragment;
 import com.zerodsoft.scheduleweather.activity.preferences.custom.RadiusPreference;
 import com.zerodsoft.scheduleweather.activity.preferences.custom.SearchBuildingRangeRadiusPreference;
 import com.zerodsoft.scheduleweather.activity.preferences.custom.TimeZonePreference;
+import com.zerodsoft.scheduleweather.activity.preferences.customfoodmenu.fragment.CustomFoodMenuSettingsFragment;
 import com.zerodsoft.scheduleweather.activity.preferences.interfaces.PreferenceListener;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 import com.zerodsoft.scheduleweather.weather.viewmodel.WeatherDbViewModel;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
 import java.util.TimeZone;
@@ -64,7 +70,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 	@Override
 	public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
 		setPreferencesFromResource(R.xml.app_settings_main_preference, rootKey);
-
 
 		preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
 		preferences.registerOnSharedPreferenceChangeListener(onSharedPreferenceChangeListener);
@@ -214,6 +219,35 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 			}
 		});
 
+		//장소 카테고리
+		placesCategoryPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+			@Override
+			public boolean onPreferenceClick(Preference preference) {
+				iFragmentTitle.setTitle(getString(R.string.preference_title_places_category));
+
+				PlaceCategorySettingsFragment placeCategorySettingsFragment = new PlaceCategorySettingsFragment();
+				getParentFragmentManager().beginTransaction().hide(SettingsFragment.this)
+						.add(R.id.fragment_container, placeCategorySettingsFragment, getString(R.string.tag_place_category_settings_fragment))
+						.addToBackStack(getString(R.string.tag_place_category_settings_fragment)).commit();
+				return true;
+			}
+		});
+
+		//음식 메뉴
+		customFoodPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+			@Override
+			public boolean onPreferenceClick(Preference preference) {
+				iFragmentTitle.setTitle(getString(R.string.preference_title_custom_food_menu));
+
+				CustomFoodMenuSettingsFragment customFoodMenuSettingsFragment = new CustomFoodMenuSettingsFragment();
+				getParentFragmentManager().beginTransaction().hide(SettingsFragment.this)
+						.add(R.id.fragment_container, customFoodMenuSettingsFragment, getString(R.string.tag_custom_food_menu_settings_fragment))
+						.addToBackStack(getString(R.string.tag_custom_food_menu_settings_fragment)).commit();
+
+				return true;
+			}
+		});
+
 
 		//커스텀 시간대
 		customTimeZonePreference = new TimeZonePreference(getContext());
@@ -224,7 +258,6 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 		customTimeZonePreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
 			@Override
 			public boolean onPreferenceClick(Preference preference) {
-				/*
 				TimeZoneFragment timeZoneFragment = new TimeZoneFragment(new TimeZoneFragment.OnTimeZoneResultListener() {
 					@Override
 					public void onResult(TimeZone timeZone) {
@@ -239,9 +272,14 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 							editor.putString(getString(R.string.preference_key_custom_timezone), timeZone.getID()).apply();
 							App.setPreference_key_custom_timezone(timeZone);
 						}
+						getParentFragmentManager().popBackStackImmediate();
 					}
 				});
-				*/
+
+				getParentFragmentManager().beginTransaction().hide(SettingsFragment.this)
+						.add(R.id.fragment_container, timeZoneFragment, getString(R.string.tag_timezone_fragment))
+						.addToBackStack(getString(R.string.tag_timezone_fragment)).commit();
+
 				return true;
 			}
 		});
@@ -258,21 +296,11 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 		searchMapCategoryRangeRadiusPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
 			@Override
 			public boolean onPreferenceClick(Preference preference) {
-				LinearLayout linearLayout = new LinearLayout(getContext());
-				linearLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-				linearLayout.setOrientation(LinearLayout.HORIZONTAL);
+				ViewGroup sliderView = (ViewGroup) getLayoutInflater().inflate(R.layout.slider_view, null);
 
-				Slider slider = new Slider(getContext());
-				LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT);
-				layoutParams.gravity = Gravity.CENTER_VERTICAL;
-				layoutParams.weight = 1;
+				TextView valueTextView = (TextView) sliderView.findViewById(R.id.value_textview);
+				Slider slider = (Slider) sliderView.findViewById(R.id.slider);
 
-				int margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
-
-				layoutParams.topMargin = margin;
-				layoutParams.bottomMargin = margin;
-
-				slider.setLayoutParams(layoutParams);
 				DecimalFormat decimalFormat = new DecimalFormat("#.#");
 				float value = Math.round((Float.parseFloat(App.getPreference_key_radius_range()) / 1000f) * 10) / 10f;
 				slider.setValue(Float.parseFloat(decimalFormat.format(value)));
@@ -280,9 +308,19 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 				slider.setValueTo(20.0f);
 				slider.setStepSize(0.1f);
 
-				linearLayout.addView(slider);
+				valueTextView.setText(decimalFormat.format(value) + " km");
 
-				new MaterialAlertDialogBuilder(getActivity()).setView(linearLayout)
+				slider.addOnChangeListener(new Slider.OnChangeListener() {
+
+					@Override
+					public void onValueChange(@NonNull @NotNull Slider slider, float value, boolean fromUser) {
+						valueTextView.setText(decimalFormat.format(value) + " km");
+					}
+				});
+
+				new MaterialAlertDialogBuilder(requireActivity())
+						.setTitle(searchMapCategoryRangeRadiusPreference.getTitle())
+						.setView(sliderView)
 						.setPositiveButton(R.string.check, new DialogInterface.OnClickListener() {
 							@Override
 							public void onClick(DialogInterface dialogInterface, int i) {
@@ -304,6 +342,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 		searchMapCategoryRangeRadiusPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
 			@Override
 			public boolean onPreferenceChange(Preference preference, Object newValue) {
+				preferences.edit().putString(searchMapCategoryRangeRadiusPreference.getKey(), (String) newValue).commit();
 				App.setPreference_key_radius_range((String) newValue);
 				searchMapCategoryRangeRadiusPreference.setValue();
 				return true;
@@ -319,32 +358,62 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 		searchBuildingRangeRadiusPreference.setSummary(R.string.preference_summary_range_meter_for_search_buildings);
 		searchBuildingRangeRadiusPreference.setTitle(R.string.preference_title_range_meter_for_search_buildings);
 		searchBuildingRangeRadiusPreference.setWidgetLayoutResource(R.layout.custom_preference_layout);
-		searchBuildingRangeRadiusPreference.setDialogTitle(R.string.preference_message_range_meter_for_search_buildings);
-
-		((PreferenceCategory) getPreferenceManager().findPreference(getString(R.string.preference_place_category_title)))
-				.addPreference(searchBuildingRangeRadiusPreference);
-
 		searchBuildingRangeRadiusPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
 			@Override
 			public boolean onPreferenceChange(Preference preference, Object newValue) {
-				int radius = 0;
-				try {
-					radius = Integer.parseInt((String) newValue);
-				} catch (NumberFormatException e) {
-					Toast.makeText(getActivity(), "50~500 사이의 숫자를 입력해주세요", Toast.LENGTH_SHORT).show();
-					return false;
-				}
-
-				if (radius >= 50 && radius <= 500) {
-					App.setPreference_key_range_meter_for_search_buildings((String) newValue);
-					searchBuildingRangeRadiusPreference.setValue();
-					return true;
-				} else {
-					Toast.makeText(getActivity(), "50~500 사이로 입력하세요", Toast.LENGTH_SHORT).show();
-					return false;
-				}
+				preferences.edit().putString(searchBuildingRangeRadiusPreference.getKey(), (String) newValue).commit();
+				App.setPreference_key_range_meter_for_search_buildings((String) newValue);
+				searchBuildingRangeRadiusPreference.setValue();
+				return true;
 			}
 		});
+		searchBuildingRangeRadiusPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+			@Override
+			public boolean onPreferenceClick(Preference preference) {
+				ViewGroup sliderView = (ViewGroup) getLayoutInflater().inflate(R.layout.slider_view, null);
+
+				TextView valueTextView = (TextView) sliderView.findViewById(R.id.value_textview);
+				Slider slider = (Slider) sliderView.findViewById(R.id.slider);
+
+				float value = Float.parseFloat(App.getPreference_key_range_meter_for_search_buildings());
+				slider.setValue(value);
+				slider.setValueFrom(50.0f);
+				slider.setValueTo(500.0f);
+				slider.setStepSize(50.0f);
+
+				valueTextView.setText((int) value + " m");
+
+				slider.addOnChangeListener(new Slider.OnChangeListener() {
+
+					@Override
+					public void onValueChange(@NonNull @NotNull Slider slider, float value, boolean fromUser) {
+						valueTextView.setText((int) value + " m");
+					}
+				});
+
+				new MaterialAlertDialogBuilder(requireActivity())
+						.setTitle(searchBuildingRangeRadiusPreference.getTitle())
+						.setView(sliderView)
+						.setPositiveButton(R.string.check, new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialogInterface, int i) {
+								String newValue = String.valueOf((int) slider.getValue());
+								searchBuildingRangeRadiusPreference.callChangeListener(newValue);
+								dialogInterface.dismiss();
+							}
+						})
+						.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialogInterface, int i) {
+								dialogInterface.dismiss();
+							}
+						}).create().show();
+				return true;
+			}
+		});
+
+		((PreferenceCategory) getPreferenceManager().findPreference(getString(R.string.preference_place_category_title)))
+				.addPreference(searchBuildingRangeRadiusPreference);
 	}
 
 	private final Preference.OnPreferenceChangeListener preferenceChangeListener = new Preference.OnPreferenceChangeListener() {

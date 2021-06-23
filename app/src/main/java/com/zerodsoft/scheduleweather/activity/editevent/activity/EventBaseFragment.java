@@ -240,6 +240,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 				public void onResult(TimeZone timeZone) {
 					eventDataViewModel.setTimezone(timeZone.getID());
 					setTimeZoneText(timeZone.getID());
+					getParentFragmentManager().popBackStackImmediate();
 				}
 			});
 

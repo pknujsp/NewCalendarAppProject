@@ -47,6 +47,13 @@ public class SettingsMainFragment extends Fragment implements SettingsFragment.I
 		super.onViewCreated(view, savedInstanceState);
 		SettingsFragment settingsFragment = new SettingsFragment(this);
 		getChildFragmentManager().beginTransaction().add(binding.fragmentContainer.getId(), settingsFragment).commitNow();
+
+		binding.backBtn.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				onBackPressedCallback.handleOnBackPressed();
+			}
+		});
 	}
 
 	@Override
