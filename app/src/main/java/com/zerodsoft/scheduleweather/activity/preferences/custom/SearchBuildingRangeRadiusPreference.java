@@ -10,12 +10,13 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.preference.EditTextPreference;
+import androidx.preference.Preference;
 import androidx.preference.PreferenceViewHolder;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 
-public class SearchBuildingRangeRadiusPreference extends EditTextPreference
+public class SearchBuildingRangeRadiusPreference extends Preference
 {
     private TextView radiusTextView;
 

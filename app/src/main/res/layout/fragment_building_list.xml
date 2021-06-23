@@ -52,9 +52,9 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_weight="1"
-                android:stepSize="1"
-                android:valueFrom="50"
-                android:valueTo="500" />
+                android:stepSize="@integer/search_buildings_slider_step_size"
+                android:valueFrom="@integer/search_buildings_min_range"
+                android:valueTo="@integer/search_buildings_max_range" />
 
             <TextView
                 android:id="@+id/apply_radius"

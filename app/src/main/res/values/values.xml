@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="search_buildings_min_range" format="float" type="integer">50.0</item>
+    <item name="search_buildings_max_range" format="float" type="integer">500.0</item>
+    <item name="search_buildings_slider_step_size" format="float" type="integer">50.0</item>
+</resources>

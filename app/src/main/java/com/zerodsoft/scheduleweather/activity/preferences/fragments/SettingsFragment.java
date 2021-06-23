@@ -15,6 +15,7 @@ import android.widget.Toast;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceCategory;
@@ -376,10 +377,18 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 				Slider slider = (Slider) sliderView.findViewById(R.id.slider);
 
 				float value = Float.parseFloat(App.getPreference_key_range_meter_for_search_buildings());
+
+				TypedValue outValue = new TypedValue();
+				getResources().getValue(R.integer.search_buildings_min_range, outValue, true);
+				slider.setValueFrom(outValue.getFloat());
+
+				getResources().getValue(R.integer.search_buildings_max_range, outValue, true);
+				slider.setValueTo(outValue.getFloat());
+
+				getResources().getValue(R.integer.search_buildings_slider_step_size, outValue, true);
+				slider.setStepSize(outValue.getFloat());
+
 				slider.setValue(value);
-				slider.setValueFrom(50.0f);
-				slider.setValueTo(500.0f);
-				slider.setStepSize(50.0f);
 
 				valueTextView.setText((int) value + " m");
 
