@@ -509,7 +509,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		LatLng latLng = new LatLng(Double.parseDouble(selectedLocationDtoInEvent.getLatitude()),
 				Double.parseDouble(selectedLocationDtoInEvent.getLongitude()));
 
-		final int markerWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 38f, getResources().getDisplayMetrics());
+		final int markerWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 42f, getResources().getDisplayMetrics());
 		final int markerHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 42f, getResources().getDisplayMetrics());
 
 		if (selectedLocationInEventMarker != null) {
@@ -875,7 +875,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	@Override
 	public void createCriteriaLocationMarker(String name, String latitude, String longitude) {
 		LatLng latLng = new LatLng(Double.parseDouble(latitude), Double.parseDouble(longitude));
-		final int markerWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 38f, getResources().getDisplayMetrics());
+		final int markerWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 42f, getResources().getDisplayMetrics());
 		final int markerHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 42f, getResources().getDisplayMetrics());
 
 		Marker criteriaLocationForRestaurantsMarker = new Marker(latLng);

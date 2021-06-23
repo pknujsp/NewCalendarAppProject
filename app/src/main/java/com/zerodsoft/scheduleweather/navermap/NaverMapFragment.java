@@ -41,6 +41,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -48,6 +50,8 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.naver.maps.geometry.LatLng;
 import com.naver.maps.geometry.LatLngBounds;
 import com.naver.maps.geometry.Utmk;
@@ -159,6 +163,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	private Integer favoriteMarkerSize;
 
 	public ViewPager2 locationItemBottomSheetViewPager;
+
+	protected AlertDialog loadingDialog;
 
 	final public Map<BottomSheetType, BottomSheetBehavior> bottomSheetBehaviorMap = new HashMap<>();
 	final public Map<BottomSheetType, Fragment> bottomSheetFragmentMap = new HashMap<>();
@@ -291,6 +297,21 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			}
 		});
 
+		CircularProgressIndicator circularProgressIndicator = new CircularProgressIndicator(getActivity());
+		circularProgressIndicator.setIndeterminate(true);
+
+		FrameLayout.LayoutParams progressBarLayoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+				ViewGroup.LayoutParams.WRAP_CONTENT);
+		progressBarLayoutParams.gravity = Gravity.CENTER;
+
+		FrameLayout loadingRootLayout = new FrameLayout(getContext());
+		loadingRootLayout.addView(circularProgressIndicator, progressBarLayoutParams);
+
+		loadingDialog = new MaterialAlertDialogBuilder(getActivity())
+				.setView(loadingRootLayout).setCancelable(false).create();
+		loadingDialog.getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+				WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+
 		markerWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
 		markerHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
 		favoriteMarkerSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
@@ -307,8 +328,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		binding.customProgressView.setContentView(binding.naverMapFragment);
-		binding.customProgressView.onSuccessfulProcessingData();
 
 		setLocationItemsBottomSheet();
 		setLocationSearchBottomSheet();
@@ -505,6 +524,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 	protected void loadMap() {
 		if (mapFragment == null) {
+			loadingDialog.show();
+
 			NaverMapOptions naverMapOptions = new NaverMapOptions();
 			naverMapOptions.scaleBarEnabled(true).locationButtonEnabled(false).compassEnabled(false).zoomControlEnabled(false)
 					.mapType(NaverMap.MapType.Basic).camera(new CameraPosition(new LatLng(37.6076585, 127.0965492), 11));
@@ -766,6 +787,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 		setCurrentAddress();
 		loadFavoriteLocations();
+
+		loadingDialog.dismiss();
 	}
 
 	private final ActivityResultLauncher<Intent> requestOnGpsLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
