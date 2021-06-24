@@ -2,10 +2,12 @@ package com.zerodsoft.scheduleweather.event.event.fragments;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.CalendarContract;
 import android.view.LayoutInflater;
@@ -318,6 +320,7 @@ public class EventFragment extends BottomSheetDialogFragment {
 		binding.modifyEventFab.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
+				/*
 				ModifyInstanceFragment modifyInstanceFragment = new ModifyInstanceFragment(new ModifyInstanceFragment.OnModifyInstanceResultListener() {
 					@Override
 					public void onResultModifiedEvent(long eventId, long begin) {
@@ -344,6 +347,12 @@ public class EventFragment extends BottomSheetDialogFragment {
 				modifyInstanceFragment.setArguments(bundle);
 				getParentFragmentManager().beginTransaction().add(R.id.fragment_container, modifyInstanceFragment,
 						getString(R.string.tag_modify_instance_fragment)).addToBackStack(getString(R.string.tag_modify_instance_fragment)).commit();
+
+				 */
+				Uri uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, EVENT_ID);
+				Intent intent = new Intent(Intent.ACTION_EDIT)
+						.setData(uri);
+				editEventResultLauncher.launch(intent);
 			}
 		});
 
@@ -792,4 +801,12 @@ public class EventFragment extends BottomSheetDialogFragment {
 			}
 		});
 	}
+
+	private ActivityResultLauncher<Intent> editEventResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult()
+			, new ActivityResultCallback<ActivityResult>() {
+				@Override
+				public void onActivityResult(ActivityResult result) {
+
+				}
+			});
 }
