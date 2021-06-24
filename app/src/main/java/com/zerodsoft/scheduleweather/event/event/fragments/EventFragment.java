@@ -222,7 +222,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 		return binding.getRoot();
 	}
 
-	@SneakyThrows
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
@@ -536,6 +535,12 @@ public class EventFragment extends BottomSheetDialogFragment {
 		// 캘린더, 시간대, 참석자 정보는 따로 불러온다.
 		//제목
 		instanceValues = calendarViewModel.getInstance(INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
+
+		Date begin = new Date(instanceValues.getAsLong(CalendarContract.Instances.BEGIN));
+		Date end = new Date(instanceValues.getAsLong(CalendarContract.Instances.END));
+
+		String time = "begin : " + begin.toString() + "\nend : " + end.toString();
+		Toast.makeText(getContext(), time, Toast.LENGTH_LONG).show();
 
 		if (instanceValues.getAsInteger(CalendarContract.Instances.CALENDAR_ACCESS_LEVEL) == CalendarContract.Instances.CAL_ACCESS_READ) {
 			binding.fabsLayout.setVisibility(View.GONE);

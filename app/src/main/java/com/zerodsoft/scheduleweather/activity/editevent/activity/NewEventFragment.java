@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.activity.editevent.activity;
 
 import android.content.ContentValues;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.provider.CalendarContract;
 import android.view.LayoutInflater;
@@ -84,18 +85,18 @@ public class NewEventFragment extends EventBaseFragment {
 
 		// 기기 시각으로 설정
 		// 설정에서 기본 일정 시간 길이 설정가능
-		int defaultHourRange = 60;
 
 		Calendar calendar = Calendar.getInstance();
 		calendar.add(Calendar.HOUR_OF_DAY, 1);
 		calendar.set(Calendar.MINUTE, 0);
 		calendar.set(Calendar.SECOND, 0);
 
+		final int defaultHourRange = 60;
+
 		Date[] defaultDateTimes = new Date[2];
 		defaultDateTimes[0] = calendar.getTime();
 		calendar.add(Calendar.MINUTE, defaultHourRange);
 		defaultDateTimes[1] = calendar.getTime();
-		calendar.add(Calendar.MINUTE, -defaultHourRange);
 
 		eventDataViewModel.setDtStart(defaultDateTimes[0]);
 		eventDataViewModel.setDtEnd(defaultDateTimes[1]);
@@ -104,6 +105,8 @@ public class NewEventFragment extends EventBaseFragment {
 		setDateText(DateTimeType.END, defaultDateTimes[1].getTime());
 		setTimeText(DateTimeType.START, defaultDateTimes[0].getTime());
 		setTimeText(DateTimeType.END, defaultDateTimes[1].getTime());
+
+		binding.timeLayout.timeAlldaySwitch.setChecked(false);
 
 		// 기기 시간대로 설정
 		TimeZone timeZone = null;
@@ -125,8 +128,6 @@ public class NewEventFragment extends EventBaseFragment {
 
 		// 참석자 버튼 텍스트 수정
 		binding.attendeeLayout.showAttendeesDetail.setText(getString(R.string.add_attendee));
-
-		eventDataViewModel.setIsAllDay(false);
 	}
 
 
@@ -137,8 +138,9 @@ public class NewEventFragment extends EventBaseFragment {
 		List<ContentValues> newReminderList = eventDataViewModel.getREMINDERS();
 		List<ContentValues> newAttendeeList = eventDataViewModel.getATTENDEES();
 
+		//allday이면 dtEnd를 다음 날로 설정
 		if (newEvent.getAsInteger(CalendarContract.Events.ALL_DAY) == 1) {
-			Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+			Calendar calendar = Calendar.getInstance();
 			calendar.setTimeInMillis(newEvent.getAsLong(CalendarContract.Events.DTEND));
 			calendar.add(Calendar.DAY_OF_YEAR, 1);
 
