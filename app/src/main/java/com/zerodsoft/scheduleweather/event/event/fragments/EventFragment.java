@@ -320,7 +320,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 		binding.modifyEventFab.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				/*
 				ModifyInstanceFragment modifyInstanceFragment = new ModifyInstanceFragment(new ModifyInstanceFragment.OnModifyInstanceResultListener() {
 					@Override
 					public void onResultModifiedEvent(long eventId, long begin) {
@@ -348,11 +347,7 @@ public class EventFragment extends BottomSheetDialogFragment {
 				getParentFragmentManager().beginTransaction().add(R.id.fragment_container, modifyInstanceFragment,
 						getString(R.string.tag_modify_instance_fragment)).addToBackStack(getString(R.string.tag_modify_instance_fragment)).commit();
 
-				 */
-				Uri uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, EVENT_ID);
-				Intent intent = new Intent(Intent.ACTION_EDIT)
-						.setData(uri);
-				editEventResultLauncher.launch(intent);
+
 			}
 		});
 

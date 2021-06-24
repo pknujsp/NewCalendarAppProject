@@ -402,7 +402,7 @@ public class EventRecurrenceFragment extends Fragment {
 	}
 
 
-	private Calendar convertDate(String dateStr) {
+	public static Calendar convertDate(String dateStr) {
 		String year = dateStr.substring(0, 4);
 		String month = dateStr.substring(4, 6);
 		String date = dateStr.substring(6, 8);
