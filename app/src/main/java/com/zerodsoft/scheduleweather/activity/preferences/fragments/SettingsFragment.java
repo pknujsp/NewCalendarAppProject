@@ -35,6 +35,7 @@ import com.zerodsoft.scheduleweather.activity.preferences.custom.TimeZonePrefere
 import com.zerodsoft.scheduleweather.activity.preferences.customfoodmenu.fragment.CustomFoodMenuSettingsFragment;
 import com.zerodsoft.scheduleweather.activity.preferences.interfaces.PreferenceListener;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
+import com.zerodsoft.scheduleweather.common.interfaces.IFragmentTitle;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 import com.zerodsoft.scheduleweather.weather.viewmodel.WeatherDbViewModel;
@@ -554,8 +555,4 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 		}
 	}
 
-
-	public interface IFragmentTitle {
-		void setTitle(String title);
-	}
 }

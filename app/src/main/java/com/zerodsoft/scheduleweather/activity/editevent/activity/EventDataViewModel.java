@@ -126,13 +126,13 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 		ATTENDEES.addAll(attendeeList);
 
 		if (ATTENDEES.isEmpty()) {
-			NEW_EVENT.remove(CalendarContract.Events.GUESTS_CAN_MODIFY);
-			NEW_EVENT.remove(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS);
-			NEW_EVENT.remove(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS);
+			NEW_EVENT.put(CalendarContract.Events.GUESTS_CAN_MODIFY, 0);
+			NEW_EVENT.put(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS, 0);
+			NEW_EVENT.put(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS, 0);
 		} else {
-			putOrRemoveValue(CalendarContract.Events.GUESTS_CAN_MODIFY, guestsCanModify);
-			putOrRemoveValue(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS, guestsCanInviteOthers);
-			putOrRemoveValue(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS, guestsCanSeeGuests);
+			NEW_EVENT.put(CalendarContract.Events.GUESTS_CAN_MODIFY, guestsCanModify ? 1 : 0);
+			NEW_EVENT.put(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS, guestsCanInviteOthers ? 1 : 0);
+			NEW_EVENT.put(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS, guestsCanSeeGuests ? 1 : 0);
 		}
 	}
 
@@ -144,12 +144,18 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 				break;
 			}
 		}
-
 		if (ATTENDEES.isEmpty()) {
-			NEW_EVENT.remove(CalendarContract.Events.GUESTS_CAN_MODIFY);
-			NEW_EVENT.remove(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS);
-			NEW_EVENT.remove(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS);
+			NEW_EVENT.put(CalendarContract.Events.GUESTS_CAN_MODIFY, 0);
+			NEW_EVENT.put(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS, 0);
+			NEW_EVENT.put(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS, 0);
 		}
+	}
+
+	public void clearAttendees() {
+		ATTENDEES.clear();
+		NEW_EVENT.put(CalendarContract.Events.GUESTS_CAN_MODIFY, 0);
+		NEW_EVENT.put(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS, 0);
+		NEW_EVENT.put(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS, 0);
 	}
 
 	@Override

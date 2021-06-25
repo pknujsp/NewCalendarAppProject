@@ -20,8 +20,8 @@ import java.util.List;
 
 public class AttendeeListAdapter extends RecyclerView.Adapter<AttendeeListAdapter.AttendeeViewHolder> {
 	private List<ContentValues> attendeeList = new ArrayList<>();
-	final String SELECTED_CALENDAR_NAME;
-	final String SELECTED_CALENDAR_OWNER_ACCOUNT;
+	private final String SELECTED_CALENDAR_NAME;
+	private final String SELECTED_CALENDAR_OWNER_ACCOUNT;
 
 	public AttendeeListAdapter(ContentValues selectedCalendar) {
 		SELECTED_CALENDAR_NAME = selectedCalendar.getAsString(CalendarContract.Attendees.ATTENDEE_NAME);
@@ -66,22 +66,7 @@ public class AttendeeListAdapter extends RecyclerView.Adapter<AttendeeListAdapte
 
 		public void onBind(int position) {
 			ContentValues attendee = attendeeList.get(position);
-			String attendeeNameValue = null;
-
-			if (attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP) == CalendarContract.Attendees.RELATIONSHIP_ORGANIZER) {
-				removeButton.setVisibility(View.GONE);
-				attendeeNameValue = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_NAME);
-
-				if (attendeeNameValue.equals(SELECTED_CALENDAR_NAME)) {
-					attendeeNameValue += "(ME)";
-				}
-			} else {
-				attendeeNameValue = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL);
-				if (attendeeNameValue.equals(SELECTED_CALENDAR_OWNER_ACCOUNT)) {
-					attendeeNameValue += "(ME)";
-				}
-			}
-
+			String attendeeNameValue = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL);
 			attendeeName.setText(attendeeNameValue);
 
 			attendeeName.setOnClickListener(new View.OnClickListener() {
@@ -93,7 +78,7 @@ public class AttendeeListAdapter extends RecyclerView.Adapter<AttendeeListAdapte
 			removeButton.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View view) {
-					attendeeList.remove(getAdapterPosition());
+					attendeeList.remove(getBindingAdapterPosition());
 					if (attendeeList.size() == 1) {
 						attendeeList.clear();
 					}

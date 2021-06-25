@@ -270,9 +270,7 @@ public class CalendarProvider implements ICalendarProvider {
 	public long addEvent(ContentValues event) {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
 			Uri uri = context.getContentResolver().insert(CalendarContract.Events.CONTENT_URI, event);
-
 			onAddedNewEventLiveData.setValue(event.getAsLong(CalendarContract.Events.DTSTART));
-
 			return Long.parseLong(uri.getLastPathSegment());
 		} else {
 			return -1L;
@@ -329,7 +327,7 @@ public class CalendarProvider implements ICalendarProvider {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
 			Uri uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, event.getAsLong(CalendarContract.Events._ID));
 			int result = context.getContentResolver().update(uri, event, null, null);
-			onModifiedEventLiveData.postValue(event.getAsLong(CalendarContract.Instances.DTSTART));
+			//onModifiedEventLiveData.setValue(event.getAsLong(CalendarContract.Events.DTSTART));
 			return result;
 		} else {
 			return -1;

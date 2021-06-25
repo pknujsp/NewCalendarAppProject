@@ -22,6 +22,7 @@ import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.Toast;
 
+import com.google.android.material.chip.ChipGroup;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.editevent.adapter.AttendeeListAdapter;
 import com.zerodsoft.scheduleweather.databinding.FragmentAttendeesBinding;
@@ -39,7 +40,6 @@ public class AttendeesFragment extends Fragment {
 	private ContentValues organizer;
 	private OnAttendeesResultListener onAttendeesResultListener;
 
-
 	public AttendeesFragment(OnAttendeesResultListener onAttendeesResultListener) {
 		this.onAttendeesResultListener = onAttendeesResultListener;
 	}
@@ -53,7 +53,6 @@ public class AttendeesFragment extends Fragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
 	}
 
 	@Override
@@ -61,23 +60,22 @@ public class AttendeesFragment extends Fragment {
 		super.onViewCreated(view, savedInstanceState);
 		binding.customProgressView.setContentView(binding.attendeeList);
 
-		binding.authorityModifyEvent.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+		binding.guestsCanModify.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 			@Override
 			public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
 				if (isChecked) {
-					binding.authorityAttendeeInvites.setChecked(true);
-					binding.authorityAttendeeShowAttendees.setChecked(true);
-
-					binding.authorityAttendeeInvites.setEnabled(false);
-					binding.authorityAttendeeShowAttendees.setEnabled(false);
+					binding.guestsCanInviteOthers.setChecked(true);
+					binding.guestsCanSeeGuests.setChecked(true);
+					binding.guestsCanInviteOthers.setEnabled(false);
+					binding.guestsCanSeeGuests.setEnabled(false);
 				} else {
-					binding.authorityAttendeeInvites.setEnabled(true);
-					binding.authorityAttendeeShowAttendees.setEnabled(true);
+					binding.guestsCanInviteOthers.setEnabled(true);
+					binding.guestsCanSeeGuests.setEnabled(true);
 				}
 			}
 		});
-		Bundle arguments = getArguments();
 
+		Bundle arguments = getArguments();
 		List<ContentValues> attendeeList = arguments.getParcelableArrayList("attendeeList");
 		organizer = arguments.getParcelable("organizer");
 
@@ -95,13 +93,13 @@ public class AttendeesFragment extends Fragment {
 			binding.customProgressView.onSuccessfulProcessingData();
 		}
 
-		boolean guestsModify = arguments.getBoolean(CalendarContract.Events.GUESTS_CAN_MODIFY, false);
-		boolean guestsCanInviteOthers = arguments.getBoolean(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS, false);
-		boolean guestsCanSeeGuests = arguments.getBoolean(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS, false);
+		final boolean guestsCanModify = arguments.getBoolean(CalendarContract.Events.GUESTS_CAN_MODIFY, false);
+		final boolean guestsCanInviteOthers = arguments.getBoolean(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS, false);
+		final boolean guestsCanSeeGuests = arguments.getBoolean(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS, false);
 
-		binding.authorityAttendeeInvites.setChecked(guestsCanInviteOthers);
-		binding.authorityAttendeeShowAttendees.setChecked(guestsCanSeeGuests);
-		binding.authorityModifyEvent.setChecked(guestsModify);
+		binding.guestsCanInviteOthers.setChecked(guestsCanInviteOthers);
+		binding.guestsCanSeeGuests.setChecked(guestsCanSeeGuests);
+		binding.guestsCanModify.setChecked(guestsCanModify);
 
 		binding.customSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 			@Override
@@ -125,17 +123,13 @@ public class AttendeesFragment extends Fragment {
 							}
 						}
 
-						// 이벤트의 캘린더와 중복되는지 확인
+						// organizer와 중복되는지 확인
 						if (query.equals(selectedCalendarOwnerAccount) ||
 								query.equals(selectedCalendarCalendarName)) {
-							Toast.makeText(getContext(), R.string.duplicate_attendee, Toast.LENGTH_SHORT).show();
+							Toast.makeText(getContext(), R.string.not_available_add_organizer_as_attendee, Toast.LENGTH_SHORT).show();
 							return false;
 						}
 
-						if (attendeeList.isEmpty()) {
-							// 리스트가 비어있는 경우에는 이벤트에서 선택된 캘린더를 리스트의 맨 앞에 위치시킨다.
-							attendeeList.add(organizer);
-						}
 						ContentValues attendee = new ContentValues();
 						attendee.put(CalendarContract.Attendees.ATTENDEE_EMAIL, query);
 						attendee.put(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP, CalendarContract.Attendees.RELATIONSHIP_ATTENDEE);
@@ -164,13 +158,13 @@ public class AttendeesFragment extends Fragment {
 	@Override
 	public void onDestroy() {
 		if (adapter.getAttendeeList().isEmpty()) {
-			binding.authorityModifyEvent.setChecked(false);
-			binding.authorityAttendeeInvites.setChecked(false);
-			binding.authorityAttendeeShowAttendees.setChecked(false);
+			binding.guestsCanModify.setChecked(false);
+			binding.guestsCanInviteOthers.setChecked(false);
+			binding.guestsCanSeeGuests.setChecked(false);
 		}
 
-		onAttendeesResultListener.onResult(adapter.getAttendeeList(), binding.authorityModifyEvent.isChecked()
-				, binding.authorityAttendeeInvites.isChecked(), binding.authorityAttendeeShowAttendees.isChecked());
+		onAttendeesResultListener.onResult(adapter.getAttendeeList(), binding.guestsCanModify.isChecked()
+				, binding.guestsCanInviteOthers.isChecked(), binding.guestsCanSeeGuests.isChecked());
 
 		super.onDestroy();
 	}

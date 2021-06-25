@@ -614,4 +614,5 @@
     <string name="tag_settings_fragment">tag_settings_fragment</string>
     <string name="tag_calendar_color_fragment">tag_calendar_color_fragment</string>
     <string name="not_edited">수정된 데이터가 없습니다</string>
+    <string name="not_available_add_organizer_as_attendee">나의 계정을 추가할수 없음</string>
 </resources>

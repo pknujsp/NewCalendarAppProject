@@ -13,11 +13,12 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.common.interfaces.IFragmentTitle;
 import com.zerodsoft.scheduleweather.databinding.FragmentSettingsMainBinding;
 
 import org.jetbrains.annotations.NotNull;
 
-public class SettingsMainFragment extends Fragment implements SettingsFragment.IFragmentTitle {
+public class SettingsMainFragment extends Fragment implements IFragmentTitle {
 	private FragmentSettingsMainBinding binding;
 
 	private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
