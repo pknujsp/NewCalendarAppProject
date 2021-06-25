@@ -329,7 +329,7 @@ public class CalendarProvider implements ICalendarProvider {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
 			Uri uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, event.getAsLong(CalendarContract.Events._ID));
 			int result = context.getContentResolver().update(uri, event, null, null);
-			onModifiedEventLiveData.setValue(event.getAsLong(CalendarContract.Instances.DTSTART));
+			onModifiedEventLiveData.postValue(event.getAsLong(CalendarContract.Instances.DTSTART));
 			return result;
 		} else {
 			return -1;
@@ -482,7 +482,6 @@ public class CalendarProvider implements ICalendarProvider {
 					ContentValues reminder = new ContentValues();
 					reminders.add(reminder);
 
-					reminder.put(CalendarContract.Reminders._ID, cursor.getLong(cursor.getColumnIndex(CalendarContract.Reminders._ID)));
 					reminder.put(CalendarContract.Reminders.EVENT_ID, cursor.getLong(cursor.getColumnIndex(CalendarContract.Reminders.EVENT_ID)));
 					reminder.put(CalendarContract.Reminders.METHOD, cursor.getInt(cursor.getColumnIndex(CalendarContract.Reminders.METHOD)));
 					reminder.put(CalendarContract.Reminders.MINUTES, cursor.getInt(cursor.getColumnIndex(CalendarContract.Reminders.MINUTES)));
@@ -825,6 +824,33 @@ public class CalendarProvider implements ICalendarProvider {
 					attendee.put(CalendarContract.Attendees.ATTENDEE_STATUS, cursor.getInt(cursor.getColumnIndex(CalendarContract.Attendees.ATTENDEE_STATUS)));
 					attendee.put(CalendarContract.Attendees.ATTENDEE_TYPE, cursor.getInt(cursor.getColumnIndex(CalendarContract.Attendees.ATTENDEE_TYPE)));
 					attendee.put(CalendarContract.Attendees.IS_ORGANIZER, cursor.getString(cursor.getColumnIndex(CalendarContract.Attendees.IS_ORGANIZER)));
+				}
+				cursor.close();
+			}
+			return attendees;
+		} else {
+			return new ArrayList<>();
+		}
+	}
+
+	@Override
+	public List<ContentValues> getAttendeeListForEdit(Long eventId) {
+		if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
+			ContentResolver contentResolver = context.getContentResolver();
+
+			List<ContentValues> attendees = new ArrayList<>();
+			Cursor cursor = CalendarContract.Attendees.query(contentResolver, eventId, null);
+			if (cursor != null) {
+				while (cursor.moveToNext()) {
+					ContentValues attendee = new ContentValues();
+					attendees.add(attendee);
+
+					attendee.put(CalendarContract.Attendees.ATTENDEE_NAME, cursor.getString(cursor.getColumnIndex(CalendarContract.Attendees.ATTENDEE_NAME)));
+					attendee.put(CalendarContract.Attendees.EVENT_ID, cursor.getLong(cursor.getColumnIndex(CalendarContract.Attendees.EVENT_ID)));
+					attendee.put(CalendarContract.Attendees.ATTENDEE_EMAIL, cursor.getString(cursor.getColumnIndex(CalendarContract.Attendees.ATTENDEE_EMAIL)));
+					attendee.put(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP, cursor.getInt(cursor.getColumnIndex(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP)));
+					attendee.put(CalendarContract.Attendees.ATTENDEE_STATUS, cursor.getInt(cursor.getColumnIndex(CalendarContract.Attendees.ATTENDEE_STATUS)));
+					attendee.put(CalendarContract.Attendees.ATTENDEE_TYPE, cursor.getInt(cursor.getColumnIndex(CalendarContract.Attendees.ATTENDEE_TYPE)));
 				}
 				cursor.close();
 			}

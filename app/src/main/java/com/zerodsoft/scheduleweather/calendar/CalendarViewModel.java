@@ -178,6 +178,11 @@ public class CalendarViewModel extends AndroidViewModel implements ICalendarProv
 	}
 
 	@Override
+	public List<ContentValues> getAttendeeListForEdit(Long eventId) {
+		return calendarProvider.getAttendeeListForEdit(eventId);
+	}
+
+	@Override
 	public int updateAttendees(List<ContentValues> attendeeList) {
 		return calendarProvider.updateAttendees(attendeeList);
 	}

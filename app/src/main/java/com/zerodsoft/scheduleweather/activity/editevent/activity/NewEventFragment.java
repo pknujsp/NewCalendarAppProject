@@ -1,7 +1,6 @@
 package com.zerodsoft.scheduleweather.activity.editevent.activity;
 
 import android.content.ContentValues;
-import android.graphics.Paint;
 import android.os.Bundle;
 import android.provider.CalendarContract;
 import android.view.LayoutInflater;
@@ -197,8 +196,8 @@ public class NewEventFragment extends EventBaseFragment {
 	}
 
 	@Override
-	protected long showingDatePicker(DateTimeType dateTimeType) {
-		return 0;
+	protected ContentValues loadDatePicker(DateTimeType dateTimeType) {
+		return null;
 	}
 
 	@Override
@@ -207,13 +206,48 @@ public class NewEventFragment extends EventBaseFragment {
 	}
 
 	@Override
-	protected long showingTimePicker(DateTimeType dateTimeType) {
-		return 0;
+	protected ContentValues loadTimePicker(DateTimeType dateTimeType) {
+		return null;
 	}
 
 	@Override
 	protected void selectedTime(DateTimeType dateTimeType) {
 
+	}
+
+	@Override
+	protected ContentValues loadEventColor() {
+		return null;
+	}
+
+	@Override
+	protected ContentValues loadTimeZone() {
+		return null;
+	}
+
+	@Override
+	protected ContentValues loadEventLocation() {
+		return null;
+	}
+
+	@Override
+	protected ContentValues loadAttendeeList() {
+		return null;
+	}
+
+	@Override
+	protected ContentValues loadAccessLevel() {
+		return null;
+	}
+
+	@Override
+	protected ContentValues loadAvailability() {
+		return null;
+	}
+
+	@Override
+	protected String loadRecurrenceCreator() {
+		return "";
 	}
 
 	public interface OnNewEventResultListener {

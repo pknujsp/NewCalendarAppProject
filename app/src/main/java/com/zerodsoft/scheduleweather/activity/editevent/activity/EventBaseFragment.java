@@ -238,8 +238,13 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		{
 			Bundle bundle = new Bundle();
 			// 반복 룰과 이벤트의 시작 시간 전달
-			String rRule = eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.RRULE)
-					? eventDataViewModel.getNEW_EVENT().getAsString(CalendarContract.Events.RRULE) : "";
+			String rRule = null;
+
+			if (eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.RRULE)) {
+				rRule = eventDataViewModel.getNEW_EVENT().getAsString(CalendarContract.Events.RRULE);
+			} else {
+				rRule = loadRecurrenceCreator();
+			}
 
 			bundle.putString(CalendarContract.Events.RRULE, rRule);
 			bundle.putLong(CalendarContract.Events.DTSTART, eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTSTART));
@@ -809,13 +814,13 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		if (eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.DTSTART)) {
 			dtStart = eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTSTART);
 		} else {
-			dtStart = showingDatePicker(DateTimeType.START);
+			dtStart = loadDatePicker(DateTimeType.START);
 		}
 
 		if (eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.DTEND)) {
 			dtEnd = eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTEND);
 		} else {
-			dtEnd = showingDatePicker(DateTimeType.END);
+			dtEnd = loadDatePicker(DateTimeType.END);
 		}
 
 		final long finalDtStart = dtStart;
@@ -878,13 +883,13 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 			if (eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.DTSTART)) {
 				calendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTSTART));
 			} else {
-				calendar.setTimeInMillis(showingTimePicker(dateType));
+				calendar.setTimeInMillis(loadTimePicker(dateType));
 			}
 		} else if (dateType == DateTimeType.END) {
 			if (eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.DTEND)) {
 				calendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTEND));
 			} else {
-				calendar.setTimeInMillis(showingTimePicker(dateType));
+				calendar.setTimeInMillis(loadTimePicker(dateType));
 			}
 		}
 
@@ -892,13 +897,13 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 			if (eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.DTEND)) {
 				compareCalendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTEND));
 			} else {
-				compareCalendar.setTimeInMillis(showingTimePicker(DateTimeType.END));
+				compareCalendar.setTimeInMillis(loadTimePicker(DateTimeType.END));
 			}
 		} else if (dateType == DateTimeType.END) {
 			if (eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.DTSTART)) {
 				compareCalendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTSTART));
 			} else {
-				compareCalendar.setTimeInMillis(showingTimePicker(DateTimeType.START));
+				compareCalendar.setTimeInMillis(loadTimePicker(DateTimeType.START));
 			}
 		}
 
@@ -963,15 +968,29 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		contentValues.put(CalendarContract.Events.DTEND, calendar.getTimeInMillis());
 	}
 
+
+	protected abstract String loadRecurrenceCreator();
+
 	protected abstract void onCheckedAllDaySwitch();
 
-	protected abstract long showingDatePicker(DateTimeType dateTimeType);
+	protected abstract ContentValues loadDatePicker(DateTimeType dateTimeType);
 
 	protected abstract void selectedDate();
 
-	protected abstract long showingTimePicker(DateTimeType dateTimeType);
+	protected abstract ContentValues loadTimePicker(DateTimeType dateTimeType);
 
 	protected abstract void selectedTime(DateTimeType dateTimeType);
 
+	protected abstract ContentValues loadEventColor();
+
+	protected abstract ContentValues loadTimeZone();
+
+	protected abstract ContentValues loadEventLocation();
+
+	protected abstract ContentValues loadAttendeeList();
+
+	protected abstract ContentValues loadAccessLevel();
+
+	protected abstract ContentValues loadAvailability();
 }
 

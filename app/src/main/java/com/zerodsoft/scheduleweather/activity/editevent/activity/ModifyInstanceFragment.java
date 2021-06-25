@@ -42,6 +42,9 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 	private ContentValues originalInstance;
 	private boolean firstClickedTimeZone = false;
 
+	private long originalInstanceBeginDate;
+	private long originalInstanceEndDate;
+
 	public ModifyInstanceFragment(OnModifyInstanceResultListener onModifyInstanceResultListener) {
 		this.onModifyInstanceResultListener = onModifyInstanceResultListener;
 	}
@@ -102,7 +105,12 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 								}
 							}).create().show();
 				} else {
-					updateEvent();
+					new Thread(new Runnable() {
+						@Override
+						public void run() {
+							updateEvent();
+						}
+					}).start();
 				}
 			}
 		});
@@ -133,7 +141,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 				calendarViewModel.getCalendar(originalInstance.getAsInteger(CalendarContract.Instances.CALENDAR_ID));
 
 		eventDataViewModel.getREMINDERS().addAll(calendarViewModel.getReminders(eventId));
-		eventDataViewModel.getATTENDEES().addAll(calendarViewModel.getAttendees(eventId));
+		eventDataViewModel.getATTENDEES().addAll(calendarViewModel.getAttendeeListForEdit(eventId));
 
 		if (!eventDataViewModel.getATTENDEES().isEmpty()) {
 			setAttendeesText(eventDataViewModel.getATTENDEES());
@@ -165,11 +173,13 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 			setDateText(DateTimeType.START, calendar.getTime().getTime());
 			setTimeText(DateTimeType.START, calendar.getTime().getTime());
+			originalInstanceBeginDate = calendar.getTimeInMillis();
 
 			calendar.add(Calendar.DAY_OF_YEAR, dayDifference);
 
 			setDateText(DateTimeType.END, calendar.getTime().getTime());
 			setTimeText(DateTimeType.END, calendar.getTime().getTime());
+			originalInstanceEndDate = calendar.getTimeInMillis();
 		} else {
 			setTimeZoneText(originalInstance.getAsString(CalendarContract.Events.EVENT_TIMEZONE));
 
@@ -177,6 +187,9 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 			setDateText(DateTimeType.END, originalInstance.getAsLong(CalendarContract.Instances.END));
 			setTimeText(DateTimeType.START, originalInstance.getAsLong(CalendarContract.Instances.BEGIN));
 			setTimeText(DateTimeType.END, originalInstance.getAsLong(CalendarContract.Instances.END));
+
+			originalInstanceBeginDate = originalInstance.getAsLong(CalendarContract.Instances.BEGIN);
+			originalInstanceEndDate = originalInstance.getAsLong(CalendarContract.Instances.END);
 		}
 
 
@@ -301,7 +314,6 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 							@Override
 							public void onResultNoData() {
-								onModifyInstanceResultListener.onResultModifiedAfterAllInstancesIncludingThisInstance();
 								getParentFragmentManager().popBackStack();
 							}
 						});
@@ -469,7 +481,6 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 					@Override
 					public void onResultNoData() {
-						onModifyInstanceResultListener.onResultModifiedAfterAllInstancesIncludingThisInstance();
 						getParentFragmentManager().popBackStack();
 					}
 				});
@@ -484,7 +495,6 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 	private final DbQueryCallback<LocationDTO> locationDbQueryCallback = new DbQueryCallback<LocationDTO>() {
 		@Override
 		public void onResultSuccessful(LocationDTO result) {
-			onModifyInstanceResultListener.onResultModifiedAfterAllInstancesIncludingThisInstance();
 			getParentFragmentManager().popBackStack();
 		}
 
@@ -561,7 +571,6 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 			locationViewModel.addLocation(locationDTO, new DbQueryCallback<LocationDTO>() {
 				@Override
 				public void onResultSuccessful(LocationDTO result) {
-					onModifyInstanceResultListener.onResultModifiedEvent(modifiedEvent.getAsLong(CalendarContract.Events._ID), modifiedEvent.getAsLong(CalendarContract.Events.DTSTART));
 					getParentFragmentManager().popBackStack();
 				}
 
@@ -571,7 +580,6 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 				}
 			});
 		} else {
-			onModifyInstanceResultListener.onResultModifiedEvent(modifiedEvent.getAsLong(CalendarContract.Events._ID), modifiedEvent.getAsLong(CalendarContract.Events.DTSTART));
 			getParentFragmentManager().popBackStack();
 		}
 
@@ -608,19 +616,43 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 				eventDataViewModel.setTimezone(timeZone.getID());
 				setTimeZoneText(timeZone.getID());
 			}
+
+			if (!firstModifiedDateTime) {
+				eventDataViewModel.setDtStart(new Date(originalInstance.getAsLong(CalendarContract.Instances.BEGIN)));
+				if (originalInstance.getAsInteger(CalendarContract.Instances.ALL_DAY) == 1) {
+					Calendar calendar = Calendar.getInstance();
+					calendar.setTimeInMillis(originalInstance.getAsLong(CalendarContract.Instances.END));
+					calendar.add(Calendar.DAY_OF_YEAR, -1);
+					eventDataViewModel.setDtEnd(calendar.getTime());
+				} else {
+					eventDataViewModel.setDtEnd(new Date(originalInstance.getAsLong(CalendarContract.Instances.END)));
+				}
+			}
 		}
 	}
 
 	@Override
-	protected long showingDatePicker(DateTimeType dateTimeType) {
-		return originalInstance.getAsLong(dateTimeType == DateTimeType.START ? CalendarContract.Instances.BEGIN
-				: CalendarContract.Instances.END);
+	protected ContentValues loadDatePicker(DateTimeType dateTimeType) {
+		ContentValues contentValues = new ContentValues();
+
+		if (dateTimeType == DateTimeType.START) {
+			contentValues.put(CalendarContract.Events.DTSTART, originalInstanceBeginDate);
+		} else {
+			contentValues.put(CalendarContract.Events.DTEND, originalInstanceEndDate);
+		}
+		return contentValues;
 	}
 
 	@Override
-	protected long showingTimePicker(DateTimeType dateTimeType) {
-		return originalInstance.getAsLong(dateTimeType == DateTimeType.START ? CalendarContract.Instances.BEGIN
-				: CalendarContract.Instances.END);
+	protected ContentValues loadTimePicker(DateTimeType dateTimeType) {
+		ContentValues contentValues = new ContentValues();
+
+		if (dateTimeType == DateTimeType.START) {
+			contentValues.put(CalendarContract.Events.DTSTART, originalInstanceBeginDate);
+		} else {
+			contentValues.put(CalendarContract.Events.DTEND, originalInstanceEndDate);
+		}
+		return contentValues;
 	}
 
 	private boolean firstModifiedDateTime = false;
@@ -629,6 +661,8 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 	protected void selectedDate() {
 		if (!firstModifiedDateTime) {
 			firstModifiedDateTime = true;
+
+			eventDataViewModel.setIsAllDay(binding.timeLayout.timeAlldaySwitch.isChecked());
 		}
 	}
 
@@ -637,11 +671,68 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		if (!firstModifiedDateTime) {
 			firstModifiedDateTime = true;
 
+			eventDataViewModel.setIsAllDay(binding.timeLayout.timeAlldaySwitch.isChecked());
+
 			if (dateTimeType == DateTimeType.START) {
 				eventDataViewModel.setDtEnd(new Date(originalInstance.getAsLong(CalendarContract.Instances.END)));
 			} else {
 				eventDataViewModel.setDtStart(new Date(originalInstance.getAsLong(CalendarContract.Instances.BEGIN)));
 			}
+		}
+	}
+
+	@Override
+	protected ContentValues loadEventColor() {
+		ContentValues contentValues = new ContentValues();
+		contentValues.put(CalendarContract.Events.EVENT_COLOR_KEY, originalInstance.getAsString(CalendarContract.Events.EVENT_COLOR_KEY));
+		contentValues.put(CalendarContract.Events.EVENT_COLOR, originalInstance.getAsString(CalendarContract.Events.EVENT_COLOR));
+
+		return contentValues;
+	}
+
+	@Override
+	protected ContentValues loadTimeZone() {
+		ContentValues contentValues = new ContentValues();
+		contentValues.put(CalendarContract.Events.EVENT_TIMEZONE, originalInstance.getAsString(CalendarContract.Events.EVENT_TIMEZONE));
+
+		return contentValues;
+	}
+
+	@Override
+	protected ContentValues loadEventLocation() {
+		ContentValues contentValues = new ContentValues();
+		contentValues.put(CalendarContract.Events.EVENT_LOCATION, originalInstance.getAsString(CalendarContract.Events.EVENT_LOCATION));
+
+		return contentValues;
+	}
+
+	@Override
+	protected ContentValues loadAttendeeList() {
+		return null;
+	}
+
+	@Override
+	protected ContentValues loadAccessLevel() {
+		ContentValues contentValues = new ContentValues();
+		contentValues.put(CalendarContract.Events.ACCESS_LEVEL, originalInstance.getAsInteger(CalendarContract.Events.ACCESS_LEVEL));
+
+		return contentValues;
+	}
+
+	@Override
+	protected ContentValues loadAvailability() {
+		ContentValues contentValues = new ContentValues();
+		contentValues.put(CalendarContract.Events.AVAILABILITY, originalInstance.getAsInteger(CalendarContract.Events.AVAILABILITY));
+
+		return contentValues;
+	}
+
+	@Override
+	protected String loadRecurrenceCreator() {
+		if (originalInstance.getAsString(CalendarContract.Instances.RRULE) != null) {
+			return originalInstance.getAsString(CalendarContract.Instances.RRULE);
+		} else {
+			return "";
 		}
 	}
 

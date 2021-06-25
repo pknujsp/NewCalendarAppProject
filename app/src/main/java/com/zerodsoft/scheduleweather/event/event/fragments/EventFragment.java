@@ -113,6 +113,7 @@ public class EventFragment extends BottomSheetDialogFragment {
 					getDialog().show();
 				}
 			} else if (f instanceof ModifyInstanceFragment) {
+				setInstanceData();
 				getDialog().show();
 			}
 		}
@@ -322,17 +323,17 @@ public class EventFragment extends BottomSheetDialogFragment {
 				ModifyInstanceFragment modifyInstanceFragment = new ModifyInstanceFragment(new ModifyInstanceFragment.OnModifyInstanceResultListener() {
 					@Override
 					public void onResultModifiedEvent(long eventId, long begin) {
-						setInstanceData();
+						//setInstanceData();
 					}
 
 					@Override
 					public void onResultModifiedThisInstance() {
-						setInstanceData();
+						//setInstanceData();
 					}
 
 					@Override
 					public void onResultModifiedAfterAllInstancesIncludingThisInstance() {
-						setInstanceData();
+						//setInstanceData();
 					}
 				});
 				Bundle bundle = new Bundle();
@@ -533,7 +534,7 @@ public class EventFragment extends BottomSheetDialogFragment {
 	private void setInstanceData() {
 		// 제목, 캘린더, 시간, 시간대, 반복, 알림, 설명, 위치, 공개범위, 유효성, 참석자
 		// 캘린더, 시간대, 참석자 정보는 따로 불러온다.
-		//제목
+		// 제목
 		instanceValues = calendarViewModel.getInstance(INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
 
 		Date begin = new Date(instanceValues.getAsLong(CalendarContract.Instances.BEGIN));

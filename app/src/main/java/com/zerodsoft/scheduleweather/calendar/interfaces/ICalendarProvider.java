@@ -58,6 +58,8 @@ public interface ICalendarProvider {
 
 	public List<ContentValues> getAttendees(Long eventId);
 
+	public List<ContentValues> getAttendeeListForEdit(Long eventId);
+
 	public int updateAttendees(List<ContentValues> attendeeList);
 
 	public int deleteAllAttendees(Long eventId);
