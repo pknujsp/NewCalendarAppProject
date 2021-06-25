@@ -106,7 +106,7 @@ public class NewEventFragment extends EventBaseFragment {
 		setTimeText(DateTimeType.START, defaultDateTimes[0].getTime());
 		setTimeText(DateTimeType.END, defaultDateTimes[1].getTime());
 
-		binding.timeLayout.timeAlldaySwitch.setChecked(false);
+		eventDataViewModel.setIsAllDay(false);
 
 		// 기기 시간대로 설정
 		TimeZone timeZone = null;
@@ -140,11 +140,7 @@ public class NewEventFragment extends EventBaseFragment {
 
 		//allday이면 dtEnd를 다음 날로 설정
 		if (newEvent.getAsInteger(CalendarContract.Events.ALL_DAY) == 1) {
-			Calendar calendar = Calendar.getInstance();
-			calendar.setTimeInMillis(newEvent.getAsLong(CalendarContract.Events.DTEND));
-			calendar.add(Calendar.DAY_OF_YEAR, 1);
-
-			newEvent.put(CalendarContract.Events.DTEND, calendar.getTimeInMillis());
+			convertDtEndForAllDay(newEvent);
 		}
 
 		final long NEW_EVENT_ID = calendarViewModel.addEvent(newEvent);
@@ -193,6 +189,31 @@ public class NewEventFragment extends EventBaseFragment {
 	protected void removeReminderItemView(int minutes) {
 		super.removeReminderItemView(minutes);
 		eventDataViewModel.removeReminder(minutes);
+	}
+
+	@Override
+	protected void onCheckedAllDaySwitch() {
+
+	}
+
+	@Override
+	protected long showingDatePicker(DateTimeType dateTimeType) {
+		return 0;
+	}
+
+	@Override
+	protected void selectedDate() {
+
+	}
+
+	@Override
+	protected long showingTimePicker(DateTimeType dateTimeType) {
+		return 0;
+	}
+
+	@Override
+	protected void selectedTime(DateTimeType dateTimeType) {
+
 	}
 
 	public interface OnNewEventResultListener {

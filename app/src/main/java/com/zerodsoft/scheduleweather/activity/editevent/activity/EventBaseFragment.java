@@ -97,7 +97,6 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback());
 	}
 
-
 	@Override
 	public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
@@ -210,6 +209,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 			if (!initializing) {
 				eventDataViewModel.setIsAllDay(isChecked);
 			}
+			onCheckedAllDaySwitch();
 		});
 
         /*
@@ -802,12 +802,28 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 	}
 
 
-	protected void showDatePicker() {
-		MaterialDatePicker.Builder<Pair<Long, Long>> builder = MaterialDatePicker.Builder.dateRangePicker();
+	protected final void showDatePicker() {
+		long dtStart = 0L;
+		long dtEnd = 0L;
 
+		if (eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.DTSTART)) {
+			dtStart = eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTSTART);
+		} else {
+			dtStart = showingDatePicker(DateTimeType.START);
+		}
+
+		if (eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.DTEND)) {
+			dtEnd = eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTEND);
+		} else {
+			dtEnd = showingDatePicker(DateTimeType.END);
+		}
+
+		final long finalDtStart = dtStart;
+		final long finalDtEnd = dtEnd;
+
+		MaterialDatePicker.Builder<Pair<Long, Long>> builder = MaterialDatePicker.Builder.dateRangePicker();
 		datePicker = builder.setTitleText(R.string.datepicker)
-				.setSelection(new Pair<>(eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTSTART)
-						, eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTEND)))
+				.setSelection(new Pair<>(finalDtStart, finalDtEnd))
 				.setInputMode(MaterialDatePicker.INPUT_MODE_CALENDAR)
 				.build();
 		datePicker.addOnPositiveButtonClickListener(new MaterialPickerOnPositiveButtonClickListener<Pair<Long, Long>>() {
@@ -818,7 +834,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 				int previousMinute = 0;
 
 				if (selection.first != null) {
-					calendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTSTART));
+					calendar.setTimeInMillis(finalDtStart);
 					previousHour = calendar.get(Calendar.HOUR_OF_DAY);
 					previousMinute = calendar.get(Calendar.MINUTE);
 
@@ -830,7 +846,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 					setDateText(DateTimeType.START, calendar.getTimeInMillis());
 				}
 				if (selection.second != null) {
-					calendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTEND));
+					calendar.setTimeInMillis(finalDtEnd);
 					previousHour = calendar.get(Calendar.HOUR_OF_DAY);
 					previousMinute = calendar.get(Calendar.MINUTE);
 
@@ -842,6 +858,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 					setDateText(DateTimeType.END, calendar.getTimeInMillis());
 				}
 
+				selectedDate();
 				datePicker.dismiss();
 			}
 		});
@@ -855,11 +872,34 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 
 	protected void showTimePicker(DateTimeType dateType) {
 		Calendar calendar = Calendar.getInstance();
+		Calendar compareCalendar = Calendar.getInstance();
 
 		if (dateType == DateTimeType.START) {
-			calendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTSTART));
+			if (eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.DTSTART)) {
+				calendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTSTART));
+			} else {
+				calendar.setTimeInMillis(showingTimePicker(dateType));
+			}
 		} else if (dateType == DateTimeType.END) {
-			calendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTEND));
+			if (eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.DTEND)) {
+				calendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTEND));
+			} else {
+				calendar.setTimeInMillis(showingTimePicker(dateType));
+			}
+		}
+
+		if (dateType == DateTimeType.START) {
+			if (eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.DTEND)) {
+				compareCalendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTEND));
+			} else {
+				compareCalendar.setTimeInMillis(showingTimePicker(DateTimeType.END));
+			}
+		} else if (dateType == DateTimeType.END) {
+			if (eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.DTSTART)) {
+				compareCalendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTSTART));
+			} else {
+				compareCalendar.setTimeInMillis(showingTimePicker(DateTimeType.START));
+			}
 		}
 
 		MaterialTimePicker.Builder builder = new MaterialTimePicker.Builder();
@@ -872,14 +912,12 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 
 		timePicker.addOnPositiveButtonClickListener(view ->
 		{
-			Calendar newCalendar = Calendar.getInstance();
-			newCalendar.setTimeInMillis(dateType == DateTimeType.START ? eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTSTART)
-					: eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTEND));
+			Calendar newCalendar = calendar;
 			newCalendar.set(Calendar.HOUR_OF_DAY, timePicker.getHour());
 			newCalendar.set(Calendar.MINUTE, timePicker.getMinute());
 
 			if (dateType == DateTimeType.START) {
-				if (newCalendar.getTimeInMillis() <= eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTEND)) {
+				if (newCalendar.getTimeInMillis() <= compareCalendar.getTimeInMillis()) {
 					eventDataViewModel.setDtStart(newCalendar.getTime());
 					setTimeText(dateType, newCalendar.getTimeInMillis());
 				} else {
@@ -888,7 +926,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 					Toast.makeText(getContext(), msg, Toast.LENGTH_LONG).show();
 				}
 			} else if (dateType == DateTimeType.END) {
-				if (newCalendar.getTimeInMillis() >= eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTSTART)) {
+				if (newCalendar.getTimeInMillis() >= compareCalendar.getTimeInMillis()) {
 					eventDataViewModel.setDtEnd(newCalendar.getTime());
 					setTimeText(dateType, newCalendar.getTimeInMillis());
 				} else {
@@ -897,6 +935,8 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 					Toast.makeText(getContext(), msg, Toast.LENGTH_LONG).show();
 				}
 			}
+
+			selectedTime(dateType);
 
 		});
 		timePicker.addOnNegativeButtonClickListener(view ->
@@ -914,6 +954,24 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 	protected void setAvailabilityText(int availability) {
 		binding.availabilityLayout.eventAvailability.setText(EventUtil.convertAvailability(availability, getContext()));
 	}
+
+	protected final void convertDtEndForAllDay(ContentValues contentValues) {
+		Calendar calendar = Calendar.getInstance();
+		calendar.setTimeInMillis(contentValues.getAsLong(CalendarContract.Events.DTEND));
+		calendar.add(Calendar.DAY_OF_YEAR, 1);
+
+		contentValues.put(CalendarContract.Events.DTEND, calendar.getTimeInMillis());
+	}
+
+	protected abstract void onCheckedAllDaySwitch();
+
+	protected abstract long showingDatePicker(DateTimeType dateTimeType);
+
+	protected abstract void selectedDate();
+
+	protected abstract long showingTimePicker(DateTimeType dateTimeType);
+
+	protected abstract void selectedTime(DateTimeType dateTimeType);
 
 }
 

@@ -8,6 +8,7 @@
         android:layout_height="match_parent"
         android:clickable="true"
         android:focusable="false"
+        android:background="@color/white"
         android:orientation="vertical">
 
         <com.zerodsoft.scheduleweather.common.view.CustomSearchView

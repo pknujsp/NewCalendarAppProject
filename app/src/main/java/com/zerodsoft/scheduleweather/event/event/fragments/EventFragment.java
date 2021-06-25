@@ -322,17 +322,17 @@ public class EventFragment extends BottomSheetDialogFragment {
 				ModifyInstanceFragment modifyInstanceFragment = new ModifyInstanceFragment(new ModifyInstanceFragment.OnModifyInstanceResultListener() {
 					@Override
 					public void onResultModifiedEvent(long eventId, long begin) {
-
+						setInstanceData();
 					}
 
 					@Override
 					public void onResultModifiedThisInstance() {
-
+						setInstanceData();
 					}
 
 					@Override
 					public void onResultModifiedAfterAllInstancesIncludingThisInstance() {
-
+						setInstanceData();
 					}
 				});
 				Bundle bundle = new Bundle();
@@ -540,7 +540,7 @@ public class EventFragment extends BottomSheetDialogFragment {
 		Date end = new Date(instanceValues.getAsLong(CalendarContract.Instances.END));
 
 		String time = "begin : " + begin.toString() + "\nend : " + end.toString();
-		Toast.makeText(getContext(), time, Toast.LENGTH_LONG).show();
+		Toast.makeText(getContext(), time, Toast.LENGTH_SHORT).show();
 
 		if (instanceValues.getAsInteger(CalendarContract.Instances.CALENDAR_ACCESS_LEVEL) == CalendarContract.Instances.CAL_ACCESS_READ) {
 			binding.fabsLayout.setVisibility(View.GONE);

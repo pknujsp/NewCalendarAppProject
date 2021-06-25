@@ -40,6 +40,7 @@ import java.util.TimeZone;
 public class ModifyInstanceFragment extends EventBaseFragment {
 	private OnModifyInstanceResultListener onModifyInstanceResultListener;
 	private ContentValues originalInstance;
+	private boolean firstClickedTimeZone = false;
 
 	public ModifyInstanceFragment(OnModifyInstanceResultListener onModifyInstanceResultListener) {
 		this.onModifyInstanceResultListener = onModifyInstanceResultListener;
@@ -114,17 +115,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 	private boolean checkEdited() {
 		//allday ,dtstart, dtend, eventtimezone으로 확인
-		if (eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTSTART).equals(originalInstance.getAsLong(CalendarContract.Instances.DTSTART)) &&
-				eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTEND).equals(originalInstance.getAsLong(CalendarContract.Instances.DTEND))) {
-			if (eventDataViewModel.getNEW_EVENT().getAsString(CalendarContract.Events.EVENT_TIMEZONE).equals(originalInstance.getAsString(CalendarContract.Instances.EVENT_TIMEZONE))) {
-				if (eventDataViewModel.getNEW_EVENT().getAsInteger(CalendarContract.Events.ALL_DAY).equals(originalInstance.getAsInteger(CalendarContract.Instances.ALL_DAY))) {
-					if (eventDataViewModel.getNEW_EVENT().size() == 4) {
-						return false;
-					}
-				}
-			}
-		}
-		return true;
+		return eventDataViewModel.getNEW_EVENT().size() != 0;
 	}
 
 	@Override
@@ -136,9 +127,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		final long begin = arguments.getLong(CalendarContract.Instances.BEGIN, 0);
 		final long end = arguments.getLong(CalendarContract.Instances.END, 0);
 
-		//이벤트와 인스턴스를 구분해서 데이터를 가져온다
-
-		// 이벤트, 알림을 가져온다
+		// 인스턴스, 알림을 가져온다
 		originalInstance = calendarViewModel.getInstance(instanceId, begin, end);
 		selectedCalendarValues =
 				calendarViewModel.getCalendar(originalInstance.getAsInteger(CalendarContract.Instances.CALENDAR_ID));
@@ -162,12 +151,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 		// allday switch
 		final boolean isAllDay = originalInstance.getAsInteger(CalendarContract.Instances.ALL_DAY) == 1;
-		eventDataViewModel.setIsAllDay(isAllDay);
 		binding.timeLayout.timeAlldaySwitch.setChecked(isAllDay);
-
-		eventDataViewModel.setTimezone(originalInstance.getAsString(CalendarContract.Instances.EVENT_TIMEZONE));
-		eventDataViewModel.setDtStart(new Date(originalInstance.getAsLong(CalendarContract.Instances.BEGIN)));
-		eventDataViewModel.setDtEnd(new Date(originalInstance.getAsLong(CalendarContract.Instances.END)));
 
 		if (isAllDay) {
 			int startDay = originalInstance.getAsInteger(CalendarContract.Instances.START_DAY);
@@ -271,6 +255,10 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		setNewEventValues(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS, newEventValues, modifiedInstance);
 		setNewEventValues(CalendarContract.Events.GUESTS_CAN_MODIFY, newEventValues, modifiedInstance);
 		setNewEventValues(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS, newEventValues, modifiedInstance);
+
+		if (newEventValues.getAsInteger(CalendarContract.Events.ALL_DAY) == 1) {
+			convertDtEndForAllDay(newEventValues);
+		}
 
 		if (modifiedInstance.containsKey(CalendarContract.Events.RRULE)) {
 			setNewEventValues(CalendarContract.Events.RRULE, newEventValues, modifiedInstance);
@@ -416,7 +404,9 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		setNewEventValues(CalendarContract.Events.GUESTS_CAN_MODIFY, newEventValues, modifiedInstance);
 		setNewEventValues(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS, newEventValues, modifiedInstance);
 
-
+		if (newEventValues.getAsInteger(CalendarContract.Events.ALL_DAY) == 1) {
+			convertDtEndForAllDay(newEventValues);
+		}
 		//rrule 수정
 		if (originalInstance.getAsString(CalendarContract.Instances.RRULE) != null && modifiedInstance.containsKey(CalendarContract.Events.RRULE)) {
 			RecurrenceRule newEventRrule = new RecurrenceRule();
@@ -535,6 +525,12 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 			}
 		}
 
+		if (modifiedEvent.containsKey(CalendarContract.Events.ALL_DAY)) {
+			if (modifiedEvent.getAsInteger(CalendarContract.Events.ALL_DAY) == 1) {
+				convertDtEndForAllDay(modifiedEvent);
+			}
+		}
+
 		final long eventId = originalInstance.getAsInteger(CalendarContract.Instances.EVENT_ID);
 		modifiedEvent.put(CalendarContract.Events._ID, eventId);
 
@@ -600,6 +596,53 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 	protected void removeReminderItemView(int minutes) {
 		super.removeReminderItemView(minutes);
 		eventDataViewModel.removeReminder(minutes);
+	}
+
+	@Override
+	protected void onCheckedAllDaySwitch() {
+		if (!firstClickedTimeZone) {
+			firstClickedTimeZone = true;
+
+			if (originalInstance.getAsInteger(CalendarContract.Instances.ALL_DAY) == 1) {
+				TimeZone timeZone = TimeZone.getTimeZone(originalInstance.getAsString(CalendarContract.Instances.CALENDAR_TIME_ZONE));
+				eventDataViewModel.setTimezone(timeZone.getID());
+				setTimeZoneText(timeZone.getID());
+			}
+		}
+	}
+
+	@Override
+	protected long showingDatePicker(DateTimeType dateTimeType) {
+		return originalInstance.getAsLong(dateTimeType == DateTimeType.START ? CalendarContract.Instances.BEGIN
+				: CalendarContract.Instances.END);
+	}
+
+	@Override
+	protected long showingTimePicker(DateTimeType dateTimeType) {
+		return originalInstance.getAsLong(dateTimeType == DateTimeType.START ? CalendarContract.Instances.BEGIN
+				: CalendarContract.Instances.END);
+	}
+
+	private boolean firstModifiedDateTime = false;
+
+	@Override
+	protected void selectedDate() {
+		if (!firstModifiedDateTime) {
+			firstModifiedDateTime = true;
+		}
+	}
+
+	@Override
+	protected void selectedTime(DateTimeType dateTimeType) {
+		if (!firstModifiedDateTime) {
+			firstModifiedDateTime = true;
+
+			if (dateTimeType == DateTimeType.START) {
+				eventDataViewModel.setDtEnd(new Date(originalInstance.getAsLong(CalendarContract.Instances.END)));
+			} else {
+				eventDataViewModel.setDtStart(new Date(originalInstance.getAsLong(CalendarContract.Instances.BEGIN)));
+			}
+		}
 	}
 
 	public interface OnModifyInstanceResultListener {
