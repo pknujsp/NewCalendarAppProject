@@ -618,4 +618,5 @@
     <string name="go_to_this_week">이번 주로 이동</string>
     <string name="go_to_first_selected_week">첫 선택 주로 이동</string>
     <string name="tag_instance_list_week_dialog_fragment">tag_instance_list_week_dialog_fragment</string>
+    <string name="show_as_list">목록 보기</string>
 </resources>

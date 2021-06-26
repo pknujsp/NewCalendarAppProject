@@ -33,7 +33,7 @@ public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapte
 	private final OnEventItemLongClickListener onEventItemLongClickListener;
 	private final long viewBegin;
 	private final long viewEnd;
-	private List<List<ContentValues>> instancesList = new ArrayList<>();
+	private List<List<InstanceListWeekView.InstanceValues>> instancesList = new ArrayList<>();
 	private List<Date> dateList = new LinkedList<>();
 
 	public InstanceListAdapter(OnEventItemClickListener onEventItemClickListener, OnEventItemLongClickListener onEventItemLongClickListener, long viewBegin, long viewEnd) {
@@ -43,7 +43,7 @@ public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapte
 		this.viewEnd = viewEnd;
 	}
 
-	public void setInstancesList(List<List<ContentValues>> instancesList) {
+	public void setInstancesList(List<List<InstanceListWeekView.InstanceValues>> instancesList) {
 		this.instancesList = instancesList;
 	}
 
@@ -51,7 +51,7 @@ public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapte
 		this.dateList = dateList;
 	}
 
-	public List<List<ContentValues>> getInstancesList() {
+	public List<List<InstanceListWeekView.InstanceValues>> getInstancesList() {
 		return instancesList;
 	}
 
@@ -97,8 +97,8 @@ public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapte
 			final int instanceViewHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 42f,
 					itemView.getContext().getResources().getDisplayMetrics());
 
-			List<ContentValues> instanceList = instancesList.get(getBindingAdapterPosition());
-			final int totalCount = instanceList.size();
+			List<InstanceListWeekView.InstanceValues> instanceValuesList = instancesList.get(getBindingAdapterPosition());
+			final int totalCount = instanceValuesList.size();
 			if (totalCount == 0) {
 				customProgressView.onFailedProcessingData(itemView.getContext().getString(R.string.not_data));
 			} else {
@@ -108,12 +108,14 @@ public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapte
 			int index = 0;
 
 			LayoutInflater layoutInflater = (LayoutInflater) itemView.getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			for (ContentValues instance : instanceList) {
+			for (InstanceListWeekView.InstanceValues instanceValues : instanceValuesList) {
 				LinearLayout instanceView = (LinearLayout) layoutInflater.inflate(R.layout.events_info_list_item, null);
 				//remove checkbox
 				instanceView.removeView(instanceView.findViewById(R.id.checkbox));
 
 				TextView instanceTextView = (TextView) instanceView.findViewById(R.id.instance_item);
+				ContentValues instance = instanceValues.instance;
+
 				instanceTextView.setOnClickListener(new View.OnClickListener() {
 					@Override
 					public void onClick(View v) {
@@ -148,16 +150,10 @@ public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapte
 					instanceTextView.setText(itemView.getContext().getString(R.string.empty_title));
 				}
 
-				/*
-				int[] margin = EventUtil.getViewSideMargin(instance.getAsLong(CalendarContract.Instances.BEGIN)
-						, instance.getAsLong(CalendarContract.Instances.END)
-						, viewBegin, viewEnd, 16, instance.getAsInteger(CalendarContract.Instances.ALL_DAY) == 1);
-
-				 */
 				LinearLayout.LayoutParams instanceViewLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
 						instanceViewHeight);
-				//	instanceViewLayoutParams.leftMargin = margin[0];
-				//	instanceViewLayoutParams.rightMargin = margin[1];
+				instanceViewLayoutParams.leftMargin = instanceValues.leftMargin;
+				instanceViewLayoutParams.rightMargin = instanceValues.rightMargin;
 
 				if (index++ < totalCount - 1) {
 					instanceViewLayoutParams.bottomMargin = bottomMargin;

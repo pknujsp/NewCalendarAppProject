@@ -46,8 +46,7 @@ public class ClockUtil {
 		dt2Calendar.setTimeInMillis(dt2);
 
 		if (dt1Calendar.get(Calendar.YEAR) == dt2Calendar.get(Calendar.YEAR) &&
-				dt1Calendar.get(Calendar.MONTH) == dt2Calendar.get(Calendar.MONTH) &&
-				dt1Calendar.get(Calendar.DAY_OF_MONTH) == dt2Calendar.get(Calendar.DAY_OF_MONTH)) {
+				dt1Calendar.get(Calendar.DAY_OF_YEAR) == dt2Calendar.get(Calendar.DAY_OF_YEAR)) {
 			return true;
 		} else {
 			return false;

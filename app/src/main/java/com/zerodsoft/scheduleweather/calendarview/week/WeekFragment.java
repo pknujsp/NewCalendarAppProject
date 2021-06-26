@@ -225,6 +225,9 @@ public class WeekFragment extends Fragment implements IRefreshView, OnDateTimeCh
 			this.copiedCalendar = (Calendar) calendar.clone();
 		}
 
+		public Calendar getCurrentDate() {
+			return (Calendar) copiedCalendar.clone();
+		}
 
 		@Override
 		public void onPageScrollStateChanged(int state) {
@@ -251,6 +254,17 @@ public class WeekFragment extends Fragment implements IRefreshView, OnDateTimeCh
 			iToolbar.setMonth(copiedCalendar.getTime());
 			// 일정 목록을 가져와서 표시함 header view, week view
 		}
+	}
+
+	public long[] getCurrentDate() {
+		Calendar calendar = onPageChangeCallback.getCurrentDate();
+
+		long[] times = new long[2];
+		times[0] = calendar.getTimeInMillis();
+		calendar.add(Calendar.DATE, 7);
+		times[1] = calendar.getTimeInMillis();
+
+		return times;
 	}
 
 	@Override

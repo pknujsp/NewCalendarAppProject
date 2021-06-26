@@ -34,6 +34,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickLis
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.common.view.CustomProgressView;
 import com.zerodsoft.scheduleweather.common.view.RecyclerViewItemDecoration;
+import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.room.dto.SelectedCalendarDTO;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
@@ -111,7 +112,7 @@ public class InstanceListWeekView extends LinearLayout implements CalendarViewIn
 
 		monthTextView.setText(date);
 
-		final List<List<ContentValues>> instancesList = new ArrayList<>();
+		final List<List<InstanceValues>> instancesList = new ArrayList<>();
 		final List<Date> dateList = new ArrayList<>();
 
 		for (int i = 0; i < 7; i++) {
@@ -119,6 +120,8 @@ public class InstanceListWeekView extends LinearLayout implements CalendarViewIn
 			instancesList.add(new ArrayList<>());
 			copiedCalendar.add(Calendar.DATE, 1);
 		}
+
+		dateList.add(copiedCalendar.getTime());
 
 		List<SelectedCalendarDTO> connectedCalendars = iConnectedCalendars.getConnectedCalendars();
 		Set<Integer> connectedCalendarIdSet = new HashSet<>();
@@ -129,13 +132,23 @@ public class InstanceListWeekView extends LinearLayout implements CalendarViewIn
 
 		Map<Integer, CalendarInstance> integerCalendarInstanceMap = iControlEvent.getInstances(begin, end);
 
+		Calendar beginCalendar = Calendar.getInstance();
+		Calendar endCalendar = Calendar.getInstance();
+
+		final int marginLR = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 13f, getResources().getDisplayMetrics());
+		int[] margins = null;
+
 		for (Integer calendarIdKey : connectedCalendarIdSet) {
 			if (integerCalendarInstanceMap.containsKey(calendarIdKey)) {
 				List<ContentValues> instanceList = integerCalendarInstanceMap.get(calendarIdKey).getInstanceList();
 
 				for (ContentValues instance : instanceList) {
-					Date beginDate = new Date(instance.getAsLong(CalendarContract.Instances.BEGIN));
-					Date endDate = new Date(instance.getAsLong(CalendarContract.Instances.END));
+					beginCalendar.setTimeInMillis(instance.getAsLong(CalendarContract.Instances.BEGIN));
+					endCalendar.setTimeInMillis(instance.getAsLong(CalendarContract.Instances.END));
+					boolean allDay = instance.getAsInteger(CalendarContract.Instances.ALL_DAY) == 1;
+					if (allDay) {
+						endCalendar.add(Calendar.DATE, -1);
+					}
 
 					int beginIndex = 0;
 					int endIndex = 6;
@@ -143,16 +156,23 @@ public class InstanceListWeekView extends LinearLayout implements CalendarViewIn
 					for (int index = 0; index < 7; index++) {
 						long compareTime = dateList.get(index).getTime();
 
-						if (ClockUtil.areSameDate(beginDate.getTime(), compareTime)) {
+						if (ClockUtil.areSameDate(beginCalendar.getTime().getTime(), compareTime)) {
 							beginIndex = index;
 						}
-						if (ClockUtil.areSameDate(endDate.getTime(), compareTime)) {
+						if (ClockUtil.areSameDate(endCalendar.getTime().getTime(), compareTime)) {
 							endIndex = index;
 						}
 					}
 
 					for (int index = beginIndex; index <= endIndex; index++) {
-						instancesList.get(index).add(instance);
+						margins = EventUtil.getViewSideMargin(beginCalendar.getTimeInMillis()
+								, instance.getAsLong(CalendarContract.Instances.END)
+								, dateList.get(index).getTime()
+								, dateList.get(index + 1).getTime(), marginLR,
+								allDay);
+
+						InstanceValues instanceValues = new InstanceValues(margins[0], margins[1], instance);
+						instancesList.get(index).add(instanceValues);
 					}
 				}
 
@@ -192,6 +212,18 @@ public class InstanceListWeekView extends LinearLayout implements CalendarViewIn
 	@Override
 	public void refresh() {
 
+	}
+
+	static class InstanceValues {
+		final int leftMargin;
+		final int rightMargin;
+		final ContentValues instance;
+
+		public InstanceValues(int leftMargin, int rightMargin, ContentValues instance) {
+			this.leftMargin = leftMargin;
+			this.rightMargin = rightMargin;
+			this.instance = instance;
+		}
 	}
 }
 

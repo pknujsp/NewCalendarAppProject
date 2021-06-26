@@ -49,7 +49,7 @@ public class EventsInfoRecyclerViewAdapter extends RecyclerView.Adapter<EventsIn
 	@Override
 	public EventsInfoViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 		this.context = parent.getContext();
-		this.viewMargin = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12f, context.getResources().getDisplayMetrics());
+		this.viewMargin = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 13f, context.getResources().getDisplayMetrics());
 		return new EventsInfoViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.events_info_list_item, parent, false));
 	}
 

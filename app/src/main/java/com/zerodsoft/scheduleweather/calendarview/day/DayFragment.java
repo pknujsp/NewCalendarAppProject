@@ -17,6 +17,7 @@ import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendar.selectedcalendar.SelectedCalendarViewModel;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
+import com.zerodsoft.scheduleweather.calendarview.common.CalendarSharedViewModel;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IMoveViewpager;
@@ -42,6 +43,7 @@ public class DayFragment extends Fragment implements IRefreshView, OnDateTimeCha
 	private final OnEventItemLongClickListener onEventItemLongClickListener;
 	private CalendarViewModel calendarViewModel;
 	private SelectedCalendarViewModel selectedCalendarViewModel;
+	private CalendarSharedViewModel calendarSharedViewModel;
 
 	private List<SelectedCalendarDTO> selectedCalendarDTOList = new ArrayList<>();
 	private ViewPager2 dayViewPager;
@@ -63,6 +65,7 @@ public class DayFragment extends Fragment implements IRefreshView, OnDateTimeCha
 		super.onCreate(savedInstanceState);
 		calendarViewModel = new ViewModelProvider(requireActivity()).get(CalendarViewModel.class);
 		selectedCalendarViewModel = new ViewModelProvider(requireActivity()).get(SelectedCalendarViewModel.class);
+		calendarSharedViewModel = new ViewModelProvider(requireActivity()).get(CalendarSharedViewModel.class);
 
 		calendarViewModel.getOnAddedNewEventLiveData().observe(this, new Observer<Long>() {
 			@Override
@@ -245,6 +248,10 @@ public class DayFragment extends Fragment implements IRefreshView, OnDateTimeCha
 			super.onPageScrolled(position, positionOffset, positionOffsetPixels);
 		}
 
+		public Calendar getCurrentDate() {
+			return (Calendar) copiedCalendar.clone();
+		}
+
 		@Override
 		public void onPageSelected(int position) {
 			// drag 성공 시에만 SETTLING 직후 호출
@@ -265,6 +272,17 @@ public class DayFragment extends Fragment implements IRefreshView, OnDateTimeCha
 		} else {
 			dayViewPagerAdapter.notifyDataSetChanged();
 		}
+	}
+
+	public long[] getCurrentDate() {
+		Calendar calendar = onPageChangeCallback.getCurrentDate();
+
+		long[] times = new long[2];
+		times[0] = calendar.getTimeInMillis();
+		calendar.add(Calendar.DATE, 1);
+		times[1] = calendar.getTimeInMillis();
+
+		return times;
 	}
 
 	@Override

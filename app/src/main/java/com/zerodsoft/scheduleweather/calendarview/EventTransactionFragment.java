@@ -14,6 +14,7 @@ import android.os.RemoteException;
 import android.provider.CalendarContract;
 import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
@@ -23,6 +24,7 @@ import android.widget.Toast;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -36,6 +38,7 @@ import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.CommonPopupMenu;
 import com.zerodsoft.scheduleweather.calendar.selectedcalendar.SelectedCalendarViewModel;
 import com.zerodsoft.scheduleweather.calendarview.assistantcalendar.assistantcalendar.MonthAssistantCalendarFragment;
+import com.zerodsoft.scheduleweather.calendarview.common.CalendarSharedViewModel;
 import com.zerodsoft.scheduleweather.calendarview.day.DayFragment;
 import com.zerodsoft.scheduleweather.calendarview.instancelistdaydialog.InstanceListOnADayDialogFragment;
 import com.zerodsoft.scheduleweather.calendarview.instancelistweekdialog.InstanceListWeekDialogFragment;
@@ -84,6 +87,7 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 	private CalendarViewModel calendarViewModel;
 	private LocationViewModel locationViewModel;
 	private SelectedCalendarViewModel selectedCalendarViewModel;
+	private CalendarSharedViewModel calendarSharedViewModel;
 
 	private List<SelectedCalendarDTO> selectedCalendarDTOList;
 
@@ -99,7 +103,6 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 	private Fragment currentFragment;
 	private NetworkStatus networkStatus;
 	private CalendarViewType calendarViewType;
-	private TextView currMonthTextView;
 	private Date currentCalendarDate;
 
 	private FragmentCalendarBinding binding;
@@ -181,14 +184,55 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 
 				if (monthAssistantCalendarFragment.isHidden()) {
 					binding.assistantCalendarContainer.setVisibility(View.VISIBLE);
+					binding.mainToolbar.assistantCalendarControlImg.setImageDrawable(ContextCompat.getDrawable(getContext(),
+							R.drawable.expand_less_icon));
 					fragmentTransaction.show(monthAssistantCalendarFragment).commitNow();
 				} else {
 					binding.assistantCalendarContainer.setVisibility(View.GONE);
+					binding.mainToolbar.assistantCalendarControlImg.setImageDrawable(ContextCompat.getDrawable(getContext(),
+							R.drawable.expand_more_icon));
 					fragmentTransaction.hide(monthAssistantCalendarFragment).commitNow();
 				}
 			}
 		}
 
+	};
+
+	private final FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks = new FragmentManager.FragmentLifecycleCallbacks() {
+		@Override
+		public void onFragmentAttached(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @NonNull @NotNull Context context) {
+			super.onFragmentAttached(fm, f, context);
+			if (f instanceof DayFragment) {
+				binding.mainToolbar.assistantCalendarControlImg.setVisibility(View.VISIBLE);
+				binding.mainToolbar.openList.setVisibility(View.VISIBLE);
+			} else if (f instanceof WeekFragment) {
+				binding.mainToolbar.assistantCalendarControlImg.setVisibility(View.VISIBLE);
+				binding.mainToolbar.openList.setVisibility(View.VISIBLE);
+			} else if (f instanceof MonthFragment) {
+				binding.mainToolbar.assistantCalendarControlImg.setVisibility(View.GONE);
+				binding.mainToolbar.openList.setVisibility(View.GONE);
+				binding.assistantCalendarContainer.setVisibility(View.GONE);
+
+				binding.mainToolbar.assistantCalendarControlImg.setImageDrawable(ContextCompat.getDrawable(getContext(),
+						R.drawable.expand_more_icon));
+
+				if (fm.findFragmentByTag(MonthAssistantCalendarFragment.TAG).isVisible()) {
+					fm.beginTransaction().hide(fm.findFragmentByTag(MonthAssistantCalendarFragment.TAG)).commit();
+				}
+			}
+		}
+
+		@Override
+		public void onFragmentDestroyed(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
+			super.onFragmentDestroyed(fm, f);
+			if (f instanceof DayFragment) {
+
+			} else if (f instanceof WeekFragment) {
+
+			} else if (f instanceof MonthFragment) {
+
+			}
+		}
 	};
 
 	public EventTransactionFragment(CalendarViewType calendarViewType, View.OnClickListener drawerLayoutOnClickListener) {
@@ -205,6 +249,7 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		getChildFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false);
 		networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback());
 
 		selectedCalendarViewModel = new ViewModelProvider(requireActivity()).get(SelectedCalendarViewModel.class);
@@ -212,6 +257,7 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 		foodCriteriaLocationInfoViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationInfoViewModel.class);
 		foodCriteriaLocationHistoryViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationHistoryViewModel.class);
+		calendarSharedViewModel = new ViewModelProvider(requireActivity()).get(CalendarSharedViewModel.class);
 
 		DateTimeTickReceiver dateTimeTickReceiver = DateTimeTickReceiver.newInstance(dateTimeReceiverCallback);
 		IntentFilter intentFilter = new IntentFilter();
@@ -271,14 +317,29 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 		binding.mainToolbar.openNavigationDrawer.setOnClickListener(toolbarOnClickListener);
 		binding.mainToolbar.refreshCalendar.setOnClickListener(toolbarOnClickListener);
 
-		currMonthTextView = binding.mainToolbar.calendarMonth;
-		currMonthTextView.setOnClickListener(currMonthOnClickListener);
+		binding.mainToolbar.openList.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Fragment primaryFragment = getChildFragmentManager().getPrimaryNavigationFragment();
+				long[] times = null;
+
+				if (primaryFragment instanceof DayFragment) {
+					times = ((DayFragment) primaryFragment).getCurrentDate();
+				} else if (primaryFragment instanceof WeekFragment) {
+					times = ((WeekFragment) primaryFragment).getCurrentDate();
+				}
+
+				onClicked(times[0], times[1]);
+			}
+		});
+
+		binding.mainToolbar.calendarMonth.setOnClickListener(currMonthOnClickListener);
+		binding.mainToolbar.monthLayout.setOnClickListener(currMonthOnClickListener);
 
 		//보조 캘린더 프래그먼트 생성
-		binding.assistantCalendarContainer.setVisibility(View.GONE);
 		Fragment monthAssistantCalendarFragment = new MonthAssistantCalendarFragment(this);
 		getChildFragmentManager().beginTransaction().add(binding.assistantCalendarContainer.getId(), monthAssistantCalendarFragment,
-				MonthAssistantCalendarFragment.TAG).hide(monthAssistantCalendarFragment).commitNow();
+				MonthAssistantCalendarFragment.TAG).hide(monthAssistantCalendarFragment).commit();
 
 		switch (calendarViewType) {
 			case DAY:
@@ -299,10 +360,6 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 		switch (fragmentTag) {
 			case MonthFragment.TAG:
 				currentFragment = new MonthFragment(this, this, calendarViewModel);
-				if (childFragmentManager.findFragmentByTag(MonthAssistantCalendarFragment.TAG).isVisible()) {
-					binding.assistantCalendarContainer.setVisibility(View.GONE);
-					childFragmentManager.beginTransaction().hide((MonthAssistantCalendarFragment) childFragmentManager.findFragmentByTag(MonthAssistantCalendarFragment.TAG)).commit();
-				}
 				break;
 			case WeekFragment.TAG:
 				currentFragment = new WeekFragment(this, this);
@@ -450,7 +507,7 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 	@Override
 	public void setMonth(Date dateTime) {
 		currentCalendarDate = dateTime;
-		currMonthTextView.setText(ClockUtil.YEAR_MONTH_FORMAT.format(dateTime));
+		binding.mainToolbar.calendarMonth.setText(ClockUtil.YEAR_MONTH_FORMAT.format(dateTime));
 	}
 
 	@Override
@@ -665,6 +722,10 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 		void onSyncStarted();
 
 		void onSyncFinished();
+	}
+
+	public interface OnOpenListBtnListener {
+		void onClicked(long begin, long end);
 	}
 }
 
