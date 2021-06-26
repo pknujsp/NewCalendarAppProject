@@ -1,7 +1,6 @@
 package com.zerodsoft.scheduleweather.calendarview;
 
 import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.ContentValues;
@@ -22,10 +21,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
@@ -35,19 +30,16 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.google.android.gms.auth.GoogleAuthUtil;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.editevent.activity.NewEventFragment;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.CommonPopupMenu;
-import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendar.selectedcalendar.SelectedCalendarViewModel;
 import com.zerodsoft.scheduleweather.calendarview.assistantcalendar.assistantcalendar.MonthAssistantCalendarFragment;
 import com.zerodsoft.scheduleweather.calendarview.day.DayFragment;
-import com.zerodsoft.scheduleweather.calendarview.instancedialog.InstanceListOnADayDialogFragment;
+import com.zerodsoft.scheduleweather.calendarview.instancelistdaydialog.InstanceListOnADayDialogFragment;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.CalendarDateOnClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
-import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnDateTimeChangedListener;
@@ -78,7 +70,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
 
 public class EventTransactionFragment extends Fragment implements OnEventItemClickListener, IRefreshView, IToolbar,
@@ -353,7 +344,17 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 	public void onClicked(int calendarId, long instanceId, long eventId, long viewBegin, long viewEnd) {
 		// 이벤트 정보 액티비티로 전환
 		if (networkStatus.networkAvailable()) {
-			NewInstanceMainFragment newInstanceMainFragment = new NewInstanceMainFragment(calendarId, eventId, instanceId, viewBegin, viewEnd);
+			NewInstanceMainFragment newInstanceMainFragment = new NewInstanceMainFragment();
+
+			Bundle bundle = new Bundle();
+			bundle.putLong(CalendarContract.Instances._ID, instanceId);
+			bundle.putLong(CalendarContract.Instances.EVENT_ID, eventId);
+			bundle.putLong(CalendarContract.Instances.CALENDAR_ID, calendarId);
+			bundle.putLong(CalendarContract.Instances.BEGIN, viewBegin);
+			bundle.putLong(CalendarContract.Instances.END, viewEnd);
+
+			newInstanceMainFragment.setArguments(bundle);
+
 			newInstanceMainFragment.setPlaceBottomSheetSelectBtnVisibility(View.GONE);
 			newInstanceMainFragment.setPlaceBottomSheetUnSelectBtnVisibility(View.GONE);
 			getParentFragmentManager().beginTransaction().add(R.id.fragment_container, newInstanceMainFragment,

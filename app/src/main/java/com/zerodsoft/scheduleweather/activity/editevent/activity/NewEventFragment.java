@@ -1,49 +1,26 @@
 package com.zerodsoft.scheduleweather.activity.editevent.activity;
 
-import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.provider.CalendarContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.LinearLayout;
-import android.widget.TableLayout;
-import android.widget.TableRow;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
-import androidx.core.util.Pair;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.google.android.material.datepicker.MaterialDatePicker;
-import com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClickListener;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.timepicker.MaterialTimePicker;
-import com.google.android.material.timepicker.TimeFormat;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
-import com.zerodsoft.scheduleweather.activity.editevent.adapter.CalendarListAdapter;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
-import com.zerodsoft.scheduleweather.common.enums.EventIntentCode;
-import com.zerodsoft.scheduleweather.common.enums.LocationIntentCode;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
-import com.zerodsoft.scheduleweather.etc.LocationType;
-import com.zerodsoft.scheduleweather.event.common.DetailLocationSelectorKey;
-import com.zerodsoft.scheduleweather.event.common.SelectionDetailLocationFragment;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
-import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -213,7 +190,7 @@ public class NewEventFragment extends EventBaseFragment {
 	protected void initDatePicker() {
 		final long finalDtStart = eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTSTART);
 		final long finalDtEnd = eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTEND);
-		showDatePicker(finalDtStart, finalDtEnd);
+		showDatePicker(finalDtStart, finalDtEnd, null);
 	}
 
 	@Override
@@ -229,7 +206,7 @@ public class NewEventFragment extends EventBaseFragment {
 			compareCalendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTSTART));
 		}
 
-		showTimePicker(dateType, calendar, compareCalendar);
+		showTimePicker(dateType, calendar, compareCalendar, null);
 	}
 
 

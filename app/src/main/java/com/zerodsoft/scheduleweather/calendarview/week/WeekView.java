@@ -205,13 +205,17 @@ public class WeekView extends HourEventsView implements CalendarViewInitializer,
 				}
 			}
 
-			int index = ClockUtil.calcBeginDayDifference(instance.getAsLong(CalendarContract.Instances.BEGIN), daysOfWeek[0].getTime());
-			if (eventSparseArr.get(index) == null) {
-				eventSparseArr.put(index, new ArrayList<>());
-			}
 
-			ItemCell itemCell = new ItemCell(instance, index);
-			eventSparseArr.get(index).add(itemCell);
+			if (instance.getAsInteger(CalendarContract.Instances.ALL_DAY) != 1 &&
+					instance.getAsInteger(CalendarContract.Instances.START_DAY).equals(instance.getAsInteger(CalendarContract.Instances.END_DAY))) {
+				int index = ClockUtil.calcBeginDayDifference(instance.getAsLong(CalendarContract.Instances.BEGIN), daysOfWeek[0].getTime());
+				if (eventSparseArr.get(index) == null) {
+					eventSparseArr.put(index, new ArrayList<>());
+				}
+
+				ItemCell itemCell = new ItemCell(instance, index);
+				eventSparseArr.get(index).add(itemCell);
+			}
 		}
 
 		// 저장된 데이터가 표시될 위치를 설정

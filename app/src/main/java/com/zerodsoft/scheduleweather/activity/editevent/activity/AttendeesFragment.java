@@ -80,12 +80,14 @@ public class AttendeesFragment extends Fragment {
 		organizer = arguments.getParcelable("organizer");
 
 		adapter = new AttendeeListAdapter(organizer);
-		adapter.setAttendeeList(attendeeList);
-		adapter.registerAdapterDataObserver(adapterDataObserver);
 
 		binding.attendeeList.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
 		binding.attendeeList.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
 		binding.attendeeList.setAdapter(adapter);
+
+		adapter.registerAdapterDataObserver(adapterDataObserver);
+		adapter.setAttendeeList(attendeeList);
+		adapter.notifyDataSetChanged();
 
 		if (attendeeList.isEmpty()) {
 			binding.customProgressView.onFailedProcessingData(getString(R.string.not_attendee));
@@ -176,12 +178,9 @@ public class AttendeesFragment extends Fragment {
 
 			if (adapter.getItemCount() == 0) {
 				binding.customProgressView.onFailedProcessingData(getString(R.string.not_attendee));
-				if (binding.authorityChipGroup.getVisibility() == View.VISIBLE) {
-					binding.authorityChipGroup.setVisibility(View.GONE);
-				}
-			} else if (binding.authorityChipGroup.getVisibility() == View.GONE) {
-				binding.authorityChipGroup.setVisibility(View.VISIBLE);
+				binding.authorityChipGroup.setVisibility(View.GONE);
 			} else {
+				binding.authorityChipGroup.setVisibility(View.VISIBLE);
 				binding.customProgressView.onSuccessfulProcessingData();
 			}
 		}

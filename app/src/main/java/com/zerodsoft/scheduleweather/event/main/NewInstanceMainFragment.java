@@ -33,7 +33,6 @@ import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.HorizontalScrollView;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -68,8 +67,6 @@ import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.NaverMapFragment;
 import com.zerodsoft.scheduleweather.navermap.MarkerType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.NearbyMsrstnList.NearbyMsrstnListItem;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.NearbyMsrstnList.NearbyMsrstnListRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
@@ -85,17 +82,17 @@ import java.util.Set;
 public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoodMenuPoiItems,
 		PlacesOfSelectedCategoriesFragment.PlaceCategoryChipsViewController
 		, IRefreshView {
-	private final int CALENDAR_ID;
-	private final long EVENT_ID;
-	private final long INSTANCE_ID;
-	private final long ORIGINAL_BEGIN;
-	private final long ORIGINAL_END;
+	private int calendarId;
+	private long eventId;
+	private long instanceId;
+	private long originalBegin;
+	private long originalEnd;
 
 	private Integer DEFAULT_HEIGHT_OF_BOTTOMSHEET;
 	private CalendarViewModel calendarViewModel;
 	private PlaceCategoryViewModel placeCategoryViewModel;
 
-	private ContentValues instance;
+	private ContentValues eventValues;
 	private LocationDTO selectedLocationDtoInEvent;
 	private Button[] functionButtons;
 	private TextView functionButton;
@@ -203,12 +200,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 
 	};
 
-	public NewInstanceMainFragment(int CALENDAR_ID, long EVENT_ID, long INSTANCE_ID, long ORIGINAL_BEGIN, long ORIGINAL_END) {
-		this.CALENDAR_ID = CALENDAR_ID;
-		this.EVENT_ID = EVENT_ID;
-		this.INSTANCE_ID = INSTANCE_ID;
-		this.ORIGINAL_BEGIN = ORIGINAL_BEGIN;
-		this.ORIGINAL_END = ORIGINAL_END;
+	public NewInstanceMainFragment() {
 	}
 
 
@@ -222,11 +214,19 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		Bundle arguments = getArguments();
+		eventId = arguments.getLong(CalendarContract.Instances.EVENT_ID);
+		instanceId = arguments.getLong(CalendarContract.Instances._ID);
+		calendarId = arguments.getInt(CalendarContract.Instances.CALENDAR_ID);
+		originalBegin = arguments.getLong(CalendarContract.Instances.BEGIN);
+		originalEnd = arguments.getLong(CalendarContract.Instances.END);
+
 		calendarViewModel = new ViewModelProvider(requireActivity()).get(CalendarViewModel.class);
 		placeCategoryViewModel = new ViewModelProvider(this).get(PlaceCategoryViewModel.class);
 		getChildFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, true);
 
-		instance = calendarViewModel.getInstance(INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
+		eventValues = calendarViewModel.getEvent(eventId);
 	}
 
 
@@ -250,8 +250,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 				final int headerbarMargin = (int) (headerbarTopMargin * 1.5f);
 				DEFAULT_HEIGHT_OF_BOTTOMSHEET = binding.naverMapFragmentRootLayout.getHeight() - headerbarHeight - headerbarMargin;
 
-				if (instance.getAsString(CalendarContract.Instances.EVENT_LOCATION) != null) {
-					locationViewModel.getLocation(EVENT_ID, new DbQueryCallback<LocationDTO>() {
+				if (eventValues.getAsString(CalendarContract.Events.EVENT_LOCATION) != null) {
+					locationViewModel.getLocation(eventId, new DbQueryCallback<LocationDTO>() {
 						@Override
 						public void onResultSuccessful(LocationDTO savedLocationDto) {
 							selectedLocationDtoInEvent = savedLocationDto;
@@ -284,7 +284,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 				} else {
 					//인스턴스 정보 프래그먼트 표시
 					onClickedOpenEventFragmentBtn();
-					locationViewModel.removeLocation(EVENT_ID, null);
+					locationViewModel.removeLocation(eventId, null);
 				}
 			}
 		});
@@ -375,8 +375,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 					@Override
 					public void dismiss() {
 					}
-				}, DEFAULT_HEIGHT_OF_BOTTOMSHEET, CALENDAR_ID,
-						EVENT_ID);
+				}, DEFAULT_HEIGHT_OF_BOTTOMSHEET, calendarId,
+						eventId);
 				Bundle bundle = new Bundle();
 				LatLng latLng = naverMap.getContentBounds().getCenter();
 				bundle.putString("latitude", String.valueOf(latLng.latitude));
@@ -430,7 +430,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 										functionButton.setVisibility(View.GONE);
 									}
 								}
-							}, CALENDAR_ID, INSTANCE_ID, EVENT_ID);
+							}, calendarId, instanceId, eventId);
 					bottomSheetFragmentMap.put(BottomSheetType.RESTAURANT, restaurantFragment);
 					fragmentManager.beginTransaction().add(binding.fragmentContainer.getId(), restaurantFragment
 							, getString(R.string.tag_restaurant_fragment)).commitNow();
@@ -442,18 +442,14 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	}
 
 	private void onClickedOpenEventFragmentBtn() {
-		EventFragment eventFragment = new EventFragment(new DialogInterface() {
+		EventFragment eventFragment = new EventFragment(new EventFragment.OnEventFragmentDismissListener() {
 			@Override
-			public void cancel() {
+			public void onResult(long newEventId) {
+				eventId = newEventId;
+				eventValues = calendarViewModel.getEvent(eventId);
 
-			}
-
-			@Override
-			public void dismiss() {
-				instance = calendarViewModel.getInstance(INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
-
-				if (instance.getAsString(CalendarContract.Instances.EVENT_LOCATION) != null) {
-					locationViewModel.getLocation(EVENT_ID, new DbQueryCallback<LocationDTO>() {
+				if (eventValues.getAsString(CalendarContract.Events.EVENT_LOCATION) != null) {
+					locationViewModel.getLocation(eventId, new DbQueryCallback<LocationDTO>() {
 						@Override
 						public void onResultSuccessful(LocationDTO savedLocationDto) {
 							if (selectedLocationDtoInEvent != null) {
@@ -498,10 +494,17 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 					getParentFragmentManager().popBackStackImmediate();
 				}
 			}
-		}, NewInstanceMainFragment.this, DEFAULT_HEIGHT_OF_BOTTOMSHEET,
-				CALENDAR_ID,
-				EVENT_ID, INSTANCE_ID,
-				ORIGINAL_BEGIN, ORIGINAL_END);
+		}, NewInstanceMainFragment.this, DEFAULT_HEIGHT_OF_BOTTOMSHEET
+		);
+
+		Bundle bundle = new Bundle();
+		bundle.putLong(CalendarContract.Instances._ID, instanceId);
+		bundle.putLong(CalendarContract.Instances.EVENT_ID, eventId);
+		bundle.putLong(CalendarContract.Instances.CALENDAR_ID, calendarId);
+		bundle.putLong(CalendarContract.Instances.BEGIN, originalBegin);
+		bundle.putLong(CalendarContract.Instances.END, originalEnd);
+
+		eventFragment.setArguments(bundle);
 		eventFragment.show(getChildFragmentManager(), getString(R.string.tag_event_fragment));
 	}
 
@@ -695,7 +698,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 			}
 		});
 
-		PlacesOfSelectedCategoriesFragment placesOfSelectedCategoriesFragment = new PlacesOfSelectedCategoriesFragment(EVENT_ID, new OnClickedPlacesListListener() {
+		PlacesOfSelectedCategoriesFragment placesOfSelectedCategoriesFragment = new PlacesOfSelectedCategoriesFragment(eventId, new OnClickedPlacesListListener() {
 			@Override
 			public void onClickedItemInList(PlaceCategoryDTO placeCategory, PlaceDocuments placeDocument, int index) {
 				getChildFragmentManager().popBackStackImmediate();

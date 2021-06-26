@@ -1,7 +1,6 @@
 package com.zerodsoft.scheduleweather.activity.editevent.activity;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -10,63 +9,32 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.provider.CalendarContract;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.CompoundButton;
-import android.widget.GridView;
-import android.widget.ImageButton;
-import android.widget.LinearLayout;
-import android.widget.TableLayout;
-import android.widget.TableRow;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
-import androidx.core.util.Pair;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.google.android.material.datepicker.MaterialDatePicker;
-import com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClickListener;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.timepicker.MaterialTimePicker;
-import com.google.android.material.timepicker.TimeFormat;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.activity.App;
-import com.zerodsoft.scheduleweather.activity.editevent.adapter.CalendarListAdapter;
-import com.zerodsoft.scheduleweather.activity.editevent.fragments.TimeZoneFragment;
-import com.zerodsoft.scheduleweather.activity.preferences.ColorListAdapter;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
-import com.zerodsoft.scheduleweather.common.enums.EventIntentCode;
-import com.zerodsoft.scheduleweather.common.enums.LocationIntentCode;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
-import com.zerodsoft.scheduleweather.etc.LocationType;
-import com.zerodsoft.scheduleweather.event.common.DetailLocationSelectorKey;
-import com.zerodsoft.scheduleweather.event.common.SelectionDetailLocationFragment;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
-import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
-import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.TimeZone;
 
 public class ModifyInstanceFragment extends EventBaseFragment {
@@ -75,6 +43,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 	private long originalInstanceBeginDate;
 	private long originalInstanceEndDate;
+	private boolean firstModifiedDateTime = true;
 
 	public ModifyInstanceFragment(OnModifyInstanceResultListener onModifyInstanceResultListener) {
 		this.onModifyInstanceResultListener = onModifyInstanceResultListener;
@@ -129,16 +98,16 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 								public void onClick(DialogInterface dialogInterface, int index) {
 									switch (index) {
 										case 0:
-											//현재 인스턴스만 변경
-											updateThisInstance();
+											//모든 일정이면 event를 변경
+											updateEvent();
 											break;
 										case 1:
 											//현재 인스턴스 이후의 모든 인스턴스 변경
 											updateAfterInstanceIncludingThisInstance();
 											break;
 										case 2:
-											//모든 일정이면 event를 변경
-											updateEvent();
+											//현재 인스턴스만 변경
+											updateThisInstance();
 											break;
 									}
 
@@ -189,7 +158,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 				onCheckedAllDaySwitch(isChecked);
 
-				if (firstChecked) {
+				if (firstChecked && !initializing) {
 					firstChecked = false;
 					if (originalInstance.getAsInteger(CalendarContract.Instances.ALL_DAY) == 1) {
 						TimeZone timeZone = TimeZone.getTimeZone(originalInstance.getAsString(CalendarContract.Instances.CALENDAR_TIME_ZONE));
@@ -197,9 +166,9 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 						setTimeZoneText(timeZone.getID());
 					}
 
-					if (!eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.DTSTART)) {
-						eventDataViewModel.setDtStart(new Date(originalInstanceBeginDate));
-						eventDataViewModel.setDtEnd(new Date(originalInstanceEndDate));
+					if (firstModifiedDateTime) {
+						firstModifiedDateTime = false;
+						firstModifiedDateTime();
 					}
 				}
 			}
@@ -351,7 +320,15 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 			dtEnd = originalInstanceEndDate;
 		}
 
-		showDatePicker(dtStart, dtEnd);
+		showDatePicker(dtStart, dtEnd, new OnModifiedDateTimeCallback() {
+			@Override
+			public void onModified() {
+				if (firstModifiedDateTime) {
+					firstModifiedDateTime = false;
+					firstModifiedDateTime();
+				}
+			}
+		});
 	}
 
 	@Override
@@ -386,7 +363,27 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 				compareCalendar.setTimeInMillis(originalInstanceBeginDate);
 			}
 		}
-		showTimePicker(dateType, calendar, compareCalendar);
+		showTimePicker(dateType, calendar, compareCalendar, new OnModifiedDateTimeCallback() {
+			@Override
+			public void onModified() {
+				if (firstModifiedDateTime) {
+					firstModifiedDateTime = false;
+					firstModifiedDateTime();
+				}
+			}
+		});
+	}
+
+	private void firstModifiedDateTime() {
+		if (!eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.DTSTART)) {
+			eventDataViewModel.setDtStart(new Date(originalInstanceBeginDate));
+		}
+		if (!eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.DTEND)) {
+			eventDataViewModel.setDtEnd(new Date(originalInstanceEndDate));
+		}
+		if (!eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.ALL_DAY)) {
+			eventDataViewModel.setIsAllDay(binding.timeLayout.timeAlldaySwitch.isChecked());
+		}
 	}
 
 	private void loadInitData() {
@@ -426,22 +423,22 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		if (isAllDay) {
 			int startDay = originalInstance.getAsInteger(CalendarContract.Instances.START_DAY);
 			int endDay = originalInstance.getAsInteger(CalendarContract.Instances.END_DAY);
-			int dayDifference = endDay - startDay;
+			final int dayDifference = endDay - startDay;
 
 			Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 			calendar.setTimeInMillis(originalInstance.getAsLong(CalendarContract.Instances.BEGIN));
 
 			setTimeZoneText(originalInstance.getAsString(CalendarContract.Events.CALENDAR_TIME_ZONE));
 
+			originalInstanceBeginDate = calendar.getTimeInMillis();
 			setDateText(DateTimeType.START, calendar.getTime().getTime());
 			setTimeText(DateTimeType.START, calendar.getTime().getTime());
-			originalInstanceBeginDate = calendar.getTimeInMillis();
 
 			calendar.add(Calendar.DAY_OF_YEAR, dayDifference);
 
+			originalInstanceEndDate = calendar.getTimeInMillis();
 			setDateText(DateTimeType.END, calendar.getTime().getTime());
 			setTimeText(DateTimeType.END, calendar.getTime().getTime());
-			originalInstanceEndDate = calendar.getTimeInMillis();
 		} else {
 			setTimeZoneText(originalInstance.getAsString(CalendarContract.Events.EVENT_TIMEZONE));
 
@@ -506,8 +503,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 		Uri exceptionUri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_EXCEPTION_URI,
 				originalInstance.getAsLong(CalendarContract.Instances.EVENT_ID));
-		ContentResolver contentResolver = getContext().getContentResolver();
-		Uri result = contentResolver.insert(exceptionUri, exceptionEvent);
+		Uri result = getContext().getContentResolver().insert(exceptionUri, exceptionEvent);
 
 		//수정한 인스턴스를 새로운 이벤트로 추가
 		//반복 규칙 없음!
@@ -535,13 +531,14 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		}
 
 		if (modifiedInstance.containsKey(CalendarContract.Events.RRULE)) {
-			setNewEventValues(CalendarContract.Events.RRULE, newEventValues, modifiedInstance);
+			newEventValues.put(CalendarContract.Events.RRULE, modifiedInstance.getAsString(CalendarContract.Events.RRULE));
 		}
 
 		if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
 			return;
 		}
-		Uri uri = contentResolver.insert(CalendarContract.Events.CONTENT_URI, newEventValues);
+
+		Uri uri = getContext().getContentResolver().insert(CalendarContract.Events.CONTENT_URI, newEventValues);
 		final long newEventId = Long.parseLong(uri.getLastPathSegment());
 
 		List<ContentValues> modifiedReminderList = eventDataViewModel.getREMINDERS();
@@ -570,18 +567,61 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 							@Override
 							public void onResultSuccessful(LocationDTO savedLocationDto) {
 								savedLocationDto.setEventId(newEventId);
-								locationViewModel.addLocation(savedLocationDto, locationDbQueryCallback);
+								locationViewModel.addLocation(savedLocationDto, new DbQueryCallback<LocationDTO>() {
+									@Override
+									public void onResultSuccessful(LocationDTO result) {
+										requireActivity().runOnUiThread(new Runnable() {
+											@Override
+											public void run() {
+												getParentFragmentManager().popBackStackImmediate();
+												onModifyInstanceResultListener.onResultModifiedAfterAllInstancesIncludingThisInstance(newEventId,
+														newEventValues.getAsLong(CalendarContract.Events.DTSTART));
+											}
+										});
+									}
+
+									@Override
+									public void onResultNoData() {
+
+									}
+								});
 							}
 
 							@Override
 							public void onResultNoData() {
-								getParentFragmentManager().popBackStack();
+								requireActivity().runOnUiThread(new Runnable() {
+									@Override
+									public void run() {
+										getParentFragmentManager().popBackStackImmediate();
+										onModifyInstanceResultListener.onResultModifiedAfterAllInstancesIncludingThisInstance(newEventId,
+												newEventValues.getAsLong(CalendarContract.Events.DTSTART));
+									}
+								});
+
 							}
 						});
 			} else {
 				//위치를 변경함
 				locationDTO.setEventId(newEventId);
-				locationViewModel.addLocation(locationDTO, locationDbQueryCallback);
+				locationViewModel.addLocation(locationDTO, new DbQueryCallback<LocationDTO>() {
+					@Override
+					public void onResultSuccessful(LocationDTO result) {
+						requireActivity().runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								getParentFragmentManager().popBackStackImmediate();
+								onModifyInstanceResultListener.onResultModifiedAfterAllInstancesIncludingThisInstance(newEventId,
+										newEventValues.getAsLong(CalendarContract.Events.DTSTART));
+							}
+						});
+
+					}
+
+					@Override
+					public void onResultNoData() {
+
+					}
+				});
 			}
 		}
 	}
@@ -737,33 +777,66 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 					@Override
 					public void onResultSuccessful(LocationDTO savedLocationDto) {
 						savedLocationDto.setEventId(newEventId);
-						locationViewModel.addLocation(savedLocationDto, locationDbQueryCallback);
+						locationViewModel.addLocation(savedLocationDto, new DbQueryCallback<LocationDTO>() {
+							@Override
+							public void onResultSuccessful(LocationDTO result) {
+								requireActivity().runOnUiThread(new Runnable() {
+									@Override
+									public void run() {
+										getParentFragmentManager().popBackStackImmediate();
+										onModifyInstanceResultListener.onResultModifiedAfterAllInstancesIncludingThisInstance(newEventId,
+												newEventValues.getAsLong(CalendarContract.Events.DTSTART));
+									}
+								});
+
+							}
+
+							@Override
+							public void onResultNoData() {
+
+							}
+						});
 					}
 
 					@Override
 					public void onResultNoData() {
-						getParentFragmentManager().popBackStack();
+						requireActivity().runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								getParentFragmentManager().popBackStackImmediate();
+								onModifyInstanceResultListener.onResultModifiedAfterAllInstancesIncludingThisInstance(newEventId,
+										newEventValues.getAsLong(CalendarContract.Events.DTSTART));
+							}
+						});
+
 					}
 				});
 			} else {
 				//위치를 변경함
 				locationDTO.setEventId(newEventId);
-				locationViewModel.addLocation(locationDTO, locationDbQueryCallback);
+				locationViewModel.addLocation(locationDTO, new DbQueryCallback<LocationDTO>() {
+					@Override
+					public void onResultSuccessful(LocationDTO result) {
+						requireActivity().runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								getParentFragmentManager().popBackStackImmediate();
+								onModifyInstanceResultListener.onResultModifiedAfterAllInstancesIncludingThisInstance(newEventId,
+										newEventValues.getAsLong(CalendarContract.Events.DTSTART));
+							}
+						});
+
+					}
+
+					@Override
+					public void onResultNoData() {
+
+					}
+				});
 			}
 		}
 	}
 
-	private final DbQueryCallback<LocationDTO> locationDbQueryCallback = new DbQueryCallback<LocationDTO>() {
-		@Override
-		public void onResultSuccessful(LocationDTO result) {
-			getParentFragmentManager().popBackStack();
-		}
-
-		@Override
-		public void onResultNoData() {
-
-		}
-	};
 
 	//모든 일정 변경
 	protected void updateEvent() {
@@ -804,6 +877,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 		final long eventId = originalInstance.getAsInteger(CalendarContract.Instances.EVENT_ID);
 		modifiedEvent.put(CalendarContract.Events._ID, eventId);
+		modifiedEvent.remove(CalendarContract.Events.DURATION);
 
 		calendarViewModel.updateEvent(modifiedEvent);
 
@@ -827,41 +901,55 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 
 		if (modifiedEvent.containsKey(CalendarContract.Events.EVENT_LOCATION)) {
-			if (!modifiedEvent.getAsString(CalendarContract.Events.EVENT_LOCATION).isEmpty()) {
-				locationDTO.setEventId(eventId);
-				locationViewModel.addLocation(locationDTO, new DbQueryCallback<LocationDTO>() {
-					@Override
-					public void onResultSuccessful(LocationDTO result) {
-						getParentFragmentManager().popBackStack();
-					}
+			if (originalInstance.getAsString(CalendarContract.Events.EVENT_LOCATION) == null) {
 
-					@Override
-					public void onResultNoData() {
-
-					}
-				});
 			} else {
 				locationViewModel.removeLocation(eventId, null);
 			}
+
+			locationDTO.setEventId(eventId);
+			locationViewModel.addLocation(locationDTO, new DbQueryCallback<LocationDTO>() {
+				@Override
+				public void onResultSuccessful(LocationDTO result) {
+					requireActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							getParentFragmentManager().popBackStackImmediate();
+							onModifyInstanceResultListener.onResultModifiedEvent(modifiedEvent.getAsLong(CalendarContract.Events.DTSTART));
+						}
+					});
+
+				}
+
+				@Override
+				public void onResultNoData() {
+
+				}
+			});
 		} else {
-			getParentFragmentManager().popBackStack();
+			getParentFragmentManager().popBackStackImmediate();
+			onModifyInstanceResultListener.onResultModifiedEvent(modifiedEvent.getAsLong(CalendarContract.Events.DTSTART));
 		}
 	}
 
 	private void setNewEventValues(String key, ContentValues newEventValues, ContentValues modifiedInstance) {
 		if (modifiedInstance.containsKey(key)) {
 			newEventValues.put(key, modifiedInstance.getAsString(key));
-		} else if (originalInstance.containsKey(key)) {
+		} else if (originalInstance.getAsString(key) != null) {
 			newEventValues.put(key, originalInstance.getAsString(key));
 		}
 	}
 
 	public interface OnModifyInstanceResultListener {
 
-		void onResultModifiedEvent(long eventId, long begin);
+		void onResultModifiedEvent(long begin);
 
-		void onResultModifiedThisInstance();
+		void onResultModifiedThisInstance(long eventId, long begin);
 
-		void onResultModifiedAfterAllInstancesIncludingThisInstance();
+		void onResultModifiedAfterAllInstancesIncludingThisInstance(long eventId, long begin);
+	}
+
+	public interface OnModifiedDateTimeCallback {
+		void onModified();
 	}
 }

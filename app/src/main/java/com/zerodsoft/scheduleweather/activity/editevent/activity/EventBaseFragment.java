@@ -6,7 +6,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 
-import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
@@ -599,7 +598,8 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		}
 	};
 
-	protected final void showDatePicker(long finalDtStart, long finalDtEnd) {
+	protected final void showDatePicker(long finalDtStart, long finalDtEnd,
+	                                    @Nullable ModifyInstanceFragment.OnModifiedDateTimeCallback onModifiedDateTimeCallback) {
 		MaterialDatePicker.Builder<Pair<Long, Long>> builder = MaterialDatePicker.Builder.dateRangePicker();
 		datePicker = builder.setTitleText(R.string.datepicker)
 				.setSelection(new Pair<>(finalDtStart, finalDtEnd))
@@ -662,6 +662,9 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 					setTimeText(DateTimeType.END, endDate.getTime().getTime());
 				}
 
+				if (onModifiedDateTimeCallback != null) {
+					onModifiedDateTimeCallback.onModified();
+				}
 				datePicker.dismiss();
 			}
 		});
@@ -681,7 +684,8 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		}
 	}
 
-	protected final void showTimePicker(DateTimeType dateType, Calendar calendar, Calendar compareCalendar) {
+	protected final void showTimePicker(DateTimeType dateType, Calendar calendar, Calendar compareCalendar,
+	                                    @Nullable ModifyInstanceFragment.OnModifiedDateTimeCallback onModifiedDateTimeCallback) {
 		MaterialTimePicker.Builder builder = new MaterialTimePicker.Builder();
 		timePicker =
 				builder.setTitleText((dateType == DateTimeType.START ? getString(R.string.start) : getString(R.string.end)) + getString(R.string.timepicker))
@@ -713,6 +717,10 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 							EventUtil.convertTime(calendar.getTimeInMillis(), App.isPreference_key_using_24_hour_system()) + " " + getString(R.string.plz_set_time_after_specific_time);
 					Toast.makeText(getContext(), msg, Toast.LENGTH_LONG).show();
 				}
+			}
+
+			if (onModifiedDateTimeCallback != null) {
+				onModifiedDateTimeCallback.onModified();
 			}
 		});
 		timePicker.addOnNegativeButtonClickListener(view ->

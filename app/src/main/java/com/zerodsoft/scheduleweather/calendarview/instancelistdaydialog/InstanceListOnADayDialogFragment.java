@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.calendarview.instancedialog;
+package com.zerodsoft.scheduleweather.calendarview.instancelistdaydialog;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
@@ -10,13 +10,11 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.CompositePageTransformer;
 import androidx.viewpager2.widget.MarginPageTransformer;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.provider.CalendarContract;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -32,7 +30,7 @@ import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.CommonPopupMenu;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
-import com.zerodsoft.scheduleweather.calendarview.instancedialog.adapter.InstancesOfDayAdapter;
+import com.zerodsoft.scheduleweather.calendarview.instancelistdaydialog.adapter.InstancesOfDayAdapter;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
@@ -245,7 +243,6 @@ public class InstanceListOnADayDialogFragment extends DialogFragment implements 
 		for (ContentValues instance : instanceSet) {
 			CalendarInstanceUtil.deleteEvent(calendarViewModel, locationViewModel
 					, foodCriteriaLocationInfoViewModel, foodCriteriaLocationHistoryViewModel,
-					instance.getAsInteger(CalendarContract.Instances.CALENDAR_ID),
 					instance.getAsLong(CalendarContract.Instances.EVENT_ID));
 		}
 		commonPopupMenu.onDeletedEvent(true);

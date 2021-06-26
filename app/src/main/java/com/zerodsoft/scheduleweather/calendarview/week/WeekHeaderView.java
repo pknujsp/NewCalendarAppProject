@@ -170,7 +170,7 @@ public class WeekHeaderView extends ViewGroup implements CalendarViewInitializer
 		calendar.setTime(daysOfWeek[0]);
 		weekFirstDay = (Calendar) calendar.clone();
 
-		calendar.setTime(daysOfWeek[6]);
+		calendar.setTime(daysOfWeek[7]);
 		weekLastDay = (Calendar) calendar.clone();
 	}
 
@@ -199,6 +199,8 @@ public class WeekHeaderView extends ViewGroup implements CalendarViewInitializer
 		removeAllViews();
 
 		headerInstancesView = new HeaderInstancesView(getContext(), onEventItemClickListener, onEventItemLongClickListener);
+		headerInstancesView.setStartDate(weekFirstDay.getTime());
+		headerInstancesView.setEndDate(weekLastDay.getTime());
 		addView(headerInstancesView);
 
 		START_INDEX = Integer.MAX_VALUE;
@@ -293,7 +295,7 @@ public class WeekHeaderView extends ViewGroup implements CalendarViewInitializer
 
 					InstanceView instanceView = new InstanceView(getContext());
 
-					instanceView.init(bestRow == MORE_ROW_INDEX ? null : eventData.getEvent());
+					instanceView.init(bestRow == MORE_ROW_INDEX ? new ContentValues() : eventData.getEvent());
 					headerInstancesView.addView(instanceView);
 				}
 			}

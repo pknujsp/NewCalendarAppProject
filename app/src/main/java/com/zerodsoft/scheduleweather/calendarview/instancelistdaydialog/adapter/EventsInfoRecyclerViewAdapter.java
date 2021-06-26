@@ -1,8 +1,7 @@
-package com.zerodsoft.scheduleweather.calendarview.instancedialog.adapter;
+package com.zerodsoft.scheduleweather.calendarview.instancelistdaydialog.adapter;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.res.ColorStateList;
 import android.provider.CalendarContract;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -15,7 +14,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;

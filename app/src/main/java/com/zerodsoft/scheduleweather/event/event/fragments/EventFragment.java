@@ -1,13 +1,9 @@
 package com.zerodsoft.scheduleweather.event.event.fragments;
 
-import android.app.Activity;
 import android.app.Dialog;
-import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.provider.CalendarContract;
 import android.view.LayoutInflater;
@@ -19,10 +15,6 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -41,7 +33,6 @@ import com.zerodsoft.scheduleweather.activity.editevent.activity.ModifyInstanceF
 import com.zerodsoft.scheduleweather.calendar.CalendarInstanceUtil;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
-import com.zerodsoft.scheduleweather.common.enums.EventIntentCode;
 import com.zerodsoft.scheduleweather.common.enums.LocationIntentCode;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.databinding.EventFragmentBinding;
@@ -63,8 +54,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import lombok.SneakyThrows;
-
 public class EventFragment extends BottomSheetDialogFragment {
 	// 참석자가 있는 경우 참석 여부 표시
 	// 알림 값을 클릭하면 알림표시를 하는 시각을 보여준다
@@ -73,13 +62,13 @@ public class EventFragment extends BottomSheetDialogFragment {
      */
 	private final int VIEW_HEIGHT;
 	private final IRefreshView iRefreshView;
-	private final DialogInterface dialogInterface;
+	private final OnEventFragmentDismissListener onEventFragmentDismissListener;
 
-	private final int CALENDAR_ID;
-	private final long EVENT_ID;
-	private final long INSTANCE_ID;
-	private final long ORIGINAL_BEGIN;
-	private final long ORIGINAL_END;
+	private long eventId;
+	private long instanceId;
+	private long calendarId;
+	private long originalBegin;
+	private long originalEnd;
 
 	private EventFragmentBinding binding;
 	private ContentValues instanceValues;
@@ -113,7 +102,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 					getDialog().show();
 				}
 			} else if (f instanceof ModifyInstanceFragment) {
-				setInstanceData();
 				getDialog().show();
 			}
 		}
@@ -171,23 +159,16 @@ public class EventFragment extends BottomSheetDialogFragment {
 		dialog.show();
 	}
 
-	public EventFragment(DialogInterface dialogInterface, IRefreshView iRefreshView, int VIEW_HEIGHT, int CALENDAR_ID, long EVENT_ID,
-	                     long INSTANCE_ID,
-	                     long ORIGINAL_BEGIN, long ORIGINAL_END) {
-		this.dialogInterface = dialogInterface;
+	public EventFragment(OnEventFragmentDismissListener onEventFragmentDismissListener, IRefreshView iRefreshView, int VIEW_HEIGHT) {
+		this.onEventFragmentDismissListener = onEventFragmentDismissListener;
 		this.iRefreshView = iRefreshView;
 		this.VIEW_HEIGHT = VIEW_HEIGHT;
-		this.CALENDAR_ID = CALENDAR_ID;
-		this.EVENT_ID = EVENT_ID;
-		this.INSTANCE_ID = INSTANCE_ID;
-		this.ORIGINAL_BEGIN = ORIGINAL_BEGIN;
-		this.ORIGINAL_END = ORIGINAL_END;
 	}
 
 	@Override
 	public void onDismiss(@NonNull @NotNull DialogInterface dialog) {
 		super.onDismiss(dialog);
-		dialogInterface.dismiss();
+		onEventFragmentDismissListener.onResult(eventId);
 	}
 
 	@Override
@@ -200,6 +181,13 @@ public class EventFragment extends BottomSheetDialogFragment {
 		super.onCreate(savedInstanceState);
 		calendarViewModel = new ViewModelProvider(requireActivity()).get(CalendarViewModel.class);
 		getParentFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false);
+
+		Bundle arguments = getArguments();
+		eventId = arguments.getLong(CalendarContract.Instances.EVENT_ID);
+		instanceId = arguments.getLong(CalendarContract.Instances._ID);
+		calendarId = arguments.getInt(CalendarContract.Instances.CALENDAR_ID);
+		originalBegin = arguments.getLong(CalendarContract.Instances.BEGIN);
+		originalEnd = arguments.getLong(CalendarContract.Instances.END);
 	}
 
 	@NonNull
@@ -258,14 +246,14 @@ public class EventFragment extends BottomSheetDialogFragment {
 		binding.selectDetailLocationFab.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				locationViewModel.hasDetailLocation(EVENT_ID, new DbQueryCallback<Boolean>() {
+				locationViewModel.hasDetailLocation(eventId, new DbQueryCallback<Boolean>() {
 					@Override
 					public void onResultSuccessful(Boolean hasDetailLocation) {
 						requireActivity().runOnUiThread(new Runnable() {
 							@Override
 							public void run() {
 								if (hasDetailLocation) {
-									locationViewModel.getLocation(EVENT_ID, new DbQueryCallback<LocationDTO>() {
+									locationViewModel.getLocation(eventId, new DbQueryCallback<LocationDTO>() {
 										@Override
 										public void onResultSuccessful(LocationDTO locationResultDto) {
 											if (!locationResultDto.isEmpty()) {
@@ -322,26 +310,31 @@ public class EventFragment extends BottomSheetDialogFragment {
 			public void onClick(View view) {
 				ModifyInstanceFragment modifyInstanceFragment = new ModifyInstanceFragment(new ModifyInstanceFragment.OnModifyInstanceResultListener() {
 					@Override
-					public void onResultModifiedEvent(long eventId, long begin) {
-						//setInstanceData();
+					public void onResultModifiedEvent(long begin) {
+						EventFragment.this.originalBegin = begin;
+						setInstanceData();
 					}
 
 					@Override
-					public void onResultModifiedThisInstance() {
-						//setInstanceData();
+					public void onResultModifiedThisInstance(long eventId, long begin) {
+						EventFragment.this.eventId = eventId;
+						EventFragment.this.originalBegin = begin;
+						setInstanceData();
 					}
 
 					@Override
-					public void onResultModifiedAfterAllInstancesIncludingThisInstance() {
-						//setInstanceData();
+					public void onResultModifiedAfterAllInstancesIncludingThisInstance(long eventId, long begin) {
+						EventFragment.this.eventId = eventId;
+						EventFragment.this.originalBegin = begin;
+						setInstanceData();
 					}
 				});
 				Bundle bundle = new Bundle();
 
-				bundle.putLong(CalendarContract.Instances.EVENT_ID, EVENT_ID);
-				bundle.putLong(CalendarContract.Instances._ID, INSTANCE_ID);
-				bundle.putLong(CalendarContract.Instances.BEGIN, ORIGINAL_BEGIN);
-				bundle.putLong(CalendarContract.Instances.END, ORIGINAL_END);
+				bundle.putLong(CalendarContract.Instances.EVENT_ID, eventId);
+				bundle.putLong(CalendarContract.Instances._ID, instanceId);
+				bundle.putLong(CalendarContract.Instances.BEGIN, originalBegin);
+				bundle.putLong(CalendarContract.Instances.END, originalEnd);
 
 				modifyInstanceFragment.setArguments(bundle);
 				getParentFragmentManager().beginTransaction().add(R.id.fragment_container, modifyInstanceFragment,
@@ -414,7 +407,7 @@ public class EventFragment extends BottomSheetDialogFragment {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						CalendarInstanceUtil.deleteEvent(calendarViewModel, locationViewModel, foodCriteriaLocationInfoViewModel, foodCriteriaLocationHistoryViewModel,
-								CALENDAR_ID, EVENT_ID);
+								eventId);
 						dialog.dismiss();
 						dismiss();
 					}
@@ -455,7 +448,7 @@ public class EventFragment extends BottomSheetDialogFragment {
 				.setPositiveButton(R.string.check, new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
-						CalendarInstanceUtil.exceptThisInstance(calendarViewModel, instanceValues.getAsLong(CalendarContract.Instances.BEGIN), EVENT_ID);
+						CalendarInstanceUtil.exceptThisInstance(calendarViewModel, instanceValues.getAsLong(CalendarContract.Instances.BEGIN), eventId);
 						dialog.dismiss();
 						dismiss();
 					}
@@ -535,13 +528,13 @@ public class EventFragment extends BottomSheetDialogFragment {
 		// 제목, 캘린더, 시간, 시간대, 반복, 알림, 설명, 위치, 공개범위, 유효성, 참석자
 		// 캘린더, 시간대, 참석자 정보는 따로 불러온다.
 		// 제목
-		instanceValues = calendarViewModel.getInstance(INSTANCE_ID, ORIGINAL_BEGIN, ORIGINAL_END);
+		instanceValues = calendarViewModel.getInstance(instanceId, originalBegin, originalEnd);
 
 		Date begin = new Date(instanceValues.getAsLong(CalendarContract.Instances.BEGIN));
 		Date end = new Date(instanceValues.getAsLong(CalendarContract.Instances.END));
 
 		String time = "begin : " + begin.toString() + "\nend : " + end.toString();
-		Toast.makeText(getContext(), time, Toast.LENGTH_SHORT).show();
+		Toast.makeText(getActivity(), time, Toast.LENGTH_SHORT).show();
 
 		if (instanceValues.getAsInteger(CalendarContract.Instances.CALENDAR_ACCESS_LEVEL) == CalendarContract.Instances.CAL_ACCESS_READ) {
 			binding.fabsLayout.setVisibility(View.GONE);
@@ -608,7 +601,7 @@ public class EventFragment extends BottomSheetDialogFragment {
 
 		// 알람
 		if (instanceValues.getAsBoolean(CalendarContract.Instances.HAS_ALARM)) {
-			List<ContentValues> reminderList = calendarViewModel.getReminders(EVENT_ID);
+			List<ContentValues> reminderList = calendarViewModel.getReminders(eventId);
 			setReminderText(reminderList);
 			binding.eventRemindersView.notReminder.setVisibility(View.GONE);
 			binding.eventRemindersView.remindersTable.setVisibility(View.VISIBLE);
@@ -649,7 +642,7 @@ public class EventFragment extends BottomSheetDialogFragment {
 		}
 
 		// 참석자
-		attendeeList = calendarViewModel.getAttendees(EVENT_ID);
+		attendeeList = calendarViewModel.getAttendees(eventId);
 
 		// 참석자가 없는 경우 - 테이블 숨김, 참석자 없음 텍스트 표시
 		if (attendeeList.isEmpty()) {
@@ -739,7 +732,7 @@ public class EventFragment extends BottomSheetDialogFragment {
 
 	private void saveDetailLocation(LocationDTO locationDTO) {
 		// 지정이 완료된 경우 - DB에 등록하고 이벤트 액티비티로 넘어가서 날씨 또는 주변 정보 프래그먼트를 실행한다.
-		locationDTO.setEventId(EVENT_ID);
+		locationDTO.setEventId(eventId);
 
 		//선택된 위치를 DB에 등록
 		locationViewModel.addLocation(locationDTO, new DbQueryCallback<LocationDTO>() {
@@ -764,7 +757,7 @@ public class EventFragment extends BottomSheetDialogFragment {
 	private void changedDetailLocation(LocationDTO locationDTO) {
 		// 지정이 완료된 경우 - DB에 등록하고 이벤트 액티비티로 넘어가서 날씨 또는 주변 정보 프래그먼트를 실행한다.
 		// 선택된 위치를 DB에 등록
-		locationDTO.setEventId(EVENT_ID);
+		locationDTO.setEventId(eventId);
 		locationViewModel.addLocation(locationDTO, new DbQueryCallback<LocationDTO>() {
 			@Override
 			public void onResultSuccessful(LocationDTO result) {
@@ -784,7 +777,7 @@ public class EventFragment extends BottomSheetDialogFragment {
 	}
 
 	private void deletedDetailLocation() {
-		locationViewModel.removeLocation(EVENT_ID, new DbQueryCallback<Boolean>() {
+		locationViewModel.removeLocation(eventId, new DbQueryCallback<Boolean>() {
 			@Override
 			public void onResultSuccessful(Boolean result) {
 				requireActivity().runOnUiThread(new Runnable() {
@@ -803,11 +796,7 @@ public class EventFragment extends BottomSheetDialogFragment {
 		});
 	}
 
-	private ActivityResultLauncher<Intent> editEventResultLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult()
-			, new ActivityResultCallback<ActivityResult>() {
-				@Override
-				public void onActivityResult(ActivityResult result) {
-
-				}
-			});
+	public interface OnEventFragmentDismissListener {
+		void onResult(long newEventId);
+	}
 }

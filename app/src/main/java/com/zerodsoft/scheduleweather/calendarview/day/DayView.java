@@ -236,8 +236,11 @@ public class DayView extends HourEventsView implements CalendarViewInitializer, 
 				}
 			}
 
-			ItemCell itemCell = new ItemCell(instance);
-			itemCells.add(itemCell);
+			if (instance.getAsInteger(CalendarContract.Instances.ALL_DAY) != 1 &&
+					instance.getAsInteger(CalendarContract.Instances.START_DAY).equals(instance.getAsInteger(CalendarContract.Instances.END_DAY))) {
+				ItemCell itemCell = new ItemCell(instance);
+				itemCells.add(itemCell);
+			}
 		}
 
 		for (int i = 0; i < itemCells.size() - 1; i++) {

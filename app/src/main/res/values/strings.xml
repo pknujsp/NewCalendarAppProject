@@ -615,4 +615,6 @@
     <string name="tag_calendar_color_fragment">tag_calendar_color_fragment</string>
     <string name="not_edited">수정된 데이터가 없습니다</string>
     <string name="not_available_add_organizer_as_attendee">나의 계정을 추가할수 없음</string>
+    <string name="go_to_this_week">이번 주로 이동</string>
+    <string name="go_to_first_selected_week">첫 선택 주로 이동</string>
 </resources>

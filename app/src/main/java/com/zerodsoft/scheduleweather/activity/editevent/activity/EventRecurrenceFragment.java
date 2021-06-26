@@ -328,7 +328,9 @@ public class EventRecurrenceFragment extends Fragment {
 				assert (false) : "Unknown";
 		}
 
-		onCompletedRecurrenceDetail();
+		if (!NEW_RULE.isEmpty()) {
+			onCompletedRecurrenceDetail();
+		}
 		onEventRecurrenceResultListener.onResult(NEW_RULE.getRule());
 	}
 

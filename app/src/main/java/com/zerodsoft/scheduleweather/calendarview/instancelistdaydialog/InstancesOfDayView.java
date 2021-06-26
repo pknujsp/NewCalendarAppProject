@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.calendarview.instancedialog;
+package com.zerodsoft.scheduleweather.calendarview.instancelistdaydialog;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
-import com.zerodsoft.scheduleweather.calendarview.instancedialog.adapter.EventsInfoRecyclerViewAdapter;
+import com.zerodsoft.scheduleweather.calendarview.instancelistdaydialog.adapter.EventsInfoRecyclerViewAdapter;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.CalendarViewInitializer;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;

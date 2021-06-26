@@ -16,7 +16,7 @@ public class CalendarInstanceUtil {
 
 
 	public static boolean deleteEvent(CalendarViewModel calendarViewModel, LocationViewModel locationViewModel, FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel,
-	                                  FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel, final int CALENDAR_ID, final long EVENT_ID) {
+	                                  FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel, final long EVENT_ID) {
 		// 참석자 - 알림 - 이벤트 순으로 삭제 (외래키 때문)
 		// db column error
 		calendarViewModel.deleteEvent(EVENT_ID);

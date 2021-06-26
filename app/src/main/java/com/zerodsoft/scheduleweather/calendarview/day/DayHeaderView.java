@@ -120,6 +120,8 @@ public class DayHeaderView extends ViewGroup implements CalendarViewInitializer 
 		int availableRow = 0;
 
 		headerInstancesView = new HeaderInstancesView(getContext(), onEventItemClickListener, onEventItemLongClickListener);
+		headerInstancesView.setStartDate(viewStartDate);
+		headerInstancesView.setEndDate(viewEndDate);
 		headerInstancesView.setClickable(true);
 		addView(headerInstancesView);
 
@@ -166,7 +168,7 @@ public class DayHeaderView extends ViewGroup implements CalendarViewInitializer 
 
 				eventCellsList.add(eventData);
 			} else {
-				eventCellsList.add(new EventData(null, availableRow));
+				eventCellsList.add(new EventData(new ContentValues(), availableRow));
 				break;
 			}
 			availableRow++;

@@ -79,9 +79,6 @@ public class AttendeeListAdapter extends RecyclerView.Adapter<AttendeeListAdapte
 				@Override
 				public void onClick(View view) {
 					attendeeList.remove(getBindingAdapterPosition());
-					if (attendeeList.size() == 1) {
-						attendeeList.clear();
-					}
 					notifyDataSetChanged();
 				}
 			});

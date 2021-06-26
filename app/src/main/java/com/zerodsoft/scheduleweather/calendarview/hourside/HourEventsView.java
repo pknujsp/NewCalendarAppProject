@@ -83,7 +83,7 @@ public class HourEventsView extends ViewGroup {
 		HOUR_TEXT_HEIGHT = rect.height();
 
 		TextPaint eventTextPaint = new TextPaint();
-		eventTextPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 12, getResources().getDisplayMetrics()));
+		eventTextPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 13, getResources().getDisplayMetrics()));
 		eventTextPaint.getTextBounds("0", 0, 1, rect);
 		EVENT_TEXT_HEIGHT = rect.height();
 

@@ -14,6 +14,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClic
 import com.zerodsoft.scheduleweather.calendarview.month.EventData;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class HeaderInstancesView extends ViewGroup {
@@ -30,6 +31,9 @@ public class HeaderInstancesView extends ViewGroup {
 	public final int VIEW_HEIGHT;
 
 	private int totalRows;
+
+	private Date startDate;
+	private Date endDate;
 
 	private OnEventItemClickListener onEventItemClickListener;
 	private OnEventItemLongClickListener onEventItemLongClickListener;
@@ -49,6 +53,14 @@ public class HeaderInstancesView extends ViewGroup {
 		VIEW_HEIGHT = TEXT_SIZE + TEXT_TOP_BOTTOM_MARGIN * 2;
 
 		setWillNotDraw(false);
+	}
+
+	public void setStartDate(Date startDate) {
+		this.startDate = startDate;
+	}
+
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
 	}
 
 	public void setEventCellsList(List<EventData> eventCellsList) {
@@ -102,9 +114,13 @@ public class HeaderInstancesView extends ViewGroup {
 		public void onClick(View view) {
 			ContentValues instance = ((InstanceView) view).getInstance();
 
-			onEventItemClickListener.onClicked(instance.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
-					, instance.getAsLong(CalendarContract.Instances._ID), instance.getAsLong(CalendarContract.Instances.EVENT_ID),
-					instance.getAsLong(CalendarContract.Instances.BEGIN), instance.getAsLong(CalendarContract.Instances.END));
+			if (instance.size() == 0) {
+				onEventItemClickListener.onClicked(startDate.getTime(), endDate.getTime());
+			} else {
+				onEventItemClickListener.onClicked(instance.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
+						, instance.getAsLong(CalendarContract.Instances._ID), instance.getAsLong(CalendarContract.Instances.EVENT_ID),
+						instance.getAsLong(CalendarContract.Instances.BEGIN), instance.getAsLong(CalendarContract.Instances.END));
+			}
 		}
 	};
 

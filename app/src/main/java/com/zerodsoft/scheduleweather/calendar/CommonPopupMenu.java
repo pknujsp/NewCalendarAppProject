@@ -15,7 +15,6 @@ import android.widget.Toast;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.editevent.activity.ModifyInstanceFragment;
-import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
@@ -42,17 +41,17 @@ public abstract class CommonPopupMenu {
 					case R.id.edit_instance: {
 						ModifyInstanceFragment modifyInstanceFragment = new ModifyInstanceFragment(new ModifyInstanceFragment.OnModifyInstanceResultListener() {
 							@Override
-							public void onResultModifiedEvent(long eventId, long begin) {
+							public void onResultModifiedEvent(long begin) {
 
 							}
 
 							@Override
-							public void onResultModifiedThisInstance() {
+							public void onResultModifiedThisInstance(long eventId, long begin) {
 
 							}
 
 							@Override
-							public void onResultModifiedAfterAllInstancesIncludingThisInstance() {
+							public void onResultModifiedAfterAllInstancesIncludingThisInstance(long eventId, long begin) {
 
 							}
 						});
@@ -147,7 +146,7 @@ public abstract class CommonPopupMenu {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						CalendarInstanceUtil.deleteEvent(calendarViewModel, locationViewModel
-								, foodCriteriaLocationInfoViewModel, foodCriteriaLocationHistoryViewModel, CALENDAR_ID, EVENT_ID);
+								, foodCriteriaLocationInfoViewModel, foodCriteriaLocationHistoryViewModel, EVENT_ID);
 						onDeletedEvent(true);
 						dialog.dismiss();
 					}

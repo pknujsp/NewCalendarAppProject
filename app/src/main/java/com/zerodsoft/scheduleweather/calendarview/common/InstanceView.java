@@ -40,10 +40,7 @@ public class InstanceView extends View {
 	public void init(ContentValues instance) {
 		this.instance = instance;
 
-		if (instance.size() > 0) {
-
-		}
-		instanceViewPaint = EventUtil.getEventColorPaint(instance == null ?
+		instanceViewPaint = EventUtil.getEventColorPaint(instance.size() == 0 ?
 				Color.RED : instance.getAsInteger(CalendarContract.Instances.EVENT_COLOR));
 		instanceTextPaint = EventUtil.getEventTextPaint(TEXT_SIZE);
 
@@ -71,7 +68,7 @@ public class InstanceView extends View {
 		final float titleX = TEXT_LEFT_MARGIN;
 		final float titleY = getHeight() / 2f + TEXT_HEIGHT.floatValue() / 2f;
 
-		if (instance != null) {
+		if (instance.size() > 0) {
 			if (instance.getAsString(CalendarContract.Instances.TITLE) != null) {
 				if (!instance.getAsString(CalendarContract.Instances.TITLE).isEmpty()) {
 					canvas.drawText(instance.getAsString(CalendarContract.Instances.TITLE), titleX, titleY, instanceTextPaint);

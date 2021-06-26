@@ -615,6 +615,8 @@ public class CalendarProvider implements ICalendarProvider {
 				instance.put(CalendarContract.Instances.ALL_DAY, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.ALL_DAY)));
 				instance.put(CalendarContract.Instances.STATUS, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.STATUS)));
 				instance.put(CalendarContract.Instances.RRULE, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.RRULE)));
+				instance.put(CalendarContract.Instances.START_DAY, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.START_DAY)));
+				instance.put(CalendarContract.Instances.END_DAY, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.END_DAY)));
 				instance.put(CalendarContract.Instances.CALENDAR_ACCESS_LEVEL,
 						cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.CALENDAR_ACCESS_LEVEL)));
 
@@ -634,8 +636,8 @@ public class CalendarProvider implements ICalendarProvider {
 	@Override
 	public ContentValues getInstance(Long instanceId, Long begin, Long end) {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
-			String selection = "Instances._id = ?";
-			String[] selectionArgs = {instanceId.toString()};
+			String selection = CalendarContract.Instances.BEGIN + "=?";
+			String[] selectionArgs = {begin.toString()};
 
 			Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
 			ContentUris.appendId(builder, begin);
