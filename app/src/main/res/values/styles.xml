@@ -108,4 +108,5 @@
         <item name="android:gravity">center</item>
         <item name="android:textColor">@color/gray_600</item>
     </style>
+
 </resources>

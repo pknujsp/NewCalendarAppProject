@@ -339,8 +339,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 				modifyInstanceFragment.setArguments(bundle);
 				getParentFragmentManager().beginTransaction().add(R.id.fragment_container, modifyInstanceFragment,
 						getString(R.string.tag_modify_instance_fragment)).addToBackStack(getString(R.string.tag_modify_instance_fragment)).commit();
-
-
 			}
 		});
 
@@ -532,9 +530,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 
 		Date begin = new Date(instanceValues.getAsLong(CalendarContract.Instances.BEGIN));
 		Date end = new Date(instanceValues.getAsLong(CalendarContract.Instances.END));
-
-		String time = "begin : " + begin.toString() + "\nend : " + end.toString();
-		Toast.makeText(getActivity(), time, Toast.LENGTH_SHORT).show();
 
 		if (instanceValues.getAsInteger(CalendarContract.Instances.CALENDAR_ACCESS_LEVEL) == CalendarContract.Instances.CAL_ACCESS_READ) {
 			binding.fabsLayout.setVisibility(View.GONE);

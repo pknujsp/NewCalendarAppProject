@@ -12,6 +12,8 @@ import android.view.View;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
+import androidx.fragment.app.Fragment;
+
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.editevent.activity.ModifyInstanceFragment;
@@ -64,6 +66,7 @@ public abstract class CommonPopupMenu {
 
 						modifyInstanceFragment.setArguments(bundle);
 
+						onClickedModify(modifyInstanceFragment);
 						break;
 					}
 					case R.id.delete_instance: {
@@ -130,6 +133,8 @@ public abstract class CommonPopupMenu {
 
 		popupMenu.show();
 	}
+
+	public abstract void onClickedModify(Fragment modificationFragment);
 
 	public abstract void onExceptedInstance(boolean isSuccessful);
 

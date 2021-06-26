@@ -365,7 +365,7 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
 
 		viewFirstDateTime = calendar.getTime();
 		Calendar calendar2 = (Calendar) calendar.clone();
-		calendar2.add(Calendar.DATE, 1);
+		calendar2.add(Calendar.DAY_OF_YEAR, 1);
 		removeAllViews();
 
 		for (int index = 0; index < TOTAL_DAY_COUNT; index++) {

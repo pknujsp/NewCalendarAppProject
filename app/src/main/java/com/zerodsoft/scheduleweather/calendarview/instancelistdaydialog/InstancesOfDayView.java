@@ -23,6 +23,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.common.view.CustomProgressView;
+import com.zerodsoft.scheduleweather.common.view.RecyclerViewItemDecoration;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.room.dto.SelectedCalendarDTO;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
@@ -70,7 +71,7 @@ public class InstancesOfDayView implements CalendarViewInitializer {
 		customProgressView.setContentView(recyclerView);
 		customProgressView.onSuccessfulProcessingData();
 
-		recyclerView.addItemDecoration(new RecyclerViewItemDecoration(context));
+		recyclerView.addItemDecoration(new RecyclerViewItemDecoration(context, 8));
 		recyclerView.setLayoutManager(new LinearLayoutManager(context, RecyclerView.VERTICAL, false));
 
 		deleteInstancesBtn.setVisibility(View.GONE);
@@ -237,32 +238,6 @@ public class InstancesOfDayView implements CalendarViewInitializer {
 	public void refresh() {
 	}
 
-
-	static class RecyclerViewItemDecoration extends RecyclerView.ItemDecoration {
-		private final int decorationHeight;
-		private Context context;
-
-		public RecyclerViewItemDecoration(Context context) {
-			this.context = context;
-			decorationHeight = context.getResources().getDimensionPixelSize(R.dimen.event_info_listview_spacing);
-		}
-
-		@Override
-		public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-			super.getItemOffsets(outRect, view, parent, state);
-
-			if (parent != null && view != null) {
-				int itemPosition = parent.getChildAdapterPosition(view);
-				int totalCount = parent.getAdapter().getItemCount();
-
-				if (itemPosition >= 0 && itemPosition < totalCount - 1) {
-					outRect.bottom = decorationHeight;
-				}
-			}
-
-		}
-
-	}
 
 	public interface InstanceDialogMenuListener {
 		void showPopupMenu(ContentValues instance, View anchorView, int gravity);

@@ -38,6 +38,7 @@ import com.zerodsoft.scheduleweather.calendar.selectedcalendar.SelectedCalendarV
 import com.zerodsoft.scheduleweather.calendarview.assistantcalendar.assistantcalendar.MonthAssistantCalendarFragment;
 import com.zerodsoft.scheduleweather.calendarview.day.DayFragment;
 import com.zerodsoft.scheduleweather.calendarview.instancelistdaydialog.InstanceListOnADayDialogFragment;
+import com.zerodsoft.scheduleweather.calendarview.instancelistweekdialog.InstanceListWeekDialogFragment;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.CalendarDateOnClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
@@ -154,6 +155,12 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 			if (isSuccessful) {
 				refreshView();
 			}
+		}
+
+		@Override
+		public void onClickedModify(Fragment modificationFragment) {
+			getParentFragmentManager().beginTransaction().add(R.id.fragment_container, modificationFragment,
+					getString(R.string.tag_modify_instance_fragment)).addToBackStack(getString(R.string.tag_modify_instance_fragment)).commit();
 		}
 	};
 
@@ -326,11 +333,20 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 		bundle.putLong("begin", viewBegin);
 		bundle.putLong("end", viewEnd);
 
-		InstanceListOnADayDialogFragment fragment = new InstanceListOnADayDialogFragment(instanceListDialogIConnectedCalendars, this);
-		fragment.setArguments(bundle);
+		int difference = ClockUtil.calcDayDifference(new Date(viewBegin), new Date(viewEnd));
+		if (difference == -1) {
+			InstanceListOnADayDialogFragment fragment = new InstanceListOnADayDialogFragment(instanceListDialogIConnectedCalendars, this);
+			fragment.setArguments(bundle);
 
-		//현재 표시중인 프래그먼트를 숨기고, 인스턴스 프래그먼트를 표시
-		fragment.show(getParentFragmentManager(), InstanceListOnADayDialogFragment.TAG);
+			//현재 표시중인 프래그먼트를 숨기고, 인스턴스 프래그먼트를 표시
+			fragment.show(getParentFragmentManager(), InstanceListOnADayDialogFragment.TAG);
+		} else {
+			InstanceListWeekDialogFragment fragment = new InstanceListWeekDialogFragment(instanceListDialogIConnectedCalendars, this);
+			fragment.setArguments(bundle);
+
+			//현재 표시중인 프래그먼트를 숨기고, 인스턴스 프래그먼트를 표시
+			fragment.show(getParentFragmentManager(), getString(R.string.tag_instance_list_week_dialog_fragment));
+		}
 	}
 
 	private final IConnectedCalendars instanceListDialogIConnectedCalendars = new IConnectedCalendars() {
@@ -362,8 +378,13 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 					.commit();
 
 			DialogFragment instanceListOnADayDialogFragment = (DialogFragment) getParentFragmentManager().findFragmentByTag(InstanceListOnADayDialogFragment.TAG);
+			DialogFragment instanceListWeekDialogFragment =
+					(DialogFragment) getParentFragmentManager().findFragmentByTag(getString(R.string.tag_instance_list_week_dialog_fragment));
+
 			if (instanceListOnADayDialogFragment != null) {
 				instanceListOnADayDialogFragment.dismiss();
+			} else if (instanceListWeekDialogFragment != null) {
+				instanceListWeekDialogFragment.dismiss();
 			}
 		}
 	}

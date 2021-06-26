@@ -71,17 +71,20 @@ public class InstanceListOnADayDialogFragment extends DialogFragment implements 
 		@Override
 		public void onExceptedInstance(boolean isSuccessful) {
 			if (isSuccessful) {
-				iRefreshView.refreshView();
-				refreshView();
 			}
 		}
 
 		@Override
 		public void onDeletedEvent(boolean isSuccessful) {
 			if (isSuccessful) {
-				iRefreshView.refreshView();
-				refreshView();
 			}
+		}
+
+		@Override
+		public void onClickedModify(Fragment modificationFragment) {
+			dismiss();
+			getParentFragmentManager().beginTransaction().add(R.id.fragment_container, modificationFragment,
+					getString(R.string.tag_modify_instance_fragment)).addToBackStack(getString(R.string.tag_modify_instance_fragment)).commit();
 		}
 	};
 
@@ -176,7 +179,6 @@ public class InstanceListOnADayDialogFragment extends DialogFragment implements 
 		super.onResume();
 
 		Window window = getDialog().getWindow();
-		//  window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 400f, getContext().getResources().getDisplayMetrics()));
 		window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
 	}
 
