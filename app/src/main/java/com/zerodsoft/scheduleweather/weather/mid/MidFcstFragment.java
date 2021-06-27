@@ -15,8 +15,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.LinearLayout;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -27,10 +25,8 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.MidFcstFragmentBinding;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
-import com.zerodsoft.scheduleweather.weather.common.ViewProgress;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.MidFcstProcessing;
-import com.zerodsoft.scheduleweather.weather.interfaces.OnDownloadedTimeListener;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.WeatherDataConverter;
 
 import java.util.LinkedList;
@@ -39,12 +35,10 @@ import java.util.List;
 public class MidFcstFragment extends Fragment {
 	private MidFcstFragmentBinding binding;
 	private WeatherAreaCodeDTO weatherAreaCode;
-	private final OnDownloadedTimeListener onDownloadedTimeListener;
 	private MidFcstProcessing midFcstProcessing;
 
-	public MidFcstFragment(WeatherAreaCodeDTO weatherAreaCodeDTO, OnDownloadedTimeListener onDownloadedTimeListener) {
+	public MidFcstFragment(WeatherAreaCodeDTO weatherAreaCodeDTO) {
 		this.weatherAreaCode = weatherAreaCodeDTO;
-		this.onDownloadedTimeListener = onDownloadedTimeListener;
 	}
 
 	@Nullable
@@ -69,8 +63,6 @@ public class MidFcstFragment extends Fragment {
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						onDownloadedTimeListener.setDownloadedTime(e.getDownloadedDate(), WeatherDataDTO.MID_LAND_FCST);
-						onDownloadedTimeListener.setDownloadedTime(e.getDownloadedDate(), WeatherDataDTO.MID_TA);
 						binding.customProgressView.onSuccessfulProcessingData();
 						setTable(e);
 					}
@@ -83,8 +75,6 @@ public class MidFcstFragment extends Fragment {
 					@Override
 					public void run() {
 						clearViews();
-						onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.MID_LAND_FCST);
-						onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.MID_TA);
 						binding.customProgressView.onFailedProcessingData(getString(R.string.error));
 
 					}
@@ -102,8 +92,6 @@ public class MidFcstFragment extends Fragment {
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						onDownloadedTimeListener.setDownloadedTime(e.getDownloadedDate(), WeatherDataDTO.MID_LAND_FCST);
-						onDownloadedTimeListener.setDownloadedTime(e.getDownloadedDate(), WeatherDataDTO.MID_TA);
 						binding.customProgressView.onSuccessfulProcessingData();
 
 						setTable(e);
@@ -117,8 +105,6 @@ public class MidFcstFragment extends Fragment {
 					@Override
 					public void run() {
 						clearViews();
-						onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.MID_LAND_FCST);
-						onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.MID_TA);
 						binding.customProgressView.onFailedProcessingData(getString(R.string.error));
 					}
 				});

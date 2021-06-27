@@ -14,8 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.LinearLayout;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -27,10 +25,8 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.UltraSrtFcstFragmentBinding;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
-import com.zerodsoft.scheduleweather.weather.common.ViewProgress;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.UltraSrtFcstProcessing;
-import com.zerodsoft.scheduleweather.weather.interfaces.OnDownloadedTimeListener;
 import com.zerodsoft.scheduleweather.weather.sunsetrise.SunSetRiseData;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.WeatherDataConverter;
@@ -41,16 +37,13 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class UltraSrtFcstFragment extends Fragment {
-	private final OnDownloadedTimeListener onDownloadedTimeListener;
-
 	private UltraSrtFcstFragmentBinding binding;
 
 	private WeatherAreaCodeDTO weatherAreaCode;
 	private UltraSrtFcstProcessing ultraSrtFcstProcessing;
 
-	public UltraSrtFcstFragment(WeatherAreaCodeDTO weatherAreaCodeDTO, OnDownloadedTimeListener onDownloadedTimeListener) {
+	public UltraSrtFcstFragment(WeatherAreaCodeDTO weatherAreaCodeDTO) {
 		this.weatherAreaCode = weatherAreaCodeDTO;
-		this.onDownloadedTimeListener = onDownloadedTimeListener;
 	}
 
 	@Nullable
@@ -75,7 +68,6 @@ public class UltraSrtFcstFragment extends Fragment {
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						onDownloadedTimeListener.setDownloadedTime(e.getDownloadedDate(), WeatherDataDTO.ULTRA_SRT_FCST);
 						binding.customProgressView.onSuccessfulProcessingData();
 						setTable(e);
 					}
@@ -87,7 +79,6 @@ public class UltraSrtFcstFragment extends Fragment {
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.ULTRA_SRT_FCST);
 						binding.customProgressView.onFailedProcessingData(getString(R.string.error));
 						clearViews();
 					}
@@ -106,7 +97,6 @@ public class UltraSrtFcstFragment extends Fragment {
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						onDownloadedTimeListener.setDownloadedTime(e.getDownloadedDate(), WeatherDataDTO.ULTRA_SRT_FCST);
 						binding.customProgressView.onSuccessfulProcessingData();
 						setTable(e);
 					}
@@ -118,7 +108,6 @@ public class UltraSrtFcstFragment extends Fragment {
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.ULTRA_SRT_FCST);
 						binding.customProgressView.onFailedProcessingData(getString(R.string.error));
 						clearViews();
 					}

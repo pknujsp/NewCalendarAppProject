@@ -8,19 +8,15 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentAirConditionBinding;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyItem;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
 import com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.AirConditionResult;
 import com.zerodsoft.scheduleweather.weather.common.OnUpdateListener;
-import com.zerodsoft.scheduleweather.weather.common.ViewProgress;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.AirConditionProcessing;
-import com.zerodsoft.scheduleweather.weather.interfaces.OnDownloadedTimeListener;
 import com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.BarInitDataCreater;
 
 public class AirConditionFragment extends Fragment implements OnUpdateListener {
@@ -28,14 +24,11 @@ public class AirConditionFragment extends Fragment implements OnUpdateListener {
 
 	private final String LATITUDE;
 	private final String LONGITUDE;
-	private final OnDownloadedTimeListener onDownloadedTimeListener;
-
 	private AirConditionProcessing airConditionProcessing;
 
-	public AirConditionFragment(String LATITUDE, String LONGITUDE, OnDownloadedTimeListener onDownloadedTimeListener) {
+	public AirConditionFragment(String LATITUDE, String LONGITUDE) {
 		this.LATITUDE = LATITUDE;
 		this.LONGITUDE = LONGITUDE;
-		this.onDownloadedTimeListener = onDownloadedTimeListener;
 	}
 
 	@Override
@@ -73,7 +66,6 @@ public class AirConditionFragment extends Fragment implements OnUpdateListener {
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						onDownloadedTimeListener.setDownloadedTime(e.getDownloadedDate(), WeatherDataDTO.AIR_CONDITION);
 						binding.customProgressView.onSuccessfulProcessingData();
 						setData(e);
 					}
@@ -85,7 +77,6 @@ public class AirConditionFragment extends Fragment implements OnUpdateListener {
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.AIR_CONDITION);
 						binding.customProgressView.onFailedProcessingData(getString(R.string.error));
 					}
 				});
@@ -133,7 +124,6 @@ public class AirConditionFragment extends Fragment implements OnUpdateListener {
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						onDownloadedTimeListener.setDownloadedTime(e.getDownloadedDate(), WeatherDataDTO.AIR_CONDITION);
 						binding.customProgressView.onSuccessfulProcessingData();
 						setData(e);
 					}
@@ -145,7 +135,6 @@ public class AirConditionFragment extends Fragment implements OnUpdateListener {
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.AIR_CONDITION);
 						binding.customProgressView.onFailedProcessingData(getString(R.string.error));
 					}
 				});

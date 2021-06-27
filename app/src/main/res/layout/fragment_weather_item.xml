@@ -3,7 +3,10 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@color/white"
+        android:clickable="true"
+        android:focusable="false">
 
         <androidx.core.widget.NestedScrollView
             android:id="@+id/scrollview"
@@ -21,192 +24,102 @@
                     style="@style/TextAppearance.MaterialComponents.Headline6"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="16dp"
                     android:gravity="center"
-                    android:padding="16dp"
-                    android:text="Address Name" />
+                    android:text="addressName" />
 
-                <TextView
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_marginLeft="8dp"
-                    android:layout_marginBottom="12dp"
-                    android:text="@string/ultra_srt_ncst"
-                    android:textColor="@android:color/black"
-                    android:textSize="17sp"
-                    android:textStyle="bold"
-                    android:visibility="visible" />
-
-                <androidx.fragment.app.FragmentContainerView
-                    android:id="@+id/ultra_srt_ncst_fragment_container"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="8dp"
-                    android:layout_marginBottom="16dp" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="8dp"
-                    android:layout_marginBottom="12dp"
-                    android:text="@string/air_condition"
-                    android:textColor="@android:color/black"
-                    android:textSize="17sp"
-                    android:textStyle="bold"
-                    android:visibility="visible" />
-
-                <androidx.fragment.app.FragmentContainerView
-                    android:id="@+id/air_condition_fragment_container"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="8dp"
-                    android:layout_marginBottom="16dp" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="8dp"
-                    android:layout_marginBottom="12dp"
-                    android:text="@string/ultra_srt_fcst"
-                    android:textColor="@android:color/black"
-                    android:textSize="17sp"
-                    android:textStyle="bold" />
-
-                <androidx.fragment.app.FragmentContainerView
-                    android:id="@+id/ultra_srt_fcst_fragment_container"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="8dp"
-                    android:layout_marginBottom="16dp" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="8dp"
-                    android:layout_marginBottom="12dp"
-                    android:text="@string/vilage_fcst"
-                    android:textColor="@android:color/black"
-                    android:textSize="17sp"
-                    android:textStyle="bold" />
-
-                <androidx.fragment.app.FragmentContainerView
-                    android:id="@+id/vilage_fcst_fragment_container"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="8dp"
-                    android:layout_marginBottom="16dp" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="8dp"
-                    android:layout_marginBottom="12dp"
-                    android:text="@string/mid_fcst"
-                    android:textColor="@android:color/black"
-                    android:textSize="17sp"
-                    android:textStyle="bold" />
-
-                <androidx.fragment.app.FragmentContainerView
-                    android:id="@+id/mid_fcst_fragment_container"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="8dp" />
-
-                <GridLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:columnCount="2"
-                    android:padding="16dp"
-                    android:rowCount="6">
+                    android:orientation="vertical">
 
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
                         android:text="@string/ultra_srt_ncst"
-                        android:textSize="13sp" />
+                        android:textColor="@android:color/black"
+                        android:textSize="17sp"
+                        android:textStyle="bold"
+                        android:visibility="visible" />
+
+                    <androidx.fragment.app.FragmentContainerView
+                        android:id="@+id/ultra_srt_ncst_fragment_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp" />
 
                     <TextView
-                        android:id="@+id/ultra_srt_ncst_downloaded_time"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="8dp"
-                        android:text="2020.01.01"
-                        android:textSize="13sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/ultra_srt_fcst"
-                        android:textSize="13sp" />
-
-                    <TextView
-                        android:id="@+id/ultra_srt_fcst_downloaded_time"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="8dp"
-
-                        android:text="2020.01.01"
-                        android:textSize="13sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/vilage_fcst"
-                        android:textSize="13sp" />
-
-                    <TextView
-                        android:id="@+id/vilage_fcst_downloaded_time"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="8dp"
-
-                        android:text="2020.01.01"
-                        android:textSize="13sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
                         android:text="@string/air_condition"
-                        android:textSize="13sp" />
+                        android:textColor="@android:color/black"
+                        android:textSize="17sp"
+                        android:textStyle="bold"
+                        android:visibility="visible" />
+
+                    <androidx.fragment.app.FragmentContainerView
+                        android:id="@+id/air_condition_fragment_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp" />
 
                     <TextView
-                        android:id="@+id/air_condition_downloaded_time"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="8dp"
+                        android:layout_marginBottom="12dp"
+                        android:text="@string/ultra_srt_fcst"
+                        android:textColor="@android:color/black"
+                        android:textSize="17sp"
+                        android:textStyle="bold" />
 
-                        android:text="2020.01.01"
-                        android:textSize="13sp" />
+                    <androidx.fragment.app.FragmentContainerView
+                        android:id="@+id/ultra_srt_fcst_fragment_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp" />
 
                     <TextView
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/mid_land_fcst"
-                        android:textSize="13sp" />
+                        android:layout_marginBottom="12dp"
+                        android:text="@string/vilage_fcst"
+                        android:textColor="@android:color/black"
+                        android:textSize="17sp"
+                        android:textStyle="bold" />
+
+                    <androidx.fragment.app.FragmentContainerView
+                        android:id="@+id/vilage_fcst_fragment_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp" />
 
                     <TextView
-                        android:id="@+id/mid_land_fcst_downloaded_time"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:text="@string/mid_fcst"
+                        android:textColor="@android:color/black"
+                        android:textSize="17sp"
+                        android:textStyle="bold" />
+
+                    <androidx.fragment.app.FragmentContainerView
+                        android:id="@+id/mid_fcst_fragment_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp" />
+
+                    <Button
+                        android:id="@+id/last_updated_time_btn"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginLeft="8dp"
-                        android:text="2020.01.01"
-                        android:textSize="13sp" />
+                        android:text="@string/last_updated_time" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/mid_ta"
-                        android:textSize="13sp" />
-
-                    <TextView
-                        android:id="@+id/mid_ta_downloaded_time"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-
-                        android:layout_marginLeft="8dp"
-                        android:text="2020.01.01"
-                        android:textSize="13sp" />
-
-                </GridLayout>
+                </LinearLayout>
             </LinearLayout>
 
         </androidx.core.widget.NestedScrollView>
@@ -218,6 +131,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="right|bottom"
             android:layout_margin="16dp"
+            android:backgroundTint="@color/white"
             android:src="@drawable/refresh_icon" />
     </FrameLayout>
 </layout>

@@ -127,8 +127,11 @@
             </LinearLayout>
         </LinearLayout>
 
-        <include
-            android:id="@+id/weather_progress_layout"
-            layout="@layout/data_progress_view" />
+        <com.zerodsoft.scheduleweather.common.view.CustomProgressView
+            android:id="@+id/custom_progress_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+
     </FrameLayout>
 </layout>

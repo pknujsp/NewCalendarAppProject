@@ -13,10 +13,8 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.UltraSrtNcstFragmentBinding;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
-import com.zerodsoft.scheduleweather.weather.common.ViewProgress;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.UltraSrtNcstProcessing;
-import com.zerodsoft.scheduleweather.weather.interfaces.OnDownloadedTimeListener;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.WeatherDataConverter;
 
 
@@ -32,17 +30,13 @@ public class UltraSrtNcstFragment extends Fragment {
 	풍향
 	풍속
 	 */
-	private final OnDownloadedTimeListener onDownloadedTimeListener;
-
 	private UltraSrtNcstFragmentBinding binding;
 	private WeatherAreaCodeDTO weatherAreaCode;
-	private ViewProgress viewProgress;
 	private UltraSrtNcstProcessing ultraSrtNcstProcessing;
 
 
-	public UltraSrtNcstFragment(WeatherAreaCodeDTO weatherAreaCodeDTO, OnDownloadedTimeListener onDownloadedTimeListener) {
+	public UltraSrtNcstFragment(WeatherAreaCodeDTO weatherAreaCodeDTO) {
 		this.weatherAreaCode = weatherAreaCodeDTO;
-		this.onDownloadedTimeListener = onDownloadedTimeListener;
 	}
 
 	@Override
@@ -60,12 +54,12 @@ public class UltraSrtNcstFragment extends Fragment {
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+		binding.customProgressView.setContentView(binding.ultraSrtNcstLayout);
+		binding.customProgressView.onStartedProcessingData();
 		clearViews();
 
 		ultraSrtNcstProcessing = new UltraSrtNcstProcessing(getContext(), weatherAreaCode.getY(), weatherAreaCode.getX());
-		viewProgress = new ViewProgress(binding.ultraSrtNcstLayout, binding.weatherProgressLayout.progressBar,
-				binding.weatherProgressLayout.progressStatusTextview, binding.weatherProgressLayout.getRoot());
-		viewProgress.onStartedProcessingData();
+
 
 		ultraSrtNcstProcessing.getWeatherData(new WeatherDataCallback<UltraSrtNcstResult>() {
 			@Override
@@ -73,8 +67,7 @@ public class UltraSrtNcstFragment extends Fragment {
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						onDownloadedTimeListener.setDownloadedTime(e.getDownloadedDate(), WeatherDataDTO.ULTRA_SRT_NCST);
-						viewProgress.onCompletedProcessingData(true);
+						binding.customProgressView.onSuccessfulProcessingData();
 						setValue(e);
 					}
 				});
@@ -86,8 +79,7 @@ public class UltraSrtNcstFragment extends Fragment {
 					@Override
 					public void run() {
 						clearViews();
-						onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.ULTRA_SRT_NCST);
-						viewProgress.onCompletedProcessingData(false, e.getMessage());
+						binding.customProgressView.onFailedProcessingData(getString(R.string.error));
 					}
 				});
 
@@ -111,7 +103,7 @@ public class UltraSrtNcstFragment extends Fragment {
 	}
 
 	public void refresh() {
-		viewProgress.onStartedProcessingData();
+		binding.customProgressView.onSuccessfulProcessingData();
 
 		ultraSrtNcstProcessing.refresh(new WeatherDataCallback<UltraSrtNcstResult>() {
 			@Override
@@ -119,8 +111,7 @@ public class UltraSrtNcstFragment extends Fragment {
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						onDownloadedTimeListener.setDownloadedTime(e.getDownloadedDate(), WeatherDataDTO.ULTRA_SRT_NCST);
-						viewProgress.onCompletedProcessingData(true);
+						binding.customProgressView.onSuccessfulProcessingData();
 						setValue(e);
 					}
 				});
@@ -133,8 +124,7 @@ public class UltraSrtNcstFragment extends Fragment {
 					@Override
 					public void run() {
 						clearViews();
-						onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.ULTRA_SRT_NCST);
-						viewProgress.onCompletedProcessingData(false, e.getMessage());
+						binding.customProgressView.onFailedProcessingData(getString(R.string.error));
 					}
 				});
 			}

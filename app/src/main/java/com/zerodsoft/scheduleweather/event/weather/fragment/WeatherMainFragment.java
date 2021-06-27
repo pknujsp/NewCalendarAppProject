@@ -10,8 +10,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
@@ -21,9 +19,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.databinding.FragmentWeatherItemBinding;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
-import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
 import com.zerodsoft.scheduleweather.weather.aircondition.AirConditionFragment;
-import com.zerodsoft.scheduleweather.weather.interfaces.OnDownloadedTimeListener;
 import com.zerodsoft.scheduleweather.weather.mid.MidFcstFragment;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
@@ -32,12 +28,9 @@ import com.zerodsoft.scheduleweather.weather.repository.WeatherDataDownloader;
 import com.zerodsoft.scheduleweather.weather.ultrasrtfcst.UltraSrtFcstFragment;
 import com.zerodsoft.scheduleweather.weather.ultrasrtncst.UltraSrtNcstFragment;
 import com.zerodsoft.scheduleweather.weather.viewmodel.AreaCodeViewModel;
-import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.weather.vilagefcst.VilageFcstFragment;
 
-import java.util.Date;
-
-public class WeatherMainFragment extends BottomSheetDialogFragment implements OnDownloadedTimeListener {
+public class WeatherMainFragment extends BottomSheetDialogFragment {
 	public static final String TAG = "WeatherMainFragment";
 
 	private final int CALENDAR_ID;
@@ -134,13 +127,6 @@ public class WeatherMainFragment extends BottomSheetDialogFragment implements On
 		areaCodeViewModel = new ViewModelProvider(this).get(AreaCodeViewModel.class);
 		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 
-		binding.ultraSrtNcstDownloadedTime.setText("");
-		binding.ultraSrtFcstDownloadedTime.setText("");
-		binding.midLandFcstDownloadedTime.setText("");
-		binding.midTaDownloadedTime.setText("");
-		binding.airConditionDownloadedTime.setText("");
-		binding.vilageFcstDownloadedTime.setText("");
-
 		View bottomSheet = getDialog().findViewById(R.id.design_bottom_sheet);
 		bottomSheet.getLayoutParams().height = VIEW_HEIGHT;
 
@@ -226,10 +212,10 @@ public class WeatherMainFragment extends BottomSheetDialogFragment implements On
 	}
 
 	private void createFragments() {
-		ultraSrtNcstFragment = new UltraSrtNcstFragment(weatherAreaCode, this);
-		ultraSrtFcstFragment = new UltraSrtFcstFragment(weatherAreaCode, this);
-		vilageFcstFragment = new VilageFcstFragment(weatherAreaCode, this);
-		midFcstFragment = new MidFcstFragment(weatherAreaCode, this);
+		ultraSrtNcstFragment = new UltraSrtNcstFragment(weatherAreaCode);
+		ultraSrtFcstFragment = new UltraSrtFcstFragment(weatherAreaCode);
+		vilageFcstFragment = new VilageFcstFragment(weatherAreaCode);
+		midFcstFragment = new MidFcstFragment(weatherAreaCode);
 
 		String lat, lon = null;
 		if (selectedLocationDto != null) {
@@ -239,7 +225,7 @@ public class WeatherMainFragment extends BottomSheetDialogFragment implements On
 			lat = latitude;
 			lon = longitude;
 		}
-		airConditionFragment = new AirConditionFragment(lat, lon, this);
+		airConditionFragment = new AirConditionFragment(lat, lon);
 
 		getChildFragmentManager().beginTransaction()
 				.add(binding.ultraSrtNcstFragmentContainer.getId(), ultraSrtNcstFragment, "0")
@@ -253,31 +239,6 @@ public class WeatherMainFragment extends BottomSheetDialogFragment implements On
 	private void setAddressName() {
 		String addressName = weatherAreaCode.getPhase1() + " " + weatherAreaCode.getPhase2() + " " + weatherAreaCode.getPhase3();
 		binding.addressName.setText(addressName);
-	}
-
-	@Override
-	public void setDownloadedTime(Date downloadedTime, int dataType) {
-		String dateTimeStr = downloadedTime == null ? getString(R.string.error) : ClockUtil.DB_DATE_FORMAT.format(downloadedTime);
-		switch (dataType) {
-			case WeatherDataDTO.ULTRA_SRT_NCST:
-				binding.ultraSrtNcstDownloadedTime.setText(dateTimeStr);
-				break;
-			case WeatherDataDTO.ULTRA_SRT_FCST:
-				binding.ultraSrtFcstDownloadedTime.setText(dateTimeStr);
-				break;
-			case WeatherDataDTO.MID_LAND_FCST:
-				binding.midLandFcstDownloadedTime.setText(dateTimeStr);
-				break;
-			case WeatherDataDTO.MID_TA:
-				binding.midTaDownloadedTime.setText(dateTimeStr);
-				break;
-			case WeatherDataDTO.AIR_CONDITION:
-				binding.airConditionDownloadedTime.setText(dateTimeStr);
-				break;
-			case WeatherDataDTO.VILAGE_FCST:
-				binding.vilageFcstDownloadedTime.setText(dateTimeStr);
-				break;
-		}
 	}
 
 

@@ -16,8 +16,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.LinearLayout;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -29,10 +27,8 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.VilageFcstFragmentBinding;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
-import com.zerodsoft.scheduleweather.weather.common.ViewProgress;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.VilageFcstProcessing;
-import com.zerodsoft.scheduleweather.weather.interfaces.OnDownloadedTimeListener;
 import com.zerodsoft.scheduleweather.weather.sunsetrise.SunSetRiseData;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.WeatherDataConverter;
@@ -44,15 +40,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class VilageFcstFragment extends Fragment {
-	private final OnDownloadedTimeListener onDownloadedTimeListener;
-
 	private VilageFcstFragmentBinding binding;
 	private WeatherAreaCodeDTO weatherAreaCode;
 	private VilageFcstProcessing vilageFcstProcessing;
 
-	public VilageFcstFragment(WeatherAreaCodeDTO weatherAreaCodeDTO, OnDownloadedTimeListener onDownloadedTimeListener) {
+	public VilageFcstFragment(WeatherAreaCodeDTO weatherAreaCodeDTO ) {
 		this.weatherAreaCode = weatherAreaCodeDTO;
-		this.onDownloadedTimeListener = onDownloadedTimeListener;
 	}
 
 	@Nullable
@@ -76,7 +69,6 @@ public class VilageFcstFragment extends Fragment {
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						onDownloadedTimeListener.setDownloadedTime(e.getDownloadedDate(), WeatherDataDTO.VILAGE_FCST);
 						binding.customProgressView.onSuccessfulProcessingData();
 						setTable(e);
 					}
@@ -86,7 +78,6 @@ public class VilageFcstFragment extends Fragment {
 			@Override
 			public void isFailure(Exception e) {
 				clearViews();
-				onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.VILAGE_FCST);
 				binding.customProgressView.onFailedProcessingData(getString(R.string.error));
 			}
 		});
@@ -101,9 +92,7 @@ public class VilageFcstFragment extends Fragment {
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						onDownloadedTimeListener.setDownloadedTime(e.getDownloadedDate(), WeatherDataDTO.VILAGE_FCST);
 						binding.customProgressView.onSuccessfulProcessingData();
-
 						setTable(e);
 					}
 				});
@@ -115,7 +104,6 @@ public class VilageFcstFragment extends Fragment {
 					@Override
 					public void run() {
 						clearViews();
-						onDownloadedTimeListener.setDownloadedTime(null, WeatherDataDTO.VILAGE_FCST);
 						binding.customProgressView.onFailedProcessingData(getString(R.string.error));
 
 					}
