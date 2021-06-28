@@ -147,49 +147,18 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 
 	private void showLocationItem() {
 		// 위치가 이미 선택되어 있는 경우 해당 위치 정보를 표시함 (삭제 버튼 추가)
-
 		if (selectedLocationDTOInEvent.getLocationType() == LocationType.ADDRESS) {
 			// 주소 검색 순서 : 좌표로 주소 변환
-			LocalApiPlaceParameter parameter =
-					LocalParameterUtil.getCoordToAddressParameter(Double.parseDouble(selectedLocationDTOInEvent.getLatitude()),
-							Double.parseDouble(selectedLocationDTOInEvent.getLongitude()));
-			CoordToAddressUtilByKakao.coordToAddress(parameter, new JsonDownloader<CoordToAddress>() {
-				@Override
-				public void onResponseSuccessful(CoordToAddress result) {
-					CoordToAddressDocuments coordToAddressDocuments = result.getCoordToAddressDocuments().get(0);
-					coordToAddressDocuments.getCoordToAddressAddress().setLatitude(selectedLocationDTOInEvent.getLatitude());
-					coordToAddressDocuments.getCoordToAddressAddress().setLongitude(selectedLocationDTOInEvent.getLongitude());
 
 					createMarkers(Collections.singletonList(coordToAddressDocuments), MarkerType.SELECTED_ADDRESS_IN_EVENT);
 					onPOIItemSelectedByList(coordToAddressDocuments, MarkerType.SELECTED_ADDRESS_IN_EVENT);
-				}
 
-				@Override
-				public void onResponseFailed(Exception e) {
-
-				}
-			});
 
 		} else if (selectedLocationDTOInEvent.getLocationType() == LocationType.PLACE) {
-			// 장소 검색 순서 : 장소의 위경도 내 10M 반경에서 장소 이름 검색(여러개 나올 경우 장소ID와 일치하는 장소를 선택)
-			LocalApiPlaceParameter parameter = LocalParameterUtil.getPlaceParameter(selectedLocationDTOInEvent.getPlaceName(),
-					String.valueOf(selectedLocationDTOInEvent.getLatitude()), String.valueOf(selectedLocationDTOInEvent.getLongitude()), LocalApiPlaceParameter.DEFAULT_SIZE,
-					LocalApiPlaceParameter.DEFAULT_PAGE, LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
-			parameter.setRadius("50");
-
-			locationViewModel.getPlaceItem(parameter, selectedLocationDTOInEvent.getPlaceId(), new JsonDownloader<PlaceKakaoLocalResponse>() {
-				@Override
-				public void onResponseSuccessful(PlaceKakaoLocalResponse result) {
 					PlaceDocuments document = result.getPlaceDocuments().get(0);
 					createMarkers(Collections.singletonList(document), MarkerType.SELECTED_PLACE_IN_EVENT);
 					onPOIItemSelectedByList(document, MarkerType.SELECTED_PLACE_IN_EVENT);
-				}
 
-				@Override
-				public void onResponseFailed(Exception e) {
-
-				}
-			});
 		}
 
 	}

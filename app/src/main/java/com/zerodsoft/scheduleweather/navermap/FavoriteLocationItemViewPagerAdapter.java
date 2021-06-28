@@ -124,7 +124,6 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
 			}
 		}
 
-
 		@Override
 		public void setDataView(KakaoLocalDocument kakaoLocalDocument) {
 			super.setDataView(kakaoLocalDocument);

@@ -207,11 +207,9 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
 				binding.placeLayout.placeItemName.setText(placeDocument.getPlaceName());
 				binding.placeLayout.placeItemAddress.setText(placeDocument.getAddressName());
 				binding.placeLayout.placeItemCategory.setText(placeDocument.getCategoryName());
-				binding.placeItemDistance.setText(placeDocument.getDistance() + "m");
 
 				binding.placeLayout.getRoot().setVisibility(View.VISIBLE);
 				binding.addressLayout.getRoot().setVisibility(View.GONE);
-				binding.placeItemDistance.setVisibility(View.VISIBLE);
 			} else if (kakaoLocalDocument instanceof AddressResponseDocuments) {
 				addressDocument = (AddressResponseDocuments) kakaoLocalDocument;
 
@@ -226,7 +224,6 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
 
 				binding.placeLayout.getRoot().setVisibility(View.GONE);
 				binding.addressLayout.getRoot().setVisibility(View.VISIBLE);
-				binding.placeItemDistance.setVisibility(View.GONE);
 			} else if (kakaoLocalDocument instanceof CoordToAddressDocuments) {
 				coordToAddressDocument = (CoordToAddressDocuments) kakaoLocalDocument;
 
@@ -241,7 +238,6 @@ public class LocationItemViewPagerAdapter extends RecyclerView.Adapter<LocationI
 
 				binding.placeLayout.getRoot().setVisibility(View.GONE);
 				binding.addressLayout.getRoot().setVisibility(View.VISIBLE);
-				binding.placeItemDistance.setVisibility(View.GONE);
 			}
 
 			binding.selectThisPlaceButton.setVisibility(isVisibleSelectBtn);

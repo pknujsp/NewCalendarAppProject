@@ -11,7 +11,7 @@
             android:id="@+id/place_item_cardview_in_bottomsheet"
             style="@style/Widget.MaterialComponents.CardView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="160dp"
             android:clickable="true"
             android:foreground="?attr/selectableItemBackground"
             app:cardBackgroundColor="@color/white"
@@ -19,24 +19,32 @@
             app:cardElevation="4dp"
             app:cardUseCompatPadding="true">
 
-            <RelativeLayout
+            <LinearLayout
                 android:id="@+id/map_place_item_rows"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:orientation="vertical"
                 android:padding="8dp">
 
                 <include
                     android:id="@+id/place_layout"
-                    layout="@layout/place_item_view" />
+                    layout="@layout/place_item_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_weight="1" />
 
                 <include
                     android:id="@+id/address_layout"
-                    layout="@layout/address_item_view" />
+                    layout="@layout/address_item_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_weight="1" />
 
                 <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true">
+                    android:layout_height="wrap_content">
 
                     <ImageButton
                         android:id="@+id/add_to_favorite_placeitem_button"
@@ -79,29 +87,16 @@
                             android:id="@+id/item_position"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginBottom="4dp"
                             android:gravity="right"
                             android:text="10/30"
                             android:textColor="@color/gray_600"
                             android:textSize="11sp" />
 
-                        <TextView
-                            android:id="@+id/place_item_distance"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:gravity="right"
-                            android:text="100M"
-                            android:textColor="@color/gray_600"
-                            android:textSize="11sp" />
-
-
                     </LinearLayout>
-
 
                 </RelativeLayout>
 
-
-            </RelativeLayout>
+            </LinearLayout>
 
             <com.zerodsoft.scheduleweather.common.view.CustomProgressView
                 android:id="@+id/custom_progress_view"
@@ -110,6 +105,5 @@
                 android:layout_gravity="center_vertical" />
 
         </androidx.cardview.widget.CardView>
-
     </FrameLayout>
 </layout>
