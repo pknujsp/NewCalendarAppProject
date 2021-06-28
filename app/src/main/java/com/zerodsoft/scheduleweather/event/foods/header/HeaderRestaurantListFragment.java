@@ -185,6 +185,24 @@ public class HeaderRestaurantListFragment extends Fragment {
 
 	}
 
+	@Override
+	public void onHiddenChanged(boolean hidden) {
+		super.onHiddenChanged(hidden);
+
+		if (hidden) {
+			iSetFoodMenuPoiItems.removeRestaurantPoiItems();
+		} else {
+			RestaurantListTabFragment listTabFragment =
+					(RestaurantListTabFragment) getParentFragmentManager().findFragmentByTag(getString(R.string.tag_restaurant_list_tab_fragment));
+
+			iSetFoodMenuPoiItems.createRestaurantPoiItems(listTabFragment, listTabFragment);
+			iSetFoodMenuPoiItems.createCriteriaLocationMarker(CriteriaLocationCloud.getName(), CriteriaLocationCloud.getLatitude(),
+					CriteriaLocationCloud.getLongitude());
+
+			binding.tabLayout.selectTab(binding.tabLayout.getTabAt(binding.tabLayout.getSelectedTabPosition()));
+		}
+	}
+
 	public void onClickedChangeBtn() {
 		FragmentManager fragmentManager = getParentFragmentManager();
 

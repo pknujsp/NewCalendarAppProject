@@ -237,11 +237,10 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 			bundle.putString("placeId", ((PlaceDocuments) e).getId());
 			placeInfoWebFragment.setArguments(bundle);
 
-			String tag = getString(R.string.tag_place_info_web_fragment);
-
 			Fragment parentFragment = getParentFragment();
 			FragmentManager fragmentManager = parentFragment.getParentFragmentManager();
 
+			String tag = getString(R.string.tag_place_info_web_fragment);
 			fragmentManager.beginTransaction().hide(parentFragment)
 					.add(R.id.content_fragment_container, placeInfoWebFragment, tag)
 					.addToBackStack(tag).commit();

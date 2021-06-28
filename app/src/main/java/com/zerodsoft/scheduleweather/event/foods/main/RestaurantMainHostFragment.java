@@ -5,6 +5,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -39,6 +40,19 @@ public class RestaurantMainHostFragment extends Fragment implements IOnSetView {
 	@Override
 	public void onHiddenChanged(boolean hidden) {
 		super.onHiddenChanged(hidden);
+
+		FragmentManager fragmentManager = getChildFragmentManager();
+		if (hidden) {
+			if (fragmentManager.findFragmentByTag(getString(R.string.tag_header_food_menu_list_fragment)) != null) {
+				fragmentManager.beginTransaction().hide(fragmentManager.findFragmentByTag(getString(R.string.tag_header_food_menu_list_fragment)))
+						.commitNow();
+			}
+		} else {
+			if (fragmentManager.findFragmentByTag(getString(R.string.tag_header_food_menu_list_fragment)) != null) {
+				fragmentManager.beginTransaction().show(fragmentManager.findFragmentByTag(getString(R.string.tag_header_food_menu_list_fragment)))
+						.commitNow();
+			}
+		}
 	}
 
 	@Override
@@ -49,7 +63,7 @@ public class RestaurantMainHostFragment extends Fragment implements IOnSetView {
 				break;
 			case CONTENT:
 				binding.contentFragmentContainer.setVisibility(visibility);
-				((IOnSetView)getParentFragment()).setFragmentContainerVisibility(viewType, visibility);
+				((IOnSetView) getParentFragment()).setFragmentContainerVisibility(viewType, visibility);
 				break;
 		}
 	}
