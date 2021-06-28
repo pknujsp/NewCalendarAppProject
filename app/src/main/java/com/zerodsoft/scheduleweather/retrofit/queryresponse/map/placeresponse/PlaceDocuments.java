@@ -56,6 +56,8 @@ public class PlaceDocuments extends KakaoLocalDocument implements Parcelable {
 	@Expose
 	private String distance;
 
+	public PlaceDocuments() {
+	}
 
 	protected PlaceDocuments(Parcel in) {
 		id = in.readString();

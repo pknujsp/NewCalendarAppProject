@@ -620,4 +620,7 @@
     <string name="tag_instance_list_week_dialog_fragment">tag_instance_list_week_dialog_fragment</string>
     <string name="show_as_list">목록 보기</string>
     <string name="last_updated_time">자료 갱신 시각</string>
+    <string name="place_name">장소명</string>
+    <string name="remove_and_back">선택취소, 돌아가기</string>
+    <string name="remove_and_search">재 선택</string>
 </resources>

@@ -1,14 +1,11 @@
 package com.zerodsoft.scheduleweather.event.common;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
@@ -16,32 +13,21 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.naver.maps.geometry.LatLng;
 import com.naver.maps.map.NaverMap;
-import com.naver.maps.map.overlay.Marker;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.common.enums.LocationIntentCode;
 import com.zerodsoft.scheduleweather.etc.LocationType;
-import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
-import com.zerodsoft.scheduleweather.navermap.LocationItemViewPagerAdapter;
 import com.zerodsoft.scheduleweather.navermap.MarkerType;
 import com.zerodsoft.scheduleweather.navermap.NaverMapFragment;
 import com.zerodsoft.scheduleweather.navermap.searchheader.MapHeaderMainFragment;
 import com.zerodsoft.scheduleweather.navermap.searchheader.MapHeaderSearchFragment;
-import com.zerodsoft.scheduleweather.navermap.model.CoordToAddressUtilByKakao;
-import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddressDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceKakaoLocalResponse;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 import org.jetbrains.annotations.NotNull;
@@ -102,11 +88,8 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 		super.onCreate(savedInstanceState);
 		Bundle arguments = getArguments();
 
-		selectedLocationDTOInEvent = arguments.getParcelable(DetailLocationSelectorKey.SELECTED_LOCATION_DTO_IN_EVENT.value());
-		locationNameInEvent = arguments.getString(DetailLocationSelectorKey.LOCATION_NAME_IN_EVENT.value());
 		requestCode = LocationIntentCode.enumOf(arguments.getInt("requestCode"));
 
-		arguments.remove(DetailLocationSelectorKey.SELECTED_LOCATION_DTO_IN_EVENT.value());
 		getChildFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false);
 	}
 
@@ -118,25 +101,20 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 	@Override
 	public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		loadMap();
 
 		binding.naverMapButtonsLayout.buildingButton.setVisibility(View.GONE);
 		binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.GONE);
 
+		setPlaceBottomSheetSelectBtnVisibility(View.VISIBLE);
+		setPlaceBottomSheetUnSelectBtnVisibility(View.GONE);
+
 		switch (requestCode) {
-			case REQUEST_CODE_SELECT_LOCATION_EMPTY_QUERY:
-			case REQUEST_CODE_SELECT_LOCATION_BY_QUERY: {
-				// 아무것도 하지 않음
-				setPlaceBottomSheetSelectBtnVisibility(View.VISIBLE);
-				setPlaceBottomSheetUnSelectBtnVisibility(View.GONE);
+			case REQUEST_CODE_CHANGE_LOCATION:
+				//지정한 위치를 표시할 바텀시트 프래그먼트 생성
 				break;
-			}
-			case REQUEST_CODE_CHANGE_LOCATION: {
-				setPlaceBottomSheetSelectBtnVisibility(View.GONE);
-				setPlaceBottomSheetUnSelectBtnVisibility(View.VISIBLE);
-				break;
-			}
 		}
+
+		loadMap();
 	}
 
 	@Override
@@ -145,20 +123,24 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 		onBackPressedCallback.remove();
 	}
 
-	private void showLocationItem() {
+	private void showSelectedLocation() {
 		// 위치가 이미 선택되어 있는 경우 해당 위치 정보를 표시함 (삭제 버튼 추가)
 		if (selectedLocationDTOInEvent.getLocationType() == LocationType.ADDRESS) {
 			// 주소 검색 순서 : 좌표로 주소 변환
 
-					createMarkers(Collections.singletonList(coordToAddressDocuments), MarkerType.SELECTED_ADDRESS_IN_EVENT);
-					onPOIItemSelectedByList(coordToAddressDocuments, MarkerType.SELECTED_ADDRESS_IN_EVENT);
+			CoordToAddressDocuments coordToAddressDocuments = new CoordToAddressDocuments();
+			//주소, 좌표값
+
+			createMarkers(Collections.singletonList(coordToAddressDocuments), MarkerType.SELECTED_ADDRESS_IN_EVENT);
+			onPOIItemSelectedByList(coordToAddressDocuments, MarkerType.SELECTED_ADDRESS_IN_EVENT);
 
 
 		} else if (selectedLocationDTOInEvent.getLocationType() == LocationType.PLACE) {
-					PlaceDocuments document = result.getPlaceDocuments().get(0);
-					createMarkers(Collections.singletonList(document), MarkerType.SELECTED_PLACE_IN_EVENT);
-					onPOIItemSelectedByList(document, MarkerType.SELECTED_PLACE_IN_EVENT);
+			PlaceDocuments document = new PlaceDocuments();
 
+
+			createMarkers(Collections.singletonList(document), MarkerType.SELECTED_PLACE_IN_EVENT);
+			onPOIItemSelectedByList(document, MarkerType.SELECTED_PLACE_IN_EVENT);
 		}
 
 	}
@@ -213,7 +195,6 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 		removeAllMarkers();
 
 		bottomSheetBehaviorMap.get(BottomSheetType.LOCATION_ITEM).setState(BottomSheetBehavior.STATE_COLLAPSED);
-
 		Toast.makeText(getContext(), R.string.canceled_location, Toast.LENGTH_SHORT).show();
 
 		onDetailLocationSelectionResultListener.onResultUnselectedLocation();
@@ -224,13 +205,23 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 	public void onMapReady(@NonNull @NotNull NaverMap naverMap) {
 		super.onMapReady(naverMap);
 		mapReady = true;
-		if (requestCode == LocationIntentCode.REQUEST_CODE_SELECT_LOCATION_BY_QUERY) {
-			attemptSearchQuery();
+
+		Bundle arguments = getArguments();
+
+		switch (requestCode) {
+			case REQUEST_CODE_SELECT_LOCATION_EMPTY_QUERY:
+				//지도 기본 화면 표시
+				break;
+			case REQUEST_CODE_SELECT_LOCATION_BY_QUERY:
+				locationNameInEvent = arguments.getString(DetailLocationSelectorKey.LOCATION_NAME_IN_EVENT.value());
+				attemptSearchQuery();
+				break;
+			case REQUEST_CODE_CHANGE_LOCATION:
+				selectedLocationDTOInEvent = arguments.getParcelable(DetailLocationSelectorKey.SELECTED_LOCATION_DTO_IN_EVENT.value());
+				showSelectedLocation();
+				break;
 		}
 
-		if (requestCode == LocationIntentCode.REQUEST_CODE_CHANGE_LOCATION) {
-			showLocationItem();
-		}
 	}
 
 	private void attemptSearchQuery() {

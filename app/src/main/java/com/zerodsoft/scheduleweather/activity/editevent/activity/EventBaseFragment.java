@@ -751,7 +751,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		contentValues.put(CalendarContract.Events.DTEND, calendar.getTimeInMillis());
 	}
 
-	protected final void onClickedLocation() {
+	protected final void onClickedLocation(@Nullable String eventLocation) {
 		//위치를 설정하는 액티비티 표시
 		if (networkStatus.networkAvailable()) {
 			SelectionDetailLocationFragment selectionDetailLocationFragment = new SelectionDetailLocationFragment(new SelectionDetailLocationFragment.OnDetailLocationSelectionResultListener() {
@@ -793,13 +793,49 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 				}
 
 			});
+
+			/*
+1 .EVENT_LOCATION 값
+2. 상세 위치 데이터
+
+- EVENT_LOCATION O
+상세 위치 O:
+상세 위치 데이터를 지도에 표시
+(위치 수정)
+
+- EVENT_LOCATION O
+상세 위치 X:
+해당 값을 주소/장소 검색
+(위치 추가)
+
+- EVENT_LOCATION X
+상세 위치 O:
+상세 위치를 삭제하고
+새로운 위치를 선택
+(위치 추가)
+
+- EVENT_LOCATION X
+상세 위치 X:
+(위치 추가)
+			 */
 			Bundle bundle = new Bundle();
 
-			if (locationDTO != null) {
-				bundle.putParcelable(DetailLocationSelectorKey.SELECTED_LOCATION_DTO_IN_EVENT.value(), locationDTO);
-				bundle.putInt("requestCode", LocationIntentCode.REQUEST_CODE_CHANGE_LOCATION.value());
+			if (eventLocation != null) {
+				if (locationDTO != null) {
+					bundle.putParcelable(DetailLocationSelectorKey.SELECTED_LOCATION_DTO_IN_EVENT.value(), locationDTO);
+					bundle.putInt("requestCode", LocationIntentCode.REQUEST_CODE_CHANGE_LOCATION.value());
+				} else {
+					bundle.putString(DetailLocationSelectorKey.LOCATION_NAME_IN_EVENT.value(), eventLocation);
+					bundle.putInt("requestCode", LocationIntentCode.REQUEST_CODE_SELECT_LOCATION_BY_QUERY.value());
+				}
 			} else {
-				bundle.putInt("requestCode", LocationIntentCode.REQUEST_CODE_SELECT_LOCATION_EMPTY_QUERY.value());
+				if (locationDTO != null) {
+					locationViewModel.removeLocation(locationDTO.getEventId(), null);
+					locationDTO = null;
+					bundle.putInt("requestCode", LocationIntentCode.REQUEST_CODE_SELECT_LOCATION_EMPTY_QUERY.value());
+				} else {
+					bundle.putInt("requestCode", LocationIntentCode.REQUEST_CODE_SELECT_LOCATION_EMPTY_QUERY.value());
+				}
 			}
 
 			selectionDetailLocationFragment.setArguments(bundle);
@@ -809,7 +845,6 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		} else {
 			networkStatus.showToastDisconnected();
 		}
-
 	}
 
 	protected final void onClickedAttendeeList(Bundle bundle) {

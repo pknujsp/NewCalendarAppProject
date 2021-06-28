@@ -1,7 +1,6 @@
 package com.zerodsoft.scheduleweather.activity.editevent.activity;
 
 import android.Manifest;
-import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.DialogInterface;
@@ -266,7 +265,15 @@ public class ModifyInstanceFragment extends EventBaseFragment {
          */
 		binding.locationLayout.eventLocation.setOnClickListener(view ->
 		{
-			onClickedLocation();
+			String eventLocation = null;
+			if (eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.EVENT_LOCATION)) {
+				eventLocation = eventDataViewModel.getNEW_EVENT().getAsString(CalendarContract.Events.EVENT_LOCATION);
+			} else {
+				if (originalInstance.getAsString(CalendarContract.Instances.EVENT_LOCATION) != null) {
+					eventLocation = originalInstance.getAsString(CalendarContract.Instances.EVENT_LOCATION);
+				}
+			}
+			onClickedLocation(eventLocation);
 		});
 
         /*

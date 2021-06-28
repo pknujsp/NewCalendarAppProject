@@ -158,7 +158,8 @@ public class NewEventFragment extends EventBaseFragment {
          */
 		binding.locationLayout.eventLocation.setOnClickListener(view ->
 		{
-			onClickedLocation();
+			onClickedLocation(eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.EVENT_LOCATION) ?
+					eventDataViewModel.getNEW_EVENT().getAsString(CalendarContract.Events.EVENT_LOCATION) : null);
 		});
 
         /*
