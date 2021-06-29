@@ -788,8 +788,8 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 				@Override
 				public void onResultUnselectedLocation() {
 					eventDataViewModel.setEventLocation("");
-					locationDTO = null;
 					binding.locationLayout.eventLocation.setText("");
+					locationDTO = null;
 				}
 
 			});

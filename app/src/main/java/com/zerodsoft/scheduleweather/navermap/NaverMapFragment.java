@@ -22,9 +22,11 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentContainerView;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -35,7 +37,9 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import android.provider.Settings;
 import android.util.ArrayMap;
+import android.util.AttributeSet;
 import android.util.TypedValue;
+import android.util.Xml;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -118,6 +122,7 @@ import com.zerodsoft.scheduleweather.sgis.SgisAddress;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
 import org.jetbrains.annotations.NotNull;
+import org.xmlpull.v1.XmlPullParser;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -1762,6 +1767,41 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 				});
 			}
 		}
+	}
+
+	protected final Object[] createBottomSheet(int fragmentContainerViewId) {
+		XmlPullParser parser = getResources().getXml(R.xml.persistent_bottom_sheet_default_attrs);
+		try {
+			parser.next();
+			parser.nextTag();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		AttributeSet attr = Xml.asAttributeSet(parser);
+		LinearLayout bottomSheetView = new LinearLayout(getContext(), attr);
+
+		CoordinatorLayout.LayoutParams layoutParams = new CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+		layoutParams.setBehavior(new BottomSheetBehavior());
+		bottomSheetView.setLayoutParams(layoutParams);
+		bottomSheetView.setClickable(true);
+		bottomSheetView.setOrientation(LinearLayout.VERTICAL);
+
+		binding.naverMapFragmentRootLayout.addView(bottomSheetView);
+
+		//fragmentcontainerview 추가
+		FragmentContainerView fragmentContainerView = new FragmentContainerView(getContext());
+		fragmentContainerView.setId(fragmentContainerViewId);
+		fragmentContainerView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+		bottomSheetView.addView(fragmentContainerView);
+
+		BottomSheetBehavior bottomSheetBehavior = BottomSheetBehavior.from(bottomSheetView);
+		bottomSheetBehavior.setDraggable(false);
+		bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+		bottomSheetBehavior.setHideable(false);
+		bottomSheetBehavior.setPeekHeight(0);
+
+		return new Object[]{bottomSheetView, bottomSheetBehavior};
 	}
 
 	static final class BuildingBottomSheetHeightViewHolder {

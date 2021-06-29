@@ -66,7 +66,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 
 	private long eventId;
 	private long instanceId;
-	private long calendarId;
 	private long originalBegin;
 	private long originalEnd;
 
@@ -82,27 +81,32 @@ public class EventFragment extends BottomSheetDialogFragment {
 	private FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel;
 
 	private FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks = new FragmentManager.FragmentLifecycleCallbacks() {
+
 		@Override
 		public void onFragmentAttached(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @NonNull @NotNull Context context) {
 			super.onFragmentAttached(fm, f, context);
-			if (f instanceof SelectionDetailLocationFragment) {
-				if (fm.findFragmentByTag(getString(R.string.tag_modify_instance_fragment)) == null) {
+			if (getDialog() != null) {
+				if (f instanceof SelectionDetailLocationFragment) {
+					if (fm.findFragmentByTag(getString(R.string.tag_modify_instance_fragment)) == null) {
+						getDialog().hide();
+					}
+				} else if (f instanceof ModifyInstanceFragment) {
 					getDialog().hide();
 				}
-			} else if (f instanceof ModifyInstanceFragment) {
-				getDialog().hide();
 			}
 		}
 
 		@Override
 		public void onFragmentDestroyed(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
 			super.onFragmentDestroyed(fm, f);
-			if (f instanceof SelectionDetailLocationFragment) {
-				if (fm.findFragmentByTag(getString(R.string.tag_modify_instance_fragment)) == null) {
+			if (getDialog() != null) {
+				if (f instanceof SelectionDetailLocationFragment) {
+					if (fm.findFragmentByTag(getString(R.string.tag_modify_instance_fragment)) == null) {
+						getDialog().show();
+					}
+				} else if (f instanceof ModifyInstanceFragment) {
 					getDialog().show();
 				}
-			} else if (f instanceof ModifyInstanceFragment) {
-				getDialog().show();
 			}
 		}
 	};
@@ -179,13 +183,13 @@ public class EventFragment extends BottomSheetDialogFragment {
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		calendarViewModel = new ViewModelProvider(requireActivity()).get(CalendarViewModel.class);
+
 		getParentFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false);
+		calendarViewModel = new ViewModelProvider(requireActivity()).get(CalendarViewModel.class);
 
 		Bundle arguments = getArguments();
 		eventId = arguments.getLong(CalendarContract.Instances.EVENT_ID);
 		instanceId = arguments.getLong(CalendarContract.Instances._ID);
-		calendarId = arguments.getInt(CalendarContract.Instances.CALENDAR_ID);
 		originalBegin = arguments.getLong(CalendarContract.Instances.BEGIN);
 		originalEnd = arguments.getLong(CalendarContract.Instances.END);
 	}
@@ -202,7 +206,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 
 		return dialog;
 	}
-
 
 	@Nullable
 	@Override
@@ -281,6 +284,7 @@ public class EventFragment extends BottomSheetDialogFragment {
 												selectionDetailLocationFragment.setArguments(bundle);
 												getParentFragmentManager().beginTransaction().add(R.id.fragment_container, selectionDetailLocationFragment,
 														getString(R.string.tag_detail_location_selection_fragment)).addToBackStack(getString(R.string.tag_detail_location_selection_fragment)).commit();
+
 											}
 										}
 
@@ -396,6 +400,7 @@ public class EventFragment extends BottomSheetDialogFragment {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+		getChildFragmentManager().unregisterFragmentLifecycleCallbacks(fragmentLifecycleCallbacks);
 	}
 
 	private void showDeleteEventDialog() {

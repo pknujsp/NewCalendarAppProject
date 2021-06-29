@@ -470,6 +470,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 									public void run() {
 										binding.headerLayout.setVisibility(View.VISIBLE);
 										binding.naverMapButtonsLayout.getRoot().setVisibility(View.VISIBLE);
+
 										createFunctionList();
 										addPlaceCategoryListFragmentIntoBottomSheet();
 										createPlaceCategoryListChips();
@@ -500,7 +501,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		Bundle bundle = new Bundle();
 		bundle.putLong(CalendarContract.Instances._ID, instanceId);
 		bundle.putLong(CalendarContract.Instances.EVENT_ID, eventId);
-		bundle.putLong(CalendarContract.Instances.CALENDAR_ID, calendarId);
 		bundle.putLong(CalendarContract.Instances.BEGIN, originalBegin);
 		bundle.putLong(CalendarContract.Instances.END, originalEnd);
 
@@ -573,40 +573,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		setCurrentAddress();
 	}
 
-	private Object[] createBottomSheet(int fragmentContainerViewId) {
-		XmlPullParser parser = getResources().getXml(R.xml.persistent_bottom_sheet_default_attrs);
-		try {
-			parser.next();
-			parser.nextTag();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		AttributeSet attr = Xml.asAttributeSet(parser);
-		LinearLayout bottomSheetView = new LinearLayout(getContext(), attr);
-
-		CoordinatorLayout.LayoutParams layoutParams = new CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-		layoutParams.setBehavior(new BottomSheetBehavior());
-		bottomSheetView.setLayoutParams(layoutParams);
-		bottomSheetView.setClickable(true);
-		bottomSheetView.setOrientation(LinearLayout.VERTICAL);
-
-		binding.naverMapFragmentRootLayout.addView(bottomSheetView);
-
-		//fragmentcontainerview 추가
-		FragmentContainerView fragmentContainerView = new FragmentContainerView(getContext());
-		fragmentContainerView.setId(fragmentContainerViewId);
-		fragmentContainerView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-		bottomSheetView.addView(fragmentContainerView);
-
-		BottomSheetBehavior bottomSheetBehavior = BottomSheetBehavior.from(bottomSheetView);
-		bottomSheetBehavior.setDraggable(false);
-		bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-		bottomSheetBehavior.setHideable(false);
-		bottomSheetBehavior.setPeekHeight(0);
-
-		return new Object[]{bottomSheetView, bottomSheetBehavior};
-	}
 
 	public void createPlaceCategoryListChips() {
 		chipsLayout = new LinearLayout(getContext());

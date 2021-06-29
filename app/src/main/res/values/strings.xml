@@ -623,4 +623,5 @@
     <string name="place_name">장소명</string>
     <string name="remove_and_back">선택취소, 돌아가기</string>
     <string name="remove_and_search">재 선택</string>
+    <string name="tag_selected_location_info_fragment">tag_selected_location_info_fragment</string>
 </resources>
