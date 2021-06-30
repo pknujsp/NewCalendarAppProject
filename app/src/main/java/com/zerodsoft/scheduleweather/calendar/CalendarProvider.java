@@ -327,7 +327,6 @@ public class CalendarProvider implements ICalendarProvider {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
 			Uri uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, event.getAsLong(CalendarContract.Events._ID));
 			int result = context.getContentResolver().update(uri, event, null, null);
-			//onModifiedEventLiveData.setValue(event.getAsLong(CalendarContract.Events.DTSTART));
 			return result;
 		} else {
 			return -1;
