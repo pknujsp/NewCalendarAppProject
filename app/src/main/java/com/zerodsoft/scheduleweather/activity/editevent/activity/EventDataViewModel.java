@@ -35,48 +35,48 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 	}
 
 	@Override
-	public void setTitle(String title) {
-		putOrRemoveValue(CalendarContract.Events.TITLE, title);
+	public void setTitle(@NonNull String title) {
+		NEW_EVENT.put(CalendarContract.Events.TITLE, title);
 	}
 
 	@Override
-	public void setEventColor(Integer color, String colorKey) {
-		putOrRemoveValue(CalendarContract.Events.EVENT_COLOR, color);
-		putOrRemoveValue(CalendarContract.Events.EVENT_COLOR_KEY, colorKey);
+	public void setEventColor(@NonNull Integer color, @NonNull String colorKey) {
+		NEW_EVENT.put(CalendarContract.Events.EVENT_COLOR, color);
+		NEW_EVENT.put(CalendarContract.Events.EVENT_COLOR_KEY, colorKey);
 	}
 
 	@Override
-	public void setCalendar(Integer calendarId) {
-		putOrRemoveValue(CalendarContract.Events.CALENDAR_ID, calendarId);
+	public void setCalendar(@NonNull Integer calendarId) {
+		NEW_EVENT.put(CalendarContract.Events.CALENDAR_ID, calendarId);
 	}
 
 	@Override
-	public void setIsAllDay(Boolean isAllDay) {
-		putOrRemoveValue(CalendarContract.Events.ALL_DAY, isAllDay);
+	public void setIsAllDay(@NonNull Boolean isAllDay) {
+		NEW_EVENT.put(CalendarContract.Events.ALL_DAY, isAllDay ? 1 : 0);
 	}
 
 	@Override
-	public void setDtStart(Date date) {
-		putOrRemoveValue(CalendarContract.Events.DTSTART, date.getTime());
+	public void setDtStart(@NonNull Date date) {
+		NEW_EVENT.put(CalendarContract.Events.DTSTART, date.getTime());
 	}
 
 	@Override
-	public void setDtEnd(Date date) {
-		putOrRemoveValue(CalendarContract.Events.DTEND, date.getTime());
+	public void setDtEnd(@NonNull Date date) {
+		NEW_EVENT.put(CalendarContract.Events.DTEND, date.getTime());
 	}
 
 	@Override
-	public void setTimezone(String timezone) {
-		putOrRemoveValue(CalendarContract.Events.EVENT_TIMEZONE, timezone);
+	public void setTimezone(@NonNull String timezone) {
+		NEW_EVENT.put(CalendarContract.Events.EVENT_TIMEZONE, timezone);
 	}
 
 	@Override
-	public void setRecurrence(String rRule) {
-		putOrRemoveValue(CalendarContract.Events.RRULE, rRule);
+	public void setRecurrence(@NonNull String rRule) {
+		NEW_EVENT.put(CalendarContract.Events.RRULE, rRule);
 	}
 
 	@Override
-	public boolean addReminder(Integer minutes, Integer method) {
+	public boolean addReminder(@NonNull Integer minutes, @NonNull Integer method) {
 		for (ContentValues contentValues : REMINDERS) {
 			if (contentValues.getAsInteger(CalendarContract.Reminders.MINUTES).equals(minutes)) {
 				return false;
@@ -85,12 +85,13 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 		ContentValues reminderValues = new ContentValues();
 		reminderValues.put(CalendarContract.Reminders.MINUTES, minutes);
 		reminderValues.put(CalendarContract.Reminders.METHOD, method);
+
 		REMINDERS.add(reminderValues);
 		return true;
 	}
 
 	@Override
-	public void modifyReminder(Integer previousMinutes, Integer newMinutes, Integer method) {
+	public void modifyReminder(@NonNull Integer previousMinutes, @NonNull Integer newMinutes, @NonNull Integer method) {
 		for (ContentValues contentValues : REMINDERS) {
 			if (contentValues.getAsInteger(CalendarContract.Reminders.MINUTES).equals(previousMinutes)) {
 				contentValues.put(CalendarContract.Reminders.MINUTES, newMinutes);
@@ -101,7 +102,7 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 	}
 
 	@Override
-	public void removeReminder(Integer minutes) {
+	public void removeReminder(@NonNull Integer minutes) {
 		for (int i = REMINDERS.size() - 1; i >= 0; i--) {
 			if (REMINDERS.get(i).getAsInteger(CalendarContract.Reminders.MINUTES).equals(minutes)) {
 				REMINDERS.remove(i);
@@ -111,17 +112,18 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 	}
 
 	@Override
-	public void setDescription(String description) {
-		putOrRemoveValue(CalendarContract.Events.DESCRIPTION, description);
+	public void setDescription(@NonNull String description) {
+		NEW_EVENT.put(CalendarContract.Events.DESCRIPTION, description);
 	}
 
 	@Override
-	public void setEventLocation(String eventLocation) {
-		putOrRemoveValue(CalendarContract.Events.EVENT_LOCATION, eventLocation);
+	public void setEventLocation(@NonNull String eventLocation) {
+		NEW_EVENT.put(CalendarContract.Events.EVENT_LOCATION, eventLocation);
 	}
 
 	@Override
-	public void setAttendees(List<ContentValues> attendeeList, Boolean guestsCanModify, Boolean guestsCanInviteOthers, Boolean guestsCanSeeGuests) {
+	public void setAttendees(@NonNull List<ContentValues> attendeeList, @NonNull Boolean guestsCanModify, @NonNull Boolean guestsCanInviteOthers,
+	                         @NonNull Boolean guestsCanSeeGuests) {
 		ATTENDEES.clear();
 		ATTENDEES.addAll(attendeeList);
 
@@ -137,7 +139,7 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 	}
 
 	@Override
-	public void removeAttendee(String attendeeEmail) {
+	public void removeAttendee(@NonNull String attendeeEmail) {
 		for (int i = ATTENDEES.size() - 1; i >= 0; i--) {
 			if (ATTENDEES.get(i).getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL).equals(attendeeEmail)) {
 				ATTENDEES.remove(i);
@@ -159,44 +161,13 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 	}
 
 	@Override
-	public void setAccessLevel(Integer accessLevel) {
-		putOrRemoveValue(CalendarContract.Events.ACCESS_LEVEL, accessLevel);
+	public void setAccessLevel(@NonNull Integer accessLevel) {
+		NEW_EVENT.put(CalendarContract.Events.ACCESS_LEVEL, accessLevel);
 	}
 
 	@Override
-	public void setAvailability(Integer availability) {
-		putOrRemoveValue(CalendarContract.Events.AVAILABILITY, availability);
+	public void setAvailability(@NonNull Integer availability) {
+		NEW_EVENT.put(CalendarContract.Events.AVAILABILITY, availability);
 	}
 
-	private void putOrRemoveValue(String key, String value) {
-		if (value.isEmpty()) {
-			NEW_EVENT.remove(key);
-		} else {
-			NEW_EVENT.put(key, value);
-		}
-	}
-
-	private void putOrRemoveValue(String key, Long value) {
-		if (value == null) {
-			NEW_EVENT.remove(key);
-		} else {
-			NEW_EVENT.put(key, value);
-		}
-	}
-
-	private void putOrRemoveValue(String key, Integer value) {
-		if (value == null) {
-			NEW_EVENT.remove(key);
-		} else {
-			NEW_EVENT.put(key, value);
-		}
-	}
-
-	private void putOrRemoveValue(String key, Boolean value) {
-		if (value == null) {
-			NEW_EVENT.remove(key);
-		} else {
-			NEW_EVENT.put(key, value ? 1 : 0);
-		}
-	}
 }

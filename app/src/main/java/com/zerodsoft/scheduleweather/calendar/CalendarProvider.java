@@ -520,9 +520,7 @@ public class CalendarProvider implements ICalendarProvider {
 	}
 
 	/**
-	 * 알림을 삭제한다.
-	 *
-	 * @return
+	 * 알림을 삭제한다
 	 */
 	@Override
 	public int deleteReminders(Long eventId, Long[] reminderIds) {
@@ -636,8 +634,8 @@ public class CalendarProvider implements ICalendarProvider {
 	@Override
 	public ContentValues getInstance(Long instanceId, Long begin, Long end) {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
-			String selection = CalendarContract.Instances.BEGIN + "=?";
-			String[] selectionArgs = {begin.toString()};
+			String selection = "Instances._id=?";
+			String[] selectionArgs = {instanceId.toString()};
 
 			Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
 			ContentUris.appendId(builder, begin);

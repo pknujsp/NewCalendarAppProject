@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.activity.editevent.activity;
 
 import android.Manifest;
+import android.content.ContentProviderOperation;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.DialogInterface;
@@ -9,6 +10,12 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.CalendarContract;
+import android.text.TextUtils;
+import android.text.format.DateUtils;
+import android.text.format.Time;
+import android.text.util.Rfc822Token;
+import android.text.util.Rfc822Tokenizer;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +26,16 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.lifecycle.ViewModelProvider;
 
+import android.provider.CalendarContract.Attendees;
+import android.provider.CalendarContract.Calendars;
+import android.provider.CalendarContract.Colors;
+import android.provider.CalendarContract.Events;
+import android.provider.CalendarContract.Reminders;
+
+import com.android.calendarcommon2.DateException;
+import com.android.calendarcommon2.EventRecurrence;
+import com.android.calendarcommon2.RecurrenceProcessor;
+import com.android.calendarcommon2.RecurrenceSet;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
@@ -31,10 +48,17 @@ import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.TimeZone;
+
+import biweekly.property.Attendee;
 
 public class ModifyInstanceFragment extends EventBaseFragment {
 	private OnModifyInstanceResultListener onModifyInstanceResultListener;
@@ -506,7 +530,9 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		//인스턴스를 이벤트에서 제외
 		ContentValues exceptionEvent = new ContentValues();
 		exceptionEvent.put(CalendarContract.Events.ORIGINAL_INSTANCE_TIME, originalInstance.getAsLong(CalendarContract.Instances.BEGIN));
+		exceptionEvent.put(CalendarContract.Events.ORIGINAL_SYNC_ID, originalInstance.getAsString(CalendarContract.Instances.ORIGINAL_SYNC_ID));
 		exceptionEvent.put(CalendarContract.Events.STATUS, CalendarContract.Events.STATUS_CANCELED);
+		exceptionEvent.put(CalendarContract.Events.ORIGINAL_ALL_DAY, originalInstance.getAsInteger(CalendarContract.Instances.ALL_DAY));
 
 		Uri exceptionUri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_EXCEPTION_URI,
 				originalInstance.getAsLong(CalendarContract.Instances.EVENT_ID));
@@ -580,9 +606,9 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 										requireActivity().runOnUiThread(new Runnable() {
 											@Override
 											public void run() {
-												getParentFragmentManager().popBackStackImmediate();
-												onModifyInstanceResultListener.onResultModifiedAfterAllInstancesIncludingThisInstance(newEventId,
+												onModifyInstanceResultListener.onResultModifiedThisInstance(newEventId,
 														newEventValues.getAsLong(CalendarContract.Events.DTSTART));
+												getParentFragmentManager().popBackStackImmediate();
 											}
 										});
 									}
@@ -599,9 +625,9 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 								requireActivity().runOnUiThread(new Runnable() {
 									@Override
 									public void run() {
-										getParentFragmentManager().popBackStackImmediate();
-										onModifyInstanceResultListener.onResultModifiedAfterAllInstancesIncludingThisInstance(newEventId,
+										onModifyInstanceResultListener.onResultModifiedThisInstance(newEventId,
 												newEventValues.getAsLong(CalendarContract.Events.DTSTART));
+										getParentFragmentManager().popBackStackImmediate();
 									}
 								});
 
@@ -616,9 +642,9 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 						requireActivity().runOnUiThread(new Runnable() {
 							@Override
 							public void run() {
-								getParentFragmentManager().popBackStackImmediate();
-								onModifyInstanceResultListener.onResultModifiedAfterAllInstancesIncludingThisInstance(newEventId,
+								onModifyInstanceResultListener.onResultModifiedThisInstance(newEventId,
 										newEventValues.getAsLong(CalendarContract.Events.DTSTART));
+								getParentFragmentManager().popBackStackImmediate();
 							}
 						});
 
@@ -633,6 +659,63 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		}
 	}
 
+	private void checkTimeDependentFields() {
+		long oldBegin = originalInstanceBeginDate;
+		long oldEnd = originalInstanceEndDate;
+		boolean oldAllDay = originalInstance.getAsInteger(CalendarContract.Events.ALL_DAY) == 1;
+		String oldRrule = originalInstance.getAsString(CalendarContract.Events.RRULE);
+		String oldTimezone = originalInstance.getAsString(CalendarContract.Events.EVENT_TIMEZONE);
+
+		long newBegin = model.mStart;
+		long newEnd = model.mEnd;
+		boolean newAllDay = model.mAllDay;
+		String newRrule = model.mRrule;
+		String newTimezone = model.mTimezone;
+
+		// If none of the time-dependent fields changed, then remove them.
+		if (oldBegin == newBegin && oldEnd == newEnd && oldAllDay == newAllDay
+				&& TextUtils.equals(oldRrule, newRrule)
+				&& TextUtils.equals(oldTimezone, newTimezone)) {
+			values.remove(Events.DTSTART);
+			values.remove(Events.DTEND);
+			values.remove(Events.DURATION);
+			values.remove(Events.ALL_DAY);
+			values.remove(Events.RRULE);
+			values.remove(Events.EVENT_TIMEZONE);
+			return;
+		}
+
+		if (TextUtils.isEmpty(oldRrule) || TextUtils.isEmpty(newRrule)) {
+			return;
+		}
+
+		// If we are modifying all events then we need to set DTSTART to the
+		// start time of the first event in the series, not the current
+		// date and time. If the start time of the event was changed
+		// (from, say, 3pm to 4pm), then we want to add the time difference
+		// to the start time of the first event in the series (the DTSTART
+		// value). If we are modifying one instance or all following instances,
+		// then we leave the DTSTART field alone.
+		if (modifyWhich == MODIFY_ALL) {
+			long oldStartMillis = originalModel.mStart;
+			if (oldBegin != newBegin) {
+				// The user changed the start time of this event
+				long offset = newBegin - oldBegin;
+				oldStartMillis += offset;
+			}
+			if (newAllDay) {
+				Time time = new Time(Time.TIMEZONE_UTC);
+				time.set(oldStartMillis);
+				time.hour = 0;
+				time.minute = 0;
+				time.second = 0;
+				oldStartMillis = time.toMillis(false);
+			}
+			values.put(Events.DTSTART, oldStartMillis);
+		}
+	}
+
+
 	//이번 일정을 포함한 이후 모든 일정 변경
 	protected void updateAfterInstanceIncludingThisInstance() {
 		/*
@@ -643,61 +726,50 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		List<ContentValues> modifiedReminderList = eventDataViewModel.getREMINDERS();
 		List<ContentValues> modifiedAttendeeList = eventDataViewModel.getATTENDEES();
 
-		final long eventId = originalInstance.getAsInteger(CalendarContract.Instances.EVENT_ID);
-		RecurrenceRule recurrenceRule = new RecurrenceRule();
-		recurrenceRule.separateValues(originalInstance.getAsString(CalendarContract.Instances.RRULE));
+		final long eventId = originalInstance.getAsLong(CalendarContract.Instances.EVENT_ID);
 
-		final int originalCount = Integer.parseInt(recurrenceRule.getValue(RecurrenceRule.COUNT));
-		final long instanceId = originalInstance.getAsLong(CalendarContract.Instances._ID);
-		int instanceCount = 0;
+		EventRecurrence eventRecurrence = new EventRecurrence();
 
-		String[] projection = {CalendarContract.Instances._ID, CalendarContract.Instances.EVENT_ID};
-		Cursor cursor = CalendarContract.Instances.query(getContext().getContentResolver(), projection,
-				originalInstance.getAsLong(CalendarContract.Instances.DTSTART),
-				originalInstance.getAsLong(CalendarContract.Instances.END));
-
-		while (cursor.moveToNext()) {
-			if (cursor.getLong(1) == eventId) {
-				instanceCount++;
+		if (modifiedInstance.containsKey(CalendarContract.Events.RRULE)) {
+			if (modifiedInstance.getAsString(CalendarContract.Events.RRULE).isEmpty()) {
+				// We've changed a recurring event to a non-recurring event.
+				// If the event we are editing is the first in the series,
+				// then delete the whole series. Otherwise, update the series
+				// to end at the new start time.
+				if (originalInstance.getAsLong(CalendarContract.Instances.DTSTART).equals(originalInstance.getAsLong(CalendarContract.Instances.BEGIN))) {
+					//기존이벤트 삭제
+					calendarViewModel.deleteEvent(eventId);
+				} else {
+					// Update the current repeating event to end at the new start time.  We
+					// ignore the RRULE returned because the exception event doesn't want one.
+					updateEvent();
+					return;
+				}
 			}
-			if (cursor.getLong(0) == instanceId) {
-				break;
-			}
-		}
-
-		cursor.close();
-
-		//특정 날짜까지 반복인 경우
-		if (recurrenceRule.containsKey(RecurrenceRule.UNTIL)) {
-			//수정한 인스턴스의 종료일 가져오기
-			Calendar calendar = Calendar.getInstance();
-			calendar.setTimeInMillis(modifiedInstance.getAsLong(CalendarContract.Instances.BEGIN));
-			final Date beginOfModifiedInstance = calendar.getTime();
-
-			//기존 이벤트의 반복 종료일을 수정한 인스턴스의 종료일로 설정
-			//기존 이벤트의 rrule을 수정
-			recurrenceRule.putValue(RecurrenceRule.UNTIL, ClockUtil.yyyyMMdd.format(beginOfModifiedInstance));
-		}//n회 반복 이벤트인 경우 or 계속 반복인 경우
-		else {
-			int newCount = instanceCount - 1;
-			if (newCount == 0) {
-				//remove recurrence
-				recurrenceRule.clear();
+		} else {
+			if (originalInstance.getAsLong(CalendarContract.Instances.DTSTART).equals(originalInstance.getAsLong(CalendarContract.Instances.BEGIN))) {
+				checkTimeDependentFields(originalModel, model, values, modifyWhich);
+				ContentProviderOperation.Builder b = ContentProviderOperation.newUpdate(uri)
+						.withValues(values);
+				ops.add(b.build());
 			} else {
-				recurrenceRule.putValue(RecurrenceRule.COUNT, newCount);
+				// We need to update the existing recurrence to end before the exception
+				// event starts.  If the recurrence rule has a COUNT, we need to adjust
+				// that in the original and in the exception.  This call rewrites the
+				// original event's recurrence rule (in "ops"), and returns a new rule
+				// for the exception.  If the exception explicitly set a new rule, however,
+				// we don't want to overwrite it.
+				String newRrule = updatePastEvents(ops, originalModel, model.mOriginalStart);
+				if (model.mRrule.equals(originalModel.mRrule)) {
+					values.put(Events.RRULE, newRrule);
+				}
+
+				// Create a new event with the user-modified fields
+				eventIdIndex = ops.size();
+				values.put(Events.STATUS, originalModel.mEventStatus);
+				ops.add(ContentProviderOperation.newInsert(Events.CONTENT_URI).withValues(
+						values).build());
 			}
-		}
-
-		ContentValues originalEventValues = new ContentValues();
-		if (!recurrenceRule.isEmpty()) {
-			originalEventValues.put(CalendarContract.Events.RRULE, recurrenceRule.getRule());
-		}
-		getContext().getContentResolver().update(ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventId),
-				originalEventValues, null, null);
-
-		//수정된 인스턴스를 새로운 이벤트로 저장
-		if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
-			return;
 		}
 
 		ContentValues newEventValues = new ContentValues();
@@ -707,14 +779,11 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		rrule, reminders, description, eventLocation, attendees,
 		guestCan~~ 3개, availability, accessLevel
 		 */
-
 		setNewEventValues(CalendarContract.Events.TITLE, newEventValues, modifiedInstance);
 		setNewEventValues(CalendarContract.Events.EVENT_COLOR_KEY, newEventValues, modifiedInstance);
 		setNewEventValues(CalendarContract.Events.EVENT_COLOR, newEventValues, modifiedInstance);
 		setNewEventValues(CalendarContract.Events.CALENDAR_ID, newEventValues, modifiedInstance);
 		setNewEventValues(CalendarContract.Events.ALL_DAY, newEventValues, modifiedInstance);
-		setNewEventValues(CalendarContract.Events.DTSTART, newEventValues, modifiedInstance);
-		setNewEventValues(CalendarContract.Events.DTEND, newEventValues, modifiedInstance);
 		setNewEventValues(CalendarContract.Events.EVENT_TIMEZONE, newEventValues, modifiedInstance);
 		setNewEventValues(CalendarContract.Events.DESCRIPTION, newEventValues, modifiedInstance);
 		setNewEventValues(CalendarContract.Events.EVENT_LOCATION, newEventValues, modifiedInstance);
@@ -724,12 +793,25 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		setNewEventValues(CalendarContract.Events.GUESTS_CAN_MODIFY, newEventValues, modifiedInstance);
 		setNewEventValues(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS, newEventValues, modifiedInstance);
 
+		if (modifiedInstance.containsKey(CalendarContract.Events.DTSTART)) {
+			newEventValues.put(CalendarContract.Events.DTSTART, modifiedInstance.getAsLong(CalendarContract.Events.DTSTART));
+			newEventValues.put(CalendarContract.Events.DTEND, modifiedInstance.getAsLong(CalendarContract.Events.DTEND));
+		} else {
+			newEventValues.put(CalendarContract.Events.DTSTART, originalInstanceBeginDate);
+			newEventValues.put(CalendarContract.Events.DTEND, originalInstanceEndDate);
+		}
+
 		if (newEventValues.getAsInteger(CalendarContract.Events.ALL_DAY) == 1) {
 			convertDtEndForAllDay(newEventValues);
 		}
 		//rrule 수정
-		if (originalInstance.getAsString(CalendarContract.Instances.RRULE) != null && modifiedInstance.containsKey(CalendarContract.Events.RRULE)) {
-			RecurrenceRule newEventRrule = new RecurrenceRule();
+
+		RecurrenceRule newEventRrule = new RecurrenceRule();
+
+		if (modifiedInstance.containsKey(CalendarContract.Events.RRULE)) {
+			newEventValues.put(CalendarContract.Events.RRULE, modifiedInstance.getAsString(CalendarContract.Events.RRULE));
+		} else {
+			//기존 이벤트의 rrule을 수정적용
 			newEventRrule.separateValues(originalInstance.getAsString(CalendarContract.Instances.RRULE));
 
 			//until이 이벤트의 종료 날짜 이전인 경우 - 반복 삭제
@@ -740,25 +822,26 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 				if (untilCalendar.getTime().before(new Date(newEventValues.getAsLong(CalendarContract.Events.DTEND)))) {
 					recurrenceRule.clear();
 				}
-			} else if (newEventRrule.containsKey(RecurrenceRule.COUNT)) {
-				int count = originalCount - instanceCount;
-				if (count == 0) {
-					//remove recurrence
-					recurrenceRule.clear();
+			} else {
+				if (originalCount == 0) {
+					recurrenceRule.removeValue(RecurrenceRule.COUNT);
 				} else {
-					recurrenceRule.putValue(RecurrenceRule.COUNT, count);
+					int count = originalCount - instanceCount;
+
+					if (count == 0) {
+						//remove recurrence
+						recurrenceRule.clear();
+					} else {
+						recurrenceRule.putValue(RecurrenceRule.COUNT, count);
+					}
 				}
 			}
 
 			if (!recurrenceRule.isEmpty()) {
 				newEventValues.put(CalendarContract.Events.RRULE, recurrenceRule.getRule());
-			} else {
-				newEventValues.remove(CalendarContract.Events.RRULE);
 			}
-		} else if (modifiedInstance.containsKey(CalendarContract.Events.RRULE)) {
-			newEventValues.put(CalendarContract.Events.RRULE, modifiedInstance.getAsString(CalendarContract.Events.RRULE));
-
 		}
+
 		Uri uri = getContext().getContentResolver().insert(CalendarContract.Events.CONTENT_URI, newEventValues);
 		final long newEventId = Long.parseLong(uri.getLastPathSegment());
 
@@ -778,47 +861,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		}
 
 		if (newEventValues.containsKey(CalendarContract.Events.EVENT_LOCATION)) {
-			if (locationDTO == null) {
-				//위치를 바꾸지 않고, 기존 이벤트의 값을 그대로 유지
-				locationViewModel.getLocation(eventId, new DbQueryCallback<LocationDTO>() {
-					@Override
-					public void onResultSuccessful(LocationDTO savedLocationDto) {
-						savedLocationDto.setEventId(newEventId);
-						locationViewModel.addLocation(savedLocationDto, new DbQueryCallback<LocationDTO>() {
-							@Override
-							public void onResultSuccessful(LocationDTO result) {
-								requireActivity().runOnUiThread(new Runnable() {
-									@Override
-									public void run() {
-										getParentFragmentManager().popBackStackImmediate();
-										onModifyInstanceResultListener.onResultModifiedAfterAllInstancesIncludingThisInstance(newEventId,
-												newEventValues.getAsLong(CalendarContract.Events.DTSTART));
-									}
-								});
-
-							}
-
-							@Override
-							public void onResultNoData() {
-
-							}
-						});
-					}
-
-					@Override
-					public void onResultNoData() {
-						requireActivity().runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								getParentFragmentManager().popBackStackImmediate();
-								onModifyInstanceResultListener.onResultModifiedAfterAllInstancesIncludingThisInstance(newEventId,
-										newEventValues.getAsLong(CalendarContract.Events.DTSTART));
-							}
-						});
-
-					}
-				});
-			} else {
+			if (locationDTO != null) {
 				//위치를 변경함
 				locationDTO.setEventId(newEventId);
 				locationViewModel.addLocation(locationDTO, new DbQueryCallback<LocationDTO>() {
@@ -827,12 +870,11 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 						requireActivity().runOnUiThread(new Runnable() {
 							@Override
 							public void run() {
-								getParentFragmentManager().popBackStackImmediate();
 								onModifyInstanceResultListener.onResultModifiedAfterAllInstancesIncludingThisInstance(newEventId,
 										newEventValues.getAsLong(CalendarContract.Events.DTSTART));
+								getParentFragmentManager().popBackStackImmediate();
 							}
 						});
-
 					}
 
 					@Override
@@ -840,7 +882,15 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 					}
 				});
+			} else {
+				onModifyInstanceResultListener.onResultModifiedAfterAllInstancesIncludingThisInstance(newEventId,
+						newEventValues.getAsLong(CalendarContract.Events.DTSTART));
+				getParentFragmentManager().popBackStackImmediate();
 			}
+		} else {
+			onModifyInstanceResultListener.onResultModifiedAfterAllInstancesIncludingThisInstance(newEventId,
+					newEventValues.getAsLong(CalendarContract.Events.DTSTART));
+			getParentFragmentManager().popBackStackImmediate();
 		}
 	}
 
@@ -921,8 +971,8 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 					requireActivity().runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							getParentFragmentManager().popBackStackImmediate();
 							onModifyInstanceResultListener.onResultModifiedEvent(modifiedEvent.getAsLong(CalendarContract.Events.DTSTART));
+							getParentFragmentManager().popBackStackImmediate();
 						}
 					});
 
@@ -934,8 +984,8 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 				}
 			});
 		} else {
-			getParentFragmentManager().popBackStackImmediate();
 			onModifyInstanceResultListener.onResultModifiedEvent(modifiedEvent.getAsLong(CalendarContract.Events.DTSTART));
+			getParentFragmentManager().popBackStackImmediate();
 		}
 	}
 
@@ -944,6 +994,969 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 			newEventValues.put(key, modifiedInstance.getAsString(key));
 		} else if (originalInstance.getAsString(key) != null) {
 			newEventValues.put(key, originalInstance.getAsString(key));
+		}
+	}
+
+	class EditEventHelper{
+
+		public static final int DOES_NOT_REPEAT = 0;
+		public static final int REPEATS_DAILY = 1;
+		public static final int REPEATS_EVERY_WEEKDAY = 2;
+		public static final int REPEATS_WEEKLY_ON_DAY = 3;
+		public static final int REPEATS_MONTHLY_ON_DAY_COUNT = 4;
+		public static final int REPEATS_MONTHLY_ON_DAY = 5;
+		public static final int REPEATS_YEARLY = 6;
+		public static final int REPEATS_CUSTOM = 7;
+
+		protected static final int MODIFY_UNINITIALIZED = 0;
+		protected static final int MODIFY_SELECTED = 1;
+		protected static final int MODIFY_ALL_FOLLOWING = 2;
+		protected static final int MODIFY_ALL = 3;
+
+		protected static final int DAY_IN_SECONDS = 24 * 60 * 60;
+
+		/**
+		 * Saves the event. Returns true if the event was successfully saved, false
+		 * otherwise.
+		 *
+		 * @param model         The event model to save
+		 * @param originalModel A model of the original event if it exists
+		 * @param modifyWhich   For recurring events which type of series modification to use
+		 * @return true if the event was successfully queued for saving
+		 */
+		public boolean saveEvent(CalendarEventModel model, CalendarEventModel originalModel,
+		                         int modifyWhich) {
+			boolean forceSaveReminders = false;
+			// It's a problem if we try to save a non-existent or invalid model or if we're
+			// modifying an existing event and we have the wrong original model
+			if (model == null) {
+				Log.e(TAG, "Attempted to save null model.");
+				return false;
+			}
+			if (!model.isValid()) {
+				Log.e(TAG, "Attempted to save invalid model.");
+				return false;
+			}
+			if (originalModel != null && !isSameEvent(model, originalModel)) {
+				Log.e(TAG, "Attempted to update existing event but models didn't refer to the same "
+						+ "event.");
+				return false;
+			}
+			if (originalModel != null && model.isUnchanged(originalModel)) {
+				return false;
+			}
+
+			ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
+			int eventIdIndex = -1;
+
+			ContentValues values = getContentValuesFromModel(model);
+
+			if (model.mUri != null && originalModel == null) {
+				Log.e(TAG, "Existing event but no originalModel provided. Aborting save.");
+				return false;
+			}
+			Uri uri = null;
+			if (model.mUri != null) {
+				uri = Uri.parse(model.mUri);
+			}
+
+			//이번 일정을 포함한 이후 모든 일정 수정
+			if (modifyWhich == MODIFY_ALL_FOLLOWING) {
+
+				if (TextUtils.isEmpty(model.mRrule)) {
+					// We've changed a recurring event to a non-recurring event.
+					// If the event we are editing is the first in the series,
+					// then delete the whole series. Otherwise, update the series
+					// to end at the new start time.
+					if (isFirstEventInSeries(model, originalModel)) {
+						ops.add(ContentProviderOperation.newDelete(uri).build());
+					} else {
+						// Update the current repeating event to end at the new start time.  We
+						// ignore the RRULE returned because the exception event doesn't want one.
+						updatePastEvents(ops, originalModel, model.mOriginalStart);
+					}
+					eventIdIndex = ops.size();
+					values.put(Events.STATUS, originalModel.mEventStatus);
+					ops.add(ContentProviderOperation.newInsert(Events.CONTENT_URI).withValues(values)
+							.build());
+				} else {
+					if (isFirstEventInSeries(model, originalModel)) {
+						checkTimeDependentFields(originalModel, model, values, modifyWhich);
+						ContentProviderOperation.Builder b = ContentProviderOperation.newUpdate(uri)
+								.withValues(values);
+						ops.add(b.build());
+					} else {
+						// We need to update the existing recurrence to end before the exception
+						// event starts.  If the recurrence rule has a COUNT, we need to adjust
+						// that in the original and in the exception.  This call rewrites the
+						// original event's recurrence rule (in "ops"), and returns a new rule
+						// for the exception.  If the exception explicitly set a new rule, however,
+						// we don't want to overwrite it.
+						String newRrule = updatePastEvents(ops, originalModel, model.mOriginalStart);
+						if (model.mRrule.equals(originalModel.mRrule)) {
+							values.put(Events.RRULE, newRrule);
+						}
+
+						// Create a new event with the user-modified fields
+						eventIdIndex = ops.size();
+						values.put(Events.STATUS, originalModel.mEventStatus);
+						ops.add(ContentProviderOperation.newInsert(Events.CONTENT_URI).withValues(
+								values).build());
+					}
+				}
+				forceSaveReminders = true;
+
+			} else if (modifyWhich == MODIFY_ALL) {
+
+				// Modify all instances of repeating event
+				if (TextUtils.isEmpty(model.mRrule)) {
+					// We've changed a recurring event to a non-recurring event.
+					// Delete the whole series and replace it with a new
+					// non-recurring event.
+					ops.add(ContentProviderOperation.newDelete(uri).build());
+
+					eventIdIndex = ops.size();
+					ops.add(ContentProviderOperation.newInsert(Events.CONTENT_URI).withValues(values)
+							.build());
+					forceSaveReminders = true;
+				} else {
+					checkTimeDependentFields(originalModel, model, values, modifyWhich);
+					ops.add(ContentProviderOperation.newUpdate(uri).withValues(values).build());
+				}
+			}
+
+			// New Event or New Exception to an existing event
+			boolean newEvent = (eventIdIndex != -1);
+			ArrayList<ReminderEntry> originalReminders;
+			if (originalModel != null) {
+				originalReminders = originalModel.mReminders;
+			} else {
+				originalReminders = new ArrayList<ReminderEntry>();
+			}
+
+			if (newEvent) {
+				saveRemindersWithBackRef(ops, eventIdIndex, reminders, originalReminders,
+						forceSaveReminders);
+			} else if (uri != null) {
+				long eventId = ContentUris.parseId(uri);
+				saveReminders(ops, eventId, reminders, originalReminders, forceSaveReminders);
+			}
+
+			ContentProviderOperation.Builder b;
+			boolean hasAttendeeData = model.mHasAttendeeData;
+
+			if (hasAttendeeData && model.mOwnerAttendeeId == -1) {
+				// Organizer is not an attendee
+
+				String ownerEmail = model.mOwnerAccount;
+				if (model.mAttendeesList.size() != 0 && Utils.isValidEmail(ownerEmail)) {
+					// Add organizer as attendee since we got some attendees
+
+					values.clear();
+					values.put(Attendees.ATTENDEE_EMAIL, ownerEmail);
+					values.put(Attendees.ATTENDEE_RELATIONSHIP, Attendees.RELATIONSHIP_ORGANIZER);
+					values.put(Attendees.ATTENDEE_TYPE, Attendees.TYPE_REQUIRED);
+					values.put(Attendees.ATTENDEE_STATUS, Attendees.ATTENDEE_STATUS_ACCEPTED);
+
+					if (newEvent) {
+						b = ContentProviderOperation.newInsert(Attendees.CONTENT_URI)
+								.withValues(values);
+						b.withValueBackReference(Attendees.EVENT_ID, eventIdIndex);
+					} else {
+						values.put(Attendees.EVENT_ID, model.mId);
+						b = ContentProviderOperation.newInsert(Attendees.CONTENT_URI)
+								.withValues(values);
+					}
+					ops.add(b.build());
+				}
+			} else if (hasAttendeeData &&
+					model.mSelfAttendeeStatus != originalModel.mSelfAttendeeStatus &&
+					model.mOwnerAttendeeId != -1) {
+				if (DEBUG) {
+					Log.d(TAG, "Setting attendee status to " + model.mSelfAttendeeStatus);
+				}
+				Uri attUri = ContentUris.withAppendedId(Attendees.CONTENT_URI, model.mOwnerAttendeeId);
+
+				values.clear();
+				values.put(Attendees.ATTENDEE_STATUS, model.mSelfAttendeeStatus);
+				values.put(Attendees.EVENT_ID, model.mId);
+				b = ContentProviderOperation.newUpdate(attUri).withValues(values);
+				ops.add(b.build());
+			}
+
+			// TODO: is this the right test? this currently checks if this is
+			// a new event or an existing event. or is this a paranoia check?
+			if (hasAttendeeData && (newEvent || uri != null)) {
+				String attendees = model.getAttendeesString();
+				String originalAttendeesString;
+				if (originalModel != null) {
+					originalAttendeesString = originalModel.getAttendeesString();
+				} else {
+					originalAttendeesString = "";
+				}
+				// Hit the content provider only if this is a new event or the user
+				// has changed it
+				if (newEvent || !TextUtils.equals(originalAttendeesString, attendees)) {
+					// figure out which attendees need to be added and which ones
+					// need to be deleted. use a linked hash set, so we maintain
+					// order (but also remove duplicates).
+					HashMap<String, Attendee> newAttendees = model.mAttendeesList;
+					LinkedList<String> removedAttendees = new LinkedList<String>();
+
+					// the eventId is only used if eventIdIndex is -1.
+					// TODO: clean up this code.
+					long eventId = uri != null ? ContentUris.parseId(uri) : -1;
+
+					// only compute deltas if this is an existing event.
+					// new events (being inserted into the Events table) won't
+					// have any existing attendees.
+					if (!newEvent) {
+						removedAttendees.clear();
+						HashMap<String, Attendee> originalAttendees = originalModel.mAttendeesList;
+						for (String originalEmail : originalAttendees.keySet()) {
+							if (newAttendees.containsKey(originalEmail)) {
+								// existing attendee. remove from new attendees set.
+								newAttendees.remove(originalEmail);
+							} else {
+								// no longer in attendees. mark as removed.
+								removedAttendees.add(originalEmail);
+							}
+						}
+
+						// delete removed attendees if necessary
+						if (removedAttendees.size() > 0) {
+							b = ContentProviderOperation.newDelete(Attendees.CONTENT_URI);
+
+							String[] args = new String[removedAttendees.size() + 1];
+							args[0] = Long.toString(eventId);
+							int i = 1;
+							StringBuilder deleteWhere = new StringBuilder(ATTENDEES_DELETE_PREFIX);
+							for (String removedAttendee : removedAttendees) {
+								if (i > 1) {
+									deleteWhere.append(",");
+								}
+								deleteWhere.append("?");
+								args[i++] = removedAttendee;
+							}
+							deleteWhere.append(")");
+							b.withSelection(deleteWhere.toString(), args);
+							ops.add(b.build());
+						}
+					}
+
+					if (newAttendees.size() > 0) {
+						// Insert the new attendees
+						for (Attendee attendee : newAttendees.values()) {
+							values.clear();
+							values.put(Attendees.ATTENDEE_NAME, attendee.mName);
+							values.put(Attendees.ATTENDEE_EMAIL, attendee.mEmail);
+							values.put(Attendees.ATTENDEE_RELATIONSHIP,
+									Attendees.RELATIONSHIP_ATTENDEE);
+							values.put(Attendees.ATTENDEE_TYPE, Attendees.TYPE_REQUIRED);
+							values.put(Attendees.ATTENDEE_STATUS, Attendees.ATTENDEE_STATUS_NONE);
+
+							if (newEvent) {
+								b = ContentProviderOperation.newInsert(Attendees.CONTENT_URI)
+										.withValues(values);
+								b.withValueBackReference(Attendees.EVENT_ID, eventIdIndex);
+							} else {
+								values.put(Attendees.EVENT_ID, eventId);
+								b = ContentProviderOperation.newInsert(Attendees.CONTENT_URI)
+										.withValues(values);
+							}
+							ops.add(b.build());
+						}
+					}
+				}
+			}
+
+
+			mService.startBatch(mService.getNextToken(), null, android.provider.CalendarContract.AUTHORITY, ops,
+					Utils.UNDO_DELAY);
+
+			return true;
+		}
+
+		public static LinkedHashSet<Rfc822Token> getAddressesFromList(String list,
+		                                                              Rfc822Validator validator) {
+			LinkedHashSet<Rfc822Token> addresses = new LinkedHashSet<Rfc822Token>();
+			Rfc822Tokenizer.tokenize(list, addresses);
+			if (validator == null) {
+				return addresses;
+			}
+
+			// validate the emails, out of paranoia. they should already be
+			// validated on input, but drop any invalid emails just to be safe.
+			Iterator<Rfc822Token> addressIterator = addresses.iterator();
+			while (addressIterator.hasNext()) {
+				Rfc822Token address = addressIterator.next();
+				if (!validator.isValid(address.getAddress())) {
+					Log.v(TAG, "Dropping invalid attendee email address: " + address.getAddress());
+					addressIterator.remove();
+				}
+			}
+			return addresses;
+		}
+
+		/**
+		 * When we aren't given an explicit start time, we default to the next
+		 * upcoming half hour. So, for example, 5:01 -> 5:30, 5:30 -> 6:00, etc.
+		 *
+		 * @return a UTC time in milliseconds representing the next upcoming half
+		 * hour
+		 */
+		protected long constructDefaultStartTime(long now) {
+			Time defaultStart = new Time();
+			defaultStart.set(now);
+			defaultStart.second = 0;
+			defaultStart.minute = 30;
+			long defaultStartMillis = defaultStart.toMillis(false);
+			if (now < defaultStartMillis) {
+				return defaultStartMillis;
+			} else {
+				return defaultStartMillis + 30 * DateUtils.MINUTE_IN_MILLIS;
+			}
+		}
+
+
+
+		// TODO think about how useful this is. Probably check if our event has
+		// changed early on and either update all or nothing. Should still do the if
+		// MODIFY_ALL bit.
+		void checkTimeDependentFields(CalendarEventModel originalModel, CalendarEventModel model,
+		                              ContentValues values, int modifyWhich) {
+			long oldBegin = model.mOriginalStart;
+			long oldEnd = model.mOriginalEnd;
+			boolean oldAllDay = originalModel.mAllDay;
+			String oldRrule = originalModel.mRrule;
+			String oldTimezone = originalModel.mTimezone;
+
+			long newBegin = model.mStart;
+			long newEnd = model.mEnd;
+			boolean newAllDay = model.mAllDay;
+			String newRrule = model.mRrule;
+			String newTimezone = model.mTimezone;
+
+			// If none of the time-dependent fields changed, then remove them.
+			if (oldBegin == newBegin && oldEnd == newEnd && oldAllDay == newAllDay
+					&& TextUtils.equals(oldRrule, newRrule)
+					&& TextUtils.equals(oldTimezone, newTimezone)) {
+				values.remove(Events.DTSTART);
+				values.remove(Events.DTEND);
+				values.remove(Events.DURATION);
+				values.remove(Events.ALL_DAY);
+				values.remove(Events.RRULE);
+				values.remove(Events.EVENT_TIMEZONE);
+				return;
+			}
+
+			if (TextUtils.isEmpty(oldRrule) || TextUtils.isEmpty(newRrule)) {
+				return;
+			}
+
+			// If we are modifying all events then we need to set DTSTART to the
+			// start time of the first event in the series, not the current
+			// date and time. If the start time of the event was changed
+			// (from, say, 3pm to 4pm), then we want to add the time difference
+			// to the start time of the first event in the series (the DTSTART
+			// value). If we are modifying one instance or all following instances,
+			// then we leave the DTSTART field alone.
+			if (modifyWhich == MODIFY_ALL) {
+				long oldStartMillis = originalModel.mStart;
+				if (oldBegin != newBegin) {
+					// The user changed the start time of this event
+					long offset = newBegin - oldBegin;
+					oldStartMillis += offset;
+				}
+				if (newAllDay) {
+					Time time = new Time(Time.TIMEZONE_UTC);
+					time.set(oldStartMillis);
+					time.hour = 0;
+					time.minute = 0;
+					time.second = 0;
+					oldStartMillis = time.toMillis(false);
+				}
+				values.put(Events.DTSTART, oldStartMillis);
+			}
+		}
+
+		/**
+		 * Prepares an update to the original event so it stops where the new series
+		 * begins. When we update 'this and all following' events we need to change
+		 * the original event to end before a new series starts. This creates an
+		 * update to the old event's rrule to do that.
+		 * <p>
+		 * If the event's recurrence rule has a COUNT, we also need to reduce the count in the
+		 * RRULE for the exception event.
+		 *
+		 * @param ops           The list of operations to add the update to
+		 * @param originalModel The original event that we're updating
+		 * @param endTimeMillis The time before which the event must end (i.e. the start time of the
+		 *                      exception event instance).
+		 * @return A replacement exception recurrence rule.
+		 */
+		public String updatePastEvents(ArrayList<ContentProviderOperation> ops,
+		                               CalendarEventModel originalModel, long endTimeMillis) {
+			boolean origAllDay = originalModel.mAllDay;
+			String origRrule = originalModel.mRrule;
+			String newRrule = origRrule;
+
+			EventRecurrence origRecurrence = new EventRecurrence();
+			origRecurrence.parse(origRrule);
+
+			// Get the start time of the first instance in the original recurrence.
+			long startTimeMillis = originalModel.mStart;
+			Time dtstart = new Time();
+			dtstart.timezone = originalModel.mTimezone;
+			dtstart.set(startTimeMillis);
+
+			ContentValues updateValues = new ContentValues();
+
+			if (origRecurrence.count > 0) {
+				/*
+				 * Generate the full set of instances for this recurrence, from the first to the
+				 * one just before endTimeMillis.  The list should never be empty, because this method
+				 * should not be called for the first instance.  All we're really interested in is
+				 * the *number* of instances found.
+				 *
+				 * TODO: the model assumes RRULE and ignores RDATE, EXRULE, and EXDATE.  For the
+				 * current environment this is reasonable, but that may not hold in the future.
+				 *
+				 * TODO: if COUNT is 1, should we convert the event to non-recurring?  e.g. we
+				 * do an "edit this and all future events" on the 2nd instances.
+				 */
+				RecurrenceSet recurSet = new RecurrenceSet(originalModel.mRrule, null, null, null);
+				RecurrenceProcessor recurProc = new RecurrenceProcessor();
+				long[] recurrences;
+				try {
+					recurrences = recurProc.expand(dtstart, recurSet, startTimeMillis, endTimeMillis);
+				} catch (DateException de) {
+					throw new RuntimeException(de);
+				}
+
+				if (recurrences.length == 0) {
+					throw new RuntimeException("can't use this method on first instance");
+				}
+
+				EventRecurrence excepRecurrence = new EventRecurrence();
+				excepRecurrence.parse(origRrule);  // TODO: add+use a copy constructor instead
+				excepRecurrence.count -= recurrences.length;
+				newRrule = excepRecurrence.toString();
+
+				origRecurrence.count = recurrences.length;
+
+			} else {
+				// The "until" time must be in UTC time in order for Google calendar
+				// to display it properly. For all-day events, the "until" time string
+				// must include just the date field, and not the time field. The
+				// repeating events repeat up to and including the "until" time.
+				Time untilTime = new Time();
+				untilTime.timezone = Time.TIMEZONE_UTC;
+
+				// Subtract one second from the old begin time to get the new
+				// "until" time.
+				untilTime.set(endTimeMillis - 1000); // subtract one second (1000 millis)
+				if (origAllDay) {
+					untilTime.hour = 0;
+					untilTime.minute = 0;
+					untilTime.second = 0;
+					untilTime.allDay = true;
+					untilTime.normalize(false);
+
+					// This should no longer be necessary -- DTSTART should already be in the correct
+					// format for an all-day event.
+					dtstart.hour = 0;
+					dtstart.minute = 0;
+					dtstart.second = 0;
+					dtstart.allDay = true;
+					dtstart.timezone = Time.TIMEZONE_UTC;
+				}
+				origRecurrence.until = untilTime.format2445();
+			}
+
+			updateValues.put(Events.RRULE, origRecurrence.toString());
+			updateValues.put(Events.DTSTART, dtstart.normalize(true));
+			ContentProviderOperation.Builder b =
+					ContentProviderOperation.newUpdate(Uri.parse(originalModel.mUri))
+							.withValues(updateValues);
+			ops.add(b.build());
+
+			return newRrule;
+		}
+
+		/**
+		 * Compares two models to ensure that they refer to the same event. This is
+		 * a safety check to make sure an updated event model refers to the same
+		 * event as the original model. If the original model is null then this is a
+		 * new event or we're forcing an overwrite so we return true in that case.
+		 * The important identifiers are the Calendar Id and the Event Id.
+		 *
+		 * @return
+		 */
+		public static boolean isSameEvent(CalendarEventModel model, CalendarEventModel originalModel) {
+			if (originalModel == null) {
+				return true;
+			}
+
+			if (model.mCalendarId != originalModel.mCalendarId) {
+				return false;
+			}
+			if (model.mId != originalModel.mId) {
+				return false;
+			}
+
+			return true;
+		}
+
+		/**
+		 * Saves the reminders, if they changed. Returns true if operations to
+		 * update the database were added.
+		 *
+		 * @param ops               the array of ContentProviderOperations
+		 * @param eventId           the id of the event whose reminders are being updated
+		 * @param reminders         the array of reminders set by the user
+		 * @param originalReminders the original array of reminders
+		 * @param forceSave         if true, then save the reminders even if they didn't change
+		 * @return true if operations to update the database were added
+		 */
+		public static boolean saveReminders(ArrayList<ContentProviderOperation> ops, long eventId,
+		                                    ArrayList<ReminderEntry> reminders, ArrayList<ReminderEntry> originalReminders,
+		                                    boolean forceSave) {
+			// If the reminders have not changed, then don't update the database
+			if (reminders.equals(originalReminders) && !forceSave) {
+				return false;
+			}
+
+			// Delete all the existing reminders for this event
+			String where = Reminders.EVENT_ID + "=?";
+			String[] args = new String[]{Long.toString(eventId)};
+			ContentProviderOperation.Builder b = ContentProviderOperation
+					.newDelete(Reminders.CONTENT_URI);
+			b.withSelection(where, args);
+			ops.add(b.build());
+
+			ContentValues values = new ContentValues();
+			int len = reminders.size();
+
+			// Insert the new reminders, if any
+			for (int i = 0; i < len; i++) {
+				ReminderEntry re = reminders.get(i);
+
+				values.clear();
+				values.put(Reminders.MINUTES, re.getMinutes());
+				values.put(Reminders.METHOD, re.getMethod());
+				values.put(Reminders.EVENT_ID, eventId);
+				b = ContentProviderOperation.newInsert(Reminders.CONTENT_URI).withValues(values);
+				ops.add(b.build());
+			}
+			return true;
+		}
+
+		/**
+		 * Saves the reminders, if they changed. Returns true if operations to
+		 * update the database were added. Uses a reference id since an id isn't
+		 * created until the row is added.
+		 *
+		 * @param ops             the array of ContentProviderOperations
+		 * @param eventId         the id of the event whose reminders are being updated
+		 * @param reminderMinutes the array of reminders set by the user
+		 * @param originalMinutes the original array of reminders
+		 * @param forceSave       if true, then save the reminders even if they didn't change
+		 * @return true if operations to update the database were added
+		 */
+		public static boolean saveRemindersWithBackRef(ArrayList<ContentProviderOperation> ops,
+		                                               int eventIdIndex, ArrayList<ReminderEntry> reminders,
+		                                               ArrayList<ReminderEntry> originalReminders, boolean forceSave) {
+			// If the reminders have not changed, then don't update the database
+			if (reminders.equals(originalReminders) && !forceSave) {
+				return false;
+			}
+
+			// Delete all the existing reminders for this event
+			ContentProviderOperation.Builder b = ContentProviderOperation
+					.newDelete(Reminders.CONTENT_URI);
+			b.withSelection(Reminders.EVENT_ID + "=?", new String[1]);
+			b.withSelectionBackReference(0, eventIdIndex);
+			ops.add(b.build());
+
+			ContentValues values = new ContentValues();
+			int len = reminders.size();
+
+			// Insert the new reminders, if any
+			for (int i = 0; i < len; i++) {
+				ReminderEntry re = reminders.get(i);
+
+				values.clear();
+				values.put(Reminders.MINUTES, re.getMinutes());
+				values.put(Reminders.METHOD, re.getMethod());
+				b = ContentProviderOperation.newInsert(Reminders.CONTENT_URI).withValues(values);
+				b.withValueBackReference(Reminders.EVENT_ID, eventIdIndex);
+				ops.add(b.build());
+			}
+			return true;
+		}
+
+		// It's the first event in the series if the start time before being
+		// modified is the same as the original event's start time
+		static boolean isFirstEventInSeries(CalendarEventModel model,
+		                                    CalendarEventModel originalModel) {
+			return model.mOriginalStart == originalModel.mStart;
+		}
+
+		// Adds an rRule and duration to a set of content values
+		void addRecurrenceRule(ContentValues values, CalendarEventModel model) {
+			String rrule = model.mRrule;
+
+			values.put(Events.RRULE, rrule);
+			long end = model.mEnd;
+			long start = model.mStart;
+			String duration = model.mDuration;
+
+			boolean isAllDay = model.mAllDay;
+			if (end >= start) {
+				if (isAllDay) {
+					// if it's all day compute the duration in days
+					long days = (end - start + DateUtils.DAY_IN_MILLIS - 1)
+							/ DateUtils.DAY_IN_MILLIS;
+					duration = "P" + days + "D";
+				} else {
+					// otherwise compute the duration in seconds
+					long seconds = (end - start) / DateUtils.SECOND_IN_MILLIS;
+					duration = "P" + seconds + "S";
+				}
+			} else if (TextUtils.isEmpty(duration)) {
+
+				// If no good duration info exists assume the default
+				if (isAllDay) {
+					duration = "P1D";
+				} else {
+					duration = "P3600S";
+				}
+			}
+			// recurring events should have a duration and dtend set to null
+			values.put(Events.DURATION, duration);
+			values.put(Events.DTEND, (Long) null);
+		}
+
+		/**
+		 * Uses the recurrence selection and the model data to build an rrule and
+		 * write it to the model.
+		 *
+		 * @param selection the type of rrule
+		 * @param model     The event to update
+		 * @param weekStart the week start day, specified as java.util.Calendar
+		 *                  constants
+		 */
+		static void updateRecurrenceRule(int selection, CalendarEventModel model,
+		                                 int weekStart) {
+			// Make sure we don't have any leftover data from the previous setting
+			EventRecurrence eventRecurrence = new EventRecurrence();
+
+			if (selection == DOES_NOT_REPEAT) {
+				model.mRrule = null;
+				return;
+			} else if (selection == REPEATS_CUSTOM) {
+				// Keep custom recurrence as before.
+				return;
+			} else if (selection == REPEATS_DAILY) {
+				eventRecurrence.freq = EventRecurrence.DAILY;
+			} else if (selection == REPEATS_EVERY_WEEKDAY) {
+				eventRecurrence.freq = EventRecurrence.WEEKLY;
+				int dayCount = 5;
+				int[] byday = new int[dayCount];
+				int[] bydayNum = new int[dayCount];
+
+				byday[0] = EventRecurrence.MO;
+				byday[1] = EventRecurrence.TU;
+				byday[2] = EventRecurrence.WE;
+				byday[3] = EventRecurrence.TH;
+				byday[4] = EventRecurrence.FR;
+				for (int day = 0; day < dayCount; day++) {
+					bydayNum[day] = 0;
+				}
+
+				eventRecurrence.byday = byday;
+				eventRecurrence.bydayNum = bydayNum;
+				eventRecurrence.bydayCount = dayCount;
+			} else if (selection == REPEATS_WEEKLY_ON_DAY) {
+				eventRecurrence.freq = EventRecurrence.WEEKLY;
+				int[] days = new int[1];
+				int dayCount = 1;
+				int[] dayNum = new int[dayCount];
+				Time startTime = new Time(model.mTimezone);
+				startTime.set(model.mStart);
+
+				days[0] = EventRecurrence.timeDay2Day(startTime.weekDay);
+				// not sure why this needs to be zero, but set it for now.
+				dayNum[0] = 0;
+
+				eventRecurrence.byday = days;
+				eventRecurrence.bydayNum = dayNum;
+				eventRecurrence.bydayCount = dayCount;
+			} else if (selection == REPEATS_MONTHLY_ON_DAY) {
+				eventRecurrence.freq = EventRecurrence.MONTHLY;
+				eventRecurrence.bydayCount = 0;
+				eventRecurrence.bymonthdayCount = 1;
+				int[] bymonthday = new int[1];
+				Time startTime = new Time(model.mTimezone);
+				startTime.set(model.mStart);
+				bymonthday[0] = startTime.monthDay;
+				eventRecurrence.bymonthday = bymonthday;
+			} else if (selection == REPEATS_MONTHLY_ON_DAY_COUNT) {
+				eventRecurrence.freq = EventRecurrence.MONTHLY;
+				eventRecurrence.bydayCount = 1;
+				eventRecurrence.bymonthdayCount = 0;
+
+				int[] byday = new int[1];
+				int[] bydayNum = new int[1];
+				Time startTime = new Time(model.mTimezone);
+				startTime.set(model.mStart);
+				// Compute the week number (for example, the "2nd" Monday)
+				int dayCount = 1 + ((startTime.monthDay - 1) / 7);
+				if (dayCount == 5) {
+					dayCount = -1;
+				}
+				bydayNum[0] = dayCount;
+				byday[0] = EventRecurrence.timeDay2Day(startTime.weekDay);
+				eventRecurrence.byday = byday;
+				eventRecurrence.bydayNum = bydayNum;
+			} else if (selection == REPEATS_YEARLY) {
+				eventRecurrence.freq = EventRecurrence.YEARLY;
+			}
+
+			// Set the week start day.
+			eventRecurrence.wkst = EventRecurrence.calendarDay2Day(weekStart);
+			model.mRrule = eventRecurrence.toString();
+		}
+
+
+		public static boolean canModifyEvent(CalendarEventModel model) {
+			return canModifyCalendar(model)
+					&& (model.mIsOrganizer || model.mGuestsCanModify);
+		}
+
+		public static boolean canModifyCalendar(CalendarEventModel model) {
+			return model.mCalendarAccessLevel >= Calendars.CAL_ACCESS_CONTRIBUTOR
+					|| model.mCalendarId == -1;
+		}
+
+		public static boolean canAddReminders(CalendarEventModel model) {
+			return model.mCalendarAccessLevel >= Calendars.CAL_ACCESS_READ;
+		}
+
+		public static boolean canRespond(CalendarEventModel model) {
+			// For non-organizers, write permission to the calendar is sufficient.
+			// For organizers, the user needs a) write permission to the calendar
+			// AND b) ownerCanRespond == true AND c) attendee data exist
+			// (this means num of attendees > 1, the calendar owner's and others).
+			// Note that mAttendeeList omits the organizer.
+
+			// (there are more cases involved to be 100% accurate, such as
+			// paying attention to whether or not an attendee status was
+			// included in the feed, but we're currently omitting those corner cases
+			// for simplicity).
+
+			if (!canModifyCalendar(model)) {
+				return false;
+			}
+
+			if (!model.mIsOrganizer) {
+				return true;
+			}
+
+			if (!model.mOrganizerCanRespond) {
+				return false;
+			}
+
+			// This means we don't have the attendees data so we can't send
+			// the list of attendees and the status back to the server
+			if (model.mHasAttendeeData && model.mAttendeesList.size() == 0) {
+				return false;
+			}
+
+			return true;
+		}
+
+		/**
+		 * Goes through an event model and fills in content values for saving. This
+		 * method will perform the initial collection of values from the model and
+		 * put them into a set of ContentValues. It performs some basic work such as
+		 * fixing the time on allDay events and choosing whether to use an rrule or
+		 * dtend.
+		 *
+		 * @param model The complete model of the event you want to save
+		 * @return values
+		 */
+		ContentValues getContentValuesFromModel(CalendarEventModel model) {
+			String title = model.mTitle;
+			boolean isAllDay = model.mAllDay;
+			String rrule = model.mRrule;
+			String timezone = model.mTimezone;
+			if (timezone == null) {
+				timezone = TimeZone.getDefault().getID();
+			}
+			Time startTime = new Time(timezone);
+			Time endTime = new Time(timezone);
+
+			startTime.set(model.mStart);
+			endTime.set(model.mEnd);
+			offsetStartTimeIfNecessary(startTime, endTime, rrule, model);
+
+			ContentValues values = new ContentValues();
+
+			long startMillis;
+			long endMillis;
+			long calendarId = model.mCalendarId;
+			if (isAllDay) {
+				// Reset start and end time, ensure at least 1 day duration, and set
+				// the timezone to UTC, as required for all-day events.
+				timezone = Time.TIMEZONE_UTC;
+				startTime.hour = 0;
+				startTime.minute = 0;
+				startTime.second = 0;
+				startTime.timezone = timezone;
+				startMillis = startTime.normalize(true);
+
+				endTime.hour = 0;
+				endTime.minute = 0;
+				endTime.second = 0;
+				endTime.timezone = timezone;
+				endMillis = endTime.normalize(true);
+				if (endMillis < startMillis + DateUtils.DAY_IN_MILLIS) {
+					// EditEventView#fillModelFromUI() should treat this case, but we want to ensure
+					// the condition anyway.
+					endMillis = startMillis + DateUtils.DAY_IN_MILLIS;
+				}
+			} else {
+				startMillis = startTime.toMillis(true);
+				endMillis = endTime.toMillis(true);
+			}
+
+			values.put(Events.CALENDAR_ID, calendarId);
+			values.put(Events.EVENT_TIMEZONE, timezone);
+			values.put(Events.TITLE, title);
+			values.put(Events.ALL_DAY, isAllDay ? 1 : 0);
+			values.put(Events.DTSTART, startMillis);
+			values.put(Events.RRULE, rrule);
+			if (!TextUtils.isEmpty(rrule)) {
+				addRecurrenceRule(values, model);
+			} else {
+				values.put(Events.DURATION, (String) null);
+				values.put(Events.DTEND, endMillis);
+			}
+			if (model.mDescription != null) {
+				values.put(Events.DESCRIPTION, model.mDescription.trim());
+			} else {
+				values.put(Events.DESCRIPTION, (String) null);
+			}
+			if (model.mLocation != null) {
+				values.put(Events.EVENT_LOCATION, model.mLocation.trim());
+			} else {
+				values.put(Events.EVENT_LOCATION, (String) null);
+			}
+			values.put(Events.AVAILABILITY, model.mAvailability);
+			values.put(Events.HAS_ATTENDEE_DATA, model.mHasAttendeeData ? 1 : 0);
+
+			int accessLevel = model.mAccessLevel;
+			values.put(Events.ACCESS_LEVEL, accessLevel);
+			values.put(Events.STATUS, model.mEventStatus);
+			if (model.isEventColorInitialized()) {
+				if (model.getEventColor() == model.getCalendarColor()) {
+					values.put(Events.EVENT_COLOR_KEY, NO_EVENT_COLOR);
+				} else {
+					values.put(Events.EVENT_COLOR_KEY, model.getEventColorKey());
+				}
+			}
+			return values;
+		}
+
+		/**
+		 * If the recurrence rule is such that the event start date doesn't actually fall in one of the
+		 * recurrences, then push the start date up to the first actual instance of the event.
+		 */
+		private void offsetStartTimeIfNecessary(Time startTime, Time endTime, String rrule,
+		                                        CalendarEventModel model) {
+			if (rrule == null || rrule.isEmpty()) {
+				// No need to waste any time with the parsing if the rule is empty.
+				return;
+			}
+
+			mEventRecurrence.parse(rrule);
+			// Check if we meet the specific special case. It has to:
+			//  * be weekly
+			//  * not recur on the same day of the week that the startTime falls on
+			// In this case, we'll need to push the start time to fall on the first day of the week
+			// that is part of the recurrence.
+			if (mEventRecurrence.freq != EventRecurrence.WEEKLY) {
+				// Not weekly so nothing to worry about.
+				return;
+			}
+			if (mEventRecurrence.byday == null ||
+					mEventRecurrence.byday.length > mEventRecurrence.bydayCount) {
+				// This shouldn't happen, but just in case something is weird about the recurrence.
+				return;
+			}
+
+			// Start to figure out what the nearest weekday is.
+			int closestWeekday = Integer.MAX_VALUE;
+			int weekstart = EventRecurrence.day2TimeDay(mEventRecurrence.wkst);
+			int startDay = startTime.weekDay;
+			for (int i = 0; i < mEventRecurrence.bydayCount; i++) {
+				int day = EventRecurrence.day2TimeDay(mEventRecurrence.byday[i]);
+				if (day == startDay) {
+					// Our start day is one of the recurring days, so we're good.
+					return;
+				}
+
+				if (day < weekstart) {
+					// Let's not make any assumptions about what weekstart can be.
+					day += 7;
+				}
+				// We either want the earliest day that is later in the week than startDay ...
+				if (day > startDay && (day < closestWeekday || closestWeekday < startDay)) {
+					closestWeekday = day;
+				}
+				// ... or if there are no days later than startDay, we want the earliest day that is
+				// earlier in the week than startDay.
+				if (closestWeekday == Integer.MAX_VALUE || closestWeekday < startDay) {
+					// We haven't found a day that's later in the week than startDay yet.
+					if (day < closestWeekday) {
+						closestWeekday = day;
+					}
+				}
+			}
+
+			// We're here, so unfortunately our event's start day is not included in the days of
+			// the week of the recurrence. To save this event correctly we'll need to push the start
+			// date to the closest weekday that *is* part of the recurrence.
+			if (closestWeekday < startDay) {
+				closestWeekday += 7;
+			}
+			int daysOffset = closestWeekday - startDay;
+			startTime.monthDay += daysOffset;
+			endTime.monthDay += daysOffset;
+			long newStartTime = startTime.normalize(true);
+			long newEndTime = endTime.normalize(true);
+
+			// Later we'll actually be using the values from the model rather than the startTime
+			// and endTime themselves, so we need to make these changes to the model as well.
+			model.mStart = newStartTime;
+			model.mEnd = newEndTime;
+		}
+
+		/**
+		 * Takes an e-mail address and returns the domain (everything after the last @)
+		 */
+		public static String extractDomain(String email) {
+			int separator = email.lastIndexOf('@');
+			if (separator != -1 && ++separator < email.length()) {
+				return email.substring(separator);
+			}
+			return null;
+		}
+
+		public interface EditDoneRunnable extends Runnable {
+			public void setDoneCode(int code);
 		}
 	}
 

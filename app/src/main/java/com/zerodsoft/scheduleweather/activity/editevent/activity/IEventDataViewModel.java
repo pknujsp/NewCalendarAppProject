@@ -2,35 +2,37 @@ package com.zerodsoft.scheduleweather.activity.editevent.activity;
 
 import android.content.ContentValues;
 
+import androidx.annotation.NonNull;
+
 import java.util.Date;
 import java.util.List;
 
 public interface IEventDataViewModel {
-	void setTitle(String title);
+	void setTitle(@NonNull String title);
 
-	void setEventColor(Integer color, String colorKey);
+	void setEventColor(@NonNull Integer color, @NonNull String colorKey);
 
-	void setCalendar(Integer calendarId);
+	void setCalendar(@NonNull Integer calendarId);
 
-	void setIsAllDay(Boolean isAllDay);
+	void setIsAllDay(@NonNull Boolean isAllDay);
 
-	void setDtStart(Date date);
+	void setDtStart(@NonNull Date date);
 
-	void setDtEnd(Date date);
+	void setDtEnd(@NonNull Date date);
 
-	void setTimezone(String timezone);
+	void setTimezone(@NonNull String timezone);
 
-	void setRecurrence(String rRule);
+	void setRecurrence(@NonNull String rRule);
 
-	boolean addReminder(Integer minutes, Integer method);
+	boolean addReminder(@NonNull Integer minutes, @NonNull Integer method);
 
-	void modifyReminder(Integer previousMinutes, Integer newMinutes, Integer method);
+	void modifyReminder(@NonNull Integer previousMinutes, @NonNull Integer newMinutes, @NonNull Integer method);
 
-	void removeReminder(Integer minutes);
+	void removeReminder(@NonNull Integer minutes);
 
-	void setDescription(String description);
+	void setDescription(@NonNull String description);
 
-	void setEventLocation(String eventLocation);
+	void setEventLocation(@NonNull String eventLocation);
 
 	/**
 	 * ATTENDEE_EMAIL, ATTENDEE_RELATIONSHIP, ATTENDEE_TYPE, ATTENDEE_STATUS 필수
@@ -38,11 +40,12 @@ public interface IEventDataViewModel {
 	 *
 	 * @param attendeeList
 	 */
-	void setAttendees(List<ContentValues> attendeeList, Boolean guestsCanModify, Boolean guestsCanInviteOthers, Boolean guestsCanSeeGuests);
+	void setAttendees(@NonNull List<ContentValues> attendeeList, @NonNull Boolean guestsCanModify, @NonNull Boolean guestsCanInviteOthers,
+	                  @NonNull Boolean guestsCanSeeGuests);
 
-	void removeAttendee(String attendeeEmail);
+	void removeAttendee(@NonNull String attendeeEmail);
 
-	void setAccessLevel(Integer accessLevel);
+	void setAccessLevel(@NonNull Integer accessLevel);
 
-	void setAvailability(Integer availability);
+	void setAvailability(@NonNull Integer availability);
 }

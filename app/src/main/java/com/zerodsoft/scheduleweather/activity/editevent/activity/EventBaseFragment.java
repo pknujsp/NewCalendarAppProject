@@ -115,7 +115,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 			@Override
 			public void afterTextChanged(Editable s) {
 				if (!initializing) {
-					eventDataViewModel.setTitle(s.toString());
+					eventDataViewModel.setTitle(s.length() > 0 ? s.toString() : "");
 				}
 			}
 		});
@@ -134,7 +134,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 			@Override
 			public void afterTextChanged(Editable s) {
 				if (!initializing) {
-					eventDataViewModel.setDescription(s.toString());
+					eventDataViewModel.setDescription(s.length() > 0 ? s.toString() : "");
 				}
 			}
 		});
