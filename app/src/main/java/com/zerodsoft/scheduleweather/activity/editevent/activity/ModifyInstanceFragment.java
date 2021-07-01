@@ -8,6 +8,8 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.CalendarContract;
+import android.provider.CalendarContract.Events;
+import android.provider.CalendarContract.Instances;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -174,8 +176,8 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 				if (firstChecked && !initializing) {
 					firstChecked = false;
-					if (originalInstance.getAsInteger(CalendarContract.Instances.ALL_DAY) == 1) {
-						TimeZone timeZone = TimeZone.getTimeZone(originalInstance.getAsString(CalendarContract.Instances.CALENDAR_TIME_ZONE));
+					if (originalInstance.getAsInteger(Events.ALL_DAY) == 1) {
+						TimeZone timeZone = TimeZone.getTimeZone(originalInstance.getAsString(Events.CALENDAR_TIME_ZONE));
 						eventDataViewModel.setTimezone(timeZone.getID());
 						setTimeZoneText(timeZone.getID());
 					}
@@ -436,8 +438,10 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 		//제목, 캘린더, 시간, 시간대, 반복, 알림, 설명, 위치, 공개범위, 유효성, 참석자
 		//알림, 참석자 정보는 따로 불러온다.
-		binding.titleLayout.eventColor.setBackgroundColor(EventUtil.getColor(originalInstance.getAsInteger(CalendarContract.Instances.EVENT_COLOR)));
 
+		if (originalInstance.containsKey(CalendarContract.Events.EVENT_COLOR)) {
+			binding.titleLayout.eventColor.setBackgroundColor(EventUtil.getColor(originalInstance.getAsInteger(CalendarContract.Instances.EVENT_COLOR)));
+		}
 		//제목
 		binding.titleLayout.title.setText(originalInstance.getAsString(CalendarContract.Instances.TITLE));
 
@@ -703,7 +707,6 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		eventHelper.saveFollowingEvents(originalInstance, newEventValues, originalReminderList
 				, originalAttendeeList, newReminderList, newAttendeeList, selectedCalendarValues);
 
-
 		/*
 		if (newEventValues.containsKey(CalendarContract.Events.EVENT_LOCATION)) {
 			if (locationDTO != null) {
@@ -837,9 +840,11 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 	}
 
 	private void setNewEventValues(String key, ContentValues newEventValues, ContentValues modifiedInstance) {
-		if (modifiedInstance.containsKey(key)) {
+		if (eventDataViewModel.getAddedValueSet().contains(key)) {
 			newEventValues.put(key, modifiedInstance.getAsString(key));
-		} else if (originalInstance.getAsString(key) != null) {
+		} else if (eventDataViewModel.getRemovedValueSet().contains(key)) {
+
+		} else {
 			newEventValues.put(key, originalInstance.getAsString(key));
 		}
 	}

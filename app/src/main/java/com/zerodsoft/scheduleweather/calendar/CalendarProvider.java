@@ -633,8 +633,8 @@ public class CalendarProvider implements ICalendarProvider {
 	@Override
 	public ContentValues getInstance(Long instanceId, Long begin, Long end) {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
-			String selection = "Instances._id=?";
-			String[] selectionArgs = {instanceId.toString()};
+			final String selection = "Instances._id = ?";
+			final String[] selectionArgs = {instanceId.toString()};
 
 			Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
 			ContentUris.appendId(builder, begin);
@@ -647,7 +647,9 @@ public class CalendarProvider implements ICalendarProvider {
 			while (cursor.moveToNext()) {
 				String[] keys = cursor.getColumnNames();
 				for (String key : keys) {
-					instance.put(key, cursor.getString(cursor.getColumnIndex(key)));
+					if (!cursor.isNull(cursor.getColumnIndex(key))) {
+						instance.put(key, cursor.getString(cursor.getColumnIndex(key)));
+					}
 				}
 
 			}

@@ -57,14 +57,12 @@ public class EventHelper {
 
 		newEvent.remove(Events._ID);
 
-		List<ContentProviderOperation> contentProviderOperationList
+		ArrayList<ContentProviderOperation> contentProviderOperationList
 				= new ArrayList<>();
 
 		boolean hasRRuleInNewEvent = false;
 		if (newEvent.containsKey(Events.RRULE)) {
-			if (!newEvent.getAsString(Events.RRULE).isEmpty()) {
-				hasRRuleInNewEvent = true;
-			}
+			hasRRuleInNewEvent = true;
 		}
 
 		if (!hasRRuleInNewEvent) {
@@ -164,11 +162,11 @@ public class EventHelper {
 			}
 		}
 
-		mService.startBatch(mService.getNextToken(), null, android.provider.CalendarContract.AUTHORITY, (ArrayList<ContentProviderOperation>) contentProviderOperationList,
+		mService.startBatch(mService.getNextToken(), null, CalendarContract.AUTHORITY, contentProviderOperationList,
 				0);
 	}
 
-	private boolean saveRemindersWithBackRef(List<ContentProviderOperation> contentProviderOperationList, Integer eventIdIndex,
+	private boolean saveRemindersWithBackRef(ArrayList<ContentProviderOperation> contentProviderOperationList, Integer eventIdIndex,
 	                                         List<ContentValues> originalReminderList, List<ContentValues> newReminderList) {
 		if (originalReminderList.equals(newReminderList)) {
 			return false;
@@ -188,13 +186,14 @@ public class EventHelper {
 		return true;
 	}
 
-	private String updatePastEvents(List<ContentProviderOperation> contentProviderOperationList, ContentValues originalEvent, ContentValues newEvent) {
+	private String updatePastEvents(ArrayList<ContentProviderOperation> contentProviderOperationList, ContentValues originalEvent,
+	                                ContentValues newEvent) {
 		boolean originalAllDay = originalEvent.getAsInteger(Events.ALL_DAY) == 1;
 		String originalRRule = originalEvent.getAsString(Events.RRULE);
 		String newRRule = originalRRule;
 
 		EventRecurrence originalEventRecurrence = new EventRecurrence();
-		originalEventRecurrence.parse(originalRRule);
+		originalEventRecurrence.parse(originalEvent.getAsString(Events.RRULE));
 
 		long startTimeMillis = originalEvent.getAsLong(Events.DTSTART);
 		Time dtstart = new Time();
@@ -224,16 +223,10 @@ public class EventHelper {
 
 			originalEventRecurrence.count = recurrences.length;
 		} else {
-			// The "until" time must be in UTC time in order for Google calendar
-			// to display it properly. For all-day events, the "until" time string
-			// must include just the date field, and not the time field. The
-			// repeating events repeat up to and including the "until" time.
 			Time untilTime = new Time();
 			untilTime.timezone = Time.TIMEZONE_UTC;
 
-			// Subtract one second from the old begin time to get the new
-			// "until" time.
-			untilTime.set(originalEvent.getAsLong(Events.DTSTART) - 1000); // subtract one second (1000 millis)
+			untilTime.set(newEvent.getAsLong(Events.DTSTART) - 1000);
 			if (originalAllDay) {
 				untilTime.hour = 0;
 				untilTime.minute = 0;
@@ -255,7 +248,7 @@ public class EventHelper {
 		updateValues.put(Events.RRULE, originalEventRecurrence.toString());
 		updateValues.put(Events.DTSTART, dtstart.normalize(true));
 
-		Uri uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI
+		Uri uri = ContentUris.withAppendedId(Events.CONTENT_URI
 				, originalEvent.getAsLong(Instances.EVENT_ID));
 		ContentProviderOperation.Builder b =
 				ContentProviderOperation.newUpdate(uri)
