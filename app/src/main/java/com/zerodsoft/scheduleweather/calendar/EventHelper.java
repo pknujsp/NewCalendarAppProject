@@ -3,6 +3,7 @@ package com.zerodsoft.scheduleweather.calendar;
 import android.content.ContentProviderOperation;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.Context;
 import android.net.Uri;
 import android.provider.CalendarContract;
 import android.provider.CalendarContract.Events;
@@ -14,13 +15,24 @@ import android.text.TextUtils;
 import android.text.format.Time;
 import android.util.Log;
 
+import com.zerodsoft.scheduleweather.activity.editevent.activity.ModifyInstanceFragment;
 import com.zerodsoft.scheduleweather.calendar.calendarcommon2.*;
 import com.zerodsoft.scheduleweather.common.enums.EventIntentCode;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import biweekly.property.Attendee;
 
 public class EventHelper {
+	private final AsyncQueryService mService;
+
+	public EventHelper(AsyncQueryService asyncQueryService) {
+		mService = asyncQueryService;
+	}
+
 	public void saveFollowingEvents(ContentValues originalEvent, ContentValues newEvent,
 	                                List<ContentValues> originalReminderList,
 	                                List<ContentValues> originalAttendeeList,
@@ -39,27 +51,39 @@ public class EventHelper {
 			return;
 		}
 
-		int eventIdIndex = 0;
+		int eventIdIndex = -1;
+		Uri uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI
+				, originalEvent.getAsLong(Instances.EVENT_ID));
+
+		newEvent.remove(Events._ID);
 
 		List<ContentProviderOperation> contentProviderOperationList
 				= new ArrayList<>();
 
-		if (newEvent.getAsString(Events.RRULE).isEmpty()) {
+		boolean hasRRuleInNewEvent = false;
+		if (newEvent.containsKey(Events.RRULE)) {
+			if (!newEvent.getAsString(Events.RRULE).isEmpty()) {
+				hasRRuleInNewEvent = true;
+			}
+		}
+
+		if (!hasRRuleInNewEvent) {
 			if (isFirstInstance(originalEvent, newEvent)) {
-				Uri uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI
-						, originalEvent.getAsLong(Instances.EVENT_ID));
 				contentProviderOperationList.add(
 						ContentProviderOperation.newDelete(uri).build());
 			} else {
 				updatePastEvents(contentProviderOperationList,
 						originalEvent, newEvent);
 			}
+
+			eventIdIndex = contentProviderOperationList.size();
+			newEvent.put(Events.STATUS, originalEvent.getAsInteger(Events.STATUS));
+			contentProviderOperationList.add(ContentProviderOperation.newInsert(Events.CONTENT_URI).withValues(newEvent)
+					.build());
 		} else {
 			if (isFirstInstance(originalEvent, newEvent)) {
 				checkTimeDependentFields(originalEvent, newEvent);
 
-				Uri uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI
-						, originalEvent.getAsLong(Instances.EVENT_ID));
 				ContentProviderOperation.Builder b = ContentProviderOperation.newUpdate(uri)
 						.withValues(newEvent);
 				contentProviderOperationList.add(b.build());
@@ -68,16 +92,16 @@ public class EventHelper {
 				if (newEvent.getAsString(Events.RRULE).equals(originalEvent.getAsString(Events.RRULE))) {
 					newEvent.put(Events.RRULE, newRRule);
 				}
+				eventIdIndex = contentProviderOperationList.size();
+				newEvent.put(Events.STATUS, originalEvent.getAsInteger(Events.STATUS));
+				contentProviderOperationList.add(ContentProviderOperation.newInsert(Events.CONTENT_URI).withValues(newEvent)
+						.build());
 			}
 
-			eventIdIndex = contentProviderOperationList.size();
-			newEvent.put(Events.STATUS, originalEvent.getAsInteger(Events.STATUS));
-			contentProviderOperationList.add(ContentProviderOperation.newInsert(Events.CONTENT_URI).withValues(newEvent)
-					.build());
 		}
 
 		//reminders
-		saveRemindersWithBackRef(contentProviderOperationList, originalEvent.getAsLong(Instances.EVENT_ID), originalReminderList,
+		saveRemindersWithBackRef(contentProviderOperationList, eventIdIndex, originalReminderList,
 				newReminderList);
 
 		//attendees
@@ -86,7 +110,7 @@ public class EventHelper {
 		final boolean hasAttendeeData = newAttendeeList.size() != 0;
 		Long ownerAttendeeId = null;
 
-		if (newEvent.getAsString(Instances.IS_ORGANIZER).equals("1")) {
+		if (newEvent.getAsString(Events.IS_ORGANIZER).equals("1")) {
 			ownerAttendeeId = newEvent.getAsLong(Instances.EVENT_ID);
 		}
 
@@ -118,7 +142,30 @@ public class EventHelper {
 			}
 		}
 
-		//참석자 추가 삭제
+		if (hasAttendeeData) {
+			Map<String, ContentValues> newAttendees = new HashMap<>();
+			for (ContentValues newAttendee : newAttendeeList) {
+				newAttendees.put(newAttendee.getAsString(Attendees.ATTENDEE_EMAIL)
+						, newAttendee);
+			}
+			if (!newAttendees.isEmpty()) {
+				for (ContentValues attendee : newAttendees.values()) {
+					attendee.put(Attendees.ATTENDEE_RELATIONSHIP,
+							Attendees.RELATIONSHIP_ATTENDEE);
+					attendee.put(Attendees.ATTENDEE_TYPE, Attendees.TYPE_REQUIRED);
+					attendee.put(Attendees.ATTENDEE_STATUS, Attendees.ATTENDEE_STATUS_NONE);
+
+					builder = ContentProviderOperation.newInsert(Attendees.CONTENT_URI)
+							.withValues(attendee);
+					builder.withValueBackReference(Attendees.EVENT_ID, eventIdIndex);
+
+					contentProviderOperationList.add(builder.build());
+				}
+			}
+		}
+
+		mService.startBatch(mService.getNextToken(), null, android.provider.CalendarContract.AUTHORITY, (ArrayList<ContentProviderOperation>) contentProviderOperationList,
+				0);
 	}
 
 	private boolean saveRemindersWithBackRef(List<ContentProviderOperation> contentProviderOperationList, Integer eventIdIndex,
@@ -171,7 +218,7 @@ public class EventHelper {
 			}
 
 			EventRecurrence exceptRecurrence = new EventRecurrence();
-			exceptRecurrence.parse(originalRRule);  // TODO: add+use a copy constructor instead
+			exceptRecurrence.parse(originalRRule);
 			exceptRecurrence.count -= recurrences.length;
 			newRRule = exceptRecurrence.toString();
 
@@ -245,14 +292,11 @@ public class EventHelper {
 
 	private boolean isFirstInstance(ContentValues originalEvent, ContentValues newEvent) {
 		return originalEvent.getAsLong(Events.DTSTART).equals(
-				newEvent.getAsLong(Events.DTSTART);
-		)
+				newEvent.getAsLong(Events.DTSTART));
 	}
 
 	public boolean isSameEvent(ContentValues originalEvent, ContentValues newEvent) {
-		if (originalEvent == null) {
-			return true;
-		} else if (!originalEvent.getAsInteger(CalendarContract.Events.CALENDAR_ID)
+		if (!originalEvent.getAsInteger(CalendarContract.Events.CALENDAR_ID)
 				.equals(newEvent.getAsInteger(CalendarContract.Events.CALENDAR_ID))) {
 			return false;
 		} else if (!originalEvent.getAsLong(CalendarContract.Instances.EVENT_ID)

@@ -422,7 +422,7 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 			Bundle bundle = new Bundle();
 			bundle.putLong(CalendarContract.Instances._ID, instanceId);
 			bundle.putLong(CalendarContract.Instances.EVENT_ID, eventId);
-			bundle.putLong(CalendarContract.Instances.CALENDAR_ID, calendarId);
+			bundle.putInt(CalendarContract.Instances.CALENDAR_ID, calendarId);
 			bundle.putLong(CalendarContract.Instances.BEGIN, viewBegin);
 			bundle.putLong(CalendarContract.Instances.END, viewEnd);
 

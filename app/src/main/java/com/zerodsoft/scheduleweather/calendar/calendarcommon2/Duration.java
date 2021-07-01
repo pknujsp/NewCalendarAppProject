@@ -16,6 +16,8 @@
 
 package com.android.calendarcommon2;
 
+import com.zerodsoft.scheduleweather.calendar.calendarcommon2.DateException;
+
 import java.util.Calendar;
 
 /**

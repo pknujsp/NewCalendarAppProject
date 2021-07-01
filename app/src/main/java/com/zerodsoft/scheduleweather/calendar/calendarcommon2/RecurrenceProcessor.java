@@ -59,7 +59,7 @@ public class RecurrenceProcessor
      * @throws DateException
      */
     public long getLastOccurence(Time dtstart,
-                                 RecurrenceSet recur) throws com.android.calendarcommon2.DateException {
+                                 RecurrenceSet recur) throws DateException {
         return getLastOccurence(dtstart, null /* no limit */, recur);
     }
 
@@ -81,7 +81,7 @@ public class RecurrenceProcessor
      * @throws DateException
      */
     public long getLastOccurence(Time dtstart, Time maxtime,
-                                 RecurrenceSet recur) throws com.android.calendarcommon2.DateException {
+                                 RecurrenceSet recur) throws DateException {
         long lastTime = -1;
         boolean hasCount = false;
 
