@@ -15,7 +15,8 @@
 ** limitations under the License.
 */
 
-package com.android.calendarcommon2;
+package com.zerodsoft.scheduleweather.calendar.calendarcommon2;
+
 
 import android.text.format.Time;
 import android.util.Log;
@@ -58,7 +59,7 @@ public class RecurrenceProcessor
      * @throws DateException
      */
     public long getLastOccurence(Time dtstart,
-                                 RecurrenceSet recur) throws DateException {
+                                 RecurrenceSet recur) throws com.android.calendarcommon2.DateException {
         return getLastOccurence(dtstart, null /* no limit */, recur);
     }
 
@@ -80,7 +81,7 @@ public class RecurrenceProcessor
      * @throws DateException
      */
     public long getLastOccurence(Time dtstart, Time maxtime,
-                                 RecurrenceSet recur) throws DateException {
+                                 RecurrenceSet recur) throws com.android.calendarcommon2.DateException {
         long lastTime = -1;
         boolean hasCount = false;
 

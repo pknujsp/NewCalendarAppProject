@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.calendarcommon2;
+package com.zerodsoft.scheduleweather.calendar.calendarcommon2;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -176,13 +176,13 @@ public class RecurrenceSet {
      * one of DTEND/DURATION, and one of RRULE/RDATE.  Returns false if
      * there was an error, including if the date is out of range.
      */
-    public static boolean populateContentValues(ICalendar.Component component,
-            ContentValues values) {
+    public static boolean populateContentValues(com.android.calendarcommon2.ICalendar.Component component,
+                                                ContentValues values) {
         try {
-            ICalendar.Property dtstartProperty =
+            com.android.calendarcommon2.ICalendar.Property dtstartProperty =
                     component.getFirstProperty("DTSTART");
             String dtstart = dtstartProperty.getValue();
-            ICalendar.Parameter tzidParam =
+            com.android.calendarcommon2.ICalendar.Parameter tzidParam =
                     dtstartProperty.getFirstParameter("TZID");
             // NOTE: the timezone may be null, if this is a floating time.
             String tzid = tzidParam == null ? null : tzidParam.value;
@@ -243,7 +243,7 @@ public class RecurrenceSet {
 
     // This can be removed when the old CalendarSyncAdapter is removed.
     public static boolean populateComponent(Cursor cursor,
-                                            ICalendar.Component component) {
+                                            com.android.calendarcommon2.ICalendar.Component component) {
 
         int dtstartColumn = cursor.getColumnIndex(CalendarContract.Events.DTSTART);
         int durationColumn = cursor.getColumnIndex(CalendarContract.Events.DURATION);
@@ -275,11 +275,11 @@ public class RecurrenceSet {
                 return false;
         }
 
-        ICalendar.Property dtstartProp = new ICalendar.Property("DTSTART");
+        com.android.calendarcommon2.ICalendar.Property dtstartProp = new com.android.calendarcommon2.ICalendar.Property("DTSTART");
         Time dtstartTime = null;
         if (!TextUtils.isEmpty(tzid)) {
             if (!allDay) {
-                dtstartProp.addParameter(new ICalendar.Parameter("TZID", tzid));
+                dtstartProp.addParameter(new com.android.calendarcommon2.ICalendar.Parameter("TZID", tzid));
             }
             dtstartTime = new Time(tzid);
         } else {
@@ -291,7 +291,7 @@ public class RecurrenceSet {
         // make sure the time is printed just as a date, if all day.
         // TODO: android.pim.Time really should take care of this for us.
         if (allDay) {
-            dtstartProp.addParameter(new ICalendar.Parameter("VALUE", "DATE"));
+            dtstartProp.addParameter(new com.android.calendarcommon2.ICalendar.Parameter("VALUE", "DATE"));
             dtstartTime.allDay = true;
             dtstartTime.hour = 0;
             dtstartTime.minute = 0;
