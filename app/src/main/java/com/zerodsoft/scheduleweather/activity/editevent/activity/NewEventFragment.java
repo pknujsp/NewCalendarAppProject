@@ -3,6 +3,7 @@ package com.zerodsoft.scheduleweather.activity.editevent.activity;
 import android.content.ContentValues;
 import android.os.Bundle;
 import android.provider.CalendarContract;
+import android.provider.CalendarContract.Events;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -114,10 +115,10 @@ public class NewEventFragment extends EventBaseFragment {
 			// 반복 룰과 이벤트의 시작 시간 전달
 			String rRule = "";
 
-			if (eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.RRULE)) {
-				rRule = eventDataViewModel.getNEW_EVENT().getAsString(CalendarContract.Events.RRULE);
+			if (eventDataViewModel.getNEW_EVENT().containsKey(Events.RRULE)) {
+				rRule = eventDataViewModel.getNEW_EVENT().getAsString(Events.RRULE);
 			}
-			onClickedRecurrence(rRule, eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTSTART));
+			onClickedRecurrence(rRule, eventDataViewModel.getNEW_EVENT().getAsLong(Events.DTSTART));
 		});
 
         /*

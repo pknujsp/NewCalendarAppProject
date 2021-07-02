@@ -32,6 +32,7 @@ import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.activity.editevent.activity.ModifyInstanceFragment;
 import com.zerodsoft.scheduleweather.calendar.CalendarInstanceUtil;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
+import com.zerodsoft.scheduleweather.calendar.calendarcommon2.EventRecurrence;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.common.enums.LocationIntentCode;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
@@ -43,7 +44,6 @@ import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationI
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
-import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
 import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
 import org.jetbrains.annotations.NotNull;
@@ -53,6 +53,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
+
+import biweekly.property.RecurrenceRule;
 
 public class EventFragment extends BottomSheetDialogFragment {
 	// 참석자가 있는 경우 참석 여부 표시
@@ -710,9 +712,9 @@ public class EventFragment extends BottomSheetDialogFragment {
 	}
 
 	private void setRecurrenceText(String rRule) {
-		RecurrenceRule recurrenceRule = new RecurrenceRule();
-		recurrenceRule.separateValues(rRule);
-		binding.eventRecurrenceView.eventRecurrence.setText(recurrenceRule.interpret(getContext()));
+		EventRecurrence eventRecurrence = new EventRecurrence();
+		eventRecurrence.parse(rRule);
+		binding.eventRecurrenceView.eventRecurrence.setText(eventRecurrence.toString());
 	}
 
 	private void setCalendarText() {

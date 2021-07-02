@@ -18,6 +18,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -31,6 +32,12 @@ import com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClic
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.timepicker.MaterialTimePicker;
 import com.google.android.material.timepicker.TimeFormat;
+import com.maltaisn.recurpicker.Recurrence;
+import com.maltaisn.recurpicker.RecurrencePickerSettings;
+import com.maltaisn.recurpicker.list.RecurrenceListCallback;
+import com.maltaisn.recurpicker.list.RecurrenceListDialog;
+import com.maltaisn.recurpicker.picker.RecurrencePickerCallback;
+import com.maltaisn.recurpicker.picker.RecurrencePickerFragment;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.activity.editevent.adapter.CalendarListAdapter;
 import com.zerodsoft.scheduleweather.activity.editevent.fragments.TimeZoneFragment;
@@ -38,6 +45,7 @@ import com.zerodsoft.scheduleweather.activity.editevent.interfaces.IEventRepeat;
 import com.zerodsoft.scheduleweather.activity.preferences.ColorListAdapter;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
+import com.zerodsoft.scheduleweather.calendar.calendarcommon2.EventRecurrence;
 import com.zerodsoft.scheduleweather.common.enums.EventIntentCode;
 import com.zerodsoft.scheduleweather.common.enums.LocationIntentCode;
 import com.zerodsoft.scheduleweather.databinding.FragmentBaseEventBinding;
@@ -48,7 +56,6 @@ import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
-import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
 import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
 import org.jetbrains.annotations.NotNull;
@@ -59,7 +66,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
-public abstract class EventBaseFragment extends Fragment implements IEventRepeat {
+import biweekly.property.RecurrenceRule;
+
+public abstract class EventBaseFragment extends Fragment implements IEventRepeat, RecurrenceListCallback, RecurrencePickerCallback {
 	protected FragmentBaseEventBinding binding;
 	protected NetworkStatus networkStatus;
 	protected CalendarViewModel calendarViewModel;
@@ -77,6 +86,15 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 
 	protected ContentValues selectedCalendarValues;
 	protected LocationDTO locationDTO;
+
+
+	protected Recurrence selectedRecurrence = Recurrence.DOES_NOT_REPEAT;
+
+	protected RecurrencePickerSettings settings = new RecurrencePickerSettings.Builder().build();
+	protected long startDate = System.currentTimeMillis();
+
+	protected RecurrenceListDialog listDialog;
+	protected RecurrencePickerFragment pickerFragment;
 
 
 	protected enum DateTimeType {
@@ -226,30 +244,56 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		binding.timeLayout.eventTimezone.setText(timeZone.getDisplayName(Locale.KOREAN));
 	}
 
+	@Override
+	public void onRecurrenceCustomClicked() {
+		// The "Custom..." item in the recurrence list dialog was clicked. Show the picker fragment.
+		pickerFragment.setSelectedRecurrence(selectedRecurrence);
+		pickerFragment.setStartDate(startDate);
+		getChildFragmentManager().beginTransaction()
+				.add(R.id.fragment_container, pickerFragment, getString(R.string.tag_event_recurrence_fragment))
+				.addToBackStack(getString(R.string.tag_event_recurrence_fragment))
+				.commit();
+	}
+
+	@Override
+	public void onRecurrencePresetSelected(@NotNull Recurrence recurrence) {
+		// A recurrence preset item in the recurrence list dialog was selected.
+		setSelectedRecurrence(recurrence);
+	}
+
+	@Override
+	public void onRecurrenceCreated(@NotNull Recurrence recurrence) {
+		// A custom recurrence was created with the recurrence picker fragment.
+		setSelectedRecurrence(recurrence);
+	}
+
+	private void setSelectedRecurrence(Recurrence recurrence) {
+		selectedRecurrence = recurrence;
+		String result = settings.getFormatter().format(getContext(), recurrence, startDate);
+	}
+
 	protected final void onClickedRecurrence(String rRule, long dtStart) {
 		Bundle bundle = new Bundle();
 		bundle.putString(CalendarContract.Events.RRULE, rRule);
 		bundle.putLong(CalendarContract.Events.DTSTART, dtStart);
 
-		EventRecurrenceFragment eventRecurrenceFragment = new EventRecurrenceFragment(new EventRecurrenceFragment.OnEventRecurrenceResultListener() {
-			@Override
-			public void onResult(String rRule) {
-				eventDataViewModel.setRecurrence(rRule);
-				setRecurrenceText(rRule);
-			}
-		});
-		eventRecurrenceFragment.setArguments(bundle);
+		listDialog = RecurrenceListDialog.newInstance(settings);
+		pickerFragment = RecurrencePickerFragment.newInstance(settings);
 
-		getParentFragmentManager().beginTransaction().hide(this)
-				.add(R.id.fragment_container, eventRecurrenceFragment, getString(R.string.tag_event_recurrence_fragment))
-				.addToBackStack(getString(R.string.tag_event_recurrence_fragment)).commit();
+		listDialog.setSelectedRecurrence(selectedRecurrence);
+		listDialog.setStartDate(startDate);
+		listDialog.show(getChildFragmentManager(), getString(R.string.tag_event_recurrence_fragment));
+
+		eventDataViewModel.setRecurrence(rRule);
+		setRRuleIfFreqMonthly(dtStart);
+		setRecurrenceText(rRule);
 	}
 
 	protected final void setRecurrenceText(String rRule) {
 		if (!rRule.isEmpty()) {
-			RecurrenceRule recurrenceRule = new RecurrenceRule();
-			recurrenceRule.separateValues(rRule);
-			binding.recurrenceLayout.eventRecurrence.setText(recurrenceRule.interpret(getContext()));
+			EventRecurrence eventRecurrence = new EventRecurrence();
+			eventRecurrence.parse(rRule);
+			binding.recurrenceLayout.eventRecurrence.setText(eventRecurrence.toString());
 		} else {
 			binding.recurrenceLayout.eventRecurrence.setText("");
 		}
@@ -665,6 +709,8 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 				if (onModifiedDateTimeCallback != null) {
 					onModifiedDateTimeCallback.onModified();
 				}
+
+				setRRuleIfFreqMonthly(startDate.getTimeInMillis());
 				datePicker.dismiss();
 			}
 		});
@@ -674,6 +720,54 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		});
 
 		datePicker.show(getChildFragmentManager(), datePicker.toString());
+	}
+
+	protected final void setRRuleIfFreqMonthly(long startDate) {
+		if (eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.RRULE)) {
+			EventRecurrence eventRecurrence = new EventRecurrence();
+			eventRecurrence.parse(eventDataViewModel.getNEW_EVENT().getAsString(CalendarContract.Events.RRULE));
+			if (eventRecurrence.bymonthdayCount > 0) {
+				//bymonthday=2 매월 2일마다 반복
+				Calendar calendar = Calendar.getInstance();
+				calendar.setTimeInMillis(startDate);
+				int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
+				eventRecurrence.bymonthday = new int[]{dayOfMonth};
+
+				eventDataViewModel.setRecurrence(eventRecurrence.toString());
+			} else if (eventRecurrence.bydayCount > 0 && eventRecurrence.freq == EventRecurrence.MONTHLY) {
+				Calendar calendar = Calendar.getInstance();
+				calendar.setTimeInMillis(startDate);
+				int weekOfMonth = calendar.get(Calendar.WEEK_OF_MONTH);
+				int day = 0;
+
+				switch (calendar.get(Calendar.DAY_OF_WEEK) - 1) {
+					case 0:
+						day = EventRecurrence.SU;
+						break;
+					case 1:
+						day = EventRecurrence.MO;
+						break;
+					case 2:
+						day = EventRecurrence.TU;
+						break;
+					case 3:
+						day = EventRecurrence.WE;
+						break;
+					case 4:
+						day = EventRecurrence.TH;
+						break;
+					case 5:
+						day = EventRecurrence.FR;
+						break;
+					case 6:
+						day = EventRecurrence.SA;
+						break;
+				}
+				eventRecurrence.byday = new int[]{weekOfMonth + day};
+				eventDataViewModel.setRecurrence(eventRecurrence.toString());
+			}
+
+		}
 	}
 
 	protected final void setDateText(DateTimeType dateType, long date) {

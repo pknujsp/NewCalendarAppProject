@@ -259,26 +259,23 @@ public class EventHelper {
 	}
 
 	private void checkTimeDependentFields(ContentValues originalEvent, ContentValues newEvent) {
-		final long originalBegin = originalEvent.getAsLong(Instances.BEGIN);
-		final long originalEnd = originalEvent.getAsLong(Instances.END);
+		final long originalBegin = originalEvent.getAsLong(Instances.DTSTART);
 		final boolean originalAllDay = originalEvent.getAsInteger(Events.ALL_DAY) == 1;
-		final String originalRRule = originalEvent.getAsString(Events.RRULE);
+		final long originalEnd = originalAllDay ? originalEvent.getAsLong(Instances.END) : originalEvent.getAsLong(Instances.DTEND);
 		final String originalTimeZone = originalEvent.getAsString(Events.EVENT_TIMEZONE);
 
-		final long newBegin = newEvent.getAsLong(Instances.BEGIN);
-		final long newEnd = newEvent.getAsLong(Instances.END);
+		final long newBegin = newEvent.getAsLong(Events.DTSTART);
+		final long newEnd = newEvent.getAsLong(Events.DTEND);
 		final boolean newAllDay = newEvent.getAsInteger(Events.ALL_DAY) == 1;
-		final String newRRule = newEvent.getAsString(Events.RRULE);
 		final String newTimeZone = newEvent.getAsString(Events.EVENT_TIMEZONE);
 
+
 		if (originalBegin == newBegin && originalEnd == newEnd &&
-				originalAllDay == newAllDay && originalRRule == newRRule
-				&& originalTimeZone == newTimeZone) {
+				originalAllDay == newAllDay && originalTimeZone.equals(newTimeZone)) {
 			newEvent.remove(Events.DTSTART);
 			newEvent.remove(Events.DTEND);
 			newEvent.remove(Events.DURATION);
 			newEvent.remove(Events.ALL_DAY);
-			newEvent.remove(Events.RRULE);
 			newEvent.remove(Events.EVENT_TIMEZONE);
 		}
 	}

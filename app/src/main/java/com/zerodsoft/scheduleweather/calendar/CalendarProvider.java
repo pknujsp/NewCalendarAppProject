@@ -16,10 +16,10 @@ import android.provider.CalendarContract;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.MutableLiveData;
 
+import com.zerodsoft.scheduleweather.calendar.calendarcommon2.EventRecurrence;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendar.interfaces.ICalendarProvider;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
-import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -29,6 +29,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import biweekly.property.RecurrenceRule;
 
 public class CalendarProvider implements ICalendarProvider {
 	private Context context;
@@ -669,69 +671,7 @@ public class CalendarProvider implements ICalendarProvider {
 	 */
 	@Override
 	public long updateAllFutureInstances(ContentValues modifiedInstance, ContentValues previousInstance) {
-		if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
-			ContentResolver contentResolver = context.getContentResolver();
-
-			//수정한 인스턴스의 종료일 가져오기
-			Calendar calendar = Calendar.getInstance();
-			calendar.setTimeInMillis(modifiedInstance.getAsLong(CalendarContract.Instances.BEGIN));
-			final Date modifiedInstanceDtEnd = calendar.getTime();
-
-			//기존 이벤트의 반복 종료일을 수정한 인스턴스의 종료일로 설정
-			String[] existingEventProjection = {CalendarContract.Events.RRULE};
-			String existingEventSelection = CalendarContract.Events.CALENDAR_ID + "=? AND" + CalendarContract.Events._ID + "=?";
-			String[] existingEventSelectionArgs = {previousInstance.getAsString(CalendarContract.Instances.CALENDAR_ID),
-					previousInstance.getAsString(CalendarContract.Instances.EVENT_ID)};
-
-			Cursor cursor = contentResolver.query(CalendarContract.Events.CONTENT_URI, existingEventProjection, existingEventSelection, existingEventSelectionArgs, null);
-			ContentValues existingEvent = new ContentValues();
-			existingEvent.put(CalendarContract.Events.CALENDAR_ID, previousInstance.getAsInteger(CalendarContract.Instances.CALENDAR_ID));
-			existingEvent.put(CalendarContract.Events._ID, previousInstance.getAsLong(CalendarContract.Instances.EVENT_ID));
-
-			while (cursor.moveToNext()) {
-				existingEvent.put(CalendarContract.Events.RRULE, cursor.getString(0));
-			}
-			cursor.close();
-
-			RecurrenceRule recurrenceRule = new RecurrenceRule();
-			recurrenceRule.separateValues(existingEvent.getAsString(CalendarContract.Events.RRULE));
-
-			if (recurrenceRule.containsKey(RecurrenceRule.UNTIL)) {
-				recurrenceRule.removeValue(RecurrenceRule.UNTIL);
-			}
-			recurrenceRule.putValue(RecurrenceRule.UNTIL, ClockUtil.yyyyMMdd.format(modifiedInstanceDtEnd));
-			existingEvent.put(CalendarContract.Events.RRULE, recurrenceRule.getRule());
-
-			//기존 이벤트 UNTIL값 수정 완료후 저장
-			contentResolver.update(CalendarContract.Events.CONTENT_URI, existingEvent, existingEventSelection, existingEventSelectionArgs);
-
-			//수정된 인스턴스를 새로운 이벤트로 저장
-			cursor = contentResolver.query(CalendarContract.Events.CONTENT_URI, existingEventProjection, existingEventSelection, existingEventSelectionArgs, null);
-			ContentValues newEvent = new ContentValues();
-
-			while (cursor.moveToNext()) {
-				String[] columnNames = cursor.getColumnNames();
-
-				int index = 0;
-				for (String columnName : columnNames) {
-					newEvent.put(columnName, cursor.getString(index++));
-				}
-			}
-			cursor.close();
-
-			newEvent.putAll(modifiedInstance);
-			newEvent.remove(CalendarContract.Instances._ID);
-			newEvent.remove(CalendarContract.Instances.EVENT_ID);
-
-			Uri uri = contentResolver.insert(CalendarContract.Events.CONTENT_URI, newEvent);
-
-
-			onModifiedFutureInstancesLiveData.setValue(modifiedInstance.getAsLong(CalendarContract.Events.DTSTART));
-
-			return Long.parseLong(uri.getLastPathSegment());
-		} else {
-			return -1L;
-		}
+		return 0;
 	}
 
 	@Override

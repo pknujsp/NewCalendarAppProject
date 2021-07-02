@@ -130,6 +130,7 @@ dependencies {
 
     implementation 'com.google.code.gson:gson:2.8.7'
 
+    implementation 'com.maltaisn:recurpicker:2.1.4'
 }
 
 apply plugin: 'com.google.gms.google-services'

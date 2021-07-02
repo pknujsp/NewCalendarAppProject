@@ -9,7 +9,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.CalendarContract;
 import android.provider.CalendarContract.Events;
-import android.provider.CalendarContract.Instances;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,11 +24,11 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.AsyncQueryService;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.EventHelper;
+import com.zerodsoft.scheduleweather.calendar.calendarcommon2.EventRecurrence;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
-import com.zerodsoft.scheduleweather.utility.RecurrenceRule;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -37,6 +36,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
+
+import biweekly.property.RecurrenceRule;
 
 public class ModifyInstanceFragment extends EventBaseFragment {
 	private OnModifyInstanceResultListener onModifyInstanceResultListener;
@@ -759,18 +760,19 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 		//recurrence가 계속 반복이면 dtend변경하지 않는다
 		if (modifiedEvent.containsKey(CalendarContract.Events.RRULE) || originalInstance.containsKey(CalendarContract.Instances.RRULE)) {
-			RecurrenceRule recurrenceRule = new RecurrenceRule();
+			EventRecurrence eventRecurrence = new EventRecurrence();
+
 
 			if (originalInstance.getAsString(CalendarContract.Instances.RRULE) != null) {
-				recurrenceRule.separateValues(originalInstance.getAsString(CalendarContract.Instances.RRULE));
+				eventRecurrence.parse(originalInstance.getAsString(CalendarContract.Instances.RRULE));
 
-				if (!recurrenceRule.containsKey(RecurrenceRule.UNTIL) && !recurrenceRule.containsKey(RecurrenceRule.COUNT)) {
+				if (eventRecurrence.until == null && eventRecurrence.count == 0) {
 					modifiedEvent.remove(CalendarContract.Events.DTEND);
 				}
 			} else if (modifiedEvent.containsKey(CalendarContract.Events.RRULE)) {
-				recurrenceRule.separateValues(modifiedEvent.getAsString(CalendarContract.Events.RRULE));
+				eventRecurrence.parse(modifiedEvent.getAsString(CalendarContract.Instances.RRULE));
 
-				if (!recurrenceRule.containsKey(RecurrenceRule.UNTIL) && !recurrenceRule.containsKey(RecurrenceRule.COUNT)) {
+				if (eventRecurrence.until == null && eventRecurrence.count == 0) {
 					modifiedEvent.remove(CalendarContract.Events.DTEND);
 				}
 			}
