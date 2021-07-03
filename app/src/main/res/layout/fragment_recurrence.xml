@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white"
+        android:clickable="true"
+        android:focusable="false">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <com.google.android.material.radiobutton.MaterialRadioButton
+                android:id="@+id/radio_not_repeat"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/not_repeat" />
+
+            <com.zerodsoft.scheduleweather.activity.editevent.fragments.EditRadioButton
+                android:id="@+id/radio_repeat_daily"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:inner_view_type="edittext" />
+
+            <com.zerodsoft.scheduleweather.activity.editevent.fragments.EditRadioButton
+                android:id="@+id/radio_repeat_weekly"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:inner_view_type="edittext" />
+
+            <LinearLayout
+                android:id="@+id/repeat_week_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:text="@string/recurrence_day"
+                    android:textSize="16sp" />
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/recurrence_day_chipgroup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:selectionRequired="true">
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/sunday_chip"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="false"
+                        android:text="@string/sunday" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/monday_chip"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="false"
+                        android:text="@string/monday" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/tuesday_chip"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="false"
+                        android:text="@string/tuesday" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/wednesday_chip"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="false"
+                        android:text="@string/wednesday" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/thursday_chip"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="false"
+                        android:text="@string/thursday" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/friday_chip"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="false"
+                        android:text="@string/friday" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/saturday_chip"
+                        style="@style/Widget.MaterialComponents.Chip.Choice"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="false"
+                        android:text="@string/saturday" />
+
+                </com.google.android.material.chip.ChipGroup>
+            </LinearLayout>
+
+            <com.zerodsoft.scheduleweather.activity.editevent.fragments.EditRadioButton
+                android:id="@+id/radio_repeat_monthly"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:inner_view_type="edittext" />
+
+            <LinearLayout
+                android:id="@+id/repeat_month_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:text="@string/recurrence_date"
+                    android:textSize="16sp" />
+
+                <RadioGroup
+                    android:id="@+id/repeat_month_date_radiogroup"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <com.google.android.material.radiobutton.MaterialRadioButton
+                        android:id="@+id/radio_repeat_monthly_same_day_of_month"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:checked="false"
+                        android:text="매월 5일마다 반복" />
+
+                    <com.google.android.material.radiobutton.MaterialRadioButton
+                        android:id="@+id/radio_repeat_monthly_same_week_day"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:checked="false"
+                        android:text="매월 1번째 금요일마다 반복" />
+
+                </RadioGroup>
+
+            </LinearLayout>
+
+            <com.zerodsoft.scheduleweather.activity.editevent.fragments.EditRadioButton
+                android:id="@+id/radio_repeat_yearly"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:inner_view_type="edittext" />
+
+            <LinearLayout
+                android:id="@+id/repeat_count_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:text="@string/repeat_count"
+                    android:textSize="16sp" />
+
+                <com.google.android.material.radiobutton.MaterialRadioButton
+                    android:id="@+id/repeat_endless"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/endless_repeat" />
+
+                <com.zerodsoft.scheduleweather.activity.editevent.fragments.EditRadioButton
+                    android:id="@+id/repeat_count"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:inner_view_type="edittext" />
+
+                <com.zerodsoft.scheduleweather.activity.editevent.fragments.EditRadioButton
+                    android:id="@+id/repeat_until"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:inner_view_type="textview" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </ScrollView>
+</layout>

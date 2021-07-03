@@ -17,6 +17,7 @@
             android:orientation="vertical">
 
             <com.google.android.material.appbar.AppBarLayout
+                android:id="@+id/app_bar_layout"
                 android:layout_width="match_parent"
                 android:layout_height="48dp">
 
@@ -47,6 +48,12 @@
                 </RelativeLayout>
 
             </com.google.android.material.appbar.AppBarLayout>
+
+            <androidx.fragment.app.FragmentContainerView
+                android:id="@+id/fragment_container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone" />
 
             <ScrollView
                 android:id="@+id/schedule_scroll_view"

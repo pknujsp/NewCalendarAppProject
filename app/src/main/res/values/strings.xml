@@ -102,11 +102,11 @@
 
     <string name="week">주</string>
     <string name="year">년</string>
-    <string name="repeat_days">일 간</string>
-    <string name="repeat_months">개월 간</string>
+    <string name="repeat_days">일 마다 반복</string>
+    <string name="repeat_months">개월 마다 반복</string>
 
-    <string name="repeat_weeks">주 간</string>
-    <string name="repeat_years">년 간</string>
+    <string name="repeat_weeks">주 마다 반복</string>
+    <string name="repeat_years">년 마다 반복</string>
 
     <string name="hour">시간</string>
     <string name="minute">분</string>
@@ -624,4 +624,11 @@
     <string name="remove_and_back">선택취소, 돌아가기</string>
     <string name="remove_and_search">재 선택</string>
     <string name="tag_selected_location_info_fragment">tag_selected_location_info_fragment</string>
+    <string name="tag_event_recurrence_dialog_fragment">tag_event_recurrence_dialog_fragment</string>
+    <string name="not_repeat">반복 없음</string>
+    <string name="repeat_count">반복 횟수</string>
+    <string name="recurrence_date">반복 날짜</string>
+    <string name="endless_repeat">계속 반복</string>
+    <string name="repeat_specific_count">회 반복</string>
+    <string name="repeat_until">까지 반복</string>
 </resources>

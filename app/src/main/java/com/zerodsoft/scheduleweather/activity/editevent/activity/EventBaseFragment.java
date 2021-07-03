@@ -1,12 +1,16 @@
 package com.zerodsoft.scheduleweather.activity.editevent.activity;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -34,12 +38,15 @@ import com.google.android.material.timepicker.MaterialTimePicker;
 import com.google.android.material.timepicker.TimeFormat;
 import com.maltaisn.recurpicker.Recurrence;
 import com.maltaisn.recurpicker.RecurrencePickerSettings;
+import com.maltaisn.recurpicker.format.RRuleFormatter;
+import com.maltaisn.recurpicker.format.RecurrenceFormatter;
 import com.maltaisn.recurpicker.list.RecurrenceListCallback;
 import com.maltaisn.recurpicker.list.RecurrenceListDialog;
 import com.maltaisn.recurpicker.picker.RecurrencePickerCallback;
 import com.maltaisn.recurpicker.picker.RecurrencePickerFragment;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.activity.editevent.adapter.CalendarListAdapter;
+import com.zerodsoft.scheduleweather.activity.editevent.fragments.RecurrenceFragment;
 import com.zerodsoft.scheduleweather.activity.editevent.fragments.TimeZoneFragment;
 import com.zerodsoft.scheduleweather.activity.editevent.interfaces.IEventRepeat;
 import com.zerodsoft.scheduleweather.activity.preferences.ColorListAdapter;
@@ -48,6 +55,7 @@ import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.calendarcommon2.EventRecurrence;
 import com.zerodsoft.scheduleweather.common.enums.EventIntentCode;
 import com.zerodsoft.scheduleweather.common.enums.LocationIntentCode;
+import com.zerodsoft.scheduleweather.common.interfaces.IFragmentTitle;
 import com.zerodsoft.scheduleweather.databinding.FragmentBaseEventBinding;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.DetailLocationSelectorKey;
@@ -60,6 +68,7 @@ import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -68,7 +77,7 @@ import java.util.TimeZone;
 
 import biweekly.property.RecurrenceRule;
 
-public abstract class EventBaseFragment extends Fragment implements IEventRepeat, RecurrenceListCallback, RecurrencePickerCallback {
+public abstract class EventBaseFragment extends Fragment implements IEventRepeat, IFragmentTitle {
 	protected FragmentBaseEventBinding binding;
 	protected NetworkStatus networkStatus;
 	protected CalendarViewModel calendarViewModel;
@@ -87,21 +96,73 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 	protected ContentValues selectedCalendarValues;
 	protected LocationDTO locationDTO;
 
-
-	protected Recurrence selectedRecurrence = Recurrence.DOES_NOT_REPEAT;
-
-	protected RecurrencePickerSettings settings = new RecurrencePickerSettings.Builder().build();
-	protected long startDate = System.currentTimeMillis();
-
-	protected RecurrenceListDialog listDialog;
-	protected RecurrencePickerFragment pickerFragment;
-
-
 	protected enum DateTimeType {
 		START,
 		END
 	}
 
+	protected final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+		@Override
+		public void handleOnBackPressed() {
+			if (!getChildFragmentManager().popBackStackImmediate()) {
+				getParentFragmentManager().popBackStackImmediate();
+			}
+		}
+	};
+
+	@Override
+	public void setTitle(String title) {
+		binding.fragmentTitle.setText(title);
+	}
+
+	@Override
+	public void onAttach(@NonNull @NotNull Context context) {
+		super.onAttach(context);
+		requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
+	}
+
+	private final FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks = new FragmentManager.FragmentLifecycleCallbacks() {
+		@Override
+		public void onFragmentAttached(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @NonNull @NotNull Context context) {
+			super.onFragmentAttached(fm, f, context);
+
+			if (f instanceof RecurrencePickerFragment || f instanceof TimeZoneFragment || f instanceof EventReminderFragment
+					|| f instanceof SelectionDetailLocationFragment || f instanceof AttendeesFragment || f instanceof RecurrenceFragment) {
+
+				if (f instanceof TimeZoneFragment) {
+					setTitle(getString(R.string.preference_title_custom_timezone));
+				} else if (f instanceof EventReminderFragment) {
+					setTitle(getString(R.string.reminder));
+				} else if (f instanceof SelectionDetailLocationFragment) {
+					setTitle(getString(R.string.location));
+				} else if (f instanceof AttendeesFragment) {
+					setTitle(getString(R.string.attendee));
+				} else if (f instanceof RecurrenceFragment) {
+					setTitle(getString(R.string.recurrence));
+				}
+
+				binding.fragmentContainer.setVisibility(View.VISIBLE);
+				binding.scheduleScrollView.setVisibility(View.GONE);
+				binding.saveBtn.setVisibility(View.GONE);
+			}
+		}
+
+		@Override
+		public void onFragmentDestroyed(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
+			super.onFragmentDestroyed(fm, f);
+			setOriginalMainFragmentTitle();
+
+			if (f instanceof RecurrencePickerFragment || f instanceof TimeZoneFragment || f instanceof EventReminderFragment
+					|| f instanceof SelectionDetailLocationFragment || f instanceof AttendeesFragment || f instanceof RecurrenceFragment) {
+
+				binding.fragmentContainer.setVisibility(View.GONE);
+				binding.scheduleScrollView.setVisibility(View.VISIBLE);
+				binding.saveBtn.setVisibility(View.VISIBLE);
+			}
+		}
+	};
+
+	protected abstract void setOriginalMainFragmentTitle();
 
 	@Override
 	public View onCreateView(@NonNull @NotNull LayoutInflater inflater, @Nullable @org.jetbrains.annotations.Nullable ViewGroup container, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
@@ -113,11 +174,28 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 	public void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback());
+		getChildFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false);
+
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		onBackPressedCallback.remove();
+		getChildFragmentManager().unregisterFragmentLifecycleCallbacks(fragmentLifecycleCallbacks);
 	}
 
 	@Override
 	public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+
+		binding.backBtn.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				onBackPressedCallback.handleOnBackPressed();
+			}
+		});
+
 
 		binding.titleLayout.title.addTextChangedListener(new TextWatcher() {
 			@Override
@@ -230,11 +308,11 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 			public void onResult(TimeZone timeZone) {
 				eventDataViewModel.setTimezone(timeZone.getID());
 				setTimeZoneText(timeZone.getID());
-				getParentFragmentManager().popBackStackImmediate();
+				getChildFragmentManager().popBackStackImmediate();
 			}
 		});
 
-		getParentFragmentManager().beginTransaction().hide(this)
+		getChildFragmentManager().beginTransaction()
 				.add(R.id.fragment_container, timeZoneFragment, getString(R.string.tag_timezone_fragment))
 				.addToBackStack(getString(R.string.tag_timezone_fragment)).commit();
 	}
@@ -244,56 +322,35 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		binding.timeLayout.eventTimezone.setText(timeZone.getDisplayName(Locale.KOREAN));
 	}
 
-	@Override
-	public void onRecurrenceCustomClicked() {
-		// The "Custom..." item in the recurrence list dialog was clicked. Show the picker fragment.
-		pickerFragment.setSelectedRecurrence(selectedRecurrence);
-		pickerFragment.setStartDate(startDate);
-		getChildFragmentManager().beginTransaction()
-				.add(R.id.fragment_container, pickerFragment, getString(R.string.tag_event_recurrence_fragment))
-				.addToBackStack(getString(R.string.tag_event_recurrence_fragment))
-				.commit();
-	}
-
-	@Override
-	public void onRecurrencePresetSelected(@NotNull Recurrence recurrence) {
-		// A recurrence preset item in the recurrence list dialog was selected.
-		setSelectedRecurrence(recurrence);
-	}
-
-	@Override
-	public void onRecurrenceCreated(@NotNull Recurrence recurrence) {
-		// A custom recurrence was created with the recurrence picker fragment.
-		setSelectedRecurrence(recurrence);
-	}
-
-	private void setSelectedRecurrence(Recurrence recurrence) {
-		selectedRecurrence = recurrence;
-		String result = settings.getFormatter().format(getContext(), recurrence, startDate);
-	}
 
 	protected final void onClickedRecurrence(String rRule, long dtStart) {
 		Bundle bundle = new Bundle();
 		bundle.putString(CalendarContract.Events.RRULE, rRule);
 		bundle.putLong(CalendarContract.Events.DTSTART, dtStart);
 
-		listDialog = RecurrenceListDialog.newInstance(settings);
-		pickerFragment = RecurrencePickerFragment.newInstance(settings);
+		RecurrenceFragment recurrenceFragment = new RecurrenceFragment(new RecurrenceFragment.OnResultRecurrence() {
+			@Override
+			public void onResult(String rrule) {
 
-		listDialog.setSelectedRecurrence(selectedRecurrence);
-		listDialog.setStartDate(startDate);
-		listDialog.show(getChildFragmentManager(), getString(R.string.tag_event_recurrence_fragment));
+			}
+		});
 
-		eventDataViewModel.setRecurrence(rRule);
-		setRRuleIfFreqMonthly(dtStart);
-		setRecurrenceText(rRule);
+		recurrenceFragment.setArguments(bundle);
+
+		getChildFragmentManager().beginTransaction()
+				.add(R.id.fragment_container, recurrenceFragment, getString(R.string.tag_event_recurrence_fragment))
+				.addToBackStack(getString(R.string.tag_event_recurrence_fragment)).commit();
 	}
 
-	protected final void setRecurrenceText(String rRule) {
+	protected final void setRecurrenceText(String rRule, long startDate) {
 		if (!rRule.isEmpty()) {
-			EventRecurrence eventRecurrence = new EventRecurrence();
-			eventRecurrence.parse(rRule);
-			binding.recurrenceLayout.eventRecurrence.setText(eventRecurrence.toString());
+			Recurrence recurrence = new RRuleFormatter().parse(rRule);
+			RecurrenceFormatter recurrenceFormatter = new RecurrenceFormatter(DateFormat.getInstance());
+
+			String result = recurrenceFormatter.format(getContext(), recurrence,
+					startDate);
+
+			binding.recurrenceLayout.eventRecurrence.setText(result);
 		} else {
 			binding.recurrenceLayout.eventRecurrence.setText("");
 		}
@@ -523,7 +580,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 			}
 		});
 		eventReminderFragment.setArguments(bundle);
-		getParentFragmentManager().beginTransaction().hide(this)
+		getChildFragmentManager().beginTransaction()
 				.add(R.id.fragment_container, eventReminderFragment, getString(R.string.tag_event_reminder_fragment))
 				.addToBackStack(getString(R.string.tag_event_reminder_fragment)).commit();
 	}
@@ -628,7 +685,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 				}
 			});
 			eventReminderFragment.setArguments(bundle);
-			getParentFragmentManager().beginTransaction().hide(EventBaseFragment.this)
+			getChildFragmentManager().beginTransaction()
 					.add(R.id.fragment_container, eventReminderFragment, getString(R.string.tag_event_reminder_fragment))
 					.addToBackStack(getString(R.string.tag_event_reminder_fragment)).commit();
 		}
@@ -933,7 +990,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 			}
 
 			selectionDetailLocationFragment.setArguments(bundle);
-			getParentFragmentManager().beginTransaction().hide(this).add(R.id.fragment_container
+			getChildFragmentManager().beginTransaction().add(R.id.fragment_container
 					, selectionDetailLocationFragment, getString(R.string.tag_detail_location_selection_fragment))
 					.addToBackStack(getString(R.string.tag_detail_location_selection_fragment)).commit();
 		} else {
@@ -960,7 +1017,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		});
 
 		attendeesFragment.setArguments(bundle);
-		getParentFragmentManager().beginTransaction().hide(this)
+		getChildFragmentManager().beginTransaction()
 				.add(R.id.fragment_container, attendeesFragment, getString(R.string.tag_attendees_fragment))
 				.addToBackStack(getString(R.string.tag_attendees_fragment)).commit();
 	}

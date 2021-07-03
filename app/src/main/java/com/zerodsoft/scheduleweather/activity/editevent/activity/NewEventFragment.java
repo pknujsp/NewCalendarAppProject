@@ -44,6 +44,11 @@ public class NewEventFragment extends EventBaseFragment {
 	}
 
 	@Override
+	protected void setOriginalMainFragmentTitle() {
+		binding.fragmentTitle.setText(R.string.new_event);
+	}
+
+	@Override
 	public View onCreateView(@NonNull @NotNull LayoutInflater inflater, @Nullable @org.jetbrains.annotations.Nullable ViewGroup container, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 		return super.onCreateView(inflater, container, savedInstanceState);
 	}
@@ -52,12 +57,6 @@ public class NewEventFragment extends EventBaseFragment {
 	public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		binding.fragmentTitle.setText(R.string.new_event);
-		binding.backBtn.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				getParentFragmentManager().popBackStackImmediate();
-			}
-		});
 
 		binding.reminderLayout.notReminder.setVisibility(View.GONE);
 		binding.descriptionLayout.notDescription.setVisibility(View.GONE);
@@ -327,6 +326,7 @@ public class NewEventFragment extends EventBaseFragment {
 			getParentFragmentManager().popBackStack();
 		}
 	}
+
 
 	public interface OnNewEventResultListener {
 		void onSavedNewEvent(long eventId, long begin);

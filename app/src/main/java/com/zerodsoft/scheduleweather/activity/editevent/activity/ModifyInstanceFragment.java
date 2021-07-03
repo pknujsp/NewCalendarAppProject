@@ -76,6 +76,11 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 	}
 
 	@Override
+	protected void setOriginalMainFragmentTitle() {
+		binding.fragmentTitle.setText(R.string.modify_event);
+	}
+
+	@Override
 	public View onCreateView(@NonNull @NotNull LayoutInflater inflater, @Nullable @org.jetbrains.annotations.Nullable ViewGroup container, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 		return super.onCreateView(inflater, container, savedInstanceState);
 	}
@@ -84,12 +89,6 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 	public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		binding.fragmentTitle.setText(R.string.modify_event);
-		binding.backBtn.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				getParentFragmentManager().popBackStackImmediate();
-			}
-		});
 
 		binding.reminderLayout.notReminder.setVisibility(View.GONE);
 		binding.descriptionLayout.notDescription.setVisibility(View.GONE);
@@ -488,7 +487,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 		// 반복
 		if (originalInstance.getAsString(CalendarContract.Instances.RRULE) != null) {
-			setRecurrenceText(originalInstance.getAsString(CalendarContract.Instances.RRULE));
+			setRecurrenceText(originalInstance.getAsString(CalendarContract.Instances.RRULE), originalInstanceBeginDate);
 		}
 
 		// 알림
@@ -850,6 +849,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 			newEventValues.put(key, originalInstance.getAsString(key));
 		}
 	}
+
 
 	public interface OnModifyInstanceResultListener {
 
