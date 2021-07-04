@@ -206,7 +206,9 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 			// 반복 룰과 이벤트의 시작 시간 전달
 			String rRule = null;
 
-			if (eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.RRULE)) {
+			if (eventDataViewModel.getRemovedValueSet().contains(Events.RRULE)) {
+				rRule = "";
+			} else if (eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.RRULE)) {
 				rRule = eventDataViewModel.getNEW_EVENT().getAsString(CalendarContract.Events.RRULE);
 			} else if (originalInstance.getAsString(CalendarContract.Instances.RRULE) != null) {
 				rRule = originalInstance.getAsString(CalendarContract.Instances.RRULE);
@@ -487,7 +489,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 		// 반복
 		if (originalInstance.getAsString(CalendarContract.Instances.RRULE) != null) {
-			setRecurrenceText(originalInstance.getAsString(CalendarContract.Instances.RRULE), originalInstanceBeginDate);
+			setRecurrenceText(originalInstance.getAsString(CalendarContract.Instances.RRULE));
 		}
 
 		// 알림
