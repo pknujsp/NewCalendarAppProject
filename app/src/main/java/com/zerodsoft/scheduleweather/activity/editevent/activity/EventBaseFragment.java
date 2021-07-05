@@ -14,8 +14,10 @@ import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.provider.CalendarContract;
+import android.provider.CalendarContract.Events;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.text.format.DateUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -431,7 +433,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 							eventDataViewModel.setEventColor(newEventColor, newEventColorKey);
 							binding.titleLayout.eventColor.setBackgroundColor(EventUtil.getColor(newEventColor));
 
-							if (!eventDataViewModel.getATTENDEES().isEmpty()) {
+							if (!eventDataViewModel.getNEW_ATTENDEES().isEmpty()) {
 								eventDataViewModel.removeAttendee(accountName);
 								createAttendeeListView();
 							}
@@ -452,7 +454,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 			binding.attendeeLayout.eventAttendeesTable.removeAllViews();
 		}
 
-		List<ContentValues> attendeeList = eventDataViewModel.getATTENDEES();
+		List<ContentValues> attendeeList = eventDataViewModel.getNEW_ATTENDEES();
 
 		if (attendeeList.isEmpty()) {
 			// 참석자 버튼 텍스트 수정
@@ -533,7 +535,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 				break;
 			}
 		}
-		if (eventDataViewModel.getATTENDEES().isEmpty()) {
+		if (eventDataViewModel.getNEW_ATTENDEES().isEmpty()) {
 			binding.attendeeLayout.showAttendeesDetail.setText(getString(R.string.add_attendee));
 		}
 	}
@@ -867,11 +869,15 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 	protected abstract void initTimePicker(DateTimeType dateType);
 
 	protected final void convertDtEndForAllDay(ContentValues contentValues) {
-		Calendar calendar = Calendar.getInstance();
-		calendar.setTimeInMillis(contentValues.getAsLong(CalendarContract.Events.DTEND));
-		calendar.add(Calendar.DAY_OF_YEAR, 1);
+		if (contentValues.containsKey(CalendarContract.Events.ALL_DAY)) {
+			if (contentValues.getAsInteger(CalendarContract.Events.ALL_DAY) == 1) {
+				Calendar calendar = Calendar.getInstance();
+				calendar.setTimeInMillis(contentValues.getAsLong(CalendarContract.Events.DTEND));
+				calendar.add(Calendar.DAY_OF_YEAR, 1);
 
-		contentValues.put(CalendarContract.Events.DTEND, calendar.getTimeInMillis());
+				contentValues.put(CalendarContract.Events.DTEND, calendar.getTimeInMillis());
+			}
+		}
 	}
 
 	protected final void onClickedLocation(@Nullable String eventLocation) {
@@ -977,7 +983,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		organizer.put(CalendarContract.Attendees.ATTENDEE_EMAIL, selectedCalendarValues.getAsString(CalendarContract.Calendars.ACCOUNT_NAME));
 		organizer.put(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP, CalendarContract.Attendees.RELATIONSHIP_ORGANIZER);
 
-		bundle.putParcelableArrayList("attendeeList", (ArrayList<? extends Parcelable>) eventDataViewModel.getATTENDEES());
+		bundle.putParcelableArrayList("attendeeList", (ArrayList<? extends Parcelable>) eventDataViewModel.getNEW_ATTENDEES());
 		bundle.putParcelable("organizer", organizer);
 
 		AttendeesFragment attendeesFragment = new AttendeesFragment(new AttendeesFragment.OnAttendeesResultListener() {

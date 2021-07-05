@@ -336,6 +336,9 @@ public class RecurrenceFragment extends Fragment {
 			} else if (binding.repeatUntil.isChecked()) {
 				Time until = new Time();
 				until.set(untilDate.getTime());
+				until.hour = 0;
+				until.minute = 0;
+				until.second = 0;
 				newEventRecurrence.until = until.format2445();
 			}
 
@@ -343,7 +346,8 @@ public class RecurrenceFragment extends Fragment {
 			if (newEventRecurrence.interval == 1) {
 				newEventRecurrence.interval = 0;
 			}
-
+			
+			newEventRecurrence.wkst = EventRecurrence.SU;
 			onResultRecurrence.onResult(newEventRecurrence.toString());
 		}
 		super.onDestroy();

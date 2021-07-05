@@ -12,6 +12,7 @@ import android.provider.CalendarContract.Reminders;
 import android.provider.CalendarContract.Attendees;
 import android.provider.CalendarContract.Calendars;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 import android.text.format.Time;
 import android.util.Log;
 
@@ -21,6 +22,7 @@ import com.zerodsoft.scheduleweather.common.enums.EventIntentCode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -29,82 +31,134 @@ import biweekly.property.Attendee;
 public class EventHelper {
 	private final AsyncQueryService mService;
 
+	public enum UpdateType {
+		UPDATE_ONLY_THIS_EVENT,
+		UPDATE_FOLLOWING_EVENTS,
+		UPDATE_ALL_EVENTS
+	}
+
 	public EventHelper(AsyncQueryService asyncQueryService) {
 		mService = asyncQueryService;
 	}
 
-	public void saveFollowingEvents(ContentValues originalEvent, ContentValues newEvent,
-	                                List<ContentValues> originalReminderList,
-	                                List<ContentValues> originalAttendeeList,
-	                                List<ContentValues> newReminderList,
-	                                List<ContentValues> newAttendeeList,
-	                                ContentValues selectedCalendar) {
+
+	public void updateEvent(UpdateType updateType
+			, ContentValues originalEvent, ContentValues newEvent,
+			                List<ContentValues> originalReminderList,
+			                List<ContentValues> originalAttendeeList,
+			                List<ContentValues> newReminderList,
+			                List<ContentValues> newAttendeeList,
+			                ContentValues selectedCalendar) {
 		if (newEvent.size() == 0) {
 			return;
-		}
-
-		if (originalEvent != null && !isSameEvent(originalEvent, newEvent)) {
+		} else if (isUnchanged(newEvent)) {
 			return;
 		}
 
-		if (originalEvent != null && isUnchanged(newEvent)) {
-			return;
-		}
-
-		int eventIdIndex = -1;
 		Uri uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI
 				, originalEvent.getAsLong(Instances.EVENT_ID));
-
-		newEvent.remove(Events._ID);
-
 		ArrayList<ContentProviderOperation> contentProviderOperationList
 				= new ArrayList<>();
+		int eventIdIndex = -1;
+		boolean forceSaveReminders = false;
 
-		boolean hasRRuleInNewEvent = false;
-		if (newEvent.containsKey(Events.RRULE)) {
-			hasRRuleInNewEvent = true;
-		}
+		if (updateType == UpdateType.UPDATE_ONLY_THIS_EVENT) {
+			ContentValues values = new ContentValues();
+			values.put(Events.ORIGINAL_INSTANCE_TIME, originalEvent.getAsLong(Instances.BEGIN));
+			values.put(Events.STATUS, Events.STATUS_CANCELED);
 
-		if (!hasRRuleInNewEvent) {
-			if (isFirstInstance(originalEvent, newEvent)) {
-				contentProviderOperationList.add(
-						ContentProviderOperation.newDelete(uri).build());
-			} else {
-				updatePastEvents(contentProviderOperationList,
-						originalEvent, newEvent);
-			}
+			Uri exceptionUri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_EXCEPTION_URI,
+					originalEvent.getAsLong(CalendarContract.Instances.EVENT_ID));
+			contentProviderOperationList.add(ContentProviderOperation.newInsert(exceptionUri).withValues(values)
+					.build());
 
 			eventIdIndex = contentProviderOperationList.size();
 			newEvent.put(Events.STATUS, originalEvent.getAsInteger(Events.STATUS));
+			setDuration(newEvent);
 			contentProviderOperationList.add(ContentProviderOperation.newInsert(Events.CONTENT_URI).withValues(newEvent)
 					.build());
-		} else {
-			if (isFirstInstance(originalEvent, newEvent)) {
-				checkTimeDependentFields(originalEvent, newEvent);
+			forceSaveReminders = true;
+		} else if (updateType == UpdateType.UPDATE_FOLLOWING_EVENTS) {
+			newEvent.remove(Events._ID);
 
-				ContentProviderOperation.Builder b = ContentProviderOperation.newUpdate(uri)
-						.withValues(newEvent);
-				contentProviderOperationList.add(b.build());
-			} else {
-				String newRRule = updatePastEvents(contentProviderOperationList, originalEvent, newEvent);
-				if (newEvent.getAsString(Events.RRULE).equals(originalEvent.getAsString(Events.RRULE))) {
-					newEvent.put(Events.RRULE, newRRule);
-				}
-				eventIdIndex = contentProviderOperationList.size();
-				newEvent.put(Events.STATUS, originalEvent.getAsInteger(Events.STATUS));
-				contentProviderOperationList.add(ContentProviderOperation.newInsert(Events.CONTENT_URI).withValues(newEvent)
-						.build());
+			boolean hasRRuleInNewEvent = false;
+			if (newEvent.containsKey(Events.RRULE)) {
+				hasRRuleInNewEvent = true;
 			}
 
+			if (!hasRRuleInNewEvent) {
+				if (isFirstInstance(originalEvent, newEvent)) {
+					contentProviderOperationList.add(
+							ContentProviderOperation.newDelete(uri).build());
+				} else {
+					updatePastEvents(contentProviderOperationList,
+							originalEvent, newEvent);
+				}
+
+				eventIdIndex = contentProviderOperationList.size();
+				newEvent.put(Events.STATUS, originalEvent.getAsInteger(Events.STATUS));
+				setDuration(newEvent);
+
+				contentProviderOperationList.add(ContentProviderOperation.newInsert(Events.CONTENT_URI).withValues(newEvent)
+						.build());
+			} else {
+				if (isFirstInstance(originalEvent, newEvent)) {
+					checkTimeDependentFields(originalEvent, newEvent, updateType);
+					setDuration(newEvent);
+
+					ContentProviderOperation.Builder b = ContentProviderOperation.newUpdate(uri)
+							.withValues(newEvent);
+					contentProviderOperationList.add(b.build());
+				} else {
+					String newRRule = updatePastEvents(contentProviderOperationList, originalEvent, newEvent);
+					if (newEvent.getAsString(Events.RRULE).equals(originalEvent.getAsString(Events.RRULE))) {
+						newEvent.put(Events.RRULE, newRRule);
+					}
+					eventIdIndex = contentProviderOperationList.size();
+					newEvent.put(Events.STATUS, originalEvent.getAsInteger(Events.STATUS));
+					setDuration(newEvent);
+
+					contentProviderOperationList.add(ContentProviderOperation.newInsert(Events.CONTENT_URI).withValues(newEvent)
+							.build());
+				}
+			}
+
+			forceSaveReminders = true;
+		} else if (updateType == UpdateType.UPDATE_ALL_EVENTS) {
+			boolean hasRRuleInNewEvent = false;
+			if (newEvent.containsKey(Events.RRULE)) {
+				hasRRuleInNewEvent = true;
+			}
+
+			if (!hasRRuleInNewEvent) {
+				contentProviderOperationList.add(ContentProviderOperation.newDelete(uri).build());
+
+				eventIdIndex = contentProviderOperationList.size();
+				setDuration(newEvent);
+				contentProviderOperationList.add(ContentProviderOperation.newInsert(Events.CONTENT_URI).withValues(newEvent)
+						.build());
+				forceSaveReminders = true;
+			} else {
+				checkTimeDependentFields(originalEvent, newEvent, updateType);
+				contentProviderOperationList.add(ContentProviderOperation.newUpdate(uri).withValues(newEvent).build());
+			}
 		}
 
+		final boolean isNewEvent = eventIdIndex != -1;
+
 		//reminders
-		saveRemindersWithBackRef(contentProviderOperationList, eventIdIndex, originalReminderList,
-				newReminderList);
+		if (isNewEvent) {
+			saveRemindersWithBackRef(contentProviderOperationList, eventIdIndex, originalReminderList,
+					newReminderList, forceSaveReminders);
+		} else {
+			long eventId = ContentUris.parseId(uri);
+			saveReminders(contentProviderOperationList, eventId, newReminderList
+					, originalReminderList, forceSaveReminders);
+		}
 
 		//attendees
 		ContentValues values = new ContentValues();
-		ContentProviderOperation.Builder builder;
+		ContentProviderOperation.Builder attendeeOperationBuilder;
 		final boolean hasAttendeeData = newAttendeeList.size() != 0;
 		Long ownerAttendeeId = null;
 
@@ -120,8 +174,8 @@ public class EventHelper {
 			values.clear();
 			values.put(Attendees.ATTENDEE_STATUS, newEvent.getAsInteger(Events.SELF_ATTENDEE_STATUS));
 			values.put(Attendees.EVENT_ID, ownerAttendeeId);
-			builder = ContentProviderOperation.newUpdate(attUri).withValues(values);
-			contentProviderOperationList.add(builder.build());
+			attendeeOperationBuilder = ContentProviderOperation.newUpdate(attUri).withValues(values);
+			contentProviderOperationList.add(attendeeOperationBuilder.build());
 		} else if (hasAttendeeData && ownerAttendeeId == null) {
 			String ownerEmail = selectedCalendar.getAsString(Calendars.OWNER_ACCOUNT);
 
@@ -132,32 +186,93 @@ public class EventHelper {
 				values.put(Attendees.ATTENDEE_TYPE, Attendees.TYPE_REQUIRED);
 				values.put(Attendees.ATTENDEE_STATUS, Attendees.ATTENDEE_STATUS_ACCEPTED);
 
-				builder = ContentProviderOperation.newInsert(Attendees.CONTENT_URI)
-						.withValues(values);
-				builder.withValueBackReference(Attendees.EVENT_ID, eventIdIndex);
-
-				contentProviderOperationList.add(builder.build());
+				if (isNewEvent) {
+					attendeeOperationBuilder = ContentProviderOperation.newInsert(Attendees.CONTENT_URI)
+							.withValues(values);
+					attendeeOperationBuilder.withValueBackReference(Attendees.EVENT_ID, eventIdIndex);
+				} else {
+					values.put(Attendees.EVENT_ID, originalEvent.getAsLong(Instances.EVENT_ID));
+					attendeeOperationBuilder = ContentProviderOperation.newInsert(Attendees.CONTENT_URI)
+							.withValues(values);
+				}
+				contentProviderOperationList.add(attendeeOperationBuilder.build());
 			}
 		}
 
-		if (hasAttendeeData) {
-			Map<String, ContentValues> newAttendees = new HashMap<>();
+		if (hasAttendeeData && (isNewEvent || uri != null)) {
+			StringBuilder newAttendeesString = new StringBuilder();
+			StringBuilder originalAttendeesString = new StringBuilder();
+
 			for (ContentValues newAttendee : newAttendeeList) {
-				newAttendees.put(newAttendee.getAsString(Attendees.ATTENDEE_EMAIL)
-						, newAttendee);
+				newAttendeesString.append(newAttendee.getAsString(Attendees.ATTENDEE_EMAIL));
 			}
-			if (!newAttendees.isEmpty()) {
-				for (ContentValues attendee : newAttendees.values()) {
-					attendee.put(Attendees.ATTENDEE_RELATIONSHIP,
-							Attendees.RELATIONSHIP_ATTENDEE);
-					attendee.put(Attendees.ATTENDEE_TYPE, Attendees.TYPE_REQUIRED);
-					attendee.put(Attendees.ATTENDEE_STATUS, Attendees.ATTENDEE_STATUS_NONE);
+			for (ContentValues originalAttendee : originalAttendeeList) {
+				originalAttendeesString.append(originalAttendee.getAsString(Attendees.ATTENDEE_EMAIL));
+			}
 
-					builder = ContentProviderOperation.newInsert(Attendees.CONTENT_URI)
-							.withValues(attendee);
-					builder.withValueBackReference(Attendees.EVENT_ID, eventIdIndex);
+			if (isNewEvent || !TextUtils.equals(originalAttendeesString.toString(), newAttendeesString.toString())) {
+				HashMap<String, ContentValues> newAttendeesMap = new HashMap<>();
 
-					contentProviderOperationList.add(builder.build());
+				for (ContentValues newAttendee : newAttendeeList) {
+					newAttendeesMap.put(newAttendee.getAsString(Attendees.ATTENDEE_EMAIL), newAttendee);
+				}
+
+				LinkedList<String> removedAttendeeList = new LinkedList<>();
+				long eventId = uri != null ? ContentUris.parseId(uri) : -1;
+
+				if (!isNewEvent) {
+					HashMap<String, ContentValues> originalAttendeesMap = new HashMap<>();
+					for (ContentValues originalAttendee : originalAttendeeList) {
+						originalAttendeesMap.put(originalAttendee.getAsString(Attendees.ATTENDEE_EMAIL), originalAttendee);
+					}
+
+					for (String originalEmail : originalAttendeesMap.keySet()) {
+						if (newAttendeesMap.containsKey(originalEmail)) {
+							newAttendeesMap.remove(originalEmail);
+						} else {
+							removedAttendeeList.add(originalEmail);
+						}
+					}
+
+					if (removedAttendeeList.size() > 0) {
+						attendeeOperationBuilder = ContentProviderOperation.newDelete(Attendees.CONTENT_URI);
+
+						String[] args = new String[removedAttendeeList.size() + 1];
+						args[0] = Long.toString(eventId);
+						int i = 1;
+						StringBuilder deleteWhere = new StringBuilder(Attendees.EVENT_ID + "=? AND "
+								+ Attendees.ATTENDEE_EMAIL + " IN (");
+						for (String removedAttendee : removedAttendeeList) {
+							if (i > 1) {
+								deleteWhere.append(",");
+							}
+							deleteWhere.append("?");
+							args[i++] = removedAttendee;
+						}
+						deleteWhere.append(")");
+						attendeeOperationBuilder.withSelection(deleteWhere.toString(), args);
+						contentProviderOperationList.add(attendeeOperationBuilder.build());
+					}
+				}
+
+				if (newAttendeesMap.size() > 0) {
+					for (ContentValues newAttendee : newAttendeesMap.values()) {
+						newAttendee.put(Attendees.ATTENDEE_RELATIONSHIP,
+								Attendees.RELATIONSHIP_ATTENDEE);
+						newAttendee.put(Attendees.ATTENDEE_TYPE, Attendees.TYPE_REQUIRED);
+						newAttendee.put(Attendees.ATTENDEE_STATUS, Attendees.ATTENDEE_STATUS_NONE);
+
+						if (isNewEvent) {
+							attendeeOperationBuilder = ContentProviderOperation.newInsert(Attendees.CONTENT_URI)
+									.withValues(values);
+							attendeeOperationBuilder.withValueBackReference(Attendees.EVENT_ID, eventIdIndex);
+						} else {
+							values.put(Attendees.EVENT_ID, eventId);
+							attendeeOperationBuilder = ContentProviderOperation.newInsert(Attendees.CONTENT_URI)
+									.withValues(values);
+						}
+						contentProviderOperationList.add(attendeeOperationBuilder.build());
+					}
 				}
 			}
 		}
@@ -166,9 +281,32 @@ public class EventHelper {
 				0);
 	}
 
+
+	public boolean saveReminders(ArrayList<ContentProviderOperation> ops, long eventId,
+	                             List<ContentValues> newReminderList, List<ContentValues> originalReminderList,
+	                             boolean forceSave) {
+		if (newReminderList.equals(originalReminderList) && !forceSave) {
+			return false;
+		}
+
+		String where = Reminders.EVENT_ID + "=?";
+		String[] args = new String[]{Long.toString(eventId)};
+		ContentProviderOperation.Builder b = ContentProviderOperation
+				.newDelete(Reminders.CONTENT_URI);
+		b.withSelection(where, args);
+		ops.add(b.build());
+
+		for (ContentValues reminder : newReminderList) {
+			reminder.put(Reminders.EVENT_ID, eventId);
+			b = ContentProviderOperation.newInsert(Reminders.CONTENT_URI).withValues(reminder);
+			ops.add(b.build());
+		}
+		return true;
+	}
+
 	private boolean saveRemindersWithBackRef(ArrayList<ContentProviderOperation> contentProviderOperationList, Integer eventIdIndex,
-	                                         List<ContentValues> originalReminderList, List<ContentValues> newReminderList) {
-		if (originalReminderList.equals(newReminderList)) {
+	                                         List<ContentValues> originalReminderList, List<ContentValues> newReminderList, boolean forceSave) {
+		if (originalReminderList.equals(newReminderList) && !forceSave) {
 			return false;
 		}
 
@@ -258,7 +396,7 @@ public class EventHelper {
 		return newRRule;
 	}
 
-	private void checkTimeDependentFields(ContentValues originalEvent, ContentValues newEvent) {
+	private void checkTimeDependentFields(ContentValues originalEvent, ContentValues newEvent, UpdateType updateType) {
 		final long originalBegin = originalEvent.getAsLong(Instances.DTSTART);
 		final boolean originalAllDay = originalEvent.getAsInteger(Events.ALL_DAY) == 1;
 		final long originalEnd = originalAllDay ? originalEvent.getAsLong(Instances.END) : originalEvent.getAsLong(Instances.DTEND);
@@ -269,7 +407,6 @@ public class EventHelper {
 		final boolean newAllDay = newEvent.getAsInteger(Events.ALL_DAY) == 1;
 		final String newTimeZone = newEvent.getAsString(Events.EVENT_TIMEZONE);
 
-
 		if (originalBegin == newBegin && originalEnd == newEnd &&
 				originalAllDay == newAllDay && originalTimeZone.equals(newTimeZone)) {
 			newEvent.remove(Events.DTSTART);
@@ -277,7 +414,25 @@ public class EventHelper {
 			newEvent.remove(Events.DURATION);
 			newEvent.remove(Events.ALL_DAY);
 			newEvent.remove(Events.EVENT_TIMEZONE);
+		} else if (updateType == UpdateType.UPDATE_ALL_EVENTS) {
+			long oldStartMillis = originalEvent.getAsLong(Events.DTSTART);
+			if (originalBegin != newBegin) {
+				// The user changed the start time of this event
+				long offset = newBegin - originalBegin;
+				oldStartMillis += offset;
+			}
+			if (newAllDay) {
+				Time time = new Time(Time.TIMEZONE_UTC);
+				time.set(oldStartMillis);
+				time.hour = 0;
+				time.minute = 0;
+				time.second = 0;
+				oldStartMillis = time.toMillis(false);
+			}
+			newEvent.put(Events.DTSTART, oldStartMillis);
 		}
+
+
 	}
 
 	private boolean isFirstInstance(ContentValues originalEvent, ContentValues newEvent) {
@@ -285,17 +440,6 @@ public class EventHelper {
 				newEvent.getAsLong(Events.DTSTART));
 	}
 
-	public boolean isSameEvent(ContentValues originalEvent, ContentValues newEvent) {
-		if (!originalEvent.getAsInteger(CalendarContract.Events.CALENDAR_ID)
-				.equals(newEvent.getAsInteger(CalendarContract.Events.CALENDAR_ID))) {
-			return false;
-		} else if (!originalEvent.getAsLong(CalendarContract.Instances.EVENT_ID)
-				.equals(newEvent.getAsLong(CalendarContract.Events._ID))) {
-			return false;
-		} else {
-			return true;
-		}
-	}
 
 	public boolean isUnchanged(ContentValues newEvent) {
 		if (newEvent.size() == 0) {
@@ -303,6 +447,34 @@ public class EventHelper {
 		} else {
 			return false;
 		}
+	}
+
+	public void setDuration(ContentValues newEvent) {
+		//반복 이벤트면 dtEnd를 삭제하고 duration추가
+		if (newEvent.containsKey(Events.RRULE)) {
+			final long start = newEvent.getAsLong(Events.DTSTART);
+			final long end = newEvent.getAsLong(Events.DTEND);
+			final boolean isAllDay = newEvent.getAsInteger(Events.ALL_DAY) == 1;
+
+			String duration = null;
+
+			if (isAllDay) {
+				// if it's all day compute the duration in days
+				long days = (end - start + DateUtils.DAY_IN_MILLIS - 1)
+						/ DateUtils.DAY_IN_MILLIS;
+				duration = "P" + days + "D";
+			} else {
+				// otherwise compute the duration in seconds
+				long seconds = (end - start) / DateUtils.SECOND_IN_MILLIS;
+				duration = "P" + seconds + "S";
+			}
+			// recurring events should have a duration and dtend set to null
+			newEvent.put(Events.DURATION, duration);
+			newEvent.put(Events.DTEND, (String) null);
+		} else {
+			newEvent.remove(Events.DURATION);
+		}
+
 	}
 }
 

@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.os.Bundle;
 import android.provider.CalendarContract;
 import android.provider.CalendarContract.Events;
+import android.provider.CalendarContract.Attendees;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -283,14 +284,10 @@ public class NewEventFragment extends EventBaseFragment {
 		// 시간이 바뀌는 경우, 알림 데이터도 변경해야함.
 		// 알림 재설정
 		ContentValues newEvent = eventDataViewModel.getNEW_EVENT();
-		List<ContentValues> newReminderList = eventDataViewModel.getREMINDERS();
-		List<ContentValues> newAttendeeList = eventDataViewModel.getATTENDEES();
+		List<ContentValues> newReminderList = eventDataViewModel.getNEW_REMINDERS();
+		List<ContentValues> newAttendeeList = eventDataViewModel.getNEW_ATTENDEES();
 
-		//allday이면 dtEnd를 다음 날로 설정
-		if (newEvent.getAsInteger(CalendarContract.Events.ALL_DAY) == 1) {
-			convertDtEndForAllDay(newEvent);
-		}
-
+		//반복 이벤트면 dtEnd를 삭제하고 duration추가
 		final long newEventId = calendarViewModel.addEvent(newEvent);
 
 		if (!newReminderList.isEmpty()) {
@@ -302,7 +299,11 @@ public class NewEventFragment extends EventBaseFragment {
 
 		if (!newAttendeeList.isEmpty()) {
 			for (ContentValues attendee : newAttendeeList) {
-				attendee.put(CalendarContract.Attendees.EVENT_ID, newEventId);
+				attendee.put(Attendees.EVENT_ID, newEventId);
+				attendee.put(Attendees.ATTENDEE_RELATIONSHIP,
+						Attendees.RELATIONSHIP_ATTENDEE);
+				attendee.put(Attendees.ATTENDEE_TYPE, Attendees.TYPE_OPTIONAL);
+				attendee.put(Attendees.ATTENDEE_STATUS, Attendees.ATTENDEE_STATUS_INVITED);
 			}
 			calendarViewModel.addAttendees(newAttendeeList);
 		}

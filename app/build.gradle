@@ -131,6 +131,9 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.7'
 
     implementation 'com.maltaisn:recurpicker:2.1.4'
+
+    // https://mvnrepository.com/artifact/org.dmfs/rfc5545-datetime
+    implementation group: 'org.dmfs', name: 'rfc5545-datetime', version: '0.3'
 }
 
 apply plugin: 'com.google.gms.google-services'
