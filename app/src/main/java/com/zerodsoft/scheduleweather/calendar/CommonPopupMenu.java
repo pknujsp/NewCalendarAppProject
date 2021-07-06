@@ -6,6 +6,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Parcel;
 import android.provider.CalendarContract;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,6 +18,7 @@ import androidx.fragment.app.Fragment;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.editevent.activity.ModifyInstanceFragment;
+import com.zerodsoft.scheduleweather.calendar.interfaces.OnUpdateEventResultListener;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
@@ -41,19 +43,29 @@ public abstract class CommonPopupMenu {
 			public boolean onMenuItemClick(MenuItem menuItem) {
 				switch (menuItem.getItemId()) {
 					case R.id.edit_instance: {
-						ModifyInstanceFragment modifyInstanceFragment = new ModifyInstanceFragment(new ModifyInstanceFragment.OnModifyInstanceResultListener() {
+						ModifyInstanceFragment modifyInstanceFragment = new ModifyInstanceFragment(new OnUpdateEventResultListener() {
 							@Override
-							public void onResultModifiedEvent(long begin) {
+							public int describeContents() {
+								return 0;
+							}
+
+							@Override
+							public void writeToParcel(Parcel dest, int flags) {
 
 							}
 
 							@Override
-							public void onResultModifiedThisInstance(long eventId, long begin) {
+							public void onResultUpdatedAllEvents(long begin) {
 
 							}
 
 							@Override
-							public void onResultModifiedAfterAllInstancesIncludingThisInstance(long eventId, long begin) {
+							public void onResultUpdatedThisEvent(long eventId, long begin) {
+
+							}
+
+							@Override
+							public void onResultUpdatedFollowingEvents(long eventId, long begin) {
 
 							}
 						});

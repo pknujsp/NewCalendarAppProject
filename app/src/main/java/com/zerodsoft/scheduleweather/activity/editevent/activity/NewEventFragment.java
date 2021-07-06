@@ -15,6 +15,8 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
+import com.zerodsoft.scheduleweather.activity.editevent.interfaces.OnEditEventResultListener;
+import com.zerodsoft.scheduleweather.calendar.AsyncQueryService;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.EventHelper;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
@@ -288,7 +290,7 @@ public class NewEventFragment extends EventBaseFragment {
 		List<ContentValues> newReminderList = eventDataViewModel.getNEW_REMINDERS();
 		List<ContentValues> newAttendeeList = eventDataViewModel.getNEW_ATTENDEES();
 
-		EventHelper eventHelper = new EventHelper(getAsyncQueryService());
+		EventHelper eventHelper = new EventHelper(new AsyncQueryService(getActivity(), (OnEditEventResultListener) calendarViewModel));
 		eventHelper.saveNewEvent(newEvent, locationDTO, newReminderList, newAttendeeList);
 	}
 

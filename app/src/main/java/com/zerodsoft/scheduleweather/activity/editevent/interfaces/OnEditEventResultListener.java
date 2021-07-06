@@ -1,13 +1,18 @@
 package com.zerodsoft.scheduleweather.activity.editevent.interfaces;
 
-public interface OnEditEventResultListener {
+import android.os.Parcelable;
+
+import java.io.Serializable;
+
+public interface OnEditEventResultListener extends Parcelable {
+
 	void onSavedNewEvent(long dtStart);
 
-	void onUpdatedOnlyThisEvent();
+	void onUpdatedOnlyThisEvent(long dtStart);
 
-	void onUpdatedFollowingEvents();
+	void onUpdatedFollowingEvents(long dtStart);
 
-	void onUpdatedAllEvents();
+	void onUpdatedAllEvents(long dtStart);
 
 	void onRemovedAllEvents();
 

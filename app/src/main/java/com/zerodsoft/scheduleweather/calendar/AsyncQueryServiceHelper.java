@@ -3,6 +3,7 @@ package com.zerodsoft.scheduleweather.calendar;
 import android.app.IntentService;
 import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -13,11 +14,14 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.RemoteException;
 import android.os.SystemClock;
+import android.provider.CalendarContract;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import com.zerodsoft.scheduleweather.activity.editevent.activity.ModifyInstanceFragment;
 import com.zerodsoft.scheduleweather.activity.editevent.interfaces.OnEditEventResultListener;
+import com.zerodsoft.scheduleweather.calendar.interfaces.OnUpdateEventResultListener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,11 +31,12 @@ import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 
 public class AsyncQueryServiceHelper extends IntentService {
-	private static final PriorityQueue<OperationInfo> sWorkQueue =
+	private final PriorityQueue<OperationInfo> sWorkQueue =
 			new PriorityQueue<OperationInfo>();
-	protected Class<AsyncQueryService> mService = AsyncQueryService.class;
-	private OnEditEventResultListener onEditEventResultListener;
-	private static EventHelper.EventEditType eventEditType;
+	private static Class<AsyncQueryService> mService = AsyncQueryService.class;
+	private static OnEditEventResultListener onEditEventResultListener;
+	private static OnUpdateEventResultListener onUpdateEventResultListener;
+	private static UpdatedEventPrimaryValues updatedEventPrimaryValues;
 
 	public AsyncQueryServiceHelper(String name) {
 		super(name);
@@ -41,24 +46,31 @@ public class AsyncQueryServiceHelper extends IntentService {
 		super("AsyncQueryServiceHelper");
 	}
 
-	static public void queueOperation(Context context, OperationInfo args) {
+
+	public void setOnUpdateEventResultListener(OnUpdateEventResultListener onUpdateEventResultListener) {
+		AsyncQueryServiceHelper.onUpdateEventResultListener = onUpdateEventResultListener;
+	}
+
+	public void queueOperation(Context context, OperationInfo args, OnEditEventResultListener onEditEventResultListener) {
 		args.calculateScheduledTime();
-		eventEditType = (EventHelper.EventEditType) args.cookie;
+		updatedEventPrimaryValues = args.updatedEventPrimaryValues;
+
+		AsyncQueryServiceHelper.onEditEventResultListener = onEditEventResultListener;
 
 		synchronized (sWorkQueue) {
 			sWorkQueue.add(args);
 			sWorkQueue.notify();
 		}
 
-		context.startService(new Intent(context, AsyncQueryServiceHelper.class));
+		Intent intent = new Intent(context, AsyncQueryServiceHelper.class);
+		context.startService(intent);
 	}
 
-	static public AsyncQueryService.Operation getLastCancelableOperation() {
+	public AsyncQueryService.Operation getLastCancelableOperation() {
 		long lastScheduleTime = Long.MIN_VALUE;
 		AsyncQueryService.Operation op = null;
 
 		synchronized (sWorkQueue) {
-			// Unknown order even for a PriorityQueue
 			Iterator<OperationInfo> it = sWorkQueue.iterator();
 			while (it.hasNext()) {
 				OperationInfo info = it.next();
@@ -84,7 +96,7 @@ public class AsyncQueryServiceHelper extends IntentService {
 	}
 
 
-	static public int cancelOperation(int token) {
+	public int cancelOperation(int token) {
 		int canceled = 0;
 		synchronized (sWorkQueue) {
 			Iterator<OperationInfo> it = sWorkQueue.iterator();
@@ -167,6 +179,12 @@ public class AsyncQueryServiceHelper extends IntentService {
 
 				case AsyncQueryService.Operation.EVENT_ARG_INSERT:
 					args.result = resolver.insert(args.uri, args.values);
+
+					if (args.uri.equals(CalendarContract.Events.CONTENT_URI)) {
+						Uri insertedUri = (Uri) args.result;
+						long newEventId = Long.parseLong(insertedUri.getLastPathSegment());
+						updatedEventPrimaryValues.setNewEventId(newEventId);
+					}
 					break;
 
 				case AsyncQueryService.Operation.EVENT_ARG_UPDATE:
@@ -238,20 +256,33 @@ public class AsyncQueryServiceHelper extends IntentService {
 			Log.e("AsyncQueryService", "onDestroy");
 		}
 
-		switch (eventEditType) {
+		switch (updatedEventPrimaryValues.getEventEditType()) {
 			case SAVE_NEW_EVENT:
-				onEditEventResultListener.onSavedNewEvent(0L);
+				onEditEventResultListener.onSavedNewEvent(updatedEventPrimaryValues.getBegin());
 				break;
 			case UPDATE_ALL_EVENTS:
-				onEditEventResultListener.onUpdatedAllEvents();
+				if (onUpdateEventResultListener != null) {
+					onUpdateEventResultListener.onResultUpdatedAllEvents(updatedEventPrimaryValues.getBegin());
+				}
+				onEditEventResultListener.onUpdatedAllEvents(updatedEventPrimaryValues.getBegin());
 				break;
 
 			case UPDATE_FOLLOWING_EVENTS:
-				onEditEventResultListener.onUpdatedFollowingEvents();
+				if (onUpdateEventResultListener != null) {
+					onUpdateEventResultListener.onResultUpdatedFollowingEvents(updatedEventPrimaryValues.getOriginalEventId() == null ?
+							updatedEventPrimaryValues.getNewEventId() :
+							updatedEventPrimaryValues.getOriginalEventId(), updatedEventPrimaryValues.getBegin());
+				}
+				onEditEventResultListener.onUpdatedFollowingEvents(updatedEventPrimaryValues.getBegin());
 				break;
 
 			case UPDATE_ONLY_THIS_EVENT:
-				onEditEventResultListener.onUpdatedOnlyThisEvent();
+				if (onUpdateEventResultListener != null) {
+					onUpdateEventResultListener.onResultUpdatedThisEvent(updatedEventPrimaryValues.getOriginalEventId() == null ?
+							updatedEventPrimaryValues.getNewEventId() :
+							updatedEventPrimaryValues.getOriginalEventId(), updatedEventPrimaryValues.getBegin());
+				}
+				onEditEventResultListener.onUpdatedOnlyThisEvent(updatedEventPrimaryValues.getBegin());
 				break;
 
 			case REMOVE_ALL_EVENTS:
@@ -286,6 +317,7 @@ public class AsyncQueryServiceHelper extends IntentService {
 		public Object cookie;
 		public ContentValues values;
 		public ArrayList<ContentProviderOperation> cpo;
+		public UpdatedEventPrimaryValues updatedEventPrimaryValues;
 
 		/**
 		 * delayMillis is relative time e.g. 10,000 milliseconds

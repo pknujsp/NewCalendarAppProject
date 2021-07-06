@@ -14,10 +14,8 @@ import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.provider.CalendarContract;
-import android.provider.CalendarContract.Events;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.text.format.DateUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,6 +39,7 @@ import com.zerodsoft.scheduleweather.activity.editevent.adapter.CalendarListAdap
 import com.zerodsoft.scheduleweather.activity.editevent.fragments.RecurrenceFragment;
 import com.zerodsoft.scheduleweather.activity.editevent.fragments.TimeZoneFragment;
 import com.zerodsoft.scheduleweather.activity.editevent.interfaces.IEventRepeat;
+import com.zerodsoft.scheduleweather.activity.editevent.interfaces.OnEditEventResultListener;
 import com.zerodsoft.scheduleweather.activity.preferences.ColorListAdapter;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.AsyncQueryService;
@@ -91,14 +90,6 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		END
 	}
 
-	protected AsyncQueryService mService;
-
-	public synchronized AsyncQueryService getAsyncQueryService() {
-		if (mService == null) {
-			mService = new AsyncQueryService(getActivity());
-		}
-		return mService;
-	}
 
 	protected final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
 		@Override

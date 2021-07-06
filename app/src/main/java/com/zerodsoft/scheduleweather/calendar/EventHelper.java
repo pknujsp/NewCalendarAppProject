@@ -19,16 +19,17 @@ import androidx.annotation.Nullable;
 import com.zerodsoft.scheduleweather.calendar.calendarcommon2.*;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-public class EventHelper {
+public class EventHelper implements Serializable {
 	private final AsyncQueryService mService;
 
-	public enum EventEditType {
+	public enum EventEditType implements Serializable {
 		UPDATE_ONLY_THIS_EVENT,
 		UPDATE_FOLLOWING_EVENTS,
 		UPDATE_ALL_EVENTS,
@@ -95,9 +96,12 @@ public class EventHelper {
 		}
 
 		 */
+		UpdatedEventPrimaryValues updatedEventPrimaryValues = new UpdatedEventPrimaryValues();
+		updatedEventPrimaryValues.setBegin(newEvent.getAsLong(Events.DTSTART));
+		updatedEventPrimaryValues.setEventEditType(EventEditType.SAVE_NEW_EVENT);
 
-		mService.startBatch(mService.getNextToken(), EventEditType.SAVE_NEW_EVENT, CalendarContract.AUTHORITY, contentProviderOperationList,
-				0);
+		mService.startBatch(mService.getNextToken(), null, CalendarContract.AUTHORITY, contentProviderOperationList,
+				0, updatedEventPrimaryValues);
 	}
 
 
@@ -338,8 +342,25 @@ public class EventHelper {
 			}
 		}
 
-		mService.startBatch(mService.getNextToken(), eventEditType, CalendarContract.AUTHORITY, contentProviderOperationList,
-				0);
+		UpdatedEventPrimaryValues updatedEventPrimaryValues = new UpdatedEventPrimaryValues();
+		updatedEventPrimaryValues.setOriginalEventId(originalEvent.getAsLong(Instances.EVENT_ID));
+		updatedEventPrimaryValues.setBegin((Long) getValues(originalEvent, newEvent, Events.DTSTART));
+		updatedEventPrimaryValues.setEventEditType(eventEditType);
+
+		mService.startBatch(mService.getNextToken(), null, CalendarContract.AUTHORITY, contentProviderOperationList,
+				0, updatedEventPrimaryValues);
+	}
+
+	public Object getValues(ContentValues originalEvent, ContentValues newEvent, String key) {
+		if (newEvent.containsKey(key)) {
+			if (newEvent.get(key) != null) {
+				return newEvent.get(key);
+			} else {
+				return null;
+			}
+		} else {
+			return originalEvent.get(key);
+		}
 	}
 
 

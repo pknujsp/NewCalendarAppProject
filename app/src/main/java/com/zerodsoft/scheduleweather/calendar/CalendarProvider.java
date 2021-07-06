@@ -34,43 +34,6 @@ import biweekly.property.RecurrenceRule;
 
 public class CalendarProvider implements ICalendarProvider {
 	private Context context;
-
-	private MutableLiveData<Long> onAddedNewEventLiveData = new MutableLiveData<>();
-	private MutableLiveData<Boolean> onRemovedEventLiveData = new MutableLiveData<>();
-	private MutableLiveData<Boolean> onExceptedInstanceLiveData = new MutableLiveData<>();
-	private MutableLiveData<Boolean> onRemovedFutureInstancesLiveData = new MutableLiveData<>();
-	private MutableLiveData<Long> onModifiedInstanceLiveData = new MutableLiveData<>();
-	private MutableLiveData<Long> onModifiedEventLiveData = new MutableLiveData<>();
-	private MutableLiveData<Long> onModifiedFutureInstancesLiveData = new MutableLiveData<>();
-
-	public MutableLiveData<Long> getOnAddedNewEventLiveData() {
-		return onAddedNewEventLiveData;
-	}
-
-	public MutableLiveData<Boolean> getOnRemovedEventLiveData() {
-		return onRemovedEventLiveData;
-	}
-
-	public MutableLiveData<Boolean> getOnExceptedInstanceLiveData() {
-		return onExceptedInstanceLiveData;
-	}
-
-	public MutableLiveData<Boolean> getOnRemovedFutureInstancesLiveData() {
-		return onRemovedFutureInstancesLiveData;
-	}
-
-	public MutableLiveData<Long> getOnModifiedInstanceLiveData() {
-		return onModifiedInstanceLiveData;
-	}
-
-	public MutableLiveData<Long> getOnModifiedEventLiveData() {
-		return onModifiedEventLiveData;
-	}
-
-	public MutableLiveData<Long> getOnModifiedFutureInstancesLiveData() {
-		return onModifiedFutureInstancesLiveData;
-	}
-
 	public static final int REQUEST_READ_CALENDAR = 200;
 	public static final int REQUEST_WRITE_CALENDAR = 300;
 
@@ -272,7 +235,6 @@ public class CalendarProvider implements ICalendarProvider {
 	public long addEvent(ContentValues event) {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
 			Uri uri = context.getContentResolver().insert(CalendarContract.Events.CONTENT_URI, event);
-			onAddedNewEventLiveData.setValue(event.getAsLong(CalendarContract.Events.DTSTART));
 			return Long.parseLong(uri.getLastPathSegment());
 		} else {
 			return -1L;
@@ -289,8 +251,6 @@ public class CalendarProvider implements ICalendarProvider {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
 			Uri uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventId);
 			int result = context.getContentResolver().delete(uri, null, null);
-
-			onRemovedEventLiveData.setValue(true);
 
 			return result;
 		} else {
@@ -677,7 +637,6 @@ public class CalendarProvider implements ICalendarProvider {
 	@Override
 	public int updateOneInstance(ContentValues modifiedInstance, ContentValues previousInstance) {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
-			onModifiedInstanceLiveData.setValue(modifiedInstance.getAsLong(CalendarContract.Events.DTSTART));
 			return 1;
 		} else {
 			return -1;
@@ -704,8 +663,6 @@ public class CalendarProvider implements ICalendarProvider {
 			Uri exceptionUri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_EXCEPTION_URI, eventId);
 			ContentResolver contentResolver = context.getContentResolver();
 			Uri result = contentResolver.insert(exceptionUri, exceptionEvent);
-
-			onExceptedInstanceLiveData.setValue(true);
 
 			return Integer.parseInt(result.getLastPathSegment());
 		} else {

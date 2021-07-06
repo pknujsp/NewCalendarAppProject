@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Parcel;
 import android.provider.CalendarContract;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,6 +34,7 @@ import com.zerodsoft.scheduleweather.activity.editevent.activity.ModifyInstanceF
 import com.zerodsoft.scheduleweather.calendar.CalendarInstanceUtil;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.calendarcommon2.EventRecurrence;
+import com.zerodsoft.scheduleweather.calendar.interfaces.OnUpdateEventResultListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.common.enums.LocationIntentCode;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
@@ -53,8 +55,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
-
-import biweekly.property.RecurrenceRule;
 
 public class EventFragment extends BottomSheetDialogFragment {
 	// 참석자가 있는 경우 참석 여부 표시
@@ -314,22 +314,32 @@ public class EventFragment extends BottomSheetDialogFragment {
 		binding.modifyEventFab.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				ModifyInstanceFragment modifyInstanceFragment = new ModifyInstanceFragment(new ModifyInstanceFragment.OnModifyInstanceResultListener() {
+				ModifyInstanceFragment modifyInstanceFragment = new ModifyInstanceFragment(new OnUpdateEventResultListener() {
 					@Override
-					public void onResultModifiedEvent(long begin) {
+					public int describeContents() {
+						return 0;
+					}
+
+					@Override
+					public void writeToParcel(Parcel dest, int flags) {
+
+					}
+
+					@Override
+					public void onResultUpdatedAllEvents(long begin) {
 						EventFragment.this.originalBegin = begin;
 						setInstanceData();
 					}
 
 					@Override
-					public void onResultModifiedThisInstance(long eventId, long begin) {
+					public void onResultUpdatedThisEvent(long eventId, long begin) {
 						EventFragment.this.eventId = eventId;
 						EventFragment.this.originalBegin = begin;
 						setInstanceData();
 					}
 
 					@Override
-					public void onResultModifiedAfterAllInstancesIncludingThisInstance(long eventId, long begin) {
+					public void onResultUpdatedFollowingEvents(long eventId, long begin) {
 						EventFragment.this.eventId = eventId;
 						EventFragment.this.originalBegin = begin;
 						setInstanceData();

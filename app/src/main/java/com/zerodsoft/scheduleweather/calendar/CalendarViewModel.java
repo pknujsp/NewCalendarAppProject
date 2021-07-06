@@ -2,41 +2,34 @@ package com.zerodsoft.scheduleweather.calendar;
 
 import android.app.Application;
 import android.content.ContentValues;
-import android.util.Log;
+import android.os.Parcel;
 
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.zerodsoft.scheduleweather.activity.editevent.interfaces.OnEditEventResultListener;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendar.interfaces.ICalendarProvider;
 
 import java.util.List;
 import java.util.Map;
 
-public class CalendarViewModel extends AndroidViewModel implements ICalendarProvider {
+public class CalendarViewModel extends AndroidViewModel implements ICalendarProvider, OnEditEventResultListener {
 	private CalendarProvider calendarProvider;
 
-	private MutableLiveData<Long> onAddedNewEventLiveData;
-	private MutableLiveData<Boolean> onRemovedEventLiveData;
-	private MutableLiveData<Boolean> onExceptedInstanceLiveData;
-	private MutableLiveData<Boolean> onRemovedFutureInstancesLiveData;
-	private MutableLiveData<Long> onModifiedInstanceLiveData;
-	private MutableLiveData<Long> onModifiedEventLiveData;
-	private MutableLiveData<Long> onModifiedFutureInstancesLiveData;
+	private MutableLiveData<Long> onAddedNewEventLiveData = new MutableLiveData<>();
+	private MutableLiveData<Boolean> onRemovedEventLiveData = new MutableLiveData<>();
+	private MutableLiveData<Boolean> onExceptedInstanceLiveData = new MutableLiveData<>();
+	private MutableLiveData<Boolean> onRemovedFutureInstancesLiveData = new MutableLiveData<>();
+	private MutableLiveData<Long> onModifiedInstanceLiveData = new MutableLiveData<>();
+	private MutableLiveData<Long> onModifiedEventLiveData = new MutableLiveData<>();
+	private MutableLiveData<Long> onModifiedFutureInstancesLiveData = new MutableLiveData<>();
 
 	public CalendarViewModel(Application application) {
 		super(application);
 
 		this.calendarProvider = new CalendarProvider(application.getApplicationContext());
-
-		onAddedNewEventLiveData = calendarProvider.getOnAddedNewEventLiveData();
-		onRemovedEventLiveData = calendarProvider.getOnRemovedEventLiveData();
-		onExceptedInstanceLiveData = calendarProvider.getOnExceptedInstanceLiveData();
-		onRemovedFutureInstancesLiveData = calendarProvider.getOnRemovedFutureInstancesLiveData();
-		onModifiedInstanceLiveData = calendarProvider.getOnModifiedInstanceLiveData();
-		onModifiedEventLiveData = calendarProvider.getOnModifiedEventLiveData();
-		onModifiedFutureInstancesLiveData = calendarProvider.getOnModifiedFutureInstancesLiveData();
 	}
 
 	public LiveData<Long> getOnAddedNewEventLiveData() {
@@ -234,5 +227,50 @@ public class CalendarViewModel extends AndroidViewModel implements ICalendarProv
 
 	public void syncCalendars() {
 		calendarProvider.syncCalendars();
+	}
+
+	@Override
+	public void onSavedNewEvent(long dtStart) {
+		onAddedNewEventLiveData.setValue(dtStart);
+	}
+
+	@Override
+	public void onUpdatedOnlyThisEvent(long dtStart) {
+		onModifiedInstanceLiveData.setValue(dtStart);
+	}
+
+	@Override
+	public void onUpdatedFollowingEvents(long dtStart) {
+		onModifiedFutureInstancesLiveData.setValue(dtStart);
+	}
+
+	@Override
+	public void onUpdatedAllEvents(long dtStart) {
+		onModifiedEventLiveData.setValue(dtStart);
+	}
+
+	@Override
+	public void onRemovedAllEvents() {
+		onRemovedEventLiveData.setValue(true);
+	}
+
+	@Override
+	public void onRemovedFollowingEvents() {
+		onRemovedFutureInstancesLiveData.setValue(true);
+	}
+
+	@Override
+	public void onRemovedOnlyThisEvents() {
+		onExceptedInstanceLiveData.setValue(true);
+	}
+
+	@Override
+	public int describeContents() {
+		return 0;
+	}
+
+	@Override
+	public void writeToParcel(Parcel dest, int flags) {
+
 	}
 }

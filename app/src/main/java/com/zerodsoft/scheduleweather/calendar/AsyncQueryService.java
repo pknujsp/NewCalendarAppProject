@@ -1,22 +1,20 @@
 package com.zerodsoft.scheduleweather.calendar;
 
-import android.content.AsyncQueryHandler;
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderResult;
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
-import android.os.SystemClock;
 import android.util.Log;
 
-import com.zerodsoft.scheduleweather.calendar.AsyncQueryServiceHelper;
-
 import androidx.annotation.Nullable;
+
+import com.zerodsoft.scheduleweather.activity.editevent.activity.ModifyInstanceFragment;
+import com.zerodsoft.scheduleweather.activity.editevent.interfaces.OnEditEventResultListener;
+import com.zerodsoft.scheduleweather.calendar.interfaces.OnUpdateEventResultListener;
 
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -26,9 +24,18 @@ public class AsyncQueryService extends Handler {
 	private static AtomicInteger mUniqueToken = new AtomicInteger(0);
 	private Context context;
 	private Handler mHandler = this;
+	private OnEditEventResultListener onEditEventResultListener;
+	private OnUpdateEventResultListener onUpdateEventResultListener;
+	private AsyncQueryServiceHelper asyncQueryServiceHelper;
 
-	public AsyncQueryService(Context context) {
+	public AsyncQueryService(Context context, OnEditEventResultListener onEditEventResultListener) {
 		this.context = context;
+		this.onEditEventResultListener = onEditEventResultListener;
+		this.asyncQueryServiceHelper = new AsyncQueryServiceHelper();
+	}
+
+	public void setOnUpdateEventResultListener(OnUpdateEventResultListener onUpdateEventResultListener) {
+		this.onUpdateEventResultListener = onUpdateEventResultListener;
 	}
 
 	public final int getNextToken() {
@@ -36,11 +43,11 @@ public class AsyncQueryService extends Handler {
 	}
 
 	public final Operation getLastCancelableOperation() {
-		return AsyncQueryServiceHelper.getLastCancelableOperation();
+		return asyncQueryServiceHelper.getLastCancelableOperation();
 	}
 
 	public final int cancelOperation(int token) {
-		return AsyncQueryServiceHelper.cancelOperation(token);
+		return asyncQueryServiceHelper.cancelOperation(token);
 	}
 
 
@@ -59,7 +66,7 @@ public class AsyncQueryService extends Handler {
 		info.selectionArgs = selectionArgs;
 		info.orderBy = orderBy;
 
-		AsyncQueryServiceHelper.queueOperation(context, info);
+		asyncQueryServiceHelper.queueOperation(context, info, onEditEventResultListener);
 	}
 
 	public void startInsert(int token, @Nullable Object cookie, Uri uri, ContentValues initialValues,
@@ -75,7 +82,7 @@ public class AsyncQueryService extends Handler {
 		info.values = initialValues;
 		info.delayMillis = delayMillis;
 
-		AsyncQueryServiceHelper.queueOperation(context, info);
+		asyncQueryServiceHelper.queueOperation(context, info, onEditEventResultListener);
 	}
 
 	public void startUpdate(int token, @Nullable Object cookie, Uri uri, ContentValues values,
@@ -93,7 +100,7 @@ public class AsyncQueryService extends Handler {
 		info.selectionArgs = selectionArgs;
 		info.delayMillis = delayMillis;
 
-		AsyncQueryServiceHelper.queueOperation(context, info);
+		asyncQueryServiceHelper.queueOperation(context, info, onEditEventResultListener);
 	}
 
 	public void startDelete(int token, @Nullable Object cookie, Uri uri, String selection,
@@ -110,11 +117,11 @@ public class AsyncQueryService extends Handler {
 		info.selectionArgs = selectionArgs;
 		info.delayMillis = delayMillis;
 
-		AsyncQueryServiceHelper.queueOperation(context, info);
+		asyncQueryServiceHelper.queueOperation(context, info, onEditEventResultListener);
 	}
 
 	public void startBatch(int token, @Nullable Object cookie, String authority,
-	                       ArrayList<ContentProviderOperation> cpo, long delayMillis) {
+	                       ArrayList<ContentProviderOperation> cpo, long delayMillis, UpdatedEventPrimaryValues updatedEventPrimaryValues) {
 		AsyncQueryServiceHelper.OperationInfo info = new AsyncQueryServiceHelper.OperationInfo();
 		info.op = Operation.EVENT_ARG_BATCH;
 		info.resolver = context.getContentResolver();
@@ -125,8 +132,13 @@ public class AsyncQueryService extends Handler {
 		info.authority = authority;
 		info.cpo = cpo;
 		info.delayMillis = delayMillis;
+		info.updatedEventPrimaryValues = updatedEventPrimaryValues;
 
-		AsyncQueryServiceHelper.queueOperation(context, info);
+		if (onUpdateEventResultListener != null) {
+			asyncQueryServiceHelper.setOnUpdateEventResultListener(onUpdateEventResultListener);
+		}
+
+		asyncQueryServiceHelper.queueOperation(context, info, onEditEventResultListener);
 	}
 
 	protected void onQueryComplete(int token, @Nullable Object cookie, Cursor cursor) {

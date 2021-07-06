@@ -17,9 +17,11 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.editevent.interfaces.OnEditEventResultListener;
 import com.zerodsoft.scheduleweather.calendar.AsyncQueryService;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.EventHelper;
+import com.zerodsoft.scheduleweather.calendar.interfaces.OnUpdateEventResultListener;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
@@ -27,13 +29,14 @@ import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
 public class ModifyInstanceFragment extends EventBaseFragment {
-	private OnModifyInstanceResultListener onModifyInstanceResultListener;
+	private OnUpdateEventResultListener onUpdateEventResultListener;
 	private ContentValues originalEvent;
 
 	private long originalInstanceBeginDate;
@@ -47,13 +50,14 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 	public synchronized AsyncQueryService getAsyncQueryService() {
 		if (mService == null) {
-			mService = new AsyncQueryService(getActivity());
+			mService = new AsyncQueryService(getActivity(), (OnEditEventResultListener) calendarViewModel);
+			mService.setOnUpdateEventResultListener(onUpdateEventResultListener);
 		}
 		return mService;
 	}
 
-	public ModifyInstanceFragment(OnModifyInstanceResultListener onModifyInstanceResultListener) {
-		this.onModifyInstanceResultListener = onModifyInstanceResultListener;
+	public ModifyInstanceFragment(OnUpdateEventResultListener onUpdateEventResultListener) {
+		this.onUpdateEventResultListener = onUpdateEventResultListener;
 	}
 
 	@Override
@@ -106,14 +110,20 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 										case 0:
 											//모든 일정이면 event를 변경
 											updateAllEvents();
+											getParentFragmentManager().popBackStackImmediate();
+
 											break;
 										case 1:
 											//현재 인스턴스 이후의 모든 인스턴스 변경
 											updateFollowingEvents();
+											getParentFragmentManager().popBackStackImmediate();
+
 											break;
 										case 2:
 											//현재 인스턴스만 변경
 											updateThisInstance();
+											getParentFragmentManager().popBackStackImmediate();
+
 											break;
 									}
 
@@ -121,7 +131,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 							}).create().show();
 				} else {
 					updateAllEvents();
-
+					getParentFragmentManager().popBackStackImmediate();
 				}
 
 			}
@@ -640,16 +650,9 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 	}
 
 
-	public interface OnModifyInstanceResultListener {
-
-		void onResultModifiedEvent(long begin);
-
-		void onResultModifiedThisInstance(long eventId, long begin);
-
-		void onResultModifiedAfterAllInstancesIncludingThisInstance(long eventId, long begin);
-	}
-
 	public interface OnModifiedDateTimeCallback {
 		void onModified();
 	}
+
+
 }
