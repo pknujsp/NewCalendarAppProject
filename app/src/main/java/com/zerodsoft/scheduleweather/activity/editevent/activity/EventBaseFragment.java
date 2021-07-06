@@ -36,7 +36,6 @@ import com.google.android.material.datepicker.MaterialPickerOnPositiveButtonClic
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.timepicker.MaterialTimePicker;
 import com.google.android.material.timepicker.TimeFormat;
-import com.maltaisn.recurpicker.picker.RecurrencePickerFragment;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.activity.editevent.adapter.CalendarListAdapter;
 import com.zerodsoft.scheduleweather.activity.editevent.fragments.RecurrenceFragment;
@@ -44,6 +43,7 @@ import com.zerodsoft.scheduleweather.activity.editevent.fragments.TimeZoneFragme
 import com.zerodsoft.scheduleweather.activity.editevent.interfaces.IEventRepeat;
 import com.zerodsoft.scheduleweather.activity.preferences.ColorListAdapter;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.calendar.AsyncQueryService;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.calendarcommon2.EventRecurrence;
 import com.zerodsoft.scheduleweather.common.enums.EventIntentCode;
@@ -91,6 +91,15 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		END
 	}
 
+	protected AsyncQueryService mService;
+
+	public synchronized AsyncQueryService getAsyncQueryService() {
+		if (mService == null) {
+			mService = new AsyncQueryService(getActivity());
+		}
+		return mService;
+	}
+
 	protected final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
 		@Override
 		public void handleOnBackPressed() {
@@ -116,7 +125,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		public void onFragmentAttached(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @NonNull @NotNull Context context) {
 			super.onFragmentAttached(fm, f, context);
 
-			if (f instanceof RecurrencePickerFragment || f instanceof TimeZoneFragment || f instanceof EventReminderFragment
+			if (f instanceof TimeZoneFragment || f instanceof EventReminderFragment
 					|| f instanceof SelectionDetailLocationFragment || f instanceof AttendeesFragment || f instanceof RecurrenceFragment) {
 
 				if (f instanceof TimeZoneFragment) {
@@ -142,7 +151,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 			super.onFragmentDestroyed(fm, f);
 			setOriginalMainFragmentTitle();
 
-			if (f instanceof RecurrencePickerFragment || f instanceof TimeZoneFragment || f instanceof EventReminderFragment
+			if (f instanceof TimeZoneFragment || f instanceof EventReminderFragment
 					|| f instanceof SelectionDetailLocationFragment || f instanceof AttendeesFragment || f instanceof RecurrenceFragment) {
 
 				binding.fragmentContainer.setVisibility(View.GONE);
@@ -867,18 +876,6 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 	protected abstract void initDatePicker();
 
 	protected abstract void initTimePicker(DateTimeType dateType);
-
-	protected final void convertDtEndForAllDay(ContentValues contentValues) {
-		if (contentValues.containsKey(CalendarContract.Events.ALL_DAY)) {
-			if (contentValues.getAsInteger(CalendarContract.Events.ALL_DAY) == 1) {
-				Calendar calendar = Calendar.getInstance();
-				calendar.setTimeInMillis(contentValues.getAsLong(CalendarContract.Events.DTEND));
-				calendar.add(Calendar.DAY_OF_YEAR, 1);
-
-				contentValues.put(CalendarContract.Events.DTEND, calendar.getTimeInMillis());
-			}
-		}
-	}
 
 	protected final void onClickedLocation(@Nullable String eventLocation) {
 		//위치를 설정하는 액티비티 표시

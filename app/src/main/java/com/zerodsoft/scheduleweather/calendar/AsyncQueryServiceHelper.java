@@ -17,6 +17,8 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import com.zerodsoft.scheduleweather.activity.editevent.interfaces.OnEditEventResultListener;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -28,6 +30,8 @@ public class AsyncQueryServiceHelper extends IntentService {
 	private static final PriorityQueue<OperationInfo> sWorkQueue =
 			new PriorityQueue<OperationInfo>();
 	protected Class<AsyncQueryService> mService = AsyncQueryService.class;
+	private OnEditEventResultListener onEditEventResultListener;
+	private static EventHelper.EventEditType eventEditType;
 
 	public AsyncQueryServiceHelper(String name) {
 		super(name);
@@ -39,6 +43,7 @@ public class AsyncQueryServiceHelper extends IntentService {
 
 	static public void queueOperation(Context context, OperationInfo args) {
 		args.calculateScheduledTime();
+		eventEditType = (EventHelper.EventEditType) args.cookie;
 
 		synchronized (sWorkQueue) {
 			sWorkQueue.add(args);
@@ -222,7 +227,7 @@ public class AsyncQueryServiceHelper extends IntentService {
 	@Override
 	public void onCreate() {
 		if (AsyncQueryService.localLOGV) {
-			Log.d("", "onCreate");
+			Log.e("AsyncQueryService", "onCreate");
 		}
 		super.onCreate();
 	}
@@ -230,7 +235,37 @@ public class AsyncQueryServiceHelper extends IntentService {
 	@Override
 	public void onDestroy() {
 		if (AsyncQueryService.localLOGV) {
-			Log.d("", "onDestroy");
+			Log.e("AsyncQueryService", "onDestroy");
+		}
+
+		switch (eventEditType) {
+			case SAVE_NEW_EVENT:
+				onEditEventResultListener.onSavedNewEvent(0L);
+				break;
+			case UPDATE_ALL_EVENTS:
+				onEditEventResultListener.onUpdatedAllEvents();
+				break;
+
+			case UPDATE_FOLLOWING_EVENTS:
+				onEditEventResultListener.onUpdatedFollowingEvents();
+				break;
+
+			case UPDATE_ONLY_THIS_EVENT:
+				onEditEventResultListener.onUpdatedOnlyThisEvent();
+				break;
+
+			case REMOVE_ALL_EVENTS:
+				onEditEventResultListener.onRemovedAllEvents();
+				break;
+
+			case REMOVE_FOLLOWING_EVENTS:
+				onEditEventResultListener.onRemovedFollowingEvents();
+				break;
+
+			case REMOVE_ONLY_THIS_EVENT:
+				onEditEventResultListener.onRemovedOnlyThisEvents();
+				break;
+
 		}
 		super.onDestroy();
 	}

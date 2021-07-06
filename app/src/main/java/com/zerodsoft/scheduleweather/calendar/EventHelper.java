@@ -3,7 +3,6 @@ package com.zerodsoft.scheduleweather.calendar;
 import android.content.ContentProviderOperation;
 import android.content.ContentUris;
 import android.content.ContentValues;
-import android.content.Context;
 import android.net.Uri;
 import android.provider.CalendarContract;
 import android.provider.CalendarContract.Events;
@@ -14,35 +13,95 @@ import android.provider.CalendarContract.Calendars;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.text.format.Time;
-import android.util.Log;
 
-import com.zerodsoft.scheduleweather.activity.editevent.activity.ModifyInstanceFragment;
+import androidx.annotation.Nullable;
+
 import com.zerodsoft.scheduleweather.calendar.calendarcommon2.*;
-import com.zerodsoft.scheduleweather.common.enums.EventIntentCode;
+import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-
-import biweekly.property.Attendee;
 
 public class EventHelper {
 	private final AsyncQueryService mService;
 
-	public enum UpdateType {
+	public enum EventEditType {
 		UPDATE_ONLY_THIS_EVENT,
 		UPDATE_FOLLOWING_EVENTS,
-		UPDATE_ALL_EVENTS
+		UPDATE_ALL_EVENTS,
+		SAVE_NEW_EVENT,
+		REMOVE_ONLY_THIS_EVENT,
+		REMOVE_FOLLOWING_EVENTS,
+		REMOVE_ALL_EVENTS
 	}
 
 	public EventHelper(AsyncQueryService asyncQueryService) {
 		mService = asyncQueryService;
 	}
 
+	public void saveNewEvent(ContentValues newEvent, @Nullable LocationDTO locationDto, List<ContentValues> newReminderList,
+	                         List<ContentValues> newAttendeeList) {
+		//반복 이벤트면 dtEnd를 삭제하고 duration추가
+		ArrayList<ContentProviderOperation> contentProviderOperationList
+				= new ArrayList<>();
+		int eventIdIndex = 0;
 
-	public void updateEvent(UpdateType updateType
+		convertDtEndForAllDay(newEvent);
+		setDuration(newEvent);
+		contentProviderOperationList.add(ContentProviderOperation.newInsert(Events.CONTENT_URI).withValues(newEvent)
+				.build());
+
+		if (!newReminderList.isEmpty()) {
+			saveRemindersWithBackRef(contentProviderOperationList, eventIdIndex, null,
+					newReminderList, true);
+		}
+
+		if (!newAttendeeList.isEmpty()) {
+			ContentProviderOperation.Builder attendeeOperationBuilder = null;
+
+			for (ContentValues attendee : newAttendeeList) {
+				attendee.put(Attendees.ATTENDEE_RELATIONSHIP,
+						Attendees.RELATIONSHIP_ATTENDEE);
+				attendee.put(Attendees.ATTENDEE_TYPE, Attendees.TYPE_OPTIONAL);
+				attendee.put(Attendees.ATTENDEE_STATUS, Attendees.ATTENDEE_STATUS_INVITED);
+
+				attendeeOperationBuilder = ContentProviderOperation.newInsert(Attendees.CONTENT_URI)
+						.withValues(attendee);
+				attendeeOperationBuilder.withValueBackReference(Attendees.EVENT_ID, eventIdIndex);
+				contentProviderOperationList.add(attendeeOperationBuilder.build());
+			}
+
+		}
+
+		/*
+		if (newEvent.containsKey(CalendarContract.Events.EVENT_LOCATION)) {
+			locationDto.setEventId(newEventId);
+			locationViewModel.addLocation(locationDTO, new DbQueryCallback<LocationDTO>() {
+				@Override
+				public void onResultSuccessful(LocationDTO result) {
+
+				}
+
+				@Override
+				public void onResultNoData() {
+
+				}
+			});
+		} else {
+
+		}
+
+		 */
+
+		mService.startBatch(mService.getNextToken(), EventEditType.SAVE_NEW_EVENT, CalendarContract.AUTHORITY, contentProviderOperationList,
+				0);
+	}
+
+
+	public void updateEvent(EventEditType eventEditType
 			, ContentValues originalEvent, ContentValues newEvent,
 			                List<ContentValues> originalReminderList,
 			                List<ContentValues> originalAttendeeList,
@@ -62,7 +121,9 @@ public class EventHelper {
 		int eventIdIndex = -1;
 		boolean forceSaveReminders = false;
 
-		if (updateType == UpdateType.UPDATE_ONLY_THIS_EVENT) {
+		convertDtEndForAllDay(newEvent);
+
+		if (eventEditType == EventEditType.UPDATE_ONLY_THIS_EVENT) {
 			ContentValues values = new ContentValues();
 			values.put(Events.ORIGINAL_INSTANCE_TIME, originalEvent.getAsLong(Instances.BEGIN));
 			values.put(Events.STATUS, Events.STATUS_CANCELED);
@@ -78,7 +139,7 @@ public class EventHelper {
 			contentProviderOperationList.add(ContentProviderOperation.newInsert(Events.CONTENT_URI).withValues(newEvent)
 					.build());
 			forceSaveReminders = true;
-		} else if (updateType == UpdateType.UPDATE_FOLLOWING_EVENTS) {
+		} else if (eventEditType == EventEditType.UPDATE_FOLLOWING_EVENTS) {
 			newEvent.remove(Events._ID);
 
 			boolean hasRRuleInNewEvent = false;
@@ -103,7 +164,7 @@ public class EventHelper {
 						.build());
 			} else {
 				if (isFirstInstance(originalEvent, newEvent)) {
-					checkTimeDependentFields(originalEvent, newEvent, updateType);
+					checkTimeDependentFields(originalEvent, newEvent, eventEditType);
 					setDuration(newEvent);
 
 					ContentProviderOperation.Builder b = ContentProviderOperation.newUpdate(uri)
@@ -124,7 +185,7 @@ public class EventHelper {
 			}
 
 			forceSaveReminders = true;
-		} else if (updateType == UpdateType.UPDATE_ALL_EVENTS) {
+		} else if (eventEditType == EventEditType.UPDATE_ALL_EVENTS) {
 			boolean hasRRuleInNewEvent = false;
 			if (newEvent.containsKey(Events.RRULE)) {
 				hasRRuleInNewEvent = true;
@@ -139,7 +200,7 @@ public class EventHelper {
 						.build());
 				forceSaveReminders = true;
 			} else {
-				checkTimeDependentFields(originalEvent, newEvent, updateType);
+				checkTimeDependentFields(originalEvent, newEvent, eventEditType);
 				contentProviderOperationList.add(ContentProviderOperation.newUpdate(uri).withValues(newEvent).build());
 			}
 		}
@@ -277,7 +338,7 @@ public class EventHelper {
 			}
 		}
 
-		mService.startBatch(mService.getNextToken(), null, CalendarContract.AUTHORITY, contentProviderOperationList,
+		mService.startBatch(mService.getNextToken(), eventEditType, CalendarContract.AUTHORITY, contentProviderOperationList,
 				0);
 	}
 
@@ -306,8 +367,10 @@ public class EventHelper {
 
 	private boolean saveRemindersWithBackRef(ArrayList<ContentProviderOperation> contentProviderOperationList, Integer eventIdIndex,
 	                                         List<ContentValues> originalReminderList, List<ContentValues> newReminderList, boolean forceSave) {
-		if (originalReminderList.equals(newReminderList) && !forceSave) {
-			return false;
+		if (originalReminderList != null) {
+			if (originalReminderList.equals(newReminderList) && !forceSave) {
+				return false;
+			}
 		}
 
 		ContentProviderOperation.Builder b = ContentProviderOperation
@@ -396,7 +459,7 @@ public class EventHelper {
 		return newRRule;
 	}
 
-	private void checkTimeDependentFields(ContentValues originalEvent, ContentValues newEvent, UpdateType updateType) {
+	private void checkTimeDependentFields(ContentValues originalEvent, ContentValues newEvent, EventEditType eventEditType) {
 		final long originalBegin = originalEvent.getAsLong(Instances.DTSTART);
 		final boolean originalAllDay = originalEvent.getAsInteger(Events.ALL_DAY) == 1;
 		final long originalEnd = originalAllDay ? originalEvent.getAsLong(Instances.END) : originalEvent.getAsLong(Instances.DTEND);
@@ -414,7 +477,7 @@ public class EventHelper {
 			newEvent.remove(Events.DURATION);
 			newEvent.remove(Events.ALL_DAY);
 			newEvent.remove(Events.EVENT_TIMEZONE);
-		} else if (updateType == UpdateType.UPDATE_ALL_EVENTS) {
+		} else if (eventEditType == EventEditType.UPDATE_ALL_EVENTS) {
 			long oldStartMillis = originalEvent.getAsLong(Events.DTSTART);
 			if (originalBegin != newBegin) {
 				// The user changed the start time of this event
@@ -446,6 +509,20 @@ public class EventHelper {
 			return true;
 		} else {
 			return false;
+		}
+	}
+
+	public void convertDtEndForAllDay(ContentValues contentValues) {
+		if (!contentValues.containsKey(Events.RRULE) && contentValues.containsKey(Events.DTSTART)) {
+			if (contentValues.containsKey(CalendarContract.Events.ALL_DAY)) {
+				if (contentValues.getAsInteger(CalendarContract.Events.ALL_DAY) == 1) {
+					Calendar calendar = Calendar.getInstance();
+					calendar.setTimeInMillis(contentValues.getAsLong(CalendarContract.Events.DTEND));
+					calendar.add(Calendar.DAY_OF_YEAR, 1);
+
+					contentValues.put(CalendarContract.Events.DTEND, calendar.getTimeInMillis());
+				}
+			}
 		}
 	}
 

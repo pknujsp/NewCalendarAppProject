@@ -543,14 +543,13 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		if (eventDataViewModel.isModified(Events.DTSTART) || eventDataViewModel.isModified(Events.DTEND)) {
 			newEventValues.put(Events.DTSTART, modifiedEvent.getAsLong(CalendarContract.Events.DTSTART));
 			newEventValues.put(Events.DTEND, modifiedEvent.getAsLong(CalendarContract.Events.DTEND));
-			convertDtEndForAllDay(newEventValues);
 		} else {
 			newEventValues.put(CalendarContract.Events.DTSTART, originalInstanceBeginDate);
 			newEventValues.put(CalendarContract.Events.DTEND, originalInstanceEndDate);
 		}
 
 		EventHelper eventHelper = new EventHelper(getAsyncQueryService());
-		eventHelper.updateEvent(EventHelper.UpdateType.UPDATE_ONLY_THIS_EVENT, originalEvent, newEventValues, originalReminderList
+		eventHelper.updateEvent(EventHelper.EventEditType.UPDATE_ONLY_THIS_EVENT, originalEvent, newEventValues, originalReminderList
 				, originalAttendeeList, newReminderList, newAttendeeList, selectedCalendarValues);
 	}
 
@@ -591,14 +590,13 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		if (eventDataViewModel.isModified(Events.DTSTART) || eventDataViewModel.isModified(Events.DTEND)) {
 			newEventValues.put(Events.DTSTART, newEvent.getAsLong(CalendarContract.Events.DTSTART));
 			newEventValues.put(Events.DTEND, newEvent.getAsLong(CalendarContract.Events.DTEND));
-			convertDtEndForAllDay(newEventValues);
 		} else {
 			newEventValues.put(CalendarContract.Events.DTSTART, originalEvent.getAsLong(Instances.BEGIN));
 			newEventValues.put(CalendarContract.Events.DTEND, originalEvent.getAsLong(Instances.END));
 		}
 
 		EventHelper eventHelper = new EventHelper(getAsyncQueryService());
-		eventHelper.updateEvent(EventHelper.UpdateType.UPDATE_FOLLOWING_EVENTS, originalEvent, newEventValues, originalReminderList
+		eventHelper.updateEvent(EventHelper.EventEditType.UPDATE_FOLLOWING_EVENTS, originalEvent, newEventValues, originalReminderList
 				, originalAttendeeList, newReminderList, newAttendeeList, selectedCalendarValues);
 	}
 
@@ -615,10 +613,6 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		List<ContentValues> newReminderList = eventDataViewModel.getNEW_REMINDERS();
 		List<ContentValues> newAttendeeList = eventDataViewModel.getNEW_ATTENDEES();
 
-		if (eventDataViewModel.isModified(Events.DTEND)) {
-			convertDtEndForAllDay(modifiedEvent);
-		}
-
 		final long eventId = originalEvent.getAsInteger(Instances.EVENT_ID);
 		modifiedEvent.put(Events._ID, eventId);
 		modifiedEvent.remove(Events.DURATION);
@@ -632,7 +626,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 			}
 		}
 		EventHelper eventHelper = new EventHelper(getAsyncQueryService());
-		eventHelper.updateEvent(EventHelper.UpdateType.UPDATE_ALL_EVENTS, originalEvent, modifiedEvent, originalReminderList
+		eventHelper.updateEvent(EventHelper.EventEditType.UPDATE_ALL_EVENTS, originalEvent, modifiedEvent, originalReminderList
 				, originalAttendeeList, newReminderList, newAttendeeList, selectedCalendarValues);
 
 	}

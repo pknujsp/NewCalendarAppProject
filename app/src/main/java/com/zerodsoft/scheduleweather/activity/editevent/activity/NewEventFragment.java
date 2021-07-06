@@ -16,6 +16,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
+import com.zerodsoft.scheduleweather.calendar.EventHelper;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
@@ -287,45 +288,8 @@ public class NewEventFragment extends EventBaseFragment {
 		List<ContentValues> newReminderList = eventDataViewModel.getNEW_REMINDERS();
 		List<ContentValues> newAttendeeList = eventDataViewModel.getNEW_ATTENDEES();
 
-		//반복 이벤트면 dtEnd를 삭제하고 duration추가
-		final long newEventId = calendarViewModel.addEvent(newEvent);
-
-		if (!newReminderList.isEmpty()) {
-			for (ContentValues reminder : newReminderList) {
-				reminder.put(CalendarContract.Reminders.EVENT_ID, newEventId);
-			}
-			calendarViewModel.addReminders(newReminderList);
-		}
-
-		if (!newAttendeeList.isEmpty()) {
-			for (ContentValues attendee : newAttendeeList) {
-				attendee.put(Attendees.EVENT_ID, newEventId);
-				attendee.put(Attendees.ATTENDEE_RELATIONSHIP,
-						Attendees.RELATIONSHIP_ATTENDEE);
-				attendee.put(Attendees.ATTENDEE_TYPE, Attendees.TYPE_OPTIONAL);
-				attendee.put(Attendees.ATTENDEE_STATUS, Attendees.ATTENDEE_STATUS_INVITED);
-			}
-			calendarViewModel.addAttendees(newAttendeeList);
-		}
-
-		if (newEvent.containsKey(CalendarContract.Events.EVENT_LOCATION)) {
-			locationDTO.setEventId(newEventId);
-			locationViewModel.addLocation(locationDTO, new DbQueryCallback<LocationDTO>() {
-				@Override
-				public void onResultSuccessful(LocationDTO result) {
-					onNewEventResultListener.onSavedNewEvent(newEventId, newEvent.getAsLong(CalendarContract.Events.DTSTART));
-					getParentFragmentManager().popBackStack();
-				}
-
-				@Override
-				public void onResultNoData() {
-
-				}
-			});
-		} else {
-			onNewEventResultListener.onSavedNewEvent(newEventId, newEvent.getAsLong(CalendarContract.Events.DTSTART));
-			getParentFragmentManager().popBackStack();
-		}
+		EventHelper eventHelper = new EventHelper(getAsyncQueryService());
+		eventHelper.saveNewEvent(newEvent, locationDTO, newReminderList, newAttendeeList);
 	}
 
 
