@@ -31,10 +31,10 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.activity.editevent.activity.ModifyInstanceFragment;
+import com.zerodsoft.scheduleweather.activity.editevent.interfaces.OnEditEventResultListener;
 import com.zerodsoft.scheduleweather.calendar.CalendarInstanceUtil;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.calendarcommon2.EventRecurrence;
-import com.zerodsoft.scheduleweather.calendar.interfaces.OnUpdateEventResultListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.common.enums.LocationIntentCode;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
@@ -64,7 +64,7 @@ public class EventFragment extends BottomSheetDialogFragment {
      */
 	private final int VIEW_HEIGHT;
 	private final IRefreshView iRefreshView;
-	private final OnEventFragmentDismissListener onEventFragmentDismissListener;
+	private OnEventFragmentDismissListener onEventFragmentDismissListener;
 
 	private long eventId;
 	private long instanceId;
@@ -174,7 +174,9 @@ public class EventFragment extends BottomSheetDialogFragment {
 	@Override
 	public void onDismiss(@NonNull @NotNull DialogInterface dialog) {
 		super.onDismiss(dialog);
-		onEventFragmentDismissListener.onResult(eventId);
+		if (onEventFragmentDismissListener != null) {
+			onEventFragmentDismissListener.onResult(eventId);
+		}
 	}
 
 	@Override
@@ -314,7 +316,46 @@ public class EventFragment extends BottomSheetDialogFragment {
 		binding.modifyEventFab.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				ModifyInstanceFragment modifyInstanceFragment = new ModifyInstanceFragment(new OnUpdateEventResultListener() {
+				ModifyInstanceFragment modifyInstanceFragment = new ModifyInstanceFragment(new OnEditEventResultListener() {
+					@Override
+					public void onSavedNewEvent(long dtStart) {
+						onEventFragmentDismissListener = null;
+						getParentFragment().getParentFragmentManager().popBackStackImmediate();
+					}
+
+					@Override
+					public void onUpdatedOnlyThisEvent(long dtStart) {
+						onEventFragmentDismissListener = null;
+						getParentFragment().getParentFragmentManager().popBackStackImmediate();
+					}
+
+					@Override
+					public void onUpdatedFollowingEvents(long dtStart) {
+						onEventFragmentDismissListener = null;
+						getParentFragment().getParentFragmentManager().popBackStackImmediate();
+					}
+
+					@Override
+					public void onUpdatedAllEvents(long dtStart) {
+						onEventFragmentDismissListener = null;
+						getParentFragment().getParentFragmentManager().popBackStackImmediate();
+					}
+
+					@Override
+					public void onRemovedAllEvents() {
+
+					}
+
+					@Override
+					public void onRemovedFollowingEvents() {
+
+					}
+
+					@Override
+					public void onRemovedOnlyThisEvents() {
+
+					}
+
 					@Override
 					public int describeContents() {
 						return 0;
@@ -323,26 +364,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 					@Override
 					public void writeToParcel(Parcel dest, int flags) {
 
-					}
-
-					@Override
-					public void onResultUpdatedAllEvents(long begin) {
-						EventFragment.this.originalBegin = begin;
-						setInstanceData();
-					}
-
-					@Override
-					public void onResultUpdatedThisEvent(long eventId, long begin) {
-						EventFragment.this.eventId = eventId;
-						EventFragment.this.originalBegin = begin;
-						setInstanceData();
-					}
-
-					@Override
-					public void onResultUpdatedFollowingEvents(long eventId, long begin) {
-						EventFragment.this.eventId = eventId;
-						EventFragment.this.originalBegin = begin;
-						setInstanceData();
 					}
 				});
 				Bundle bundle = new Bundle();

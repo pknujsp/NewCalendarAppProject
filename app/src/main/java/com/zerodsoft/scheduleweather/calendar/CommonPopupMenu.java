@@ -18,7 +18,7 @@ import androidx.fragment.app.Fragment;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.editevent.activity.ModifyInstanceFragment;
-import com.zerodsoft.scheduleweather.calendar.interfaces.OnUpdateEventResultListener;
+import com.zerodsoft.scheduleweather.activity.editevent.interfaces.OnEditEventResultListener;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
@@ -43,7 +43,42 @@ public abstract class CommonPopupMenu {
 			public boolean onMenuItemClick(MenuItem menuItem) {
 				switch (menuItem.getItemId()) {
 					case R.id.edit_instance: {
-						ModifyInstanceFragment modifyInstanceFragment = new ModifyInstanceFragment(new OnUpdateEventResultListener() {
+						ModifyInstanceFragment modifyInstanceFragment = new ModifyInstanceFragment(new OnEditEventResultListener() {
+							@Override
+							public void onSavedNewEvent(long dtStart) {
+
+							}
+
+							@Override
+							public void onUpdatedOnlyThisEvent(long dtStart) {
+
+							}
+
+							@Override
+							public void onUpdatedFollowingEvents(long dtStart) {
+
+							}
+
+							@Override
+							public void onUpdatedAllEvents(long dtStart) {
+
+							}
+
+							@Override
+							public void onRemovedAllEvents() {
+
+							}
+
+							@Override
+							public void onRemovedFollowingEvents() {
+
+							}
+
+							@Override
+							public void onRemovedOnlyThisEvents() {
+
+							}
+
 							@Override
 							public int describeContents() {
 								return 0;
@@ -51,21 +86,6 @@ public abstract class CommonPopupMenu {
 
 							@Override
 							public void writeToParcel(Parcel dest, int flags) {
-
-							}
-
-							@Override
-							public void onResultUpdatedAllEvents(long begin) {
-
-							}
-
-							@Override
-							public void onResultUpdatedThisEvent(long eventId, long begin) {
-
-							}
-
-							@Override
-							public void onResultUpdatedFollowingEvents(long eventId, long begin) {
 
 							}
 						});

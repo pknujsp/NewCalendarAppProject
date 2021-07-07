@@ -44,7 +44,7 @@ public class VilageFcstFragment extends Fragment {
 	private WeatherAreaCodeDTO weatherAreaCode;
 	private VilageFcstProcessing vilageFcstProcessing;
 
-	public VilageFcstFragment(WeatherAreaCodeDTO weatherAreaCodeDTO ) {
+	public VilageFcstFragment(WeatherAreaCodeDTO weatherAreaCodeDTO) {
 		this.weatherAreaCode = weatherAreaCodeDTO;
 	}
 
@@ -534,7 +534,14 @@ public class VilageFcstFragment extends Fragment {
 				if (data.getRainPrecipitation6Hour() != null) {
 					rainfallList.add(data.getRainPrecipitation6Hour());
 				}
+
 			}
+
+			/*
+			발표시각 2, 5, 8, 11, 14, 17, 20, 23
+			2 : 3
+			 */
+
 
 			VALUE_PAINT = new TextPaint();
 			VALUE_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 13f, getResources().getDisplayMetrics()));
@@ -573,10 +580,10 @@ public class VilageFcstFragment extends Fragment {
 			final int COLUMN_WIDTH_HALF = COLUMN_WIDTH / 2;
 			final float TOP = PADDING;
 			final float BOTTOM = getHeight() - PADDING;
+			final float Y = (BOTTOM - TOP) / 2f + TOP + (TEXT_HEIGHT / 2f);
+
 			float left = 0f;
 			float right = 0f;
-			float x = 0f;
-			final float Y = (BOTTOM - TOP) / 2f + TOP + (TEXT_HEIGHT / 2f);
 
 			RectF rect = new RectF();
 			rect.top = TOP;

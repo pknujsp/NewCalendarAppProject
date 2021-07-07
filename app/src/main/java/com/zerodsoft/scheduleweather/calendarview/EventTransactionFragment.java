@@ -10,6 +10,7 @@ import android.content.IntentFilter;
 import android.content.SyncStatusObserver;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
+import android.os.Parcel;
 import android.os.RemoteException;
 import android.provider.CalendarContract;
 import android.service.carrier.CarrierMessagingService;
@@ -34,6 +35,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.editevent.activity.NewEventFragment;
+import com.zerodsoft.scheduleweather.activity.editevent.interfaces.OnEditEventResultListener;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.CommonPopupMenu;
 import com.zerodsoft.scheduleweather.calendar.selectedcalendar.SelectedCalendarViewModel;
@@ -530,10 +532,50 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 				break;
 
 			case R.id.add_schedule:
-				NewEventFragment newEventFragment = new NewEventFragment(new NewEventFragment.OnNewEventResultListener() {
+				NewEventFragment newEventFragment = new NewEventFragment(new OnEditEventResultListener() {
 					@Override
-					public void onSavedNewEvent(long eventId, long begin) {
-						//새로운 일정이 추가됨 -> 달력 이벤트 갱신 -> 추가한 이벤트의 첫번째 인스턴스가 있는 날짜로 달력을 이동
+					public void onSavedNewEvent(long dtStart) {
+						getParentFragmentManager().popBackStackImmediate();
+					}
+
+					@Override
+					public void onUpdatedOnlyThisEvent(long dtStart) {
+
+					}
+
+					@Override
+					public void onUpdatedFollowingEvents(long dtStart) {
+
+					}
+
+					@Override
+					public void onUpdatedAllEvents(long dtStart) {
+
+					}
+
+					@Override
+					public void onRemovedAllEvents() {
+
+					}
+
+					@Override
+					public void onRemovedFollowingEvents() {
+
+					}
+
+					@Override
+					public void onRemovedOnlyThisEvents() {
+
+					}
+
+					@Override
+					public int describeContents() {
+						return 0;
+					}
+
+					@Override
+					public void writeToParcel(Parcel dest, int flags) {
+
 					}
 				});
 

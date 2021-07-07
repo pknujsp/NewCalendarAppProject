@@ -12,9 +12,7 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
-import com.zerodsoft.scheduleweather.activity.editevent.activity.ModifyInstanceFragment;
 import com.zerodsoft.scheduleweather.activity.editevent.interfaces.OnEditEventResultListener;
-import com.zerodsoft.scheduleweather.calendar.interfaces.OnUpdateEventResultListener;
 
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -25,7 +23,6 @@ public class AsyncQueryService extends Handler {
 	private Context context;
 	private Handler mHandler = this;
 	private OnEditEventResultListener onEditEventResultListener;
-	private OnUpdateEventResultListener onUpdateEventResultListener;
 	private AsyncQueryServiceHelper asyncQueryServiceHelper;
 
 	public AsyncQueryService(Context context, OnEditEventResultListener onEditEventResultListener) {
@@ -34,9 +31,6 @@ public class AsyncQueryService extends Handler {
 		this.asyncQueryServiceHelper = new AsyncQueryServiceHelper();
 	}
 
-	public void setOnUpdateEventResultListener(OnUpdateEventResultListener onUpdateEventResultListener) {
-		this.onUpdateEventResultListener = onUpdateEventResultListener;
-	}
 
 	public final int getNextToken() {
 		return mUniqueToken.getAndIncrement();
@@ -134,10 +128,6 @@ public class AsyncQueryService extends Handler {
 		info.delayMillis = delayMillis;
 		info.updatedEventPrimaryValues = updatedEventPrimaryValues;
 
-		if (onUpdateEventResultListener != null) {
-			asyncQueryServiceHelper.setOnUpdateEventResultListener(onUpdateEventResultListener);
-		}
-
 		asyncQueryServiceHelper.queueOperation(context, info, onEditEventResultListener);
 	}
 
@@ -204,6 +194,36 @@ public class AsyncQueryService extends Handler {
 			case Operation.EVENT_ARG_BATCH:
 				onBatchComplete(token, info.cookie, (ContentProviderResult[]) info.result);
 				break;
+		}
+
+		switch (info.updatedEventPrimaryValues.getEventEditType()) {
+			case SAVE_NEW_EVENT:
+				onEditEventResultListener.onSavedNewEvent(info.updatedEventPrimaryValues.getBegin());
+				break;
+			case UPDATE_ALL_EVENTS:
+				onEditEventResultListener.onUpdatedAllEvents(info.updatedEventPrimaryValues.getBegin());
+				break;
+
+			case UPDATE_FOLLOWING_EVENTS:
+				onEditEventResultListener.onUpdatedFollowingEvents(info.updatedEventPrimaryValues.getBegin());
+				break;
+
+			case UPDATE_ONLY_THIS_EVENT:
+				onEditEventResultListener.onUpdatedOnlyThisEvent(info.updatedEventPrimaryValues.getBegin());
+				break;
+
+			case REMOVE_ALL_EVENTS:
+				onEditEventResultListener.onRemovedAllEvents();
+				break;
+
+			case REMOVE_FOLLOWING_EVENTS:
+				onEditEventResultListener.onRemovedFollowingEvents();
+				break;
+
+			case REMOVE_ONLY_THIS_EVENT:
+				onEditEventResultListener.onRemovedOnlyThisEvents();
+				break;
+
 		}
 	}
 

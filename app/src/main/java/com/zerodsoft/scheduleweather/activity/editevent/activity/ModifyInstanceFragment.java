@@ -21,7 +21,6 @@ import com.zerodsoft.scheduleweather.activity.editevent.interfaces.OnEditEventRe
 import com.zerodsoft.scheduleweather.calendar.AsyncQueryService;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.EventHelper;
-import com.zerodsoft.scheduleweather.calendar.interfaces.OnUpdateEventResultListener;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
@@ -29,15 +28,14 @@ import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
 public class ModifyInstanceFragment extends EventBaseFragment {
-	private OnUpdateEventResultListener onUpdateEventResultListener;
 	private ContentValues originalEvent;
+	private OnEditEventResultListener onEditEventResultListener;
 
 	private long originalInstanceBeginDate;
 	private long originalInstanceEndDate;
@@ -51,13 +49,12 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 	public synchronized AsyncQueryService getAsyncQueryService() {
 		if (mService == null) {
 			mService = new AsyncQueryService(getActivity(), (OnEditEventResultListener) calendarViewModel);
-			mService.setOnUpdateEventResultListener(onUpdateEventResultListener);
 		}
 		return mService;
 	}
 
-	public ModifyInstanceFragment(OnUpdateEventResultListener onUpdateEventResultListener) {
-		this.onUpdateEventResultListener = onUpdateEventResultListener;
+	public ModifyInstanceFragment(OnEditEventResultListener onEditEventResultListener) {
+		this.onEditEventResultListener = onEditEventResultListener;
 	}
 
 	@Override
@@ -110,20 +107,17 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 										case 0:
 											//모든 일정이면 event를 변경
 											updateAllEvents();
-											getParentFragmentManager().popBackStackImmediate();
-
+											onEditEventResultListener.onUpdatedAllEvents(0L);
 											break;
 										case 1:
 											//현재 인스턴스 이후의 모든 인스턴스 변경
 											updateFollowingEvents();
-											getParentFragmentManager().popBackStackImmediate();
-
+											onEditEventResultListener.onUpdatedFollowingEvents(0L);
 											break;
 										case 2:
 											//현재 인스턴스만 변경
-											updateThisInstance();
-											getParentFragmentManager().popBackStackImmediate();
-
+											updateThisEvent();
+											onEditEventResultListener.onUpdatedOnlyThisEvent(0L);
 											break;
 									}
 
@@ -131,7 +125,8 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 							}).create().show();
 				} else {
 					updateAllEvents();
-					getParentFragmentManager().popBackStackImmediate();
+					onEditEventResultListener.onUpdatedAllEvents(0L);
+
 				}
 
 			}
@@ -525,28 +520,28 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 	}
 
 	//이번 일정만 변경
-	protected void updateThisInstance() {
+	protected void updateThisEvent() {
 		//인스턴스를 이벤트에서 제외
 		ContentValues modifiedEvent = eventDataViewModel.getNEW_EVENT();
 		ContentValues newEventValues = new ContentValues();
 		List<ContentValues> newReminderList = eventDataViewModel.getNEW_REMINDERS();
 		List<ContentValues> newAttendeeList = eventDataViewModel.getNEW_ATTENDEES();
 
-		setNewEventValues(CalendarContract.Events.TITLE, newEventValues, modifiedEvent);
-		setNewEventValues(CalendarContract.Events.EVENT_COLOR_KEY, newEventValues, modifiedEvent);
-		setNewEventValues(CalendarContract.Events.EVENT_COLOR, newEventValues, modifiedEvent);
-		setNewEventValues(CalendarContract.Events.CALENDAR_ID, newEventValues, modifiedEvent);
-		setNewEventValues(CalendarContract.Events.ALL_DAY, newEventValues, modifiedEvent);
-		setNewEventValues(CalendarContract.Events.DTSTART, newEventValues, modifiedEvent);
-		setNewEventValues(CalendarContract.Events.DTEND, newEventValues, modifiedEvent);
-		setNewEventValues(CalendarContract.Events.EVENT_TIMEZONE, newEventValues, modifiedEvent);
-		setNewEventValues(CalendarContract.Events.DESCRIPTION, newEventValues, modifiedEvent);
-		setNewEventValues(CalendarContract.Events.EVENT_LOCATION, newEventValues, modifiedEvent);
-		setNewEventValues(CalendarContract.Events.AVAILABILITY, newEventValues, modifiedEvent);
-		setNewEventValues(CalendarContract.Events.ACCESS_LEVEL, newEventValues, modifiedEvent);
-		setNewEventValues(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS, newEventValues, modifiedEvent);
-		setNewEventValues(CalendarContract.Events.GUESTS_CAN_MODIFY, newEventValues, modifiedEvent);
-		setNewEventValues(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS, newEventValues, modifiedEvent);
+		setNewEventValues(Events.TITLE, newEventValues, modifiedEvent);
+		setNewEventValues(Events.EVENT_COLOR_KEY, newEventValues, modifiedEvent);
+		setNewEventValues(Events.EVENT_COLOR, newEventValues, modifiedEvent);
+		setNewEventValues(Events.CALENDAR_ID, newEventValues, modifiedEvent);
+		setNewEventValues(Events.ALL_DAY, newEventValues, modifiedEvent);
+		setNewEventValues(Events.DTSTART, newEventValues, modifiedEvent);
+		setNewEventValues(Events.DTEND, newEventValues, modifiedEvent);
+		setNewEventValues(Events.EVENT_TIMEZONE, newEventValues, modifiedEvent);
+		setNewEventValues(Events.DESCRIPTION, newEventValues, modifiedEvent);
+		setNewEventValues(Events.EVENT_LOCATION, newEventValues, modifiedEvent);
+		setNewEventValues(Events.AVAILABILITY, newEventValues, modifiedEvent);
+		setNewEventValues(Events.ACCESS_LEVEL, newEventValues, modifiedEvent);
+		setNewEventValues(Events.GUESTS_CAN_INVITE_OTHERS, newEventValues, modifiedEvent);
+		setNewEventValues(Events.GUESTS_CAN_MODIFY, newEventValues, modifiedEvent);
+		setNewEventValues(Events.GUESTS_CAN_SEE_GUESTS, newEventValues, modifiedEvent);
 		setNewEventValues(Events.IS_ORGANIZER, newEventValues, modifiedEvent);
 		setNewEventValues(Events.RRULE, newEventValues, modifiedEvent);
 

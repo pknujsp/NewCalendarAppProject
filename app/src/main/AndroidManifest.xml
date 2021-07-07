@@ -81,7 +81,10 @@
             </intent-filter>
         </receiver>
 
-        <service android:name="com.zerodsoft.scheduleweather.calendar.AsyncQueryServiceHelper" />
+        <service
+            android:name="com.zerodsoft.scheduleweather.calendar.AsyncQueryServiceHelper"
+            android:enabled="true" />
+
     </application>
 
 </manifest>

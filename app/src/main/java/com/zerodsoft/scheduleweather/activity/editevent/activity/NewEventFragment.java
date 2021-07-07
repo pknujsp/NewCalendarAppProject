@@ -32,10 +32,10 @@ import java.util.List;
 import java.util.TimeZone;
 
 public class NewEventFragment extends EventBaseFragment {
-	private OnNewEventResultListener onNewEventResultListener;
+	private OnEditEventResultListener onEditEventResultListener;
 
-	public NewEventFragment(OnNewEventResultListener onNewEventResultListener) {
-		this.onNewEventResultListener = onNewEventResultListener;
+	public NewEventFragment(OnEditEventResultListener onEditEventResultListener) {
+		this.onEditEventResultListener = onEditEventResultListener;
 	}
 
 	@Override
@@ -73,6 +73,7 @@ public class NewEventFragment extends EventBaseFragment {
 			@Override
 			public void onClick(View view) {
 				saveNewEvent();
+				onEditEventResultListener.onSavedNewEvent(0L);
 			}
 		});
 

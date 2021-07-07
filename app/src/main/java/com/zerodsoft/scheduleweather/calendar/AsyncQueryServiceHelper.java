@@ -3,7 +3,6 @@ package com.zerodsoft.scheduleweather.calendar;
 import android.app.IntentService;
 import android.content.ContentProviderOperation;
 import android.content.ContentResolver;
-import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -19,9 +18,7 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
-import com.zerodsoft.scheduleweather.activity.editevent.activity.ModifyInstanceFragment;
 import com.zerodsoft.scheduleweather.activity.editevent.interfaces.OnEditEventResultListener;
-import com.zerodsoft.scheduleweather.calendar.interfaces.OnUpdateEventResultListener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,12 +28,9 @@ import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 
 public class AsyncQueryServiceHelper extends IntentService {
-	private final PriorityQueue<OperationInfo> sWorkQueue =
+	private static final PriorityQueue<OperationInfo> sWorkQueue =
 			new PriorityQueue<OperationInfo>();
-	private static Class<AsyncQueryService> mService = AsyncQueryService.class;
-	private static OnEditEventResultListener onEditEventResultListener;
-	private static OnUpdateEventResultListener onUpdateEventResultListener;
-	private static UpdatedEventPrimaryValues updatedEventPrimaryValues;
+	private Class<AsyncQueryService> mService = AsyncQueryService.class;
 
 	public AsyncQueryServiceHelper(String name) {
 		super(name);
@@ -47,16 +41,8 @@ public class AsyncQueryServiceHelper extends IntentService {
 	}
 
 
-	public void setOnUpdateEventResultListener(OnUpdateEventResultListener onUpdateEventResultListener) {
-		AsyncQueryServiceHelper.onUpdateEventResultListener = onUpdateEventResultListener;
-	}
-
 	public void queueOperation(Context context, OperationInfo args, OnEditEventResultListener onEditEventResultListener) {
 		args.calculateScheduledTime();
-		updatedEventPrimaryValues = args.updatedEventPrimaryValues;
-
-		AsyncQueryServiceHelper.onEditEventResultListener = onEditEventResultListener;
-
 		synchronized (sWorkQueue) {
 			sWorkQueue.add(args);
 			sWorkQueue.notify();
@@ -179,12 +165,6 @@ public class AsyncQueryServiceHelper extends IntentService {
 
 				case AsyncQueryService.Operation.EVENT_ARG_INSERT:
 					args.result = resolver.insert(args.uri, args.values);
-
-					if (args.uri.equals(CalendarContract.Events.CONTENT_URI)) {
-						Uri insertedUri = (Uri) args.result;
-						long newEventId = Long.parseLong(insertedUri.getLastPathSegment());
-						updatedEventPrimaryValues.setNewEventId(newEventId);
-					}
 					break;
 
 				case AsyncQueryService.Operation.EVENT_ARG_UPDATE:
@@ -254,49 +234,6 @@ public class AsyncQueryServiceHelper extends IntentService {
 	public void onDestroy() {
 		if (AsyncQueryService.localLOGV) {
 			Log.e("AsyncQueryService", "onDestroy");
-		}
-
-		switch (updatedEventPrimaryValues.getEventEditType()) {
-			case SAVE_NEW_EVENT:
-				onEditEventResultListener.onSavedNewEvent(updatedEventPrimaryValues.getBegin());
-				break;
-			case UPDATE_ALL_EVENTS:
-				if (onUpdateEventResultListener != null) {
-					onUpdateEventResultListener.onResultUpdatedAllEvents(updatedEventPrimaryValues.getBegin());
-				}
-				onEditEventResultListener.onUpdatedAllEvents(updatedEventPrimaryValues.getBegin());
-				break;
-
-			case UPDATE_FOLLOWING_EVENTS:
-				if (onUpdateEventResultListener != null) {
-					onUpdateEventResultListener.onResultUpdatedFollowingEvents(updatedEventPrimaryValues.getOriginalEventId() == null ?
-							updatedEventPrimaryValues.getNewEventId() :
-							updatedEventPrimaryValues.getOriginalEventId(), updatedEventPrimaryValues.getBegin());
-				}
-				onEditEventResultListener.onUpdatedFollowingEvents(updatedEventPrimaryValues.getBegin());
-				break;
-
-			case UPDATE_ONLY_THIS_EVENT:
-				if (onUpdateEventResultListener != null) {
-					onUpdateEventResultListener.onResultUpdatedThisEvent(updatedEventPrimaryValues.getOriginalEventId() == null ?
-							updatedEventPrimaryValues.getNewEventId() :
-							updatedEventPrimaryValues.getOriginalEventId(), updatedEventPrimaryValues.getBegin());
-				}
-				onEditEventResultListener.onUpdatedOnlyThisEvent(updatedEventPrimaryValues.getBegin());
-				break;
-
-			case REMOVE_ALL_EVENTS:
-				onEditEventResultListener.onRemovedAllEvents();
-				break;
-
-			case REMOVE_FOLLOWING_EVENTS:
-				onEditEventResultListener.onRemovedFollowingEvents();
-				break;
-
-			case REMOVE_ONLY_THIS_EVENT:
-				onEditEventResultListener.onRemovedOnlyThisEvents();
-				break;
-
 		}
 		super.onDestroy();
 	}
