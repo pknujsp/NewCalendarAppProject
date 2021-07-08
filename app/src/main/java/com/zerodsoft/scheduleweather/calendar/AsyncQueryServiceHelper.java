@@ -13,7 +13,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.RemoteException;
 import android.os.SystemClock;
-import android.provider.CalendarContract;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -254,7 +253,7 @@ public class AsyncQueryServiceHelper extends IntentService {
 		public Object cookie;
 		public ContentValues values;
 		public ArrayList<ContentProviderOperation> cpo;
-		public UpdatedEventPrimaryValues updatedEventPrimaryValues;
+		public EditEventPrimaryValues editEventPrimaryValues;
 
 		/**
 		 * delayMillis is relative time e.g. 10,000 milliseconds

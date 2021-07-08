@@ -2,11 +2,11 @@ package com.zerodsoft.scheduleweather.calendar;
 
 import java.io.Serializable;
 
-public class UpdatedEventPrimaryValues implements Serializable {
+public class EditEventPrimaryValues implements Serializable {
 	private Long begin;
 	private EventHelper.EventEditType eventEditType;
 
-	public UpdatedEventPrimaryValues() {
+	public EditEventPrimaryValues() {
 	}
 
 

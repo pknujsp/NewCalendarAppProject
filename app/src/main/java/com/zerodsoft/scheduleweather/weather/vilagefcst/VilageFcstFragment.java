@@ -36,8 +36,12 @@ import com.zerodsoft.scheduleweather.weather.sunsetrise.SunsetRise;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 public class VilageFcstFragment extends Fragment {
 	private VilageFcstFragmentBinding binding;
@@ -119,7 +123,7 @@ public class VilageFcstFragment extends Fragment {
 	}
 
 	private void setTable(VilageFcstResult vilageFcstResult) {
-		final int COLUMN_WIDTH = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 53f, getResources().getDisplayMetrics());
+		final int COLUMN_WIDTH = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 55f, getResources().getDisplayMetrics());
 		final int TB_MARGIN = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
 
 		final int CLOCK_ROW_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 34f,
@@ -524,6 +528,7 @@ public class VilageFcstFragment extends Fragment {
 		final TextPaint VALUE_PAINT;
 		final Paint RECT_PAINT;
 		final int TEXT_HEIGHT;
+		final int FIRST_DATA_LENGTH;
 
 		public RainfallView(Context context, List<VilageFcstFinalData> dataList) {
 			super(context);
@@ -538,10 +543,31 @@ public class VilageFcstFragment extends Fragment {
 			}
 
 			/*
-			발표시각 2, 5, 8, 11, 14, 17, 20, 23
-			2 : 3
+			예보시각 : 0000, 0300, 0600, 0900, 1200, 1500, 1800, 2100
+
+			<첫번쨰 데이터의 예보시각 - 강수량>
+			0000 - 0600 3
+			0300 - 0600 2
+			0600 - 1200 3
+			0900 - 1200 2
+			1200 - 1800 3
+			1500 - 1800 2
+			1800 - 0000 3
+			2100 - 0000 2
 			 */
 
+			String firstFcstTimeHour = ClockUtil.HH.format(dataList.get(0).getFcstDateTime()) + "00";
+			Set<String> hourSet = new HashSet<>();
+			hourSet.add("0000");
+			hourSet.add("0600");
+			hourSet.add("1200");
+			hourSet.add("1800");
+
+			if (hourSet.contains(firstFcstTimeHour)) {
+				FIRST_DATA_LENGTH = 3;
+			} else {
+				FIRST_DATA_LENGTH = 2;
+			}
 
 			VALUE_PAINT = new TextPaint();
 			VALUE_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 13f, getResources().getDisplayMetrics()));
@@ -589,22 +615,54 @@ public class VilageFcstFragment extends Fragment {
 			rect.top = TOP;
 			rect.bottom = BOTTOM;
 
+			/*
+			| - | - | - | - | - |
+			 */
+
 			int index = 0;
+			boolean drawLeftMargin = false;
+			boolean drawRightMargin = false;
+			float lastX = 0f;
+
 			for (String value : rainfallList) {
 				// 첫번째 자료는 발표시간+1시간 부터 발표시간+7시간 까지
 				if (index == 0) {
-					left = 0;
-					right = COLUMN_WIDTH + COLUMN_WIDTH_HALF - MARGIN_LR;
+					if (FIRST_DATA_LENGTH == 3) {
+						left = 0;
+						right = COLUMN_WIDTH_HALF;
+					} else {
+						left = 0;
+						right = COLUMN_WIDTH + COLUMN_WIDTH_HALF;
+					}
+					drawLeftMargin = false;
+					drawRightMargin = true;
+
 				} else {
-					left = COLUMN_WIDTH + COLUMN_WIDTH_HALF + ((COLUMN_WIDTH * 2) * (index - 1));
+					left = lastX;
 					right = left + (COLUMN_WIDTH * 2);
-					left += MARGIN_LR;
-					right -= MARGIN_LR;
+
+					drawLeftMargin = true;
+
+					if (index == rainfallList.size() - 1) {
+						drawRightMargin = false;
+					} else {
+						drawRightMargin = true;
+					}
 				}
+
+				lastX = right;
+
 				rect.left = left;
 				rect.right = right;
 
-				canvas.drawRect(left, TOP, right, BOTTOM, RECT_PAINT);
+				if (drawLeftMargin) {
+					rect.left += MARGIN_LR;
+				}
+				if (drawRightMargin) {
+					rect.right -= MARGIN_LR;
+				}
+
+				canvas.drawRect(rect, RECT_PAINT);
 				canvas.drawText(value, rect.centerX(), Y, VALUE_PAINT);
 
 				index++;

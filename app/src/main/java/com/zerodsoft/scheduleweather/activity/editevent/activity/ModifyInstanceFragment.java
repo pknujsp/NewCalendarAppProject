@@ -630,10 +630,10 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 				modifiedEvent.put(Events.ALL_DAY, originalEvent.getAsInteger(Events.ALL_DAY));
 			}
 		}
+		
 		EventHelper eventHelper = new EventHelper(getAsyncQueryService());
 		eventHelper.updateEvent(EventHelper.EventEditType.UPDATE_ALL_EVENTS, originalEvent, modifiedEvent, originalReminderList
 				, originalAttendeeList, newReminderList, newAttendeeList, selectedCalendarValues);
-
 	}
 
 	private void setNewEventValues(String key, ContentValues newEventValues, ContentValues modifiedInstance) {

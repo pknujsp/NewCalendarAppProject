@@ -115,7 +115,7 @@ public class AsyncQueryService extends Handler {
 	}
 
 	public void startBatch(int token, @Nullable Object cookie, String authority,
-	                       ArrayList<ContentProviderOperation> cpo, long delayMillis, UpdatedEventPrimaryValues updatedEventPrimaryValues) {
+	                       ArrayList<ContentProviderOperation> cpo, long delayMillis, EditEventPrimaryValues editEventPrimaryValues) {
 		AsyncQueryServiceHelper.OperationInfo info = new AsyncQueryServiceHelper.OperationInfo();
 		info.op = Operation.EVENT_ARG_BATCH;
 		info.resolver = context.getContentResolver();
@@ -126,7 +126,7 @@ public class AsyncQueryService extends Handler {
 		info.authority = authority;
 		info.cpo = cpo;
 		info.delayMillis = delayMillis;
-		info.updatedEventPrimaryValues = updatedEventPrimaryValues;
+		info.editEventPrimaryValues = editEventPrimaryValues;
 
 		asyncQueryServiceHelper.queueOperation(context, info, onEditEventResultListener);
 	}
@@ -196,20 +196,20 @@ public class AsyncQueryService extends Handler {
 				break;
 		}
 
-		switch (info.updatedEventPrimaryValues.getEventEditType()) {
+		switch (info.editEventPrimaryValues.getEventEditType()) {
 			case SAVE_NEW_EVENT:
-				onEditEventResultListener.onSavedNewEvent(info.updatedEventPrimaryValues.getBegin());
+				onEditEventResultListener.onSavedNewEvent(info.editEventPrimaryValues.getBegin());
 				break;
 			case UPDATE_ALL_EVENTS:
-				onEditEventResultListener.onUpdatedAllEvents(info.updatedEventPrimaryValues.getBegin());
+				onEditEventResultListener.onUpdatedAllEvents(info.editEventPrimaryValues.getBegin());
 				break;
 
 			case UPDATE_FOLLOWING_EVENTS:
-				onEditEventResultListener.onUpdatedFollowingEvents(info.updatedEventPrimaryValues.getBegin());
+				onEditEventResultListener.onUpdatedFollowingEvents(info.editEventPrimaryValues.getBegin());
 				break;
 
 			case UPDATE_ONLY_THIS_EVENT:
-				onEditEventResultListener.onUpdatedOnlyThisEvent(info.updatedEventPrimaryValues.getBegin());
+				onEditEventResultListener.onUpdatedOnlyThisEvent(info.editEventPrimaryValues.getBegin());
 				break;
 
 			case REMOVE_ALL_EVENTS:

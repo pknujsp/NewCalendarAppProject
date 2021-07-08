@@ -96,12 +96,12 @@ public class EventHelper implements Serializable {
 		}
 
 		 */
-		UpdatedEventPrimaryValues updatedEventPrimaryValues = new UpdatedEventPrimaryValues();
-		updatedEventPrimaryValues.setBegin(newEvent.getAsLong(Events.DTSTART));
-		updatedEventPrimaryValues.setEventEditType(EventEditType.SAVE_NEW_EVENT);
+		EditEventPrimaryValues editEventPrimaryValues = new EditEventPrimaryValues();
+		editEventPrimaryValues.setBegin(newEvent.getAsLong(Events.DTSTART));
+		editEventPrimaryValues.setEventEditType(EventEditType.SAVE_NEW_EVENT);
 
 		mService.startBatch(mService.getNextToken(), null, CalendarContract.AUTHORITY, contentProviderOperationList,
-				0, updatedEventPrimaryValues);
+				0, editEventPrimaryValues);
 	}
 
 
@@ -148,11 +148,13 @@ public class EventHelper implements Serializable {
 
 			boolean hasRRuleInNewEvent = false;
 			if (newEvent.containsKey(Events.RRULE)) {
-				hasRRuleInNewEvent = true;
+				if (newEvent.get(Events.RRULE) != null) {
+					hasRRuleInNewEvent = true;
+				}
 			}
 
 			if (!hasRRuleInNewEvent) {
-				if (isFirstInstance(originalEvent, newEvent)) {
+				if (isFirstInstance(originalEvent)) {
 					contentProviderOperationList.add(
 							ContentProviderOperation.newDelete(uri).build());
 				} else {
@@ -167,7 +169,7 @@ public class EventHelper implements Serializable {
 				contentProviderOperationList.add(ContentProviderOperation.newInsert(Events.CONTENT_URI).withValues(newEvent)
 						.build());
 			} else {
-				if (isFirstInstance(originalEvent, newEvent)) {
+				if (isFirstInstance(originalEvent)) {
 					checkTimeDependentFields(originalEvent, newEvent, eventEditType);
 					setDuration(newEvent);
 
@@ -177,7 +179,7 @@ public class EventHelper implements Serializable {
 				} else {
 					String newRRule = updatePastEvents(contentProviderOperationList, originalEvent, newEvent);
 					if (newEvent.getAsString(Events.RRULE).equals(originalEvent.getAsString(Events.RRULE))) {
-						newEvent.put(Events.RRULE, newRRule);
+						newEvent.put(Events.RRULE, originalEvent.getAsString(Events.RRULE));
 					}
 					eventIdIndex = contentProviderOperationList.size();
 					newEvent.put(Events.STATUS, originalEvent.getAsInteger(Events.STATUS));
@@ -192,7 +194,9 @@ public class EventHelper implements Serializable {
 		} else if (eventEditType == EventEditType.UPDATE_ALL_EVENTS) {
 			boolean hasRRuleInNewEvent = false;
 			if (newEvent.containsKey(Events.RRULE)) {
-				hasRRuleInNewEvent = true;
+				if (newEvent.get(Events.RRULE) != null) {
+					hasRRuleInNewEvent = true;
+				}
 			}
 
 			if (!hasRRuleInNewEvent) {
@@ -342,12 +346,77 @@ public class EventHelper implements Serializable {
 			}
 		}
 
-		UpdatedEventPrimaryValues updatedEventPrimaryValues = new UpdatedEventPrimaryValues();
-		updatedEventPrimaryValues.setBegin((Long) getValues(originalEvent, newEvent, Events.DTSTART));
-		updatedEventPrimaryValues.setEventEditType(eventEditType);
+		EditEventPrimaryValues editEventPrimaryValues = new EditEventPrimaryValues();
+		editEventPrimaryValues.setBegin((Long) getValues(originalEvent, newEvent, Events.DTSTART));
+		editEventPrimaryValues.setEventEditType(eventEditType);
 
 		mService.startBatch(mService.getNextToken(), null, CalendarContract.AUTHORITY, contentProviderOperationList,
-				0, updatedEventPrimaryValues);
+				0, editEventPrimaryValues);
+	}
+
+
+	public void removeEvent(EventEditType eventEditType, ContentValues originalEvent) {
+		ArrayList<ContentProviderOperation> contentProviderOperationList
+				= new ArrayList<>();
+
+		final long eventId = originalEvent.getAsLong(Instances.EVENT_ID);
+		final boolean hasAttendees = originalEvent.getAsInteger(Events.HAS_ATTENDEE_DATA) == 1;
+		final boolean hasReminders = originalEvent.getAsInteger(Events.HAS_ALARM) == 1;
+
+		if (eventEditType == EventEditType.REMOVE_ALL_EVENTS) {
+			if (hasAttendees) {
+				Uri attendeeUri = ContentUris.withAppendedId(Attendees.CONTENT_URI, eventId);
+				contentProviderOperationList.add(ContentProviderOperation.newDelete(attendeeUri).build());
+			}
+			if (hasReminders) {
+				Uri reminderUri = ContentUris.withAppendedId(Reminders.CONTENT_URI, eventId);
+				contentProviderOperationList.add(ContentProviderOperation.newDelete(reminderUri).build());
+			}
+
+			Uri uri = ContentUris.withAppendedId(Events.CONTENT_URI, eventId);
+			contentProviderOperationList.add(ContentProviderOperation.newDelete(uri).build());
+		} else if (eventEditType == EventEditType.REMOVE_ONLY_THIS_EVENT) {
+			ContentValues exceptionValues = new ContentValues();
+			exceptionValues.put(Events.ORIGINAL_INSTANCE_TIME, originalEvent.getAsLong(Instances.BEGIN));
+			exceptionValues.put(Events.STATUS, Events.STATUS_CANCELED);
+
+			Uri exceptionUri = ContentUris.withAppendedId(Events.CONTENT_EXCEPTION_URI, eventId);
+			contentProviderOperationList.add(ContentProviderOperation.newInsert(exceptionUri).withValues(exceptionValues)
+					.build());
+		} else if (eventEditType == EventEditType.REMOVE_FOLLOWING_EVENTS) {
+			boolean hasRRuleInNewEvent = false;
+			if (originalEvent.containsKey(Events.RRULE)) {
+				if (originalEvent.get(Events.RRULE) != null) {
+					hasRRuleInNewEvent = true;
+				}
+			}
+
+			if (!hasRRuleInNewEvent) {
+				Uri uri = ContentUris.withAppendedId(Events.CONTENT_URI, eventId);
+				contentProviderOperationList.add(ContentProviderOperation.newDelete(uri).build());
+			} else {
+				if (isFirstInstance(originalEvent)) {
+					Uri uri = ContentUris.withAppendedId(Events.CONTENT_URI, eventId);
+					contentProviderOperationList.add(ContentProviderOperation.newDelete(uri).build());
+				} else {
+					String newRRule = updatePastEvents(contentProviderOperationList, originalEvent, originalEvent);
+
+					if (!newRRule.equals(originalEvent.getAsString(Events.RRULE))) {
+						Uri updateUri = ContentUris.withAppendedId(Events.CONTENT_URI, eventId);
+						ContentValues updateValues = new ContentValues();
+						updateValues.put(Events.RRULE, newRRule);
+						contentProviderOperationList.add(ContentProviderOperation.newUpdate(updateUri).withValues(updateValues)
+								.build());
+					}
+				}
+			}
+		}
+
+		EditEventPrimaryValues editEventPrimaryValues = new EditEventPrimaryValues();
+		editEventPrimaryValues.setEventEditType(eventEditType);
+
+		mService.startBatch(mService.getNextToken(), null, CalendarContract.AUTHORITY, contentProviderOperationList,
+				0, editEventPrimaryValues);
 	}
 
 	public Object getValues(ContentValues originalEvent, ContentValues newEvent, String key) {
@@ -518,9 +587,9 @@ public class EventHelper implements Serializable {
 
 	}
 
-	private boolean isFirstInstance(ContentValues originalEvent, ContentValues newEvent) {
+	private boolean isFirstInstance(ContentValues originalEvent) {
 		return originalEvent.getAsLong(Events.DTSTART).equals(
-				newEvent.getAsLong(Events.DTSTART));
+				originalEvent.getAsLong(Instances.BEGIN));
 	}
 
 
