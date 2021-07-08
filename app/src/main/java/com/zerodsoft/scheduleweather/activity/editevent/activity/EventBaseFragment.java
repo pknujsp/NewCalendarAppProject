@@ -20,6 +20,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ImageButton;
@@ -84,6 +85,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 
 	protected ContentValues selectedCalendarValues;
 	protected LocationDTO locationDTO;
+	protected LocationIntentCode locationIntentCode;
 
 	protected enum DateTimeType {
 		START,
@@ -124,6 +126,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 				} else if (f instanceof EventReminderFragment) {
 					setTitle(getString(R.string.reminder));
 				} else if (f instanceof SelectionDetailLocationFragment) {
+					getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
 					setTitle(getString(R.string.location));
 				} else if (f instanceof AttendeesFragment) {
 					setTitle(getString(R.string.attendee));
@@ -148,6 +151,10 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 				binding.fragmentContainer.setVisibility(View.GONE);
 				binding.scheduleScrollView.setVisibility(View.VISIBLE);
 				binding.saveBtn.setVisibility(View.VISIBLE);
+
+				if (f instanceof SelectionDetailLocationFragment) {
+					getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+				}
 			}
 		}
 	};
@@ -165,14 +172,20 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		super.onCreate(savedInstanceState);
 		networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback());
 		getChildFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false);
-
+		getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+		getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
 		onBackPressedCallback.remove();
 		getChildFragmentManager().unregisterFragmentLifecycleCallbacks(fragmentLifecycleCallbacks);
+	}
+
+	@Override
+	public void onHiddenChanged(boolean hidden) {
+		super.onHiddenChanged(hidden);
 	}
 
 	@Override
@@ -269,7 +282,6 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 
 		MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireActivity());
 		builder.setView(gridView);
-		builder.setCancelable(false);
 		builder.setTitle(R.string.title_select_event_color);
 
 		eventColorDialog = builder.create();
@@ -327,7 +339,6 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		});
 
 		recurrenceFragment.setArguments(bundle);
-
 		getChildFragmentManager().beginTransaction()
 				.add(R.id.fragment_container, recurrenceFragment, getString(R.string.tag_event_recurrence_fragment))
 				.addToBackStack(getString(R.string.tag_event_recurrence_fragment)).commit();
@@ -885,6 +896,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 
 					eventDataViewModel.setEventLocation(resultLocation);
 					binding.locationLayout.eventLocation.setText(resultLocation);
+					locationIntentCode = LocationIntentCode.RESULT_CODE_CHANGED_LOCATION;
 				}
 
 				@Override
@@ -900,6 +912,8 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 
 					eventDataViewModel.setEventLocation(resultLocation);
 					binding.locationLayout.eventLocation.setText(resultLocation);
+					locationIntentCode = LocationIntentCode.RESULT_CODE_SELECTED_LOCATION;
+
 				}
 
 				@Override
@@ -907,6 +921,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 					eventDataViewModel.setEventLocation("");
 					binding.locationLayout.eventLocation.setText("");
 					locationDTO = null;
+					locationIntentCode = LocationIntentCode.RESULT_CODE_REMOVED_LOCATION;
 				}
 
 			});

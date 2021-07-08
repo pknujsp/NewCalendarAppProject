@@ -26,7 +26,6 @@ import androidx.fragment.app.Fragment;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.VilageFcstFragmentBinding;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
-import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.VilageFcstProcessing;
 import com.zerodsoft.scheduleweather.weather.sunsetrise.SunSetRiseData;
@@ -36,8 +35,6 @@ import com.zerodsoft.scheduleweather.weather.sunsetrise.SunsetRise;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -337,17 +334,16 @@ public class VilageFcstFragment extends Fragment {
 		}
 
 		private void setSkyImgs(List<VilageFcstFinalData> dataList) {
-
 			List<SunSetRiseData> setRiseDataList = SunsetRise.getSunsetRiseList(dataList.get(0).getFcstDateTime(),
-					dataList.get(dataList.size() - 2).getFcstDateTime(), weatherAreaCode.getLatitudeSecondsDivide100()
+					dataList.get(dataList.size() - 1).getFcstDateTime(), weatherAreaCode.getLatitudeSecondsDivide100()
 					, weatherAreaCode.getLongitudeSecondsDivide100());
-			for (int i = 0; i < dataList.size() - 1; i++) {
-
+			for (int i = 0; i < dataList.size(); i++) {
 				for (SunSetRiseData sunSetRiseData : setRiseDataList) {
 					if (ClockUtil.areSameDate(sunSetRiseData.getDate().getTime(), dataList.get(i).getFcstDateTime().getTime())) {
 						boolean day = dataList.get(i).getFcstDateTime().after(sunSetRiseData.getSunrise()) && dataList.get(i).getFcstDateTime().before(sunSetRiseData.getSunset());
 						skyImageList.add(ContextCompat.getDrawable(getContext(), WeatherDataConverter.getSkyDrawableId(dataList.get(i).getSky(),
 								dataList.get(i).getPrecipitationForm(), day)));
+
 						break;
 					}
 				}
@@ -371,12 +367,12 @@ public class VilageFcstFragment extends Fragment {
 		}
 
 		private void drawImages(Canvas canvas) {
-			final int COLUMN_WIDTH = getWidth() / (skyImageList.size() + 1);
-			final int RADIUS = getHeight() / 2;
+			final int COLUMN_WIDTH = getWidth() / skyImageList.size();
+			final int RADIUS = COLUMN_WIDTH / 2;
 			final int TOP = 0;
 			final int BOTTOM = getHeight();
-			final int LEFT = COLUMN_WIDTH - RADIUS;
-			final int RIGHT = COLUMN_WIDTH + RADIUS;
+			final int LEFT = COLUMN_WIDTH / 2 - RADIUS;
+			final int RIGHT = COLUMN_WIDTH / 2 + RADIUS;
 			final Rect RECT = new Rect(LEFT, TOP, RIGHT, BOTTOM);
 
 			for (Drawable image : skyImageList) {
@@ -428,8 +424,8 @@ public class VilageFcstFragment extends Fragment {
 			int temp = 0;
 
 			for (VilageFcstFinalData data : dataList) {
-				temp = Integer.parseInt(data.getTemp3Hour());
-				tempList.add(data.getTemp3Hour());
+				temp = Integer.parseInt(data.getTemp1Hour());
+				tempList.add(data.getTemp1Hour());
 
 				// 최대,최소 기온 구하기
 				if (temp >= max) {
@@ -526,9 +522,7 @@ public class VilageFcstFragment extends Fragment {
 		List<String> rainfallList;
 		final int COLUMN_SIZE;
 		final TextPaint VALUE_PAINT;
-		final Paint RECT_PAINT;
 		final int TEXT_HEIGHT;
-		final int FIRST_DATA_LENGTH;
 
 		public RainfallView(Context context, List<VilageFcstFinalData> dataList) {
 			super(context);
@@ -536,51 +530,21 @@ public class VilageFcstFragment extends Fragment {
 			COLUMN_SIZE = dataList.size();
 			rainfallList = new LinkedList<>();
 			for (VilageFcstFinalData data : dataList) {
-				if (data.getRainPrecipitation6Hour() != null) {
-					rainfallList.add(data.getRainPrecipitation6Hour());
+				if (data.getRainPrecipitation1Hour() == null) {
+					rainfallList.add("0");
+				} else {
+					rainfallList.add(data.getRainPrecipitation1Hour());
 				}
-
-			}
-
-			/*
-			예보시각 : 0000, 0300, 0600, 0900, 1200, 1500, 1800, 2100
-
-			<첫번쨰 데이터의 예보시각 - 강수량>
-			0000 - 0600 3
-			0300 - 0600 2
-			0600 - 1200 3
-			0900 - 1200 2
-			1200 - 1800 3
-			1500 - 1800 2
-			1800 - 0000 3
-			2100 - 0000 2
-			 */
-
-			String firstFcstTimeHour = ClockUtil.HH.format(dataList.get(0).getFcstDateTime()) + "00";
-			Set<String> hourSet = new HashSet<>();
-			hourSet.add("0000");
-			hourSet.add("0600");
-			hourSet.add("1200");
-			hourSet.add("1800");
-
-			if (hourSet.contains(firstFcstTimeHour)) {
-				FIRST_DATA_LENGTH = 3;
-			} else {
-				FIRST_DATA_LENGTH = 2;
 			}
 
 			VALUE_PAINT = new TextPaint();
-			VALUE_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 13f, getResources().getDisplayMetrics()));
-			VALUE_PAINT.setColor(Color.WHITE);
+			VALUE_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12f, getResources().getDisplayMetrics()));
+			VALUE_PAINT.setColor(Color.GRAY);
 			VALUE_PAINT.setTextAlign(Paint.Align.CENTER);
 
 			Rect rect = new Rect();
 			VALUE_PAINT.getTextBounds("0", 0, 1, rect);
 			TEXT_HEIGHT = rect.height();
-
-			RECT_PAINT = new Paint();
-			RECT_PAINT.setStyle(Paint.Style.FILL);
-			RECT_PAINT.setColor(Color.LTGRAY);
 		}
 
 		@Override
@@ -601,71 +565,21 @@ public class VilageFcstFragment extends Fragment {
 
 		private void drawView(Canvas canvas) {
 			final float PADDING = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
-			final float MARGIN_LR = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2f, getResources().getDisplayMetrics());
 			final int COLUMN_WIDTH = getWidth() / COLUMN_SIZE;
-			final int COLUMN_WIDTH_HALF = COLUMN_WIDTH / 2;
 			final float TOP = PADDING;
 			final float BOTTOM = getHeight() - PADDING;
 			final float Y = (BOTTOM - TOP) / 2f + TOP + (TEXT_HEIGHT / 2f);
 
-			float left = 0f;
-			float right = 0f;
-
 			RectF rect = new RectF();
 			rect.top = TOP;
 			rect.bottom = BOTTOM;
-
-			/*
-			| - | - | - | - | - |
-			 */
-
-			int index = 0;
-			boolean drawLeftMargin = false;
-			boolean drawRightMargin = false;
-			float lastX = 0f;
+			rect.right = 0;
 
 			for (String value : rainfallList) {
-				// 첫번째 자료는 발표시간+1시간 부터 발표시간+7시간 까지
-				if (index == 0) {
-					if (FIRST_DATA_LENGTH == 3) {
-						left = 0;
-						right = COLUMN_WIDTH_HALF;
-					} else {
-						left = 0;
-						right = COLUMN_WIDTH + COLUMN_WIDTH_HALF;
-					}
-					drawLeftMargin = false;
-					drawRightMargin = true;
+				rect.left = rect.right;
+				rect.right = rect.left + COLUMN_WIDTH;
 
-				} else {
-					left = lastX;
-					right = left + (COLUMN_WIDTH * 2);
-
-					drawLeftMargin = true;
-
-					if (index == rainfallList.size() - 1) {
-						drawRightMargin = false;
-					} else {
-						drawRightMargin = true;
-					}
-				}
-
-				lastX = right;
-
-				rect.left = left;
-				rect.right = right;
-
-				if (drawLeftMargin) {
-					rect.left += MARGIN_LR;
-				}
-				if (drawRightMargin) {
-					rect.right -= MARGIN_LR;
-				}
-
-				canvas.drawRect(rect, RECT_PAINT);
 				canvas.drawText(value, rect.centerX(), Y, VALUE_PAINT);
-
-				index++;
 			}
 		}
 	}

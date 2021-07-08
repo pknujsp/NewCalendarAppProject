@@ -208,7 +208,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 			} else if (originalEvent.getAsString(CalendarContract.Instances.RRULE) != null) {
 				rRule = originalEvent.getAsString(CalendarContract.Instances.RRULE);
 			} else {
-				rRule = "";
+				rRule = null;
 			}
 
 			long dtStart = 0L;
@@ -556,7 +556,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 		EventHelper eventHelper = new EventHelper(getAsyncQueryService());
 		eventHelper.updateEvent(EventHelper.EventEditType.UPDATE_ONLY_THIS_EVENT, originalEvent, newEventValues, originalReminderList
-				, originalAttendeeList, newReminderList, newAttendeeList, selectedCalendarValues);
+				, originalAttendeeList, newReminderList, newAttendeeList, selectedCalendarValues, locationDTO, locationIntentCode);
 	}
 
 
@@ -603,7 +603,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 		EventHelper eventHelper = new EventHelper(getAsyncQueryService());
 		eventHelper.updateEvent(EventHelper.EventEditType.UPDATE_FOLLOWING_EVENTS, originalEvent, newEventValues, originalReminderList
-				, originalAttendeeList, newReminderList, newAttendeeList, selectedCalendarValues);
+				, originalAttendeeList, newReminderList, newAttendeeList, selectedCalendarValues, locationDTO, locationIntentCode);
 	}
 
 
@@ -627,7 +627,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 		EventHelper eventHelper = new EventHelper(getAsyncQueryService());
 		eventHelper.updateEvent(EventHelper.EventEditType.UPDATE_ALL_EVENTS, originalEvent, modifiedEvent, originalReminderList
-				, originalAttendeeList, newReminderList, newAttendeeList, selectedCalendarValues);
+				, originalAttendeeList, newReminderList, newAttendeeList, selectedCalendarValues, locationDTO, locationIntentCode);
 	}
 
 	private void setNewEventValues(String key, ContentValues newEventValues, ContentValues modifiedInstance) {

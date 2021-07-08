@@ -18,12 +18,13 @@ import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class AsyncQueryService extends Handler {
-	static final boolean localLOGV = true;
 	private static AtomicInteger mUniqueToken = new AtomicInteger(0);
+
+	private final OnEditEventResultListener onEditEventResultListener;
+	private final AsyncQueryServiceHelper asyncQueryServiceHelper;
+
 	private Context context;
 	private Handler mHandler = this;
-	private OnEditEventResultListener onEditEventResultListener;
-	private AsyncQueryServiceHelper asyncQueryServiceHelper;
 
 	public AsyncQueryService(Context context, OnEditEventResultListener onEditEventResultListener) {
 		this.context = context;
@@ -117,10 +118,10 @@ public class AsyncQueryService extends Handler {
 	public void startBatch(int token, @Nullable Object cookie, String authority,
 	                       ArrayList<ContentProviderOperation> cpo, long delayMillis, EditEventPrimaryValues editEventPrimaryValues) {
 		AsyncQueryServiceHelper.OperationInfo info = new AsyncQueryServiceHelper.OperationInfo();
+
 		info.op = Operation.EVENT_ARG_BATCH;
 		info.resolver = context.getContentResolver();
 		info.handler = mHandler;
-
 		info.token = token;
 		info.cookie = cookie;
 		info.authority = authority;
@@ -132,33 +133,18 @@ public class AsyncQueryService extends Handler {
 	}
 
 	protected void onQueryComplete(int token, @Nullable Object cookie, Cursor cursor) {
-		if (localLOGV) {
-			Log.d("", "########## default onQueryComplete");
-		}
 	}
 
 	protected void onInsertComplete(int token, @Nullable Object cookie, Uri uri) {
-		if (localLOGV) {
-			Log.d("", "########## default onInsertComplete");
-		}
 	}
 
 	protected void onUpdateComplete(int token, @Nullable Object cookie, int result) {
-		if (localLOGV) {
-			Log.d("", "########## default onUpdateComplete");
-		}
 	}
 
 	protected void onDeleteComplete(int token, @Nullable Object cookie, int result) {
-		if (localLOGV) {
-			Log.d("", "########## default onDeleteComplete");
-		}
 	}
 
 	protected void onBatchComplete(int token, @Nullable Object cookie, ContentProviderResult[] results) {
-		if (localLOGV) {
-			Log.d("", "########## default onBatchComplete");
-		}
 	}
 
 	@Override
@@ -167,11 +153,6 @@ public class AsyncQueryService extends Handler {
 
 		int token = msg.what;
 		int op = msg.arg1;
-
-		if (localLOGV) {
-			Log.d("", "AsyncQueryService.handleMessage: token=" + token + ", op=" + op
-					+ ", result=" + info.result);
-		}
 
 		// pass token back to caller on each callback.
 		switch (op) {

@@ -15,7 +15,7 @@ public class HttpCommunicationClient {
 	private static final String KAKAO_LOCAL_API_URL = "https://dapi.kakao.com/v2/local/";
 
 	private static final String MID_FCST_INFO_SERVICE_URL = "http://apis.data.go.kr/1360000/MidFcstInfoService/";
-	private static final String VILAGE_FCST_INFO_SERVICE_URL = "http://apis.data.go.kr/1360000/VilageFcstInfoService/";
+	private static final String VILAGE_FCST_INFO_SERVICE_URL = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/";
 
 	private static final String AIR_CONDITION_SERVICE_URL = "http://apis.data.go.kr/B552584/ArpltnInforInqireSvc/";
 	private static final String FIND_STATION_FOR_AIR_CONDITION_SERVICE_URL = "http://apis.data.go.kr/B552584/MsrstnInfoInqireSvc/";

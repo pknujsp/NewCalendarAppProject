@@ -11,10 +11,11 @@ import androidx.room.PrimaryKey;
 
 import com.zerodsoft.scheduleweather.etc.LocationType;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 @Entity(tableName = "location_table")
-public class LocationDTO implements Parcelable, Cloneable {
+public class LocationDTO implements Parcelable, Cloneable, Serializable {
 
 	@PrimaryKey(autoGenerate = true)
 	@ColumnInfo(name = "id")

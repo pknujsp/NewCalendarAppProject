@@ -2,7 +2,9 @@ package com.zerodsoft.scheduleweather.calendar;
 
 import android.app.IntentService;
 import android.content.ContentProviderOperation;
+import android.content.ContentProviderResult;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -13,15 +15,21 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.RemoteException;
 import android.os.SystemClock;
+import android.provider.CalendarContract;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
 
 import com.zerodsoft.scheduleweather.activity.editevent.interfaces.OnEditEventResultListener;
+import com.zerodsoft.scheduleweather.common.enums.LocationIntentCode;
+import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
+import com.zerodsoft.scheduleweather.event.common.repository.LocationRepository;
+import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.PriorityQueue;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
@@ -30,6 +38,7 @@ public class AsyncQueryServiceHelper extends IntentService {
 	private static final PriorityQueue<OperationInfo> sWorkQueue =
 			new PriorityQueue<OperationInfo>();
 	private Class<AsyncQueryService> mService = AsyncQueryService.class;
+	private LocationRepository locationRepository;
 
 	public AsyncQueryServiceHelper(String name) {
 		super(name);
@@ -73,10 +82,6 @@ public class AsyncQueryServiceHelper extends IntentService {
 			}
 		}
 
-		if (AsyncQueryService.localLOGV) {
-			Log.d("", "getLastCancelableOperation -> Operation:" + AsyncQueryService.Operation.opToChar(op.op)
-					+ " token:" + op.token);
-		}
 		return op;
 	}
 
@@ -93,19 +98,16 @@ public class AsyncQueryServiceHelper extends IntentService {
 			}
 		}
 
-		if (AsyncQueryService.localLOGV) {
-			Log.d("", "cancelOperation(" + token + ") -> " + canceled);
-		}
+
 		return canceled;
 	}
 
 	@Override
 	protected void onHandleIntent(@Nullable @org.jetbrains.annotations.Nullable Intent intent) {
 		OperationInfo args;
+		long originalEventId = -1;
+		long newEventId = -1;
 
-		if (AsyncQueryService.localLOGV) {
-			Log.d("", "onHandleIntent: queue size=" + sWorkQueue.size());
-		}
 		synchronized (sWorkQueue) {
 			while (true) {
 				/*
@@ -131,10 +133,6 @@ public class AsyncQueryServiceHelper extends IntentService {
 					break;
 				}
 			}
-		}
-
-		if (AsyncQueryService.localLOGV) {
-			Log.d("", "onHandleIntent: " + args);
 		}
 
 		ContentResolver resolver = args.resolver;
@@ -184,7 +182,37 @@ public class AsyncQueryServiceHelper extends IntentService {
 
 				case AsyncQueryService.Operation.EVENT_ARG_BATCH:
 					try {
-						args.result = resolver.applyBatch(args.authority, args.cpo);
+						int insertNewEventIndex = -1;
+						int updateOriginalEventIndex = -1;
+
+						ArrayList<ContentProviderOperation> cpo = args.cpo;
+
+						int cpoIndex = 0;
+						for (ContentProviderOperation contentProviderOperation : cpo) {
+							if (contentProviderOperation.isUpdate()) {
+								if (contentProviderOperation.getUri().toString().contains(CalendarContract.Events.CONTENT_URI.toString())) {
+									updateOriginalEventIndex = cpoIndex;
+								}
+							} else if (contentProviderOperation.isInsert()) {
+								if (contentProviderOperation.getUri().toString().contains(CalendarContract.Events.CONTENT_URI.toString())) {
+									insertNewEventIndex = cpoIndex;
+								}
+							}
+							cpoIndex++;
+						}
+
+						ContentProviderResult[] contentProviderResults = resolver.applyBatch(args.authority, args.cpo);
+						args.result = contentProviderResults;
+
+						if (insertNewEventIndex != -1) {
+							newEventId = ContentUris.parseId(contentProviderResults[insertNewEventIndex].uri);
+							args.editEventPrimaryValues.setNewEventId(newEventId);
+						}
+						if (updateOriginalEventIndex != -1) {
+							originalEventId = ContentUris.parseId(cpo.get(updateOriginalEventIndex).getUri());
+							args.editEventPrimaryValues.setOriginalEventId(originalEventId);
+						}
+
 					} catch (RemoteException e) {
 						Log.e("", e.toString());
 						args.result = null;
@@ -199,14 +227,54 @@ public class AsyncQueryServiceHelper extends IntentService {
 			 * passing the original token value back to the caller on top of the
 			 * event values in arg1.
 			 */
+
+			LocationIntentCode locationIntentCode = args.editEventPrimaryValues.getLocationIntentCode();
+			if (locationIntentCode != null) {
+				locationRepository = new LocationRepository(getApplicationContext());
+
+				if (locationIntentCode == LocationIntentCode.RESULT_CODE_REMOVED_LOCATION) {
+					locationRepository.removeLocation(originalEventId, null);
+				} else {
+					LocationDTO locationDTO = args.editEventPrimaryValues.getNewLocationDto();
+					if (locationIntentCode == LocationIntentCode.REQUEST_CODE_CHANGE_LOCATION) {
+						locationRepository.removeLocation(originalEventId, null);
+					}
+
+					if (newEventId != -1) {
+						locationDTO.setEventId(newEventId);
+						locationRepository.addLocation(locationDTO, new DbQueryCallback<LocationDTO>() {
+							@Override
+							public void onResultSuccessful(LocationDTO result) {
+
+							}
+
+							@Override
+							public void onResultNoData() {
+
+							}
+						});
+					}
+					if (originalEventId != -1) {
+						locationDTO.setEventId(originalEventId);
+						locationRepository.addLocation(locationDTO, new DbQueryCallback<LocationDTO>() {
+							@Override
+							public void onResultSuccessful(LocationDTO result) {
+
+							}
+
+							@Override
+							public void onResultNoData() {
+
+							}
+						});
+					}
+
+				}
+			}
+
 			Message reply = args.handler.obtainMessage(args.token);
 			reply.obj = args;
 			reply.arg1 = args.op;
-
-			if (AsyncQueryService.localLOGV) {
-				Log.d("", "onHandleIntent: op=" + AsyncQueryService.Operation.opToChar(args.op) + ", token="
-						+ reply.what);
-			}
 
 			reply.sendToTarget();
 		}
@@ -215,25 +283,16 @@ public class AsyncQueryServiceHelper extends IntentService {
 
 	@Override
 	public void onStart(Intent intent, int startId) {
-		if (AsyncQueryService.localLOGV) {
-			Log.d("", "onStart startId=" + startId);
-		}
 		super.onStart(intent, startId);
 	}
 
 	@Override
 	public void onCreate() {
-		if (AsyncQueryService.localLOGV) {
-			Log.e("AsyncQueryService", "onCreate");
-		}
 		super.onCreate();
 	}
 
 	@Override
 	public void onDestroy() {
-		if (AsyncQueryService.localLOGV) {
-			Log.e("AsyncQueryService", "onDestroy");
-		}
 		super.onDestroy();
 	}
 

@@ -9,14 +9,13 @@ import android.provider.CalendarContract.Events;
 import android.provider.CalendarContract.Instances;
 import android.provider.CalendarContract.Reminders;
 import android.provider.CalendarContract.Attendees;
-import android.provider.CalendarContract.Calendars;
-import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.text.format.Time;
 
 import androidx.annotation.Nullable;
 
 import com.zerodsoft.scheduleweather.calendar.calendarcommon2.*;
+import com.zerodsoft.scheduleweather.common.enums.LocationIntentCode;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 import java.io.Serializable;
@@ -24,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -46,7 +44,7 @@ public class EventHelper implements Serializable {
 	}
 
 	public void saveNewEvent(ContentValues newEvent, @Nullable LocationDTO locationDto, List<ContentValues> newReminderList,
-	                         List<ContentValues> newAttendeeList) {
+	                         List<ContentValues> newAttendeeList, LocationIntentCode locationIntentCode) {
 		//반복 이벤트면 dtEnd를 삭제하고 duration추가
 		ArrayList<ContentProviderOperation> contentProviderOperationList
 				= new ArrayList<>();
@@ -76,31 +74,12 @@ public class EventHelper implements Serializable {
 				attendeeOperationBuilder.withValueBackReference(Attendees.EVENT_ID, eventIdIndex);
 				contentProviderOperationList.add(attendeeOperationBuilder.build());
 			}
-
 		}
 
-		/*
-		if (newEvent.containsKey(CalendarContract.Events.EVENT_LOCATION)) {
-			locationDto.setEventId(newEventId);
-			locationViewModel.addLocation(locationDTO, new DbQueryCallback<LocationDTO>() {
-				@Override
-				public void onResultSuccessful(LocationDTO result) {
-
-				}
-
-				@Override
-				public void onResultNoData() {
-
-				}
-			});
-		} else {
-
-		}
-
-		 */
 		EditEventPrimaryValues editEventPrimaryValues = new EditEventPrimaryValues();
 		editEventPrimaryValues.setBegin(newEvent.getAsLong(Events.DTSTART));
 		editEventPrimaryValues.setEventEditType(EventEditType.SAVE_NEW_EVENT);
+		editEventPrimaryValues.setNewLocationDto(locationIntentCode, locationDto);
 
 		mService.startBatch(mService.getNextToken(), null, CalendarContract.AUTHORITY, contentProviderOperationList,
 				0, editEventPrimaryValues);
@@ -113,7 +92,7 @@ public class EventHelper implements Serializable {
 			                List<ContentValues> originalAttendeeList,
 			                List<ContentValues> newReminderList,
 			                List<ContentValues> newAttendeeList,
-			                ContentValues selectedCalendar) {
+			                ContentValues selectedCalendar, LocationDTO newLocationDto, LocationIntentCode locationIntentCode) {
 		if (newEvent.size() == 0) {
 			return;
 		} else if (isUnchanged(newEvent)) {
@@ -302,6 +281,7 @@ public class EventHelper implements Serializable {
 		EditEventPrimaryValues editEventPrimaryValues = new EditEventPrimaryValues();
 		editEventPrimaryValues.setBegin(getValuesAsLong(originalEvent, newEvent, Events.DTSTART));
 		editEventPrimaryValues.setEventEditType(eventEditType);
+		editEventPrimaryValues.setNewLocationDto(locationIntentCode, newLocationDto);
 
 		mService.startBatch(mService.getNextToken(), null, CalendarContract.AUTHORITY, contentProviderOperationList,
 				0, editEventPrimaryValues);

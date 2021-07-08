@@ -81,4 +81,5 @@
             layout="@layout/persistent_bottom_sheet_layout" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
 </layout>

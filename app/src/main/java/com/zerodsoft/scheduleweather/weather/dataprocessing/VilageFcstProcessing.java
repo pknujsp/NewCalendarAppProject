@@ -48,7 +48,7 @@ public class VilageFcstProcessing extends WeatherDataProcessing<VilageFcstResult
 	@Override
 	public void refresh(WeatherDataCallback<VilageFcstResult> weatherDataCallback) {
 		VilageFcstParameter vilageFcstParameter = new VilageFcstParameter();
-		vilageFcstParameter.setNx(LONGITUDE).setNy(LATITUDE).setNumOfRows("300").setPageNo("1");
+		vilageFcstParameter.setNx(LONGITUDE).setNy(LATITUDE).setNumOfRows("1000").setPageNo("1");
 
 		Calendar calendar = Calendar.getInstance();
 		weatherDataDownloader.getVilageFcstData(vilageFcstParameter, calendar, new JsonDownloader<JsonObject>() {

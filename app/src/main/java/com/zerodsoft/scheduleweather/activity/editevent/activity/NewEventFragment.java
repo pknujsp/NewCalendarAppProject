@@ -4,7 +4,6 @@ import android.content.ContentValues;
 import android.os.Bundle;
 import android.provider.CalendarContract;
 import android.provider.CalendarContract.Events;
-import android.provider.CalendarContract.Attendees;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,10 +18,8 @@ import com.zerodsoft.scheduleweather.activity.editevent.interfaces.OnEditEventRe
 import com.zerodsoft.scheduleweather.calendar.AsyncQueryService;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.EventHelper;
-import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
-import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -117,7 +114,7 @@ public class NewEventFragment extends EventBaseFragment {
 		binding.recurrenceLayout.eventRecurrence.setOnClickListener(view ->
 		{
 			// 반복 룰과 이벤트의 시작 시간 전달
-			String rRule = "";
+			String rRule = null;
 
 			if (eventDataViewModel.getNEW_EVENT().containsKey(Events.RRULE)) {
 				rRule = eventDataViewModel.getNEW_EVENT().getAsString(Events.RRULE);
@@ -292,7 +289,7 @@ public class NewEventFragment extends EventBaseFragment {
 		List<ContentValues> newAttendeeList = eventDataViewModel.getNEW_ATTENDEES();
 
 		EventHelper eventHelper = new EventHelper(new AsyncQueryService(getActivity(), (OnEditEventResultListener) calendarViewModel));
-		eventHelper.saveNewEvent(newEvent, locationDTO, newReminderList, newAttendeeList);
+		eventHelper.saveNewEvent(newEvent, locationDTO, newReminderList, newAttendeeList, locationIntentCode);
 	}
 
 

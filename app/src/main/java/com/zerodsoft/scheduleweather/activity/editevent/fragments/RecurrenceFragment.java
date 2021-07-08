@@ -75,7 +75,7 @@ public class RecurrenceFragment extends Fragment {
 		String rrule = bundle.getString(CalendarContract.Events.RRULE);
 		startDate = bundle.getLong(CalendarContract.Events.DTSTART);
 
-		if (!rrule.isEmpty()) {
+		if (rrule != null) {
 			givedEventRecurrence = new EventRecurrence();
 			givedEventRecurrence.parse(rrule);
 		}
@@ -346,7 +346,7 @@ public class RecurrenceFragment extends Fragment {
 			if (newEventRecurrence.interval == 1) {
 				newEventRecurrence.interval = 0;
 			}
-			
+
 			newEventRecurrence.wkst = EventRecurrence.SU;
 			onResultRecurrence.onResult(newEventRecurrence.toString());
 		}
