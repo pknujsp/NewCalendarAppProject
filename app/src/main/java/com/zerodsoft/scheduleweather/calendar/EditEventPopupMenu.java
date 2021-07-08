@@ -11,7 +11,6 @@ import android.provider.CalendarContract;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.PopupMenu;
-import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
@@ -23,16 +22,9 @@ import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 
-import lombok.SneakyThrows;
-
-public abstract class CommonPopupMenu {
-	public CommonPopupMenu() {
-
-	}
-
-	public void createInstancePopupMenu(ContentValues instance, Activity activity, View anchorView, int gravity,
-	                                    CalendarViewModel calendarViewModel, LocationViewModel locationViewModel, FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel,
-	                                    FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel) {
+public abstract class EditEventPopupMenu {
+	public void createEditEventPopupMenu(ContentValues instance, Activity activity, View anchorView, int gravity,
+	                                     CalendarViewModel calendarViewModel) {
 		Context context = activity.getApplicationContext();
 		PopupMenu popupMenu = new PopupMenu(context, anchorView, gravity);
 
@@ -98,7 +90,7 @@ public abstract class CommonPopupMenu {
 
 						modifyInstanceFragment.setArguments(bundle);
 
-						onClickedModify(modifyInstanceFragment);
+						onClickedEditEvent(modifyInstanceFragment);
 						break;
 					}
 					case R.id.delete_instance: {
@@ -125,21 +117,30 @@ public abstract class CommonPopupMenu {
 											switch (index) {
 												case 0:
 													// 이번 일정만 삭제
-
+													EventHelper eventRemove1Helper = new EventHelper(new AsyncQueryService(activity,
+															(OnEditEventResultListener) calendarViewModel));
+													eventRemove1Helper.removeEvent(EventHelper.EventEditType.REMOVE_ONLY_THIS_EVENT, instance);
 													break;
 												case 1:
 													// 향후 모든 일정 삭제
+													EventHelper eventRemove2Helper = new EventHelper(new AsyncQueryService(activity,
+															(OnEditEventResultListener) calendarViewModel));
+													eventRemove2Helper.removeEvent(EventHelper.EventEditType.REMOVE_FOLLOWING_EVENTS, instance);
 													break;
 												case 2:
 													// 모든 일정 삭제
-
+													EventHelper eventRemove3Helper = new EventHelper(new AsyncQueryService(activity,
+															(OnEditEventResultListener) calendarViewModel));
+													eventRemove3Helper.removeEvent(EventHelper.EventEditType.REMOVE_ALL_EVENTS, instance);
 													break;
 											}
 										} else {
 											switch (index) {
 												case 0:
 													// 모든 일정 삭제
-
+													EventHelper eventRemove3Helper = new EventHelper(new AsyncQueryService(activity,
+															(OnEditEventResultListener) calendarViewModel));
+													eventRemove3Helper.removeEvent(EventHelper.EventEditType.REMOVE_ALL_EVENTS, instance);
 													break;
 											}
 										}
@@ -155,50 +156,5 @@ public abstract class CommonPopupMenu {
 		popupMenu.show();
 	}
 
-	public abstract void onClickedModify(Fragment modificationFragment);
-
-	public abstract void onExceptedInstance(boolean isSuccessful);
-
-	public abstract void onDeletedEvent(boolean isSuccessful);
-
-
-	private void showDeleteEventDialog(Activity activity, CalendarViewModel calendarViewModel, LocationViewModel locationViewModel
-			, FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel
-			, FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel, final int CALENDAR_ID
-			, final long EVENT_ID) {
-		new MaterialAlertDialogBuilder(activity)
-				.setTitle(R.string.remove_event)
-				.setPositiveButton(R.string.check, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						onDeletedEvent(true);
-						dialog.dismiss();
-					}
-				})
-				.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dialog.dismiss();
-					}
-				}).create().show();
-	}
-
-	private void showExceptThisInstanceDialog(Activity activity, CalendarViewModel calendarViewModel, final long BEGIN, final long EVENT_ID) {
-		new MaterialAlertDialogBuilder(activity)
-				.setTitle(R.string.remove_this_instance)
-				.setPositiveButton(R.string.check, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-
-						onExceptedInstance(true);
-						dialog.dismiss();
-					}
-				})
-				.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dialog.dismiss();
-					}
-				}).create().show();
-	}
+	public abstract void onClickedEditEvent(Fragment modificationFragment);
 }

@@ -23,8 +23,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 public class EventHelper implements Serializable {
 	private final AsyncQueryService mService;
@@ -200,15 +202,12 @@ public class EventHelper implements Serializable {
 			}
 
 			if (!hasRRuleInNewEvent) {
-				contentProviderOperationList.add(ContentProviderOperation.newDelete(uri).build());
-
-				eventIdIndex = contentProviderOperationList.size();
-				setDuration(newEvent);
-				contentProviderOperationList.add(ContentProviderOperation.newInsert(Events.CONTENT_URI).withValues(newEvent)
+				contentProviderOperationList.add(ContentProviderOperation.newUpdate(uri).withValues(newEvent)
 						.build());
 				forceSaveReminders = true;
 			} else {
 				checkTimeDependentFields(originalEvent, newEvent, eventEditType);
+				setDuration(newEvent);
 				contentProviderOperationList.add(ContentProviderOperation.newUpdate(uri).withValues(newEvent).build());
 			}
 		}
@@ -228,126 +227,80 @@ public class EventHelper implements Serializable {
 		//attendees
 		ContentValues values = new ContentValues();
 		ContentProviderOperation.Builder attendeeOperationBuilder;
-		final boolean hasAttendeeData = newAttendeeList.size() != 0;
-		Long ownerAttendeeId = null;
 
-		if (newEvent.getAsString(Events.IS_ORGANIZER).equals("1")) {
-			ownerAttendeeId = newEvent.getAsLong(Instances.EVENT_ID);
+		HashMap<String, ContentValues> originalAttendeesMap = new HashMap<>();
+		HashMap<String, ContentValues> newAttendeesMap = new HashMap<>();
+
+		for (ContentValues newAttendee : newAttendeeList) {
+			newAttendeesMap.put(newAttendee.getAsString(Attendees.ATTENDEE_EMAIL), newAttendee);
 		}
 
-		if (hasAttendeeData &&
-				newEvent.getAsInteger(Events.SELF_ATTENDEE_STATUS) != originalEvent.getAsInteger(Events.SELF_ATTENDEE_STATUS) &&
-				ownerAttendeeId != null) {
-			Uri attUri = ContentUris.withAppendedId(Attendees.CONTENT_URI, ownerAttendeeId);
+		for (ContentValues originalAttendee : originalAttendeeList) {
+			originalAttendeesMap.put(originalAttendee.getAsString(Attendees.ATTENDEE_EMAIL), originalAttendee);
+		}
 
-			values.clear();
-			values.put(Attendees.ATTENDEE_STATUS, newEvent.getAsInteger(Events.SELF_ATTENDEE_STATUS));
-			values.put(Attendees.EVENT_ID, ownerAttendeeId);
-			attendeeOperationBuilder = ContentProviderOperation.newUpdate(attUri).withValues(values);
-			contentProviderOperationList.add(attendeeOperationBuilder.build());
-		} else if (hasAttendeeData && ownerAttendeeId == null) {
-			String ownerEmail = selectedCalendar.getAsString(Calendars.OWNER_ACCOUNT);
+		Set<String> originalAttendeeEmailSet = originalAttendeesMap.keySet();
+		Set<String> newAttendeeEmailSet = newAttendeesMap.keySet();
 
-			if (!newAttendeeList.isEmpty()) {
-				values.clear();
-				values.put(Attendees.ATTENDEE_EMAIL, ownerEmail);
-				values.put(Attendees.ATTENDEE_RELATIONSHIP, Attendees.RELATIONSHIP_ORGANIZER);
-				values.put(Attendees.ATTENDEE_TYPE, Attendees.TYPE_REQUIRED);
-				values.put(Attendees.ATTENDEE_STATUS, Attendees.ATTENDEE_STATUS_ACCEPTED);
+		Set<String> removedAttendeeEmailSet = new HashSet<>(originalAttendeeEmailSet);
+		removedAttendeeEmailSet.removeAll(newAttendeeEmailSet);
+		Set<String> addedAttendeeEmailSet = new HashSet<>(newAttendeeEmailSet);
+		addedAttendeeEmailSet.removeAll(originalAttendeeEmailSet);
 
-				if (isNewEvent) {
-					attendeeOperationBuilder = ContentProviderOperation.newInsert(Attendees.CONTENT_URI)
-							.withValues(values);
-					attendeeOperationBuilder.withValueBackReference(Attendees.EVENT_ID, eventIdIndex);
-				} else {
-					values.put(Attendees.EVENT_ID, originalEvent.getAsLong(Instances.EVENT_ID));
-					attendeeOperationBuilder = ContentProviderOperation.newInsert(Attendees.CONTENT_URI)
-							.withValues(values);
+		if (isNewEvent) {
+			for (ContentValues newAttendee : newAttendeesMap.values()) {
+				newAttendee.put(Attendees.ATTENDEE_RELATIONSHIP,
+						Attendees.RELATIONSHIP_ATTENDEE);
+				newAttendee.put(Attendees.ATTENDEE_TYPE, Attendees.TYPE_OPTIONAL);
+				newAttendee.put(Attendees.ATTENDEE_STATUS, Attendees.ATTENDEE_STATUS_INVITED);
+
+				attendeeOperationBuilder = ContentProviderOperation.newInsert(Attendees.CONTENT_URI)
+						.withValues(values);
+				attendeeOperationBuilder.withValueBackReference(Attendees.EVENT_ID, eventIdIndex);
+				contentProviderOperationList.add(attendeeOperationBuilder.build());
+			}
+		} else {
+			if (addedAttendeeEmailSet.size() > 0) {
+				for (ContentValues newAttendee : newAttendeesMap.values()) {
+					if (addedAttendeeEmailSet.contains(newAttendee.getAsString(Attendees.ATTENDEE_EMAIL))) {
+						newAttendee.put(Attendees.ATTENDEE_RELATIONSHIP,
+								Attendees.RELATIONSHIP_ATTENDEE);
+						newAttendee.put(Attendees.ATTENDEE_TYPE, Attendees.TYPE_OPTIONAL);
+						newAttendee.put(Attendees.ATTENDEE_STATUS, Attendees.ATTENDEE_STATUS_INVITED);
+
+						long eventId = originalEvent.getAsLong(Instances.EVENT_ID);
+						newAttendee.put(Attendees.EVENT_ID, eventId);
+						attendeeOperationBuilder = ContentProviderOperation.newInsert(Attendees.CONTENT_URI)
+								.withValues(newAttendee);
+						contentProviderOperationList.add(attendeeOperationBuilder.build());
+					}
+
 				}
+			}
+
+			if (removedAttendeeEmailSet.size() > 0) {
+				attendeeOperationBuilder = ContentProviderOperation.newDelete(Attendees.CONTENT_URI);
+
+				String[] args = new String[removedAttendeeEmailSet.size() + 1];
+				args[0] = originalEvent.getAsString(Instances.EVENT_ID);
+				int i = 1;
+				StringBuilder deleteWhere = new StringBuilder(Attendees.EVENT_ID + "=? AND "
+						+ Attendees.ATTENDEE_EMAIL + " IN (");
+				for (String removedAttendee : removedAttendeeEmailSet) {
+					if (i > 1) {
+						deleteWhere.append(",");
+					}
+					deleteWhere.append("?");
+					args[i++] = removedAttendee;
+				}
+				deleteWhere.append(")");
+				attendeeOperationBuilder.withSelection(deleteWhere.toString(), args);
 				contentProviderOperationList.add(attendeeOperationBuilder.build());
 			}
 		}
 
-		if (hasAttendeeData && (isNewEvent || uri != null)) {
-			StringBuilder newAttendeesString = new StringBuilder();
-			StringBuilder originalAttendeesString = new StringBuilder();
-
-			for (ContentValues newAttendee : newAttendeeList) {
-				newAttendeesString.append(newAttendee.getAsString(Attendees.ATTENDEE_EMAIL));
-			}
-			for (ContentValues originalAttendee : originalAttendeeList) {
-				originalAttendeesString.append(originalAttendee.getAsString(Attendees.ATTENDEE_EMAIL));
-			}
-
-			if (isNewEvent || !TextUtils.equals(originalAttendeesString.toString(), newAttendeesString.toString())) {
-				HashMap<String, ContentValues> newAttendeesMap = new HashMap<>();
-
-				for (ContentValues newAttendee : newAttendeeList) {
-					newAttendeesMap.put(newAttendee.getAsString(Attendees.ATTENDEE_EMAIL), newAttendee);
-				}
-
-				LinkedList<String> removedAttendeeList = new LinkedList<>();
-				long eventId = uri != null ? ContentUris.parseId(uri) : -1;
-
-				if (!isNewEvent) {
-					HashMap<String, ContentValues> originalAttendeesMap = new HashMap<>();
-					for (ContentValues originalAttendee : originalAttendeeList) {
-						originalAttendeesMap.put(originalAttendee.getAsString(Attendees.ATTENDEE_EMAIL), originalAttendee);
-					}
-
-					for (String originalEmail : originalAttendeesMap.keySet()) {
-						if (newAttendeesMap.containsKey(originalEmail)) {
-							newAttendeesMap.remove(originalEmail);
-						} else {
-							removedAttendeeList.add(originalEmail);
-						}
-					}
-
-					if (removedAttendeeList.size() > 0) {
-						attendeeOperationBuilder = ContentProviderOperation.newDelete(Attendees.CONTENT_URI);
-
-						String[] args = new String[removedAttendeeList.size() + 1];
-						args[0] = Long.toString(eventId);
-						int i = 1;
-						StringBuilder deleteWhere = new StringBuilder(Attendees.EVENT_ID + "=? AND "
-								+ Attendees.ATTENDEE_EMAIL + " IN (");
-						for (String removedAttendee : removedAttendeeList) {
-							if (i > 1) {
-								deleteWhere.append(",");
-							}
-							deleteWhere.append("?");
-							args[i++] = removedAttendee;
-						}
-						deleteWhere.append(")");
-						attendeeOperationBuilder.withSelection(deleteWhere.toString(), args);
-						contentProviderOperationList.add(attendeeOperationBuilder.build());
-					}
-				}
-
-				if (newAttendeesMap.size() > 0) {
-					for (ContentValues newAttendee : newAttendeesMap.values()) {
-						newAttendee.put(Attendees.ATTENDEE_RELATIONSHIP,
-								Attendees.RELATIONSHIP_ATTENDEE);
-						newAttendee.put(Attendees.ATTENDEE_TYPE, Attendees.TYPE_REQUIRED);
-						newAttendee.put(Attendees.ATTENDEE_STATUS, Attendees.ATTENDEE_STATUS_NONE);
-
-						if (isNewEvent) {
-							attendeeOperationBuilder = ContentProviderOperation.newInsert(Attendees.CONTENT_URI)
-									.withValues(values);
-							attendeeOperationBuilder.withValueBackReference(Attendees.EVENT_ID, eventIdIndex);
-						} else {
-							values.put(Attendees.EVENT_ID, eventId);
-							attendeeOperationBuilder = ContentProviderOperation.newInsert(Attendees.CONTENT_URI)
-									.withValues(values);
-						}
-						contentProviderOperationList.add(attendeeOperationBuilder.build());
-					}
-				}
-			}
-		}
-
 		EditEventPrimaryValues editEventPrimaryValues = new EditEventPrimaryValues();
-		editEventPrimaryValues.setBegin((Long) getValues(originalEvent, newEvent, Events.DTSTART));
+		editEventPrimaryValues.setBegin(getValuesAsLong(originalEvent, newEvent, Events.DTSTART));
 		editEventPrimaryValues.setEventEditType(eventEditType);
 
 		mService.startBatch(mService.getNextToken(), null, CalendarContract.AUTHORITY, contentProviderOperationList,
@@ -419,15 +372,27 @@ public class EventHelper implements Serializable {
 				0, editEventPrimaryValues);
 	}
 
-	public Object getValues(ContentValues originalEvent, ContentValues newEvent, String key) {
+	public String getValuesAsString(ContentValues originalEvent, ContentValues newEvent, String key) {
 		if (newEvent.containsKey(key)) {
 			if (newEvent.get(key) != null) {
-				return newEvent.get(key);
+				return newEvent.getAsString(key);
 			} else {
 				return null;
 			}
 		} else {
-			return originalEvent.get(key);
+			return originalEvent.getAsString(key);
+		}
+	}
+
+	public Long getValuesAsLong(ContentValues originalEvent, ContentValues newEvent, String key) {
+		if (newEvent.containsKey(key)) {
+			if (newEvent.get(key) != null) {
+				return newEvent.getAsLong(key);
+			} else {
+				return null;
+			}
+		} else {
+			return originalEvent.getAsLong(key);
 		}
 	}
 

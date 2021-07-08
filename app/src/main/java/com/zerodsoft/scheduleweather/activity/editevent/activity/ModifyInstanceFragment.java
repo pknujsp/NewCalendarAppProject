@@ -28,6 +28,7 @@ import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -41,8 +42,8 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 	private long originalInstanceEndDate;
 	private boolean firstModifiedDateTime = true;
 
-	private List<ContentValues> originalReminderList;
-	private List<ContentValues> originalAttendeeList;
+	private List<ContentValues> originalReminderList = new ArrayList<>();
+	private List<ContentValues> originalAttendeeList = new ArrayList<>();
 
 	protected AsyncQueryService mService;
 
@@ -422,8 +423,8 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		eventDataViewModel.getNEW_REMINDERS().addAll(calendarViewModel.getReminders(eventId));
 		eventDataViewModel.getNEW_ATTENDEES().addAll(calendarViewModel.getAttendeeListForEdit(eventId));
 
-		originalAttendeeList = eventDataViewModel.getNEW_ATTENDEES();
-		originalReminderList = eventDataViewModel.getNEW_REMINDERS();
+		originalAttendeeList.addAll(eventDataViewModel.getNEW_ATTENDEES());
+		originalReminderList.addAll(eventDataViewModel.getNEW_REMINDERS());
 
 		if (!eventDataViewModel.getNEW_ATTENDEES().isEmpty()) {
 			createAttendeeListView();
@@ -618,19 +619,12 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		List<ContentValues> newReminderList = eventDataViewModel.getNEW_REMINDERS();
 		List<ContentValues> newAttendeeList = eventDataViewModel.getNEW_ATTENDEES();
 
-		final long eventId = originalEvent.getAsInteger(Instances.EVENT_ID);
-		modifiedEvent.put(Events._ID, eventId);
-		modifiedEvent.remove(Events.DURATION);
-
-		boolean modifiedDateTimeValues = eventDataViewModel.isModified(Events.DTSTART) && eventDataViewModel.isModified(Events.DTEND) ?
-				true : false;
-
-		if (modifiedDateTimeValues) {
-			if (!eventDataViewModel.isModified(Events.ALL_DAY)) {
-				modifiedEvent.put(Events.ALL_DAY, originalEvent.getAsInteger(Events.ALL_DAY));
-			}
+		if (!modifiedEvent.containsKey(Events.DTEND)) {
+			modifiedEvent.put(Events.DTSTART, originalInstanceBeginDate);
+			modifiedEvent.put(Events.DTEND, originalInstanceEndDate);
+			modifiedEvent.put(Events.ALL_DAY, binding.timeLayout.timeAlldaySwitch.isChecked() ? 1 : 0);
 		}
-		
+
 		EventHelper eventHelper = new EventHelper(getAsyncQueryService());
 		eventHelper.updateEvent(EventHelper.EventEditType.UPDATE_ALL_EVENTS, originalEvent, modifiedEvent, originalReminderList
 				, originalAttendeeList, newReminderList, newAttendeeList, selectedCalendarValues);

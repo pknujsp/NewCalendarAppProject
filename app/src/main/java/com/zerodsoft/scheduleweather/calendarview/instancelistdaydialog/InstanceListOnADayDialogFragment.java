@@ -2,6 +2,7 @@ package com.zerodsoft.scheduleweather.calendarview.instancelistdaydialog;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.content.ContentProviderOperation;
 import android.content.ContentValues;
 import android.os.Bundle;
 
@@ -9,6 +10,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager2.widget.CompositePageTransformer;
 import androidx.viewpager2.widget.MarginPageTransformer;
@@ -25,9 +27,10 @@ import android.view.Window;
 import android.widget.PopupMenu;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.calendar.CalendarInstanceUtil;
+import com.zerodsoft.scheduleweather.calendar.AsyncQueryService;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
-import com.zerodsoft.scheduleweather.calendar.CommonPopupMenu;
+import com.zerodsoft.scheduleweather.calendar.EditEventPopupMenu;
+import com.zerodsoft.scheduleweather.calendar.EventHelper;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarview.instancelistdaydialog.adapter.InstancesOfDayAdapter;
@@ -42,6 +45,7 @@ import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationH
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Map;
 import java.util.Set;
@@ -66,22 +70,12 @@ public class InstanceListOnADayDialogFragment extends DialogFragment implements 
 
 	private Long begin;
 	private Long end;
+	private boolean initializing = true;
 
-	private final CommonPopupMenu commonPopupMenu = new CommonPopupMenu() {
-		@Override
-		public void onExceptedInstance(boolean isSuccessful) {
-			if (isSuccessful) {
-			}
-		}
+	private final EditEventPopupMenu editEventPopupMenu = new EditEventPopupMenu() {
 
 		@Override
-		public void onDeletedEvent(boolean isSuccessful) {
-			if (isSuccessful) {
-			}
-		}
-
-		@Override
-		public void onClickedModify(Fragment modificationFragment) {
+		public void onClickedEditEvent(Fragment modificationFragment) {
 			dismiss();
 			getParentFragmentManager().beginTransaction().add(R.id.fragment_container, modificationFragment,
 					getString(R.string.tag_modify_instance_fragment)).addToBackStack(getString(R.string.tag_modify_instance_fragment)).commit();
@@ -103,6 +97,71 @@ public class InstanceListOnADayDialogFragment extends DialogFragment implements 
 		end = bundle.getLong("end");
 
 		calendarViewModel = new ViewModelProvider(requireActivity()).get(CalendarViewModel.class);
+		calendarViewModel.getOnRemovedEventLiveData().observe(this, new Observer<Boolean>() {
+			@Override
+			public void onChanged(Boolean aBoolean) {
+				if (!initializing) {
+					refreshView();
+				}
+			}
+		});
+
+		calendarViewModel.getOnRemovedFutureInstancesLiveData().observe(this, new Observer<Boolean>() {
+			@Override
+			public void onChanged(Boolean aBoolean) {
+				if (!initializing) {
+					refreshView();
+				}
+			}
+		});
+
+		calendarViewModel.getOnExceptedInstanceLiveData().observe(this, new Observer<Boolean>() {
+			@Override
+			public void onChanged(Boolean aBoolean) {
+				if (!initializing) {
+					refreshView();
+
+				}
+			}
+		});
+
+		calendarViewModel.getOnModifiedInstanceLiveData().observe(this, new Observer<Long>() {
+			@Override
+			public void onChanged(Long aLong) {
+				if (!initializing) {
+					refreshView();
+
+				}
+			}
+		});
+
+		calendarViewModel.getOnModifiedFutureInstancesLiveData().observe(this, new Observer<Long>() {
+			@Override
+			public void onChanged(Long aLong) {
+				refreshView();
+
+			}
+		});
+
+		calendarViewModel.getOnModifiedEventLiveData().observe(this, new Observer<Long>() {
+			@Override
+			public void onChanged(Long aLong) {
+				if (!initializing) {
+					refreshView();
+
+				}
+			}
+		});
+
+		calendarViewModel.getOnAddedNewEventLiveData().observe(this, new Observer<Long>() {
+			@Override
+			public void onChanged(Long aLong) {
+				if (!initializing) {
+					refreshView();
+
+				}
+			}
+		});
 	}
 
 	@NonNull
@@ -165,12 +224,13 @@ public class InstanceListOnADayDialogFragment extends DialogFragment implements 
 		adapter = new InstancesOfDayAdapter(begin, end, onEventItemClickListener, iConnectedCalendars, this);
 		binding.instancesDialogViewpager.setAdapter(adapter);
 		binding.instancesDialogViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
+		initializing = false;
 	}
 
 	@Override
 	public void createInstancePopupMenu(ContentValues instance, View anchorView, int gravity) {
-		commonPopupMenu.createInstancePopupMenu(instance, requireActivity(), anchorView, Gravity.CENTER
-				, calendarViewModel, locationViewModel, foodCriteriaLocationInfoViewModel, foodCriteriaLocationHistoryViewModel);
+		editEventPopupMenu.createEditEventPopupMenu(instance, requireActivity(), anchorView, Gravity.CENTER
+				, calendarViewModel);
 	}
 
 
@@ -242,12 +302,13 @@ public class InstanceListOnADayDialogFragment extends DialogFragment implements 
 
 	@Override
 	public void deleteEvents(Set<ContentValues> instanceSet) {
+		EventHelper eventHelper = new EventHelper(new AsyncQueryService(getContext(), calendarViewModel));
+		ArrayList<ContentProviderOperation> ops = new ArrayList<>();
+
 		for (ContentValues instance : instanceSet) {
-			CalendarInstanceUtil.deleteEvent(calendarViewModel, locationViewModel
-					, foodCriteriaLocationInfoViewModel, foodCriteriaLocationHistoryViewModel,
-					instance.getAsLong(CalendarContract.Instances.EVENT_ID));
+			eventHelper.removeEvent(EventHelper.EventEditType.REMOVE_ALL_EVENTS, instance);
 		}
-		commonPopupMenu.onDeletedEvent(true);
+
 	}
 
 

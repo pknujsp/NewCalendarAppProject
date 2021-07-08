@@ -15,11 +15,9 @@ import android.os.RemoteException;
 import android.provider.CalendarContract;
 import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
@@ -37,7 +35,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.editevent.activity.NewEventFragment;
 import com.zerodsoft.scheduleweather.activity.editevent.interfaces.OnEditEventResultListener;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
-import com.zerodsoft.scheduleweather.calendar.CommonPopupMenu;
+import com.zerodsoft.scheduleweather.calendar.EditEventPopupMenu;
 import com.zerodsoft.scheduleweather.calendar.selectedcalendar.SelectedCalendarViewModel;
 import com.zerodsoft.scheduleweather.calendarview.assistantcalendar.assistantcalendar.MonthAssistantCalendarFragment;
 import com.zerodsoft.scheduleweather.calendarview.common.CalendarSharedViewModel;
@@ -147,23 +145,10 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 				}
 			};
 
-	private final CommonPopupMenu commonPopupMenu = new CommonPopupMenu() {
-		@Override
-		public void onExceptedInstance(boolean isSuccessful) {
-			if (isSuccessful) {
-				refreshView();
-			}
-		}
+	private final EditEventPopupMenu editEventPopupMenu = new EditEventPopupMenu() {
 
 		@Override
-		public void onDeletedEvent(boolean isSuccessful) {
-			if (isSuccessful) {
-				refreshView();
-			}
-		}
-
-		@Override
-		public void onClickedModify(Fragment modificationFragment) {
+		public void onClickedEditEvent(Fragment modificationFragment) {
 			getParentFragmentManager().beginTransaction().add(R.id.fragment_container, modificationFragment,
 					getString(R.string.tag_modify_instance_fragment)).addToBackStack(getString(R.string.tag_modify_instance_fragment)).commit();
 		}
@@ -482,8 +467,8 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 
 	@Override
 	public void createInstancePopupMenu(ContentValues instance, View anchorView, int gravity) {
-		commonPopupMenu.createInstancePopupMenu(instance, requireActivity(), anchorView, gravity
-				, calendarViewModel, locationViewModel, foodCriteriaLocationInfoViewModel, foodCriteriaLocationHistoryViewModel);
+		editEventPopupMenu.createEditEventPopupMenu(instance, requireActivity(), anchorView, gravity
+				, calendarViewModel);
 	}
 
 	@Override

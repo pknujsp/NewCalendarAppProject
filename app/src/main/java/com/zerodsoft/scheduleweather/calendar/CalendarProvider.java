@@ -561,23 +561,13 @@ public class CalendarProvider implements ICalendarProvider {
 
 			while (cursor.moveToNext()) {
 				ContentValues instance = new ContentValues();
+				String[] keys = cursor.getColumnNames();
 
-				instance.put(CalendarContract.Instances.EVENT_COLOR, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.EVENT_COLOR)));
-				instance.put(CalendarContract.Instances._ID, cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances._ID)));
-				instance.put(CalendarContract.Instances.BEGIN, cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances.BEGIN)));
-				instance.put(CalendarContract.Instances.END, cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances.END)));
-				instance.put(CalendarContract.Instances.DTSTART, cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances.DTSTART)));
-				instance.put(CalendarContract.Instances.DTEND, cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances.DTEND)));
-				instance.put(CalendarContract.Instances.TITLE, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.TITLE)));
-				instance.put(CalendarContract.Instances.EVENT_ID, cursor.getLong(cursor.getColumnIndex(CalendarContract.Instances.EVENT_ID)));
-				instance.put(CalendarContract.Instances.CALENDAR_ID, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.CALENDAR_ID)));
-				instance.put(CalendarContract.Instances.ALL_DAY, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.ALL_DAY)));
-				instance.put(CalendarContract.Instances.STATUS, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.STATUS)));
-				instance.put(CalendarContract.Instances.RRULE, cursor.getString(cursor.getColumnIndex(CalendarContract.Instances.RRULE)));
-				instance.put(CalendarContract.Instances.START_DAY, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.START_DAY)));
-				instance.put(CalendarContract.Instances.END_DAY, cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.END_DAY)));
-				instance.put(CalendarContract.Instances.CALENDAR_ACCESS_LEVEL,
-						cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.CALENDAR_ACCESS_LEVEL)));
+				for (String key : keys) {
+					if (!cursor.isNull(cursor.getColumnIndex(key))) {
+						instance.put(key, cursor.getString(cursor.getColumnIndex(key)));
+					}
+				}
 
 				calendarId = cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.CALENDAR_ID));
 				if (!calendarInstanceMap.containsKey(calendarId)) {

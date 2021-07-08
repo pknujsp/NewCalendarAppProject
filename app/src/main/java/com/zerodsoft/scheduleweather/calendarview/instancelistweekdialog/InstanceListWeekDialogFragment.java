@@ -1,7 +1,10 @@
 package com.zerodsoft.scheduleweather.calendarview.instancelistweekdialog;
 
 import android.app.Dialog;
+import android.content.ContentProviderOperation;
+import android.content.ContentUris;
 import android.content.ContentValues;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -23,13 +26,13 @@ import android.view.ViewGroup;
 import android.view.Window;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.calendar.CalendarInstanceUtil;
+import com.zerodsoft.scheduleweather.calendar.AsyncQueryService;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
-import com.zerodsoft.scheduleweather.calendar.CommonPopupMenu;
+import com.zerodsoft.scheduleweather.calendar.EditEventPopupMenu;
+import com.zerodsoft.scheduleweather.calendar.EventHelper;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarview.instancelistdaydialog.InstancesOfDayView;
-import com.zerodsoft.scheduleweather.calendarview.instancelistdaydialog.adapter.InstancesOfDayAdapter;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
@@ -43,7 +46,9 @@ import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
@@ -65,22 +70,10 @@ public class InstanceListWeekDialogFragment extends DialogFragment implements On
 	private Long weekBegin;
 	private boolean initializing = true;
 
-	private final CommonPopupMenu commonPopupMenu = new CommonPopupMenu() {
-		@Override
-		public void onExceptedInstance(boolean isSuccessful) {
-			if (isSuccessful) {
-			}
-		}
+	private final EditEventPopupMenu editEventPopupMenu = new EditEventPopupMenu() {
 
 		@Override
-		public void onDeletedEvent(boolean isSuccessful) {
-			if (isSuccessful) {
-
-			}
-		}
-
-		@Override
-		public void onClickedModify(Fragment modificationFragment) {
+		public void onClickedEditEvent(Fragment modificationFragment) {
 			dismiss();
 
 			getParentFragmentManager().beginTransaction().add(R.id.fragment_container, modificationFragment,
@@ -235,8 +228,7 @@ public class InstanceListWeekDialogFragment extends DialogFragment implements On
 
 	@Override
 	public void createInstancePopupMenu(ContentValues instance, View anchorView, int gravity) {
-		commonPopupMenu.createInstancePopupMenu(instance, requireActivity(), anchorView, Gravity.CENTER
-				, calendarViewModel, locationViewModel, foodCriteriaLocationInfoViewModel, foodCriteriaLocationHistoryViewModel);
+		editEventPopupMenu.createEditEventPopupMenu(instance, requireActivity(), anchorView, Gravity.CENTER, calendarViewModel);
 	}
 
 	@Override
@@ -284,12 +276,14 @@ public class InstanceListWeekDialogFragment extends DialogFragment implements On
 
 	@Override
 	public void deleteEvents(Set<ContentValues> instanceSet) {
+		EventHelper eventHelper = new EventHelper(new AsyncQueryService(getContext(), calendarViewModel));
+		ArrayList<ContentProviderOperation> ops = new ArrayList<>();
+
 		for (ContentValues instance : instanceSet) {
-			CalendarInstanceUtil.deleteEvent(calendarViewModel, locationViewModel
-					, foodCriteriaLocationInfoViewModel, foodCriteriaLocationHistoryViewModel,
-					instance.getAsLong(CalendarContract.Instances.EVENT_ID));
+			eventHelper.removeEvent(EventHelper.EventEditType.REMOVE_ALL_EVENTS, instance);
+
 		}
-		commonPopupMenu.onDeletedEvent(true);
+
 	}
 
 }

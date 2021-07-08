@@ -32,8 +32,9 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.activity.editevent.activity.ModifyInstanceFragment;
 import com.zerodsoft.scheduleweather.activity.editevent.interfaces.OnEditEventResultListener;
-import com.zerodsoft.scheduleweather.calendar.CalendarInstanceUtil;
+import com.zerodsoft.scheduleweather.calendar.AsyncQueryService;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
+import com.zerodsoft.scheduleweather.calendar.EventHelper;
 import com.zerodsoft.scheduleweather.calendar.calendarcommon2.EventRecurrence;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.common.enums.LocationIntentCode;
@@ -442,8 +443,8 @@ public class EventFragment extends BottomSheetDialogFragment {
 				.setPositiveButton(R.string.check, new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
-						CalendarInstanceUtil.deleteEvent(calendarViewModel, locationViewModel, foodCriteriaLocationInfoViewModel, foodCriteriaLocationHistoryViewModel,
-								eventId);
+						EventHelper eventHelper = new EventHelper(new AsyncQueryService(getContext(), calendarViewModel));
+						eventHelper.removeEvent(EventHelper.EventEditType.REMOVE_ALL_EVENTS, instanceValues);
 						dialog.dismiss();
 						dismiss();
 					}
@@ -458,24 +459,8 @@ public class EventFragment extends BottomSheetDialogFragment {
 
 
 	private void deleteSubsequentIncludingThis() {
-        /*
-        // 이벤트의 반복 UNTIL을 현재 인스턴스의 시작날짜로 수정
-        ContentValues recurrenceData = viewModel.getRecurrence(calendarId, eventId);
-        RecurrenceRule recurrenceRule = new RecurrenceRule();
-        recurrenceRule.separateValues(recurrenceData.getAsString(CalendarContract.Events.RRULE));
-
-        GregorianCalendar calendar = new GregorianCalendar();
-        final long thisInstanceBegin = instance.getAsLong(CalendarContract.Instances.BEGIN);
-        calendar.setTimeInMillis(thisInstanceBegin);
-        calendar.add(Calendar.DAY_OF_MONTH, -1);
-        recurrenceRule.putValue(RecurrenceRule.UNTIL, ClockUtil.yyyyMMdd.format(calendar.getTime()));
-        recurrenceRule.removeValue(RecurrenceRule.INTERVAL);
-
-        recurrenceData.put(CalendarContract.Events.RRULE, recurrenceRule.getRule());
-        viewModel.updateEvent(recurrenceData);
-
-         */
-		Toast.makeText(getContext(), "작성 중", Toast.LENGTH_SHORT).show();
+		EventHelper eventHelper = new EventHelper(new AsyncQueryService(getContext(), calendarViewModel));
+		eventHelper.removeEvent(EventHelper.EventEditType.REMOVE_FOLLOWING_EVENTS, instanceValues);
 	}
 
 	private void showExceptThisInstanceDialog() {
@@ -484,7 +469,8 @@ public class EventFragment extends BottomSheetDialogFragment {
 				.setPositiveButton(R.string.check, new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
-						CalendarInstanceUtil.exceptThisInstance(calendarViewModel, instanceValues.getAsLong(CalendarContract.Instances.BEGIN), eventId);
+						EventHelper eventHelper = new EventHelper(new AsyncQueryService(getContext(), calendarViewModel));
+						eventHelper.removeEvent(EventHelper.EventEditType.REMOVE_ONLY_THIS_EVENT, instanceValues);
 						dialog.dismiss();
 						dismiss();
 					}
