@@ -538,8 +538,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			mapFragment = MapFragment.newInstance(naverMapOptions);
 			getChildFragmentManager().beginTransaction().add(R.id.naver_map_fragment, mapFragment, getString(R.string.tag_map_fragment)).commitNow();
 
-			mapFragment.getMapAsync(this);
 			fusedLocationSource = new FusedLocationSource(this, PERMISSION_REQUEST_CODE);
+			mapFragment.getMapAsync(this);
 		}
 
 	}
@@ -790,8 +790,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		LocationOverlay locationOverlay = naverMap.getLocationOverlay();
 		locationOverlay.setVisible(false);
 
-		setCurrentAddress();
 		loadFavoriteLocations();
+		setCurrentAddress();
 
 		loadingDialog.dismiss();
 	}
@@ -863,6 +863,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		//sgis reverse geocoding 이용
 		LatLng latLng = naverMap.getContentBounds().getCenter();
 		Utmk utmk = Utmk.valueOf(latLng);
+		//Toast.makeText(getContext(), latLng.toString(), Toast.LENGTH_SHORT).show();
 
 		ReverseGeoCodingParameter parameter = new ReverseGeoCodingParameter();
 		parameter.setAddrType("20");

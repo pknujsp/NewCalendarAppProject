@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.weather.repository;
 
 import android.os.Bundle;
+import android.util.ArrayMap;
 
 import com.google.gson.JsonObject;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
@@ -55,7 +56,6 @@ public class WeatherDataDownloader implements RetrofitCallListManager.CallManage
 	}
 
 	public WeatherDataDownloader() {
-
 	}
 
 	/**
@@ -110,7 +110,6 @@ public class WeatherDataDownloader implements RetrofitCallListManager.CallManage
 		Call<JsonObject> call = querys.getUltraSrtFcstDataStr(parameter.getMap());
 		retrofitCallListManager.add(call);
 
-
 		call.enqueue(new Callback<JsonObject>() {
 			@Override
 			public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
@@ -128,19 +127,21 @@ public class WeatherDataDownloader implements RetrofitCallListManager.CallManage
 
 	/**
 	 * 동네예보
-	 *
-	 * @param parameter
+	 * <p>
+	 * - Base_time : 0200, 0500, 0800, 1100, 1400, 1700, 2000, 2300 (1일 8회)
+	 * - API 제공 시간(~이후) : 02:10, 05:10, 08:10, 11:10, 14:10, 17:10, 20:10, 23:10
 	 */
 	public void getVilageFcstData(VilageFcstParameter parameter, Calendar calendar, JsonDownloader<JsonObject> callback) {
 		Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.VILAGE_FCST);
 		//basetime설정
-		int hour = calendar.get(Calendar.HOUR_OF_DAY);
-		int i = hour >= 0 && hour <= 2 ? 7 : hour / 3 - 1;
+		final int currentHour = calendar.get(Calendar.HOUR_OF_DAY);
+		final int currentMinute = calendar.get(Calendar.MINUTE);
+		int i = currentHour >= 0 && currentHour <= 2 ? 7 : currentHour / 3 - 1;
 		int baseHour = 0;
 
-		if (calendar.get(Calendar.MINUTE) > 10 && (hour - 2) % 3 == 0) {
+		if (currentMinute > 10 && (currentHour - 2) % 3 == 0) {
 			// ex)1411인 경우
-			baseHour = 3 * ((hour - 2) / 3) + 2;
+			baseHour = 3 * ((currentHour - 2) / 3) + 2;
 			i = 0;
 		} else {
 			baseHour = 3 * i + 2;

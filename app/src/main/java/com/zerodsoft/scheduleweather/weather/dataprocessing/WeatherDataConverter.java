@@ -17,11 +17,13 @@ SKY와 PTY는 별개의 데이터
 	private static final String CLOUD_SNOW = "구름많고 눈";
 	private static final String CLOUD_RAIN_SNOW = "구름많고 비/눈";
 	private static final String CLOUD_SNOW_RAIN = "구름많고 눈/비";
+	private static final String CLOUD_SHOWER = "구름많고 소나기";
 	private static final String CLOUDY = "흐림";
 	private static final String CLOUDY_RAIN = "흐리고 비";
 	private static final String CLOUDY_SNOW = "흐리고 눈";
 	private static final String CLOUDY_RAIN_SNOW = "흐리고 비/눈";
 	private static final String CLOUDY_SNOW_RAIN = "흐리고 눈/비";
+	private static final String CLOUDY_SHOWER = "흐리고 소나기";
 
 	private static final String RAIN = "비";
 	private static final String SLEET = "진눈깨비";
@@ -91,6 +93,10 @@ SKY와 PTY는 별개의 데이터
 			id = R.drawable.rain_svg;
 		} else if (sky.equals(CLOUDY_SNOW_RAIN)) {
 			id = R.drawable.snow_svg;
+		} else if (sky.equals(CLOUD_SHOWER)) {
+			id = R.drawable.shower_svg;
+		} else if (sky.equals(CLOUDY_SHOWER)) {
+			id = R.drawable.shower_svg;
 		}
 
 		return id;

@@ -234,10 +234,19 @@ public class UltraSrtFcstFragment extends Fragment {
 
 		setSkyImgs(dataList, skyImgViewList);
 
-		//습도 ------------------------------------------------------------------------------
+		//1시간 강수량 ------------------------------------------------------------------------------
+		String rn1 = null;
+		final String compareV1 = "1mm 미만";
+
 		for (int col = 0; col < COLUMN_SIZE; col++) {
 			TextView textView = new TextView(context);
-			setValueTextView(textView, dataList.get(col).getRain1Hour());
+			rn1 = dataList.get(col).getRain1Hour();
+			if (rn1.equals(compareV1)) {
+				rn1 = "-";
+			} else if (!rn1.isEmpty()) {
+				rn1 = rn1.substring(0, rn1.length() - 2);
+			}
+			setValueTextView(textView, rn1);
 
 			LinearLayout.LayoutParams textParams = new LinearLayout.LayoutParams(COLUMN_WIDTH, ViewGroup.LayoutParams.MATCH_PARENT);
 			textParams.gravity = Gravity.CENTER;

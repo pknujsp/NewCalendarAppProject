@@ -109,15 +109,7 @@
                     <androidx.fragment.app.FragmentContainerView
                         android:id="@+id/mid_fcst_fragment_container"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp" />
-
-                    <Button
-                        android:id="@+id/last_updated_time_btn"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/last_updated_time" />
+                        android:layout_height="wrap_content" />
 
                 </LinearLayout>
             </LinearLayout>

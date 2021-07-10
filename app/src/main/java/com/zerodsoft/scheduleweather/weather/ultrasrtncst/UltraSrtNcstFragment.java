@@ -59,16 +59,14 @@ public class UltraSrtNcstFragment extends Fragment {
 		clearViews();
 
 		ultraSrtNcstProcessing = new UltraSrtNcstProcessing(getContext(), weatherAreaCode.getY(), weatherAreaCode.getX());
-
-
 		ultraSrtNcstProcessing.getWeatherData(new WeatherDataCallback<UltraSrtNcstResult>() {
 			@Override
 			public void isSuccessful(UltraSrtNcstResult e) {
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						binding.customProgressView.onSuccessfulProcessingData();
 						setValue(e);
+						binding.customProgressView.onSuccessfulProcessingData();
 					}
 				});
 			}
@@ -78,8 +76,8 @@ public class UltraSrtNcstFragment extends Fragment {
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						clearViews();
 						binding.customProgressView.onFailedProcessingData(getString(R.string.error));
+						clearViews();
 					}
 				});
 
@@ -103,7 +101,7 @@ public class UltraSrtNcstFragment extends Fragment {
 	}
 
 	public void refresh() {
-		binding.customProgressView.onSuccessfulProcessingData();
+		binding.customProgressView.onStartedProcessingData();
 
 		ultraSrtNcstProcessing.refresh(new WeatherDataCallback<UltraSrtNcstResult>() {
 			@Override
@@ -111,8 +109,8 @@ public class UltraSrtNcstFragment extends Fragment {
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						binding.customProgressView.onSuccessfulProcessingData();
 						setValue(e);
+						binding.customProgressView.onSuccessfulProcessingData();
 					}
 				});
 
@@ -123,8 +121,8 @@ public class UltraSrtNcstFragment extends Fragment {
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						clearViews();
 						binding.customProgressView.onFailedProcessingData(getString(R.string.error));
+						clearViews();
 					}
 				});
 			}

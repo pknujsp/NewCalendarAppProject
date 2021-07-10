@@ -40,17 +40,6 @@ public class HttpCommunicationClient {
 
 	public static final String DATATYPE = "JSON";
 
-	private static volatile Retrofit kakaoInstance = null;
-	private static volatile Retrofit vilageFcstInstance = null;
-	private static volatile Retrofit midFcstInstance = null;
-	private static volatile Retrofit airConditionInstance = null;
-	private static volatile Retrofit findStationInstance = null;
-	private static volatile Retrofit sgisAuthInstance = null;
-	private static volatile Retrofit sgisTransformationInstance = null;
-	private static volatile Retrofit sgisFigureInstance = null;
-	private static volatile Retrofit kakaoPlaceInstance = null;
-	private static volatile Retrofit sgisAddressInstance = null;
-
 	public static final int KAKAO = 0;
 	public static final int MID_FCST = 1;
 	public static final int VILAGE_FCST = 2;
@@ -65,116 +54,103 @@ public class HttpCommunicationClient {
 	public static synchronized Querys getApiService(int serviceType) {
 		switch (serviceType) {
 			case KAKAO: {
-				if (kakaoInstance == null) {
-					OkHttpClient client = new OkHttpClient.Builder().connectTimeout(8, TimeUnit.SECONDS).build();
-					Gson gson = new GsonBuilder().setLenient().create();
+				OkHttpClient client = new OkHttpClient.Builder().connectTimeout(8, TimeUnit.SECONDS).build();
+				Gson gson = new GsonBuilder().setLenient().create();
 
-					kakaoInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create(gson))
-							.baseUrl(KAKAO_LOCAL_API_URL).build();
-				}
+				Retrofit kakaoInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create(gson))
+						.baseUrl(KAKAO_LOCAL_API_URL).build();
+
 				return kakaoInstance.create(Querys.class);
 			}
 
 			case MID_FCST: {
-				if (midFcstInstance == null) {
-					OkHttpClient client = new OkHttpClient.Builder().connectTimeout(8, TimeUnit.SECONDS).build();
-					Gson gson = new GsonBuilder().setLenient().create();
+				OkHttpClient client = new OkHttpClient.Builder().connectTimeout(8, TimeUnit.SECONDS).build();
+				Gson gson = new GsonBuilder().setLenient().create();
 
-					midFcstInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create())
-							.addConverterFactory(ScalarsConverterFactory.create())
-							.baseUrl(MID_FCST_INFO_SERVICE_URL).build();
-				}
+				Retrofit midFcstInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create())
+						.addConverterFactory(ScalarsConverterFactory.create())
+						.baseUrl(MID_FCST_INFO_SERVICE_URL).build();
 				return midFcstInstance.create(Querys.class);
 			}
 
 			case VILAGE_FCST: {
-				if (vilageFcstInstance == null) {
-					OkHttpClient client = new OkHttpClient.Builder().connectTimeout(8, TimeUnit.SECONDS).build();
-					Gson gson = new GsonBuilder().setLenient().create();
+				OkHttpClient client = new OkHttpClient.Builder().connectTimeout(8, TimeUnit.SECONDS).build();
+				Gson gson = new GsonBuilder().setLenient().create();
 
-					vilageFcstInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create())
-							.addConverterFactory(ScalarsConverterFactory.create())
-							.baseUrl(VILAGE_FCST_INFO_SERVICE_URL).build();
-				}
+				Retrofit vilageFcstInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create())
+						.addConverterFactory(ScalarsConverterFactory.create())
+						.baseUrl(VILAGE_FCST_INFO_SERVICE_URL).build();
 				return vilageFcstInstance.create(Querys.class);
 			}
 
 			case AIR_CONDITION: {
-				if (airConditionInstance == null) {
-					OkHttpClient client = new OkHttpClient.Builder().connectTimeout(8, TimeUnit.SECONDS).build();
-					Gson gson = new GsonBuilder().setLenient().create();
 
-					airConditionInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create())
-							.addConverterFactory(ScalarsConverterFactory.create())
-							.baseUrl(AIR_CONDITION_SERVICE_URL).build();
-				}
+				OkHttpClient client = new OkHttpClient.Builder().connectTimeout(8, TimeUnit.SECONDS).build();
+				Gson gson = new GsonBuilder().setLenient().create();
+
+				Retrofit airConditionInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create())
+						.addConverterFactory(ScalarsConverterFactory.create())
+						.baseUrl(AIR_CONDITION_SERVICE_URL).build();
+
 				return airConditionInstance.create(Querys.class);
 			}
 
 			case FIND_STATION_FOR_AIR_CONDITION: {
-				if (findStationInstance == null) {
-					OkHttpClient client = new OkHttpClient.Builder().connectTimeout(8, TimeUnit.SECONDS).build();
-					Gson gson = new GsonBuilder().setLenient().create();
 
-					findStationInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create())
-							.addConverterFactory(ScalarsConverterFactory.create())
-							.baseUrl(FIND_STATION_FOR_AIR_CONDITION_SERVICE_URL).build();
-				}
+				OkHttpClient client = new OkHttpClient.Builder().connectTimeout(8, TimeUnit.SECONDS).build();
+				Gson gson = new GsonBuilder().setLenient().create();
+
+				Retrofit findStationInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create())
+						.addConverterFactory(ScalarsConverterFactory.create())
+						.baseUrl(FIND_STATION_FOR_AIR_CONDITION_SERVICE_URL).build();
 				return findStationInstance.create(Querys.class);
 			}
 
 			case SGIS_AUTH: {
-				if (sgisAuthInstance == null) {
-					OkHttpClient client = new OkHttpClient.Builder().connectTimeout(8, TimeUnit.SECONDS).build();
-					Gson gson = new GsonBuilder().setLenient().create();
+				OkHttpClient client = new OkHttpClient.Builder().connectTimeout(8, TimeUnit.SECONDS).build();
+				Gson gson = new GsonBuilder().setLenient().create();
 
-					sgisAuthInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create(gson))
-							.baseUrl(SGIS_AUTH_SERVICE_URL).build();
-				}
+				Retrofit sgisAuthInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create(gson))
+						.baseUrl(SGIS_AUTH_SERVICE_URL).build();
 				return sgisAuthInstance.create(Querys.class);
 			}
 
 			case KAKAO_PLACE: {
-				if (kakaoPlaceInstance == null) {
-					OkHttpClient client = new OkHttpClient.Builder().connectTimeout(8, TimeUnit.SECONDS).build();
-					Gson gson = new GsonBuilder().setLenient().create();
+				OkHttpClient client = new OkHttpClient.Builder().connectTimeout(8, TimeUnit.SECONDS).build();
+				Gson gson = new GsonBuilder().setLenient().create();
 
-					kakaoPlaceInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create(gson))
-							.baseUrl(KAKAO_PLACE_JSON_URL).build();
-				}
+				Retrofit kakaoPlaceInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create(gson))
+						.baseUrl(KAKAO_PLACE_JSON_URL).build();
+
 				return kakaoPlaceInstance.create(Querys.class);
 			}
 
 			case SGIS_TRANSFORMATION: {
-				if (sgisTransformationInstance == null) {
-					OkHttpClient client = new OkHttpClient.Builder().connectTimeout(8, TimeUnit.SECONDS).build();
-					Gson gson = new GsonBuilder().setLenient().create();
+				OkHttpClient client = new OkHttpClient.Builder().connectTimeout(8, TimeUnit.SECONDS).build();
+				Gson gson = new GsonBuilder().setLenient().create();
 
-					sgisTransformationInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create(gson))
-							.baseUrl(SGIS_TRANSFORMATION_SERVICE_URL).build();
-				}
+				Retrofit sgisTransformationInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create(gson))
+						.baseUrl(SGIS_TRANSFORMATION_SERVICE_URL).build();
+
 				return sgisTransformationInstance.create(Querys.class);
 			}
 
 			case SGIS_FIGURE: {
-				if (sgisFigureInstance == null) {
-					OkHttpClient client = new OkHttpClient.Builder().connectTimeout(8, TimeUnit.SECONDS).build();
-					Gson gson = new GsonBuilder().setLenient().create();
+				OkHttpClient client = new OkHttpClient.Builder().connectTimeout(8, TimeUnit.SECONDS).build();
+				Gson gson = new GsonBuilder().setLenient().create();
 
-					sgisFigureInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create(gson))
-							.baseUrl(SGIS_FIGURE_SERVICE_URL).build();
-				}
+				Retrofit sgisFigureInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create(gson))
+						.baseUrl(SGIS_FIGURE_SERVICE_URL).build();
 				return sgisFigureInstance.create(Querys.class);
 			}
 
 			case SGIS_ADDRESS: {
-				if (sgisAddressInstance == null) {
-					OkHttpClient client = new OkHttpClient.Builder().connectTimeout(8, TimeUnit.SECONDS).build();
-					Gson gson = new GsonBuilder().setLenient().create();
+				OkHttpClient client = new OkHttpClient.Builder().connectTimeout(8, TimeUnit.SECONDS).build();
+				Gson gson = new GsonBuilder().setLenient().create();
 
-					sgisAddressInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create(gson))
-							.baseUrl(SGIS_ADDRESS_SERVICE_URL).build();
-				}
+				Retrofit sgisAddressInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create(gson))
+						.baseUrl(SGIS_ADDRESS_SERVICE_URL).build();
+
 				return sgisAddressInstance.create(Querys.class);
 			}
 

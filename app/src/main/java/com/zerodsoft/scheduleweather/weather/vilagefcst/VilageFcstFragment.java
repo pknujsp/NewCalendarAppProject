@@ -10,7 +10,9 @@ import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.TextPaint;
+import android.util.Log;
 import android.util.TypedValue;
+import android.view.DragEvent;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,15 +37,20 @@ import com.zerodsoft.scheduleweather.weather.sunsetrise.SunsetRise;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class VilageFcstFragment extends Fragment {
 	private VilageFcstFragmentBinding binding;
 	private WeatherAreaCodeDTO weatherAreaCode;
 	private VilageFcstProcessing vilageFcstProcessing;
+
+	private Map<Integer, Date> vilageFcstXMap = new HashMap<>();
 
 	public VilageFcstFragment(WeatherAreaCodeDTO weatherAreaCodeDTO) {
 		this.weatherAreaCode = weatherAreaCodeDTO;
@@ -93,8 +100,8 @@ public class VilageFcstFragment extends Fragment {
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						binding.customProgressView.onSuccessfulProcessingData();
 						setTable(e);
+						binding.customProgressView.onSuccessfulProcessingData();
 					}
 				});
 			}
@@ -104,12 +111,18 @@ public class VilageFcstFragment extends Fragment {
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						clearViews();
 						binding.customProgressView.onFailedProcessingData(getString(R.string.error));
-
+						clearViews();
 					}
 				});
 
+			}
+		});
+
+		binding.scrollView.setOnScrollChangeListener(new View.OnScrollChangeListener() {
+			@Override
+			public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+				Log.e("vilageScrollViewListener", scrollX + " - " + scrollY + " - " + oldScrollX + " - " + oldScrollY);
 			}
 		});
 	}
@@ -216,6 +229,10 @@ public class VilageFcstFragment extends Fragment {
 
 		//시각 --------------------------------------------------------------------------
 		Calendar date = Calendar.getInstance();
+		vilageFcstXMap.clear();
+		date.setTime(dataList.get(0).getFcstDateTime());
+		date.add(Calendar.DATE, -10);
+		long lastDate = date.getTimeInMillis();
 
 		for (int col = 0; col < COLUMN_SIZE; col++) {
 			TextView textView = new TextView(context);
@@ -225,6 +242,11 @@ public class VilageFcstFragment extends Fragment {
 				setValueTextView(textView, ClockUtil.MdE_FORMAT.format(date.getTime()) + "\n" + Integer.toString(date.get(Calendar.HOUR_OF_DAY)));
 			} else {
 				setValueTextView(textView, Integer.toString(date.get(Calendar.HOUR_OF_DAY)));
+			}
+
+			if (!ClockUtil.areSameDate(lastDate, date.getTimeInMillis())) {
+				vilageFcstXMap.put(COLUMN_WIDTH * col, date.getTime());
+				lastDate = date.getTimeInMillis();
 			}
 
 			LinearLayout.LayoutParams textParams = new LinearLayout.LayoutParams(COLUMN_WIDTH, CLOCK_ROW_HEIGHT);
@@ -303,8 +325,6 @@ public class VilageFcstFragment extends Fragment {
 		binding.vilageFcstView.addView(chanceOfShowerRow, chanceOfShowerRowParams);
 		binding.vilageFcstView.addView(windRow, windRowParams);
 		binding.vilageFcstView.addView(humidityRow, humidityRowParams);
-
-
 	}
 
 	private void setLabelTextView(TextView textView, String labelText) {
@@ -575,11 +595,21 @@ public class VilageFcstFragment extends Fragment {
 			rect.bottom = BOTTOM;
 			rect.right = 0;
 
+			String rn1 = null;
+			final String compareV1 = "1mm 미만";
+
 			for (String value : rainfallList) {
 				rect.left = rect.right;
 				rect.right = rect.left + COLUMN_WIDTH;
 
-				canvas.drawText(value, rect.centerX(), Y, VALUE_PAINT);
+				rn1 = value;
+				if (rn1.equals(compareV1)) {
+					rn1 = "-";
+				} else if (!rn1.isEmpty()) {
+					rn1 = rn1.substring(0, rn1.length() - 2);
+				}
+
+				canvas.drawText(rn1, rect.centerX(), Y, VALUE_PAINT);
 			}
 		}
 	}
