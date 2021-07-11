@@ -24,7 +24,6 @@ import androidx.fragment.app.Fragment;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.MidFcstFragmentBinding;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
-import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.MidFcstProcessing;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.WeatherDataConverter;
@@ -133,7 +132,7 @@ public class MidFcstFragment extends Fragment {
 				getResources().getDisplayMetrics());
 		final int TEMP_ROW_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 85f, getResources().getDisplayMetrics());
 
-		List<MidFcstData> dataList = midFcstResult.getMidFcstFinalDataList();
+		List<MidFcstFinalData> dataList = midFcstResult.getMidFcstFinalDataList();
 
 		final int COLUMN_SIZE = dataList.size();
 		final int VIEW_WIDTH = COLUMN_SIZE * COLUMN_WIDTH;
@@ -317,7 +316,7 @@ public class MidFcstFragment extends Fragment {
 		textView.setTextColor(Color.BLACK);
 	}
 
-	private Drawable[] getSkyImage(MidFcstData data) {
+	private Drawable[] getSkyImage(MidFcstFinalData data) {
 		Drawable[] drawables;
 		if (data.getAmSky() != null) {
 			drawables = new Drawable[2];
@@ -340,7 +339,7 @@ public class MidFcstFragment extends Fragment {
 		private final Paint MIN_MAX_TEMP_LINE_PAINT;
 		private final Paint CIRCLE_PAINT;
 
-		public TempView(Context context, List<MidFcstData> dataList) {
+		public TempView(Context context, List<MidFcstFinalData> dataList) {
 			super(context);
 			TEMP_PAINT = new TextPaint();
 			TEMP_PAINT.setTextAlign(Paint.Align.CENTER);
@@ -372,7 +371,7 @@ public class MidFcstFragment extends Fragment {
 			int maxTemp = 0;
 			int minTemp = 0;
 
-			for (MidFcstData data : dataList) {
+			for (MidFcstFinalData data : dataList) {
 				maxTemp = Integer.parseInt(data.getTempMax());
 				minTemp = Integer.parseInt(data.getTempMin());
 				maxTempList.add(data.getTempMax());

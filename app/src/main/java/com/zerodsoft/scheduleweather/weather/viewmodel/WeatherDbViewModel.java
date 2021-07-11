@@ -41,6 +41,11 @@ public class WeatherDbViewModel extends AndroidViewModel implements WeatherDataQ
 	}
 
 	@Override
+	public void getWeatherMultipleData(String latitude, String longitude, DbQueryCallback<List<WeatherDataDTO>> callback, Integer... dataTypes) {
+
+	}
+
+	@Override
 	public void getDownloadedDateList(String latitude, String longitude, DbQueryCallback<List<WeatherDataDTO>> callback) {
 		repository.getDownloadedDateList(latitude, longitude, callback);
 	}

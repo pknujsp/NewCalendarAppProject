@@ -1,37 +1,20 @@
 package com.zerodsoft.scheduleweather.weather.repository;
 
-import android.os.Bundle;
-import android.util.ArrayMap;
-
 import com.google.gson.JsonObject;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.common.classes.RetrofitCallListManager;
-import com.zerodsoft.scheduleweather.retrofit.DataWrapper;
 import com.zerodsoft.scheduleweather.retrofit.HttpCommunicationClient;
 import com.zerodsoft.scheduleweather.retrofit.Querys;
-import com.zerodsoft.scheduleweather.retrofit.RetrofitCallback;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.MidFcstParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.MidLandFcstParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.MidTaParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.UltraSrtFcstParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.UltraSrtNcstParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.VilageFcstParameter;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.WeatherItems;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.midlandfcstresponse.MidLandFcstItems;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.midlandfcstresponse.MidLandFcstRoot;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.midtaresponse.MidTaItems;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.midtaresponse.MidTaRoot;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.ultrasrtfcstresponse.UltraSrtFcstItems;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.ultrasrtfcstresponse.UltraSrtFcstRoot;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.ultrasrtncstresponse.UltraSrtNcstItems;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.ultrasrtncstresponse.UltraSrtNcstRoot;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.vilagefcstresponse.VilageFcstItems;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.vilagefcstresponse.VilageFcstRoot;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
+import com.zerodsoft.scheduleweather.weather.hourlyfcst.HourlyFcstRoot;
 import com.zerodsoft.scheduleweather.weather.mid.MidFcstRoot;
 
 import java.util.Calendar;
-import java.util.Stack;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -87,7 +70,6 @@ public class WeatherDataDownloader implements RetrofitCallListManager.CallManage
 			public void onFailure(Call<JsonObject> call, Throwable t) {
 				callback.processResult(t);
 				retrofitCallListManager.remove(call);
-
 			}
 		});
 
@@ -176,6 +158,39 @@ public class WeatherDataDownloader implements RetrofitCallListManager.CallManage
 
 	}
 
+	public void getHourlyFcstData(VilageFcstParameter vilageFcstParameter, UltraSrtFcstParameter ultraSrtFcstParameter, Calendar calendar,
+	                              JsonDownloader<HourlyFcstRoot> callback) {
+		HourlyFcstRoot hourlyFcstRoot = new HourlyFcstRoot();
+
+		getVilageFcstData(vilageFcstParameter, (Calendar) calendar.clone(), new JsonDownloader<JsonObject>() {
+			@Override
+			public void onResponseSuccessful(JsonObject result) {
+				hourlyFcstRoot.setVilageFcst(result);
+				checkHourlyFcstDataDownload(hourlyFcstRoot, callback);
+			}
+
+			@Override
+			public void onResponseFailed(Exception e) {
+				hourlyFcstRoot.setException(e);
+				checkHourlyFcstDataDownload(hourlyFcstRoot, callback);
+			}
+		});
+
+		getUltraSrtFcstData(ultraSrtFcstParameter, (Calendar) calendar.clone(), new JsonDownloader<JsonObject>() {
+			@Override
+			public void onResponseSuccessful(JsonObject result) {
+				hourlyFcstRoot.setUltraSrtFcst(result);
+				checkHourlyFcstDataDownload(hourlyFcstRoot, callback);
+			}
+
+			@Override
+			public void onResponseFailed(Exception e) {
+				hourlyFcstRoot.setException(e);
+				checkHourlyFcstDataDownload(hourlyFcstRoot, callback);
+			}
+		});
+	}
+
 	/**
 	 * 중기육상예보
 	 *
@@ -198,7 +213,6 @@ public class WeatherDataDownloader implements RetrofitCallListManager.CallManage
 
 		Call<JsonObject> call = querys.getMidLandFcstDataStr(parameter.getMap());
 		retrofitCallListManager.add(call);
-
 
 		call.enqueue(new Callback<JsonObject>() {
 			@Override
@@ -254,7 +268,8 @@ public class WeatherDataDownloader implements RetrofitCallListManager.CallManage
 		});
 	}
 
-	public void getMidFcstData(MidLandFcstParameter midLandFcstParameter, MidTaParameter midTaParameter, Calendar calendar, JsonDownloader<MidFcstRoot> callback) {
+	public void getMidFcstData(MidLandFcstParameter midLandFcstParameter, MidTaParameter midTaParameter, Calendar calendar,
+	                           JsonDownloader<MidFcstRoot> callback) {
 		MidFcstRoot midFcstRoot = new MidFcstRoot();
 
 		getMidLandFcstData(midLandFcstParameter, (Calendar) calendar.clone(), new JsonDownloader<JsonObject>() {
@@ -292,6 +307,16 @@ public class WeatherDataDownloader implements RetrofitCallListManager.CallManage
 				callback.onResponseSuccessful(midFcstRoot);
 			} else {
 				callback.onResponseFailed(midFcstRoot.getException());
+			}
+		}
+	}
+
+	synchronized private void checkHourlyFcstDataDownload(HourlyFcstRoot hourlyFcstRoot, JsonDownloader<HourlyFcstRoot> callback) {
+		if (hourlyFcstRoot.getCount() == 2) {
+			if (hourlyFcstRoot.getException() == null) {
+				callback.onResponseSuccessful(hourlyFcstRoot);
+			} else {
+				callback.onResponseFailed(hourlyFcstRoot.getException());
 			}
 		}
 	}

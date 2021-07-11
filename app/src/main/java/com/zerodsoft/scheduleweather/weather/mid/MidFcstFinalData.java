@@ -1,6 +1,6 @@
 package com.zerodsoft.scheduleweather.weather.mid;
 
-public class MidFcstData
+public class MidFcstFinalData
 {
     private String date;
     private String amSky;
@@ -12,7 +12,7 @@ public class MidFcstData
     private String tempMin;
     private String tempMax;
 
-    public MidFcstData(String date, String amSky, String pmSky, String amShowerOfChance, String pmShowerOfChance, String tempMin, String tempMax)
+    public MidFcstFinalData(String date, String amSky, String pmSky, String amShowerOfChance, String pmShowerOfChance, String tempMin, String tempMax)
     {
         this.date = date;
         this.amSky = amSky;
@@ -23,7 +23,7 @@ public class MidFcstData
         this.tempMax = tempMax;
     }
 
-    public MidFcstData(String date, String sky, String showerOfChance, String tempMin, String tempMax)
+    public MidFcstFinalData(String date, String sky, String showerOfChance, String tempMin, String tempMax)
     {
         this.date = date;
         this.sky = sky;

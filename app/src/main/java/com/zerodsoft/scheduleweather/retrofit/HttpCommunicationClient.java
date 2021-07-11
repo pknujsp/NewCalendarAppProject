@@ -64,8 +64,7 @@ public class HttpCommunicationClient {
 			}
 
 			case MID_FCST: {
-				OkHttpClient client = new OkHttpClient.Builder().connectTimeout(8, TimeUnit.SECONDS).build();
-				Gson gson = new GsonBuilder().setLenient().create();
+				OkHttpClient client = new OkHttpClient.Builder().connectTimeout(5, TimeUnit.SECONDS).build();
 
 				Retrofit midFcstInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create())
 						.addConverterFactory(ScalarsConverterFactory.create())
@@ -74,8 +73,7 @@ public class HttpCommunicationClient {
 			}
 
 			case VILAGE_FCST: {
-				OkHttpClient client = new OkHttpClient.Builder().connectTimeout(8, TimeUnit.SECONDS).build();
-				Gson gson = new GsonBuilder().setLenient().create();
+				OkHttpClient client = new OkHttpClient.Builder().connectTimeout(5, TimeUnit.SECONDS).build();
 
 				Retrofit vilageFcstInstance = new Retrofit.Builder().client(client).addConverterFactory(GsonConverterFactory.create())
 						.addConverterFactory(ScalarsConverterFactory.create())

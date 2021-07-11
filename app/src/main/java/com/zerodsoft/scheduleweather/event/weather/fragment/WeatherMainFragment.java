@@ -20,12 +20,12 @@ import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.databinding.FragmentWeatherItemBinding;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.weather.aircondition.AirConditionFragment;
+import com.zerodsoft.scheduleweather.weather.hourlyfcst.HourlyFcstFragment;
 import com.zerodsoft.scheduleweather.weather.mid.MidFcstFragment;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.weather.repository.AirConditionDownloader;
 import com.zerodsoft.scheduleweather.weather.repository.WeatherDataDownloader;
-import com.zerodsoft.scheduleweather.weather.ultrasrtfcst.UltraSrtFcstFragment;
 import com.zerodsoft.scheduleweather.weather.ultrasrtncst.UltraSrtNcstFragment;
 import com.zerodsoft.scheduleweather.weather.viewmodel.AreaCodeViewModel;
 import com.zerodsoft.scheduleweather.weather.vilagefcst.VilageFcstFragment;
@@ -43,10 +43,8 @@ public class WeatherMainFragment extends BottomSheetDialogFragment {
 
 	//초단기 실황
 	private UltraSrtNcstFragment ultraSrtNcstFragment;
-	//초단기 예보
-	private UltraSrtFcstFragment ultraSrtFcstFragment;
-	//동네예보
-	private VilageFcstFragment vilageFcstFragment;
+	//시간별 예보
+	private HourlyFcstFragment hourlyFcstFragment;
 	//중기 예보
 	private MidFcstFragment midFcstFragment;
 	//대기 상태
@@ -134,8 +132,7 @@ public class WeatherMainFragment extends BottomSheetDialogFragment {
 			@Override
 			public void onClick(View view) {
 				ultraSrtNcstFragment.refresh();
-				ultraSrtFcstFragment.refresh();
-				vilageFcstFragment.refresh();
+				hourlyFcstFragment.refresh();
 				midFcstFragment.refresh();
 				airConditionFragment.refresh();
 			}
@@ -175,11 +172,9 @@ public class WeatherMainFragment extends BottomSheetDialogFragment {
 			public void onResultNoData() {
 				final double lat = Double.parseDouble(latitude);
 				final double lon = Double.parseDouble(longitude);
-
 				loadInitialData(lat, lon);
 			}
 		});
-
 
 	}
 
@@ -213,8 +208,7 @@ public class WeatherMainFragment extends BottomSheetDialogFragment {
 
 	private void createFragments() {
 		ultraSrtNcstFragment = new UltraSrtNcstFragment(weatherAreaCode);
-		ultraSrtFcstFragment = new UltraSrtFcstFragment(weatherAreaCode);
-		vilageFcstFragment = new VilageFcstFragment(weatherAreaCode);
+		hourlyFcstFragment = new HourlyFcstFragment(weatherAreaCode);
 		midFcstFragment = new MidFcstFragment(weatherAreaCode);
 
 		String lat, lon = null;
@@ -229,10 +223,9 @@ public class WeatherMainFragment extends BottomSheetDialogFragment {
 
 		getChildFragmentManager().beginTransaction()
 				.add(binding.ultraSrtNcstFragmentContainer.getId(), ultraSrtNcstFragment, "0")
-				.add(binding.ultraSrtFcstFragmentContainer.getId(), ultraSrtFcstFragment, "1")
-				.add(binding.vilageFcstFragmentContainer.getId(), vilageFcstFragment, "2")
-				.add(binding.midFcstFragmentContainer.getId(), midFcstFragment, "3")
-				.add(binding.airConditionFragmentContainer.getId(), airConditionFragment, "4")
+				.add(binding.hourlyFcstFragmentContainer.getId(), hourlyFcstFragment, "1")
+				.add(binding.midFcstFragmentContainer.getId(), midFcstFragment, "2")
+				.add(binding.airConditionFragmentContainer.getId(), airConditionFragment, "3")
 				.commit();
 	}
 

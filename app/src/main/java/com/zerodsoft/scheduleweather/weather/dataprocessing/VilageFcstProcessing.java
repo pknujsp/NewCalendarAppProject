@@ -24,6 +24,7 @@ public class VilageFcstProcessing extends WeatherDataProcessing<VilageFcstResult
 		super(context, LATITUDE, LONGITUDE);
 	}
 
+
 	@Override
 	public void getWeatherData(WeatherDataCallback<VilageFcstResult> weatherDataCallback) {
 		weatherDbRepository.getWeatherData(LATITUDE, LONGITUDE, WeatherDataDTO.VILAGE_FCST,
@@ -44,6 +45,7 @@ public class VilageFcstProcessing extends WeatherDataProcessing<VilageFcstResult
 					}
 				});
 	}
+
 
 	@Override
 	public void refresh(WeatherDataCallback<VilageFcstResult> weatherDataCallback) {

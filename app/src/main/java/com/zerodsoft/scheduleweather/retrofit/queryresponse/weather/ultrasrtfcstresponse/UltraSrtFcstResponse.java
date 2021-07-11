@@ -7,7 +7,7 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.commons.Header;
 
-public class UltraSrtFcstResponse implements Parcelable {
+public class UltraSrtFcstResponse {
 	@Expose
 	@SerializedName("header")
 	private Header header;
@@ -16,34 +16,6 @@ public class UltraSrtFcstResponse implements Parcelable {
 	@SerializedName("body")
 	private UltraSrtFcstBody body;
 
-
-	protected UltraSrtFcstResponse(Parcel in) {
-		header = in.readParcelable(Header.class.getClassLoader());
-		body = in.readParcelable(UltraSrtFcstBody.class.getClassLoader());
-	}
-
-	public static final Creator<UltraSrtFcstResponse> CREATOR = new Creator<UltraSrtFcstResponse>() {
-		@Override
-		public UltraSrtFcstResponse createFromParcel(Parcel in) {
-			return new UltraSrtFcstResponse(in);
-		}
-
-		@Override
-		public UltraSrtFcstResponse[] newArray(int size) {
-			return new UltraSrtFcstResponse[size];
-		}
-	};
-
-	@Override
-	public int describeContents() {
-		return 0;
-	}
-
-	@Override
-	public void writeToParcel(Parcel dest, int flags) {
-		dest.writeParcelable(header, flags);
-		dest.writeParcelable(body, flags);
-	}
 
 	public Header getHeader() {
 		return header;

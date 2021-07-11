@@ -1,6 +1,5 @@
 package com.zerodsoft.scheduleweather.weather.repository;
 
-import android.app.Application;
 import android.content.Context;
 
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
@@ -9,6 +8,7 @@ import com.zerodsoft.scheduleweather.room.dao.WeatherDataDAO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
 import com.zerodsoft.scheduleweather.room.interfaces.WeatherDataQuery;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import lombok.SneakyThrows;
@@ -66,7 +66,6 @@ public class WeatherDbRepository implements WeatherDataQuery {
 	@Override
 	public void getWeatherData(String latitude, String longitude, Integer dataType, DbQueryCallback<WeatherDataDTO> callback) {
 		new Thread(new Runnable() {
-			@SneakyThrows
 			@Override
 			public void run() {
 				WeatherDataDTO result = dao.getWeatherData(latitude, longitude, dataType);
@@ -74,6 +73,25 @@ public class WeatherDbRepository implements WeatherDataQuery {
 					callback.onResultNoData();
 				} else {
 					callback.onResultSuccessful(result);
+				}
+			}
+		}).start();
+	}
+
+	@Override
+	public void getWeatherMultipleData(String latitude, String longitude, DbQueryCallback<List<WeatherDataDTO>> callback, Integer... dataTypes) {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				List<WeatherDataDTO> list = new ArrayList<>();
+				for (Integer dataType : dataTypes) {
+					WeatherDataDTO result = dao.getWeatherData(latitude, longitude, dataType);
+					list.add(result);
+				}
+				if (list.isEmpty()) {
+					callback.onResultNoData();
+				} else {
+					callback.onResultSuccessful(list);
 				}
 			}
 		}).start();

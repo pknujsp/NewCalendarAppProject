@@ -1,12 +1,8 @@
 package com.zerodsoft.scheduleweather.retrofit;
 
-import com.google.api.client.json.Json;
 import com.google.gson.JsonObject;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.CtprvnRltmMesureDnsty.CtprvnRltmMesureDnstyResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.CtprvnRltmMesureDnsty.CtprvnRltmMesureDnstyRoot;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyRoot;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.NearbyMsrstnList.NearbyMsrstnListResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.NearbyMsrstnList.NearbyMsrstnListRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.kakaoplace.KakaoPlaceJsonRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressKakaoLocalResponse;
@@ -23,7 +19,6 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.midtarespons
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceKakaoLocalResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.ultrasrtfcstresponse.UltraSrtFcstRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.ultrasrtncstresponse.UltraSrtNcstRoot;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.vilagefcstresponse.VilageFcstRoot;
 
 import java.util.Map;
 
@@ -68,7 +63,7 @@ public interface Querys {
 
 	//동네 예보
 	@GET("getVilageFcst")
-	Call<VilageFcstRoot> getVilageFcstData(@QueryMap(encoded = true) Map<String, String> queryMap);
+	Call<com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.vilagefcstresponse.VilageFcstRoot> getVilageFcstData(@QueryMap(encoded = true) Map<String, String> queryMap);
 
 	@GET("getVilageFcst")
 	Call<JsonObject> getVilageFcstDataStr(@QueryMap(encoded = true) Map<String, String> queryMap);

@@ -9,51 +9,17 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.WeatherItems
 
 import java.util.List;
 
-public class UltraSrtFcstItems extends WeatherItems implements Parcelable
-{
-    @Expose
-    @SerializedName("item")
-    private List<UltraSrtFcstItem> item;
+public class UltraSrtFcstItems extends WeatherItems {
+	@Expose
+	@SerializedName("item")
+	private List<UltraSrtFcstItem> item;
 
-    protected UltraSrtFcstItems(Parcel in)
-    {
-        item = in.createTypedArrayList(UltraSrtFcstItem.CREATOR);
-    }
 
-    public static final Creator<UltraSrtFcstItems> CREATOR = new Creator<UltraSrtFcstItems>()
-    {
-        @Override
-        public UltraSrtFcstItems createFromParcel(Parcel in)
-        {
-            return new UltraSrtFcstItems(in);
-        }
+	public void setItem(List<UltraSrtFcstItem> item) {
+		this.item = item;
+	}
 
-        @Override
-        public UltraSrtFcstItems[] newArray(int size)
-        {
-            return new UltraSrtFcstItems[size];
-        }
-    };
-
-    @Override
-    public int describeContents()
-    {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel parcel, int i)
-    {
-        parcel.writeTypedList(item);
-    }
-
-    public void setItem(List<UltraSrtFcstItem> item)
-    {
-        this.item = item;
-    }
-
-    public List<UltraSrtFcstItem> getItem()
-    {
-        return item;
-    }
+	public List<UltraSrtFcstItem> getItem() {
+		return item;
+	}
 }

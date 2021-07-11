@@ -14,6 +14,8 @@ public interface WeatherDataQuery {
 
 	void getWeatherData(String latitude, String longitude, Integer dataType, DbQueryCallback<WeatherDataDTO> callback);
 
+	void getWeatherMultipleData(String latitude, String longitude, DbQueryCallback<List<WeatherDataDTO>> callback, Integer... dataTypes);
+
 	void getDownloadedDateList(String latitude, String longitude, DbQueryCallback<List<WeatherDataDTO>> callback);
 
 	void delete(String latitude, String longitude, Integer dataType, DbQueryCallback<Boolean> callback);

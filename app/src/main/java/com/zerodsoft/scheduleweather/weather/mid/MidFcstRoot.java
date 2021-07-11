@@ -1,8 +1,6 @@
 package com.zerodsoft.scheduleweather.weather.mid;
 
 import com.google.gson.JsonObject;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.midlandfcstresponse.MidLandFcstRoot;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.midtaresponse.MidTaRoot;
 
 public class MidFcstRoot
 {

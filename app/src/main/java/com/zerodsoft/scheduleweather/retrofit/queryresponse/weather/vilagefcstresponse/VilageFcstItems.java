@@ -9,51 +9,16 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.WeatherItems
 
 import java.util.List;
 
-public class VilageFcstItems extends WeatherItems implements Parcelable
-{
-    @Expose
-    @SerializedName("item")
-    private List<VilageFcstItem> item;
+public class VilageFcstItems extends WeatherItems {
+	@Expose
+	@SerializedName("item")
+	private List<VilageFcstItem> item;
 
-    protected VilageFcstItems(Parcel in)
-    {
-        item = in.createTypedArrayList(VilageFcstItem.CREATOR);
-    }
+	public void setItem(List<VilageFcstItem> item) {
+		this.item = item;
+	}
 
-    public static final Creator<VilageFcstItems> CREATOR = new Creator<VilageFcstItems>()
-    {
-        @Override
-        public VilageFcstItems createFromParcel(Parcel in)
-        {
-            return new VilageFcstItems(in);
-        }
-
-        @Override
-        public VilageFcstItems[] newArray(int size)
-        {
-            return new VilageFcstItems[size];
-        }
-    };
-
-    @Override
-    public int describeContents()
-    {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel parcel, int i)
-    {
-        parcel.writeTypedList(item);
-    }
-
-    public void setItem(List<VilageFcstItem> item)
-    {
-        this.item = item;
-    }
-
-    public List<VilageFcstItem> getItem()
-    {
-        return item;
-    }
+	public List<VilageFcstItem> getItem() {
+		return item;
+	}
 }
