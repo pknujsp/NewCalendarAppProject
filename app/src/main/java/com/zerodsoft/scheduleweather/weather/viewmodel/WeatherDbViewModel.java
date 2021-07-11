@@ -3,6 +3,7 @@ package com.zerodsoft.scheduleweather.weather.viewmodel;
 import android.app.Application;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.lifecycle.AndroidViewModel;
 
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
@@ -26,7 +27,8 @@ public class WeatherDbViewModel extends AndroidViewModel implements WeatherDataQ
 	}
 
 	@Override
-	public void update(String latitude, String longitude, Integer dataType, String json, String downloadedDate, DbQueryCallback<Boolean> callback) {
+	public void update(String latitude, String longitude, Integer dataType, String json, String downloadedDate,
+	                   @Nullable DbQueryCallback<Boolean> callback) {
 		repository.update(latitude, longitude, dataType, json, downloadedDate, callback);
 	}
 
@@ -51,17 +53,17 @@ public class WeatherDbViewModel extends AndroidViewModel implements WeatherDataQ
 	}
 
 	@Override
-	public void delete(String latitude, String longitude, Integer dataType, DbQueryCallback<Boolean> callback) {
+	public void delete(String latitude, String longitude, Integer dataType, @Nullable DbQueryCallback<Boolean> callback) {
 		repository.delete(latitude, longitude, dataType, callback);
 	}
 
 	@Override
-	public void delete(String latitude, String longitude, DbQueryCallback<Boolean> callback) {
+	public void delete(String latitude, String longitude, @Nullable DbQueryCallback<Boolean> callback) {
 		repository.delete(latitude, longitude, callback);
 	}
 
 	@Override
-	public void deleteAll(DbQueryCallback<Boolean> callback) {
+	public void deleteAll(@Nullable DbQueryCallback<Boolean> callback) {
 		repository.deleteAll(callback);
 	}
 

@@ -64,10 +64,10 @@ public class HourlyFcstProcessing extends WeatherDataProcessing<HourlyFcstResult
 
 	@Override
 	public void refresh(WeatherDataCallback<HourlyFcstResult> weatherDataCallback) {
-		VilageFcstParameter vilageFcstParameter = new VilageFcstParameter();
+		final VilageFcstParameter vilageFcstParameter = new VilageFcstParameter();
 		vilageFcstParameter.setNx(LONGITUDE).setNy(LATITUDE).setNumOfRows("1000").setPageNo("1");
 
-		UltraSrtFcstParameter ultraSrtFcstParameter = new UltraSrtFcstParameter();
+		final UltraSrtFcstParameter ultraSrtFcstParameter = new UltraSrtFcstParameter();
 		ultraSrtFcstParameter.setNx(LONGITUDE).setNy(LATITUDE).setNumOfRows("400").setPageNo("1");
 
 		Calendar calendar = Calendar.getInstance();
@@ -101,14 +101,14 @@ public class HourlyFcstProcessing extends WeatherDataProcessing<HourlyFcstResult
 					ultraSrtFcstWeatherDataDTO.setLatitude(LATITUDE);
 					ultraSrtFcstWeatherDataDTO.setLongitude(LONGITUDE);
 					ultraSrtFcstWeatherDataDTO.setDataType(WeatherDataDTO.ULTRA_SRT_FCST);
-					ultraSrtFcstWeatherDataDTO.setJson(ultraSrtFcstRoot.toString());
+					ultraSrtFcstWeatherDataDTO.setJson(hourlyFcstRoot.getUltraSrtFcst().toString());
 					ultraSrtFcstWeatherDataDTO.setDownloadedDate(String.valueOf(downloadedDate.getTime()));
 
 					WeatherDataDTO vilageFcstWeatherDataDTO = new WeatherDataDTO();
 					vilageFcstWeatherDataDTO.setLatitude(LATITUDE);
 					vilageFcstWeatherDataDTO.setLongitude(LONGITUDE);
 					vilageFcstWeatherDataDTO.setDataType(WeatherDataDTO.VILAGE_FCST);
-					vilageFcstWeatherDataDTO.setJson(vilageFcstRoot.toString());
+					vilageFcstWeatherDataDTO.setJson(hourlyFcstRoot.getUltraSrtFcst().toString());
 					vilageFcstWeatherDataDTO.setDownloadedDate(String.valueOf(downloadedDate.getTime()));
 
 					weatherDbRepository.contains(LATITUDE, LONGITUDE, WeatherDataDTO.VILAGE_FCST,
@@ -117,30 +117,9 @@ public class HourlyFcstProcessing extends WeatherDataProcessing<HourlyFcstResult
 								public void onResultSuccessful(Boolean isContains) {
 									if (isContains) {
 										weatherDbRepository.update(LATITUDE, LONGITUDE, WeatherDataDTO.VILAGE_FCST
-												, vilageFcstWeatherDataDTO.getJson(), vilageFcstWeatherDataDTO.getDownloadedDate(),
-												new DbQueryCallback<Boolean>() {
-													@Override
-													public void onResultSuccessful(Boolean result) {
-
-													}
-
-													@Override
-													public void onResultNoData() {
-
-													}
-												});
+												, vilageFcstWeatherDataDTO.getJson(), vilageFcstWeatherDataDTO.getDownloadedDate(), null);
 									} else {
-										weatherDbRepository.insert(vilageFcstWeatherDataDTO, new DbQueryCallback<WeatherDataDTO>() {
-											@Override
-											public void onResultSuccessful(WeatherDataDTO result) {
-
-											}
-
-											@Override
-											public void onResultNoData() {
-
-											}
-										});
+										weatherDbRepository.insert(vilageFcstWeatherDataDTO, null);
 									}
 								}
 
@@ -156,29 +135,9 @@ public class HourlyFcstProcessing extends WeatherDataProcessing<HourlyFcstResult
 								public void onResultSuccessful(Boolean isContains) {
 									if (isContains) {
 										weatherDbRepository.update(LATITUDE, LONGITUDE, WeatherDataDTO.ULTRA_SRT_FCST
-												, ultraSrtFcstWeatherDataDTO.getJson(), ultraSrtFcstWeatherDataDTO.getDownloadedDate(), new DbQueryCallback<Boolean>() {
-													@Override
-													public void onResultSuccessful(Boolean result) {
-
-													}
-
-													@Override
-													public void onResultNoData() {
-
-													}
-												});
+												, ultraSrtFcstWeatherDataDTO.getJson(), ultraSrtFcstWeatherDataDTO.getDownloadedDate(), null);
 									} else {
-										weatherDbRepository.insert(ultraSrtFcstWeatherDataDTO, new DbQueryCallback<WeatherDataDTO>() {
-											@Override
-											public void onResultSuccessful(WeatherDataDTO result) {
-
-											}
-
-											@Override
-											public void onResultNoData() {
-
-											}
-										});
+										weatherDbRepository.insert(ultraSrtFcstWeatherDataDTO, null);
 									}
 								}
 

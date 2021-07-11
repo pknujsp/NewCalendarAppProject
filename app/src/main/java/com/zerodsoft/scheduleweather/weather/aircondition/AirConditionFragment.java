@@ -53,7 +53,6 @@ public class AirConditionFragment extends Fragment implements OnUpdateListener {
 		binding.ultraFinedustStatus.setText("");
 		binding.showDetailDialogButton.setOnClickListener(onClickListener);
 
-
 		init();
 	}
 
@@ -63,23 +62,27 @@ public class AirConditionFragment extends Fragment implements OnUpdateListener {
 		airConditionProcessing.getWeatherData(new WeatherDataCallback<AirConditionResult>() {
 			@Override
 			public void isSuccessful(AirConditionResult e) {
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						binding.customProgressView.onSuccessfulProcessingData();
-						setData(e);
-					}
-				});
+				if (getActivity() != null) {
+					requireActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							binding.customProgressView.onSuccessfulProcessingData();
+							setData(e);
+						}
+					});
+				}
 			}
 
 			@Override
 			public void isFailure(Exception e) {
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						binding.customProgressView.onFailedProcessingData(getString(R.string.error));
-					}
-				});
+				if (getActivity() != null) {
+					requireActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							binding.customProgressView.onFailedProcessingData(getString(R.string.error));
+						}
+					});
+				}
 			}
 		});
 	}
@@ -121,23 +124,27 @@ public class AirConditionFragment extends Fragment implements OnUpdateListener {
 		airConditionProcessing.refresh(new WeatherDataCallback<AirConditionResult>() {
 			@Override
 			public void isSuccessful(AirConditionResult e) {
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						binding.customProgressView.onSuccessfulProcessingData();
-						setData(e);
-					}
-				});
+				if (getActivity() != null) {
+					requireActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							binding.customProgressView.onSuccessfulProcessingData();
+							setData(e);
+						}
+					});
+				}
 			}
 
 			@Override
 			public void isFailure(Exception e) {
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						binding.customProgressView.onFailedProcessingData(getString(R.string.error));
-					}
-				});
+				if (getActivity() != null) {
+					requireActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							binding.customProgressView.onFailedProcessingData(getString(R.string.error));
+						}
+					});
+				}
 			}
 		});
 

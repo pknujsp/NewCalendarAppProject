@@ -2,6 +2,8 @@ package com.zerodsoft.scheduleweather.weather.repository;
 
 import android.content.Context;
 
+import androidx.annotation.Nullable;
+
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.room.AppDb;
 import com.zerodsoft.scheduleweather.room.dao.WeatherDataDAO;
@@ -24,7 +26,6 @@ public class WeatherDbRepository implements WeatherDataQuery {
 	@Override
 	public void insert(WeatherDataDTO weatherDataDTO, DbQueryCallback<WeatherDataDTO> callback) {
 		new Thread(new Runnable() {
-			@SneakyThrows
 			@Override
 			public void run() {
 				long id = dao.insert(weatherDataDTO);
@@ -35,13 +36,14 @@ public class WeatherDbRepository implements WeatherDataQuery {
 	}
 
 	@Override
-	public void update(String latitude, String longitude, Integer dataType, String json, String downloadedDate, DbQueryCallback<Boolean> callback) {
+	public void update(String latitude, String longitude, Integer dataType, String json, String downloadedDate, @Nullable DbQueryCallback<Boolean> callback) {
 		new Thread(new Runnable() {
-			@SneakyThrows
 			@Override
 			public void run() {
 				dao.update(latitude, longitude, dataType, json, downloadedDate);
-				callback.onResultSuccessful(true);
+				if (callback != null) {
+					callback.onResultSuccessful(true);
+				}
 			}
 		}).start();
 	}
@@ -49,7 +51,6 @@ public class WeatherDbRepository implements WeatherDataQuery {
 	@Override
 	public void getWeatherDataList(String latitude, String longitude, DbQueryCallback<List<WeatherDataDTO>> callback) {
 		new Thread(new Runnable() {
-			@SneakyThrows
 			@Override
 			public void run() {
 				List<WeatherDataDTO> list = dao.getWeatherDataList(latitude, longitude);
@@ -100,7 +101,6 @@ public class WeatherDbRepository implements WeatherDataQuery {
 	@Override
 	public void getDownloadedDateList(String latitude, String longitude, DbQueryCallback<List<WeatherDataDTO>> callback) {
 		new Thread(new Runnable() {
-			@SneakyThrows
 			@Override
 			public void run() {
 				List<WeatherDataDTO> list = dao.getDownloadedDateList(latitude, longitude);
@@ -114,37 +114,40 @@ public class WeatherDbRepository implements WeatherDataQuery {
 	}
 
 	@Override
-	public void delete(String latitude, String longitude, Integer dataType, DbQueryCallback<Boolean> callback) {
+	public void delete(String latitude, String longitude, Integer dataType, @Nullable DbQueryCallback<Boolean> callback) {
 		new Thread(new Runnable() {
-			@SneakyThrows
 			@Override
 			public void run() {
 				dao.delete(latitude, longitude, dataType);
-				callback.onResultSuccessful(true);
+				if (callback != null) {
+					callback.onResultSuccessful(true);
+				}
 			}
 		}).start();
 	}
 
 	@Override
-	public void delete(String latitude, String longitude, DbQueryCallback<Boolean> callback) {
+	public void delete(String latitude, String longitude, @Nullable DbQueryCallback<Boolean> callback) {
 		new Thread(new Runnable() {
-			@SneakyThrows
 			@Override
 			public void run() {
 				dao.delete(latitude, longitude);
-				callback.onResultSuccessful(true);
+				if (callback != null) {
+					callback.onResultSuccessful(true);
+				}
 			}
 		}).start();
 	}
 
 	@Override
-	public void deleteAll(DbQueryCallback<Boolean> callback) {
+	public void deleteAll(@Nullable DbQueryCallback<Boolean> callback) {
 		new Thread(new Runnable() {
-			@SneakyThrows
 			@Override
 			public void run() {
 				dao.deleteAll();
-				callback.onResultSuccessful(true);
+				if (callback != null) {
+					callback.onResultSuccessful(true);
+				}
 			}
 		}).start();
 	}

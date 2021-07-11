@@ -26,7 +26,7 @@ public class KakaoRestaurantsViewModel extends ViewModel {
 
 	public KakaoRestaurantsViewModel() {
 		executor = Executors.newSingleThreadExecutor();
-		pagedListLiveData = new MutableLiveData<>();
+		//pagedListLiveData = new MutableLiveData<>();
 	}
 
 	public void init(LocalApiPlaceParameter placeParameter, PagedList.BoundaryCallback<PlaceDocuments> boundaryCallback) {
@@ -44,7 +44,6 @@ public class KakaoRestaurantsViewModel extends ViewModel {
 				.setBoundaryCallback(boundaryCallback)
 				.setFetchExecutor(executor)
 				.build();
-
 	}
 
 	public LiveData<PagedList<PlaceDocuments>> getPagedListMutableLiveData() {

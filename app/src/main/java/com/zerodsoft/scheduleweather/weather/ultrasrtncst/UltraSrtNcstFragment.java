@@ -62,25 +62,28 @@ public class UltraSrtNcstFragment extends Fragment {
 		ultraSrtNcstProcessing.getWeatherData(new WeatherDataCallback<UltraSrtNcstResult>() {
 			@Override
 			public void isSuccessful(UltraSrtNcstResult e) {
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						setValue(e);
-						binding.customProgressView.onSuccessfulProcessingData();
-					}
-				});
+				if (getActivity() != null) {
+					getActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							setValue(e);
+							binding.customProgressView.onSuccessfulProcessingData();
+						}
+					});
+				}
 			}
 
 			@Override
 			public void isFailure(Exception e) {
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						binding.customProgressView.onFailedProcessingData(getString(R.string.error));
-						clearViews();
-					}
-				});
-
+				if (getActivity() != null) {
+					getActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							binding.customProgressView.onFailedProcessingData(getString(R.string.error));
+							clearViews();
+						}
+					});
+				}
 			}
 		});
 	}
@@ -106,25 +109,28 @@ public class UltraSrtNcstFragment extends Fragment {
 		ultraSrtNcstProcessing.refresh(new WeatherDataCallback<UltraSrtNcstResult>() {
 			@Override
 			public void isSuccessful(UltraSrtNcstResult e) {
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						setValue(e);
-						binding.customProgressView.onSuccessfulProcessingData();
-					}
-				});
-
+				if (getActivity() != null) {
+					requireActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							setValue(e);
+							binding.customProgressView.onSuccessfulProcessingData();
+						}
+					});
+				}
 			}
 
 			@Override
 			public void isFailure(Exception e) {
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						binding.customProgressView.onFailedProcessingData(getString(R.string.error));
-						clearViews();
-					}
-				});
+				if (getActivity() != null) {
+					requireActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							binding.customProgressView.onFailedProcessingData(getString(R.string.error));
+							clearViews();
+						}
+					});
+				}
 			}
 		});
 	}

@@ -154,7 +154,9 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 				binding.customProgressView.onSuccessfulProcessingData();
 
 				if (adapterDataObserver != null) {
-					adapterDataObserver.onItemRangeInserted(0, itemCount);
+					if (itemCount > 0) {
+						adapterDataObserver.onItemRangeInserted(0, itemCount);
+					}
 				}
 			}
 
@@ -207,12 +209,17 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 				criteriaLatitude, criteriaLongitude,
 				LocalApiPlaceParameter.DEFAULT_SIZE, LocalApiPlaceParameter.DEFAULT_PAGE,
 				LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
-		placeParameter.setRadius("20000");
+		placeParameter.setRadius("10000");
 
 		kakaoRestaurantsViewModel.init(placeParameter, new PagedList.BoundaryCallback<PlaceDocuments>() {
 			@Override
 			public void onZeroItemsLoaded() {
 				super.onZeroItemsLoaded();
+
+				if (adapterDataObserver != null) {
+					adapterDataObserver.onItemRangeInserted(0, 0);
+				}
+
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
@@ -252,11 +259,6 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 	@Override
 	public void deleteListItem(PlaceDocuments e, int position) {
 
-	}
-
-	@Override
-	public void onHiddenChanged(boolean hidden) {
-		super.onHiddenChanged(hidden);
 	}
 
 }

@@ -61,10 +61,6 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 			}
 		}
 
-		@Override
-		public void onFragmentCreated(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
-			super.onFragmentCreated(fm, f, savedInstanceState);
-		}
 
 		@Override
 		public void onFragmentDestroyed(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {

@@ -24,10 +24,10 @@ public class HourlyFcstResult {
 	public void setHourlyFcstFinalDataList(VilageFcstItems vilageFcstItems, UltraSrtFcstItems ultraSrtFcstItems, Date downloadedDate) {
 		this.downloadedDate = downloadedDate;
 
-		ArrayMap<String, List<HourlyFcstItem>> hourlyFcstArrMap = new ArrayMap<>();
 		List<UltraSrtFcstItem> ultraSrtFcstItemList = ultraSrtFcstItems.getItem();
 		List<VilageFcstItem> vilageItemList = vilageFcstItems.getItem();
 
+		ArrayMap<String, List<HourlyFcstItem>> hourlyFcstArrMap = new ArrayMap<>();
 		String dateTime = null;
 		//초단기예보 마지막 데이터의 날짜 set
 
@@ -47,14 +47,13 @@ public class HourlyFcstResult {
 			dateTime = item.getFcstDate() + item.getFcstTime();
 			dateTimeLong = Long.parseLong(dateTime);
 
-			if (dateTimeLong <= lastDateTimeLongOfUltraSrtFcst) {
-				continue;
-			}
+			if (dateTimeLong > lastDateTimeLongOfUltraSrtFcst) {
 
-			if (!hourlyFcstArrMap.containsKey(dateTime)) {
-				hourlyFcstArrMap.put(dateTime, new ArrayList<>());
+				if (!hourlyFcstArrMap.containsKey(dateTime)) {
+					hourlyFcstArrMap.put(dateTime, new ArrayList<>());
+				}
+				hourlyFcstArrMap.get(dateTime).add(item);
 			}
-			hourlyFcstArrMap.get(dateTime).add(item);
 		}
 
 		//카테고리와 값으로 되어있는 데이터를 날짜별로 조합하여 초단기예보 객체를 생성

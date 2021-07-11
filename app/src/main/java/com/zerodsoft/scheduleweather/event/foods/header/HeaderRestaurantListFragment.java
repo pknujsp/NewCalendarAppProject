@@ -127,7 +127,6 @@ public class HeaderRestaurantListFragment extends Fragment {
 		});
 
 		binding.viewChangeBtn.setOnClickListener(new View.OnClickListener() {
-
 			@Override
 			public void onClick(View view) {
 				viewPagerVisibility = (viewPagerVisibility == View.VISIBLE) ? View.GONE : View.VISIBLE;
@@ -157,7 +156,6 @@ public class HeaderRestaurantListFragment extends Fragment {
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-
 						if (foodMenuListDataProcessingCallback != null) {
 							foodMenuListDataProcessingCallback.processResult(itemsList);
 						}
@@ -170,7 +168,6 @@ public class HeaderRestaurantListFragment extends Fragment {
 								}
 						).attach();
 						setupTabCustomView(itemsList);
-
 						binding.tabLayout.selectTab(binding.tabLayout.getTabAt(firstSelectedFoodMenuIndex));
 					}
 				});
@@ -212,7 +209,7 @@ public class HeaderRestaurantListFragment extends Fragment {
 
 			iSetFoodMenuPoiItems.onChangeFoodMenu();
 
-			Fragment contentFragment = fragmentManager.findFragmentById(R.id.content_fragment_container);
+			Fragment contentFragment = fragmentManager.findFragmentByTag(getString(R.string.tag_restaurant_list_tab_fragment));
 			fragmentManager.beginTransaction().hide(contentFragment)
 					.addToBackStack(getString(R.string.tag_showing_restaurant_list_on_map)).commit();
 		} else {

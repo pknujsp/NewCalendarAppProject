@@ -1127,10 +1127,12 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			}
 		}
 
-		LatLngBounds.Builder builder = new LatLngBounds.Builder();
-		builder.include(latLngList);
-		CameraUpdate cameraUpdate = CameraUpdate.fitBounds(builder.build(), 20);
-		naverMap.moveCamera(cameraUpdate);
+		if (!latLngList.isEmpty()) {
+			LatLngBounds.Builder builder = new LatLngBounds.Builder();
+			builder.include(latLngList);
+			CameraUpdate cameraUpdate = CameraUpdate.fitBounds(builder.build(), 20);
+			naverMap.moveCamera(cameraUpdate);
+		}
 	}
 
 	@Override

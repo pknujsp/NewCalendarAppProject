@@ -141,7 +141,7 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 		headerRestaurantListFragment.setArguments(bundle);
 
 		getParentFragmentManager().beginTransaction()
-				.add(R.id.header_fragment_container, headerRestaurantListFragment,getString(R.string.tag_header_food_menu_list_fragment)).commit();
+				.add(R.id.header_fragment_container, headerRestaurantListFragment, getString(R.string.tag_header_food_menu_list_fragment)).commit();
 	}
 
 	@Override
@@ -149,33 +149,22 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 		final int index = headerRestaurantListFragment.getSelectedTabPosition();
 		RestaurantListFragment fragment = adapter.getFragments().get(index);
 
-		if (fragment == null) {
-			callback.onResultNoData();
-		}
-
 		if (fragment.adapter == null) {
 			fragment.setAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
 				@Override
 				public void onItemRangeInserted(int positionStart, int itemCount) {
-					requireActivity().runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							callback.processResult(fragment.adapter.getCurrentList().snapshot());
-						}
-					});
-
+					if (itemCount > 0) {
+						callback.onResultSuccessful(fragment.adapter.getCurrentList().snapshot());
+					} else {
+						callback.onResultNoData();
+					}
 					fragment.adapterDataObserver = null;
 				}
 			});
-			binding.viewpager.setCurrentItem(index);
 		} else {
-			requireActivity().runOnUiThread(new Runnable() {
-				@Override
-				public void run() {
-					callback.processResult(fragment.adapter.getCurrentList().snapshot());
-				}
-			});
+			callback.processResult(fragment.adapter.getCurrentList().snapshot());
 		}
+		binding.viewpager.setCurrentItem(index, false);
 	}
 
 	@Override
