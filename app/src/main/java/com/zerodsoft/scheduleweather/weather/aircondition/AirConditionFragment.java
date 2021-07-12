@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.weather.aircondition;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -103,6 +104,7 @@ public class AirConditionFragment extends Fragment implements OnUpdateListener {
 					+ getString(R.string.finedust_unit);
 			binding.finedustStatus.setTextColor(BarInitDataCreater.getGradeColor(airConditionFinalData.getPm10Grade1h(), getContext()));
 		} else {
+			binding.finedustStatus.setTextColor(Color.GRAY);
 			pm10 = airConditionFinalData.getPm10Flag();
 		}
 
@@ -112,6 +114,7 @@ public class AirConditionFragment extends Fragment implements OnUpdateListener {
 					+ getString(R.string.finedust_unit);
 			binding.ultraFinedustStatus.setTextColor(BarInitDataCreater.getGradeColor(airConditionFinalData.getPm25Grade1h(), getContext()));
 		} else {
+			binding.ultraFinedustStatus.setTextColor(Color.GRAY);
 			pm25 = airConditionFinalData.getPm25Flag();
 		}
 

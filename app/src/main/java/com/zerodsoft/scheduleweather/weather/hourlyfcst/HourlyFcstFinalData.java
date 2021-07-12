@@ -87,6 +87,12 @@ public class HourlyFcstFinalData {
 				rainPrecipitation1Hour = item.getFcstValue();
 			}
 		}
+
+		if (chanceOfShower == null) {
+			chanceOfShower = "-";
+		} else if (chanceOfShower.equals("0")) {
+			chanceOfShower = "-";
+		}
 	}
 
 	public String getNx() {

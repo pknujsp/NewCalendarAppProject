@@ -56,7 +56,6 @@ public class HourlyFcstResult {
 			}
 		}
 
-		//카테고리와 값으로 되어있는 데이터를 날짜별로 조합하여 초단기예보 객체를 생성
 		Set set = hourlyFcstArrMap.keySet();
 		Iterator iterator = set.iterator();
 
@@ -67,6 +66,7 @@ public class HourlyFcstResult {
 		}
 
 		//동네예보 데이터 리스트를 날짜 오름차순으로 정렬
+		/*
 		Collections.sort(hourlyFcstFinalDataList, (t1, t2) ->
 		{
 			if (t1.getFcstDateTime().after(t2.getFcstDateTime())) {
@@ -75,6 +75,8 @@ public class HourlyFcstResult {
 				return -1;
 			}
 		});
+
+		 */
 
 	}
 

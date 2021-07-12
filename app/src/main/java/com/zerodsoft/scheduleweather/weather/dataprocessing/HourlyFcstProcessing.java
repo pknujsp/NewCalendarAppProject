@@ -108,7 +108,7 @@ public class HourlyFcstProcessing extends WeatherDataProcessing<HourlyFcstResult
 					vilageFcstWeatherDataDTO.setLatitude(LATITUDE);
 					vilageFcstWeatherDataDTO.setLongitude(LONGITUDE);
 					vilageFcstWeatherDataDTO.setDataType(WeatherDataDTO.VILAGE_FCST);
-					vilageFcstWeatherDataDTO.setJson(hourlyFcstRoot.getUltraSrtFcst().toString());
+					vilageFcstWeatherDataDTO.setJson(hourlyFcstRoot.getVilageFcst().toString());
 					vilageFcstWeatherDataDTO.setDownloadedDate(String.valueOf(downloadedDate.getTime()));
 
 					weatherDbRepository.contains(LATITUDE, LONGITUDE, WeatherDataDTO.VILAGE_FCST,
