@@ -16,6 +16,7 @@ import android.os.Parcelable;
 import android.provider.CalendarContract;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -91,7 +92,6 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		START,
 		END
 	}
-
 
 	protected final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
 		@Override
@@ -199,7 +199,6 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 			}
 		});
 
-
 		binding.titleLayout.title.addTextChangedListener(new TextWatcher() {
 			@Override
 			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -267,6 +266,9 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 				getContext()));
 		gridView.setNumColumns(5);
 		gridView.setGravity(Gravity.CENTER);
+
+		int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, getResources().getDisplayMetrics());
+		gridView.setPadding(padding, padding, padding, padding);
 		gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -349,7 +351,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 			EventRecurrence eventRecurrence = new EventRecurrence();
 			eventRecurrence.parse(rRule);
 
-			binding.recurrenceLayout.eventRecurrence.setText(eventRecurrence.toString());
+			binding.recurrenceLayout.eventRecurrence.setText(eventRecurrence.toSimple());
 		} else {
 			binding.recurrenceLayout.eventRecurrence.setText("");
 		}

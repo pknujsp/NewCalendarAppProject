@@ -731,7 +731,7 @@ public class EventFragment extends BottomSheetDialogFragment {
 	private void setRecurrenceText(String rRule) {
 		EventRecurrence eventRecurrence = new EventRecurrence();
 		eventRecurrence.parse(rRule);
-		binding.eventRecurrenceView.eventRecurrence.setText(eventRecurrence.toString());
+		binding.eventRecurrenceView.eventRecurrence.setText(eventRecurrence.toSimple());
 	}
 
 	private void setCalendarText() {

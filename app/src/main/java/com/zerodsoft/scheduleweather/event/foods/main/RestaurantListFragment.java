@@ -155,7 +155,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 
 				if (adapterDataObserver != null) {
 					if (itemCount > 0) {
-						adapterDataObserver.onItemRangeInserted(0, itemCount);
+						adapterDataObserver.onItemRangeInserted(positionStart, itemCount);
 					}
 				}
 			}
@@ -215,9 +215,8 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 			@Override
 			public void onZeroItemsLoaded() {
 				super.onZeroItemsLoaded();
-
 				if (adapterDataObserver != null) {
-					adapterDataObserver.onItemRangeInserted(0, 0);
+					adapterDataObserver.onItemRangeChanged(0, 0);
 				}
 
 				requireActivity().runOnUiThread(new Runnable() {

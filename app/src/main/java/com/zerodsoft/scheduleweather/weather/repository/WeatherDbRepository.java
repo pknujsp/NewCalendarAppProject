@@ -24,13 +24,15 @@ public class WeatherDbRepository implements WeatherDataQuery {
 	}
 
 	@Override
-	public void insert(WeatherDataDTO weatherDataDTO, DbQueryCallback<WeatherDataDTO> callback) {
+	public void insert(WeatherDataDTO weatherDataDTO, @Nullable DbQueryCallback<WeatherDataDTO> callback) {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				long id = dao.insert(weatherDataDTO);
 				WeatherDataDTO result = dao.getWeatherData(weatherDataDTO.getLatitude(), weatherDataDTO.getLongitude(), weatherDataDTO.getDataType());
-				callback.onResultSuccessful(result);
+				if (callback != null) {
+					callback.onResultSuccessful(result);
+				}
 			}
 		}).start();
 	}

@@ -8,7 +8,7 @@ import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
 import java.util.List;
 
 public interface WeatherDataQuery {
-	void insert(WeatherDataDTO weatherDataDTO,  DbQueryCallback<WeatherDataDTO> callback);
+	void insert(WeatherDataDTO weatherDataDTO, @Nullable DbQueryCallback<WeatherDataDTO> callback);
 
 	void update(String latitude, String longitude, Integer dataType, String json, String downloadedDate, @Nullable DbQueryCallback<Boolean> callback);
 

@@ -21,7 +21,10 @@ import android.text.format.Time;
 import android.util.Log;
 import android.util.TimeFormatException;
 
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
+
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 
 /**
@@ -321,6 +324,155 @@ public class EventRecurrence {
 		String str = day2String(this.byday[i]);
 		s.append(str);
 	}
+
+	public String toSimple() {
+		StringBuilder s = new StringBuilder();
+
+		if (this.interval != 0) {
+			s.append(this.interval);
+		} else {
+			s.append("매");
+		}
+
+		switch (this.freq) {
+			case SECONDLY:
+				s.append("초");
+				break;
+			case MINUTELY:
+				s.append("분");
+				break;
+			case HOURLY:
+				s.append("시간");
+				break;
+			case DAILY:
+				s.append("일");
+				break;
+			case WEEKLY:
+				s.append("주");
+				break;
+			case MONTHLY:
+				if (this.interval != 0) {
+					s.append("개월");
+				} else {
+					s.append("월");
+				}
+				break;
+			case YEARLY:
+				s.append("년");
+				break;
+		}
+
+
+/*
+		if (this.wkst != 0) {
+			s.append(";WKST=");
+			s.append(day2String(this.wkst));
+		}
+ */
+
+		/*
+		appendNumbers(s, ";BYSECOND=", this.bysecondCount, this.bysecond);
+		appendNumbers(s, ";BYMINUTE=", this.byminuteCount, this.byminute);
+		appendNumbers(s, ";BYSECOND=", this.byhourCount, this.byhour);
+		 */
+
+		// day
+		int count = this.bydayCount;
+		if (count > 0) {
+			s.append(" ");
+
+			if (this.freq == MONTHLY) {
+				s.append(this.bydayNum[0]);
+				s.append("번째 주 ");
+				s.append(day2StringForSimple(this.byday[0]));
+			} else {
+				count--;
+				for (int i = 0; i < count; i++) {
+					appendByDayForSimple(s, i);
+					s.append(", ");
+				}
+				appendByDayForSimple(s, count);
+			}
+		}
+
+		if (this.bymonthdayCount > 0) {
+			s.append(" ");
+			s.append(this.bymonthday[0]);
+			s.append("일");
+
+		}
+		//appendNumbersForSimple(s, ";BYYEARDAY=", this.byyeardayCount, this.byyearday);
+		//appendNumbersForSimple(s, ";BYWEEKNO=", this.byweeknoCount, this.byweekno);
+		//appendNumbersForSimple(s, ";BYMONTH=", this.bymonthCount, this.bymonth);
+		//appendNumbersForSimple(s, ";BYSETPOS=", this.bysetposCount, this.bysetpos);
+
+		s.append(" ");
+		s.append("마다,");
+
+		if (!TextUtils.isEmpty(this.until)) {
+			s.append(" ");
+			Time until = new Time();
+			until.parse(this.until);
+			Date untilDate = new Date(until.toMillis(true));
+			s.append(ClockUtil.YYYY_M_D_E.format(untilDate));
+			s.append(" 까지");
+		}
+
+		if (this.count != 0) {
+			s.append(" ");
+			s.append(this.count);
+			s.append("회");
+		}
+
+		s.append(" 반복");
+
+		return s.toString();
+	}
+
+	private void appendNumbersForSimple(StringBuilder s, String label,
+	                                    int count, int[] values) {
+		if (count > 0) {
+			s.append(label);
+			count--;
+			for (int i = 0; i < count; i++) {
+				s.append(values[i]);
+				s.append(", ");
+			}
+			s.append(values[count]);
+		}
+	}
+
+	private void appendByDayForSimple(StringBuilder s, int i) {
+		int n = this.bydayNum[i];
+		if (n != 0) {
+			s.append(n);
+		}
+
+		String str = day2StringForSimple(this.byday[i]);
+		s.append(str);
+	}
+
+	public static String day2StringForSimple(int day) {
+		switch (day) {
+			case SU:
+				return "일요일";
+			case MO:
+				return "월요일";
+			case TU:
+				return "화요일";
+			case WE:
+				return "수요일";
+			case TH:
+				return "목요일";
+			case FR:
+				return "금요일";
+			case SA:
+				return "토요일";
+			default:
+				throw new IllegalArgumentException("bad day argument: " + day);
+		}
+	}
+
 
 	@Override
 	public String toString() {

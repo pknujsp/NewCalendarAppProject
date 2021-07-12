@@ -565,7 +565,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		selectedLocationInEventMarker.performClick();
 		CameraUpdate cameraUpdate = CameraUpdate.scrollAndZoomTo(latLng, 13);
 		naverMap.moveCamera(cameraUpdate);
-		setCurrentAddress();
 	}
 
 

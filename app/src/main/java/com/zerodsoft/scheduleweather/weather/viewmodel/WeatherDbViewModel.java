@@ -22,7 +22,7 @@ public class WeatherDbViewModel extends AndroidViewModel implements WeatherDataQ
 	}
 
 	@Override
-	public void insert(WeatherDataDTO weatherDataDTO, DbQueryCallback<WeatherDataDTO> callback) {
+	public void insert(WeatherDataDTO weatherDataDTO, @Nullable DbQueryCallback<WeatherDataDTO> callback) {
 		repository.insert(weatherDataDTO, callback);
 	}
 

@@ -786,6 +786,12 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		naverMap.setOnMapClickListener(this);
 		naverMap.setOnMapLongClickListener(this);
 		naverMap.getUiSettings().setZoomControlEnabled(false);
+		naverMap.addOnCameraChangeListener(new NaverMap.OnCameraChangeListener() {
+			@Override
+			public void onCameraChange(int reason, boolean animated) {
+
+			}
+		});
 
 		LocationOverlay locationOverlay = naverMap.getLocationOverlay();
 		locationOverlay.setVisible(false);
@@ -861,9 +867,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 	public void setCurrentAddress() {
 		//sgis reverse geocoding 이용
-		LatLng latLng = naverMap.getContentBounds().getCenter();
+		LatLng latLng = naverMap.getCameraPosition().target;
 		Utmk utmk = Utmk.valueOf(latLng);
-		//Toast.makeText(getContext(), latLng.toString(), Toast.LENGTH_SHORT).show();
 
 		ReverseGeoCodingParameter parameter = new ReverseGeoCodingParameter();
 		parameter.setAddrType("20");
