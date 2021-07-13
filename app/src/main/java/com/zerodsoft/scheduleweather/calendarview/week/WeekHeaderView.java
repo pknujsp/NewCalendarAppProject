@@ -205,7 +205,7 @@ public class WeekHeaderView extends ViewGroup implements CalendarViewInitializer
 
 		START_INDEX = Integer.MAX_VALUE;
 		END_INDEX = Integer.MIN_VALUE;
-		boolean showCanceledInstance = App.isPreference_key_show_canceled_instances();
+		final boolean showCanceledInstance = App.isPreference_key_show_canceled_instances();
 
 		// 달력 뷰의 셀에 아이템을 삽입
 		for (ContentValues instance : instances) {
@@ -302,6 +302,8 @@ public class WeekHeaderView extends ViewGroup implements CalendarViewInitializer
 		}
 		headerInstancesView.setEventCellsList(eventCellsList);
 		if (ROWS_COUNT != 0) {
+			ROWS_COUNT++;
+		} else if (headerInstancesView.getChildCount() > 0) {
 			ROWS_COUNT++;
 		}
 

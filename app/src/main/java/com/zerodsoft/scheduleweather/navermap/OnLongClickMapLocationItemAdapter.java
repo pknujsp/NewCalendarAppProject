@@ -54,7 +54,7 @@ public class OnLongClickMapLocationItemAdapter extends LocationItemViewPagerAdap
 
 		public OnLongClickMapLocationItemViewHolder(@NonNull @NotNull View view) {
 			super(view);
-			binding.selectThisPlaceButton.setVisibility(View.GONE);
+			binding.selectThisPlaceButton.setVisibility(isVisibleSelectBtn);
 			binding.unselectThisPlaceButton.setVisibility(View.GONE);
 			binding.itemPosition.setVisibility(View.GONE);
 		}

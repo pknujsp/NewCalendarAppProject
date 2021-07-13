@@ -21,6 +21,7 @@ import com.zerodsoft.scheduleweather.activity.editevent.interfaces.OnEditEventRe
 import com.zerodsoft.scheduleweather.calendar.AsyncQueryService;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.EventHelper;
+import com.zerodsoft.scheduleweather.calendar.calendarcommon2.EventRecurrence;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
@@ -93,41 +94,60 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		binding.saveBtn.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				if (originalEvent.getAsString(CalendarContract.Instances.RRULE) != null) {
-					String[] dialogMenus = {
-							getString(R.string.save_only_current_event),
-							getString(R.string.save_all_future_events_including_current_event),
-							getString(R.string.save_all_events)
-					};
+				if (originalEvent.get(Events.RRULE) != null) {
+					String[] dialogMenus = null;
+					int[] dialogMenusIndexArr = null;
 
+					final int UPDATE_THIS_EVENT = 0;
+					final int UPDATE_FOLLOWING_EVENTS = 1;
+					final int UPDATE_ALL_EVENTS = 2;
+
+					if (eventDataViewModel.isModified(Events.RRULE)) {
+						if (eventDataViewModel.getNEW_EVENT().get(Events.RRULE) == null) {
+							//기존 이벤트에 반복이 있었으나 삭제된 경우 : update this
+							updateThisEvent();
+							return;
+						} else {
+							//기존 이벤트에 반복이 있었고 수정된 경우(반복 삭제X) : update following/all
+							dialogMenus = new String[]{
+									getString(R.string.save_all_future_events_including_current_event),
+									getString(R.string.save_all_events)};
+
+							dialogMenusIndexArr = new int[]{UPDATE_FOLLOWING_EVENTS, UPDATE_ALL_EVENTS};
+						}
+					} else {
+						//기존 이벤트에 반복이 있었고 수정되지 않은 경우 : update this/following/all
+						//기존 이벤트에 반복이 있었고 수정된 경우(반복 삭제X) : update following/all
+						dialogMenus = new String[]{
+								getString(R.string.save_only_current_event),
+								getString(R.string.save_all_future_events_including_current_event),
+								getString(R.string.save_all_events)};
+
+						dialogMenusIndexArr = new int[]{UPDATE_THIS_EVENT, UPDATE_FOLLOWING_EVENTS, UPDATE_ALL_EVENTS};
+					}
+
+					int[] finalDialogMenusIndexArr = dialogMenusIndexArr;
 					new MaterialAlertDialogBuilder(requireActivity()).setTitle(R.string.save_event_title)
 							.setItems(dialogMenus, new DialogInterface.OnClickListener() {
 								@Override
 								public void onClick(DialogInterface dialogInterface, int index) {
-									switch (index) {
-										case 0:
-											//모든 일정이면 event를 변경
-											updateAllEvents();
-											onEditEventResultListener.onUpdatedAllEvents(0L);
-											break;
-										case 1:
-											//현재 인스턴스 이후의 모든 인스턴스 변경
-											updateFollowingEvents();
-											onEditEventResultListener.onUpdatedFollowingEvents(0L);
-											break;
-										case 2:
-											//현재 인스턴스만 변경
+									final int clickedType = finalDialogMenusIndexArr[index];
+
+									switch (clickedType) {
+										case UPDATE_THIS_EVENT:
 											updateThisEvent();
-											onEditEventResultListener.onUpdatedOnlyThisEvent(0L);
+											break;
+										case UPDATE_FOLLOWING_EVENTS:
+											updateFollowingEvents();
+											break;
+										case UPDATE_ALL_EVENTS:
+											updateAllEvents();
 											break;
 									}
-
 								}
 							}).create().show();
 				} else {
 					updateAllEvents();
-					onEditEventResultListener.onUpdatedAllEvents(0L);
-
 				}
 
 			}
@@ -557,6 +577,9 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		EventHelper eventHelper = new EventHelper(getAsyncQueryService());
 		eventHelper.updateEvent(EventHelper.EventEditType.UPDATE_ONLY_THIS_EVENT, originalEvent, newEventValues, originalReminderList
 				, originalAttendeeList, newReminderList, newAttendeeList, selectedCalendarValues, locationDTO, locationIntentCode);
+
+		onEditEventResultListener.onUpdatedOnlyThisEvent(0L);
+
 	}
 
 
@@ -604,6 +627,8 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		EventHelper eventHelper = new EventHelper(getAsyncQueryService());
 		eventHelper.updateEvent(EventHelper.EventEditType.UPDATE_FOLLOWING_EVENTS, originalEvent, newEventValues, originalReminderList
 				, originalAttendeeList, newReminderList, newAttendeeList, selectedCalendarValues, locationDTO, locationIntentCode);
+
+		onEditEventResultListener.onUpdatedFollowingEvents(0L);
 	}
 
 
@@ -628,6 +653,9 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		EventHelper eventHelper = new EventHelper(getAsyncQueryService());
 		eventHelper.updateEvent(EventHelper.EventEditType.UPDATE_ALL_EVENTS, originalEvent, modifiedEvent, originalReminderList
 				, originalAttendeeList, newReminderList, newAttendeeList, selectedCalendarValues, locationDTO, locationIntentCode);
+
+		onEditEventResultListener.onUpdatedAllEvents(0L);
+
 	}
 
 	private void setNewEventValues(String key, ContentValues newEventValues, ContentValues modifiedInstance) {

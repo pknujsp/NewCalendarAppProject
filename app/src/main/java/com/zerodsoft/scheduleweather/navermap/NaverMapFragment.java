@@ -87,6 +87,7 @@ import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
 import com.zerodsoft.scheduleweather.event.places.interfaces.MarkerOnClickListener;
+import com.zerodsoft.scheduleweather.event.weather.fragment.WeatherMainFragment;
 import com.zerodsoft.scheduleweather.navermap.building.fragment.BuildingFragment;
 import com.zerodsoft.scheduleweather.navermap.building.fragment.BuildingListFragment;
 import com.zerodsoft.scheduleweather.navermap.favorite.FavoriteLocationFragment;
@@ -139,6 +140,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	public static final int PERMISSION_REQUEST_CODE = 100;
 	public static final int REQUEST_CODE_LOCATION = 10000;
 	public static final int BUILDING_RANGE_OVERLAY_TAG = 1500;
+
+	protected Integer DEFAULT_HEIGHT_OF_BOTTOMSHEET;
 
 	private FusedLocationSource fusedLocationSource;
 	private LocationManager locationManager;
@@ -352,6 +355,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 				final int headerBarHeight = (int) getResources().getDimension(R.dimen.map_header_search_bar_height);
 				final int headerBarTopMargin = (int) getResources().getDimension(R.dimen.map_header_bar_top_margin);
 				final int headerBarMargin = (int) (headerBarTopMargin * 1.5f);
+
+				DEFAULT_HEIGHT_OF_BOTTOMSHEET = binding.naverMapFragmentRootLayout.getHeight() - (int) getResources().getDimension(R.dimen.map_header_bar_height) - headerBarMargin;
 
 				final int searchBottomSheetHeight = binding.naverMapFragmentRootLayout.getHeight() - headerBarHeight - headerBarMargin;
 
@@ -786,18 +791,11 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		naverMap.setOnMapClickListener(this);
 		naverMap.setOnMapLongClickListener(this);
 		naverMap.getUiSettings().setZoomControlEnabled(false);
-		naverMap.addOnCameraChangeListener(new NaverMap.OnCameraChangeListener() {
-			@Override
-			public void onCameraChange(int reason, boolean animated) {
-
-			}
-		});
 
 		LocationOverlay locationOverlay = naverMap.getLocationOverlay();
 		locationOverlay.setVisible(false);
 
 		loadFavoriteLocations();
-		setCurrentAddress();
 
 		loadingDialog.dismiss();
 	}
@@ -1202,7 +1200,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			location.setLatitude(placeDocuments.getY());
 			location.setLongitude(placeDocuments.getX());
 			location.setLocationType(LocationType.PLACE);
-		} else {
+		} else if (kakaoLocalDocument instanceof AddressResponseDocuments) {
 			AddressResponseDocuments addressDocuments = (AddressResponseDocuments) kakaoLocalDocument;
 
 			location.setAddressName(addressDocuments.getAddressName());
@@ -1212,6 +1210,17 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 			if (addressDocuments.getAddressResponseRoadAddress() != null) {
 				location.setRoadAddressName(addressDocuments.getAddressResponseRoadAddress().getAddressName());
+			}
+		} else if (kakaoLocalDocument instanceof CoordToAddressDocuments) {
+			CoordToAddressDocuments coordToAddressDocuments = (CoordToAddressDocuments) kakaoLocalDocument;
+
+			location.setAddressName(coordToAddressDocuments.getCoordToAddressAddress().getAddressName());
+			location.setLatitude(coordToAddressDocuments.getCoordToAddressAddress().getLatitude());
+			location.setLongitude(coordToAddressDocuments.getCoordToAddressAddress().getLongitude());
+			location.setLocationType(LocationType.ADDRESS);
+
+			if (coordToAddressDocuments.getCoordToAddressRoadAddress() != null) {
+				location.setRoadAddressName(coordToAddressDocuments.getCoordToAddressRoadAddress().getAddressName());
 			}
 		}
 		return location;
@@ -1358,6 +1367,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			PlaceInfoWebDialogFragment placeInfoWebDialogFragment = new PlaceInfoWebDialogFragment();
 			Bundle bundle = new Bundle();
 			bundle.putString("placeId", ((PlaceDocuments) kakaoLocalDocument).getId());
+			bundle.putInt("bottomSheetHeight", DEFAULT_HEIGHT_OF_BOTTOMSHEET);
 			placeInfoWebDialogFragment.setArguments(bundle);
 
 			placeInfoWebDialogFragment.show(getChildFragmentManager(), getString(R.string.tag_place_info_web_dialog_fragment));
@@ -1454,7 +1464,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 	@Override
 	public void onCameraUpdateFinish() {
-		setCurrentAddress();
+		//setCurrentAddress();
 	}
 
 	@Override
@@ -1554,6 +1564,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		OnLongClickMapLocationItemAdapter adapter = (OnLongClickMapLocationItemAdapter) viewPagerAdapterMap.get(MarkerType.LONG_CLICKED_MAP);
 		adapter.setLatitude(String.valueOf(latLng.latitude));
 		adapter.setLongitude(String.valueOf(latLng.longitude));
+		adapter.setVisibleSelectBtn(placeBottomSheetSelectBtnVisibility);
 		adapter.notifyDataSetChanged();
 
 		onClickedMarkerByTouch(markersMap.get(MarkerType.LONG_CLICKED_MAP).get(0));

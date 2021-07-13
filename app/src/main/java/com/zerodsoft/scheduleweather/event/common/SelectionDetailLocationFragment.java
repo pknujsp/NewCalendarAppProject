@@ -253,11 +253,13 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 
 		switch (requestCode) {
 			case REQUEST_CODE_SELECT_LOCATION_EMPTY_QUERY:
+				setCurrentAddress();
 				//지도 기본 화면 표시
 				break;
 			case REQUEST_CODE_SELECT_LOCATION_BY_QUERY:
 				locationNameInEvent = arguments.getString(DetailLocationSelectorKey.LOCATION_NAME_IN_EVENT.value());
 				attemptSearchQuery();
+				setCurrentAddress();
 				break;
 			case REQUEST_CODE_CHANGE_LOCATION:
 				selectedLocationDTOInEvent = arguments.getParcelable(DetailLocationSelectorKey.SELECTED_LOCATION_DTO_IN_EVENT.value());
@@ -291,7 +293,6 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 						binding.naverMapButtonsLayout.currentAddress.setVisibility(View.VISIBLE);
 						binding.naverMapButtonsLayout.gpsButton.setVisibility(View.VISIBLE);
 						binding.headerLayout.setVisibility(View.VISIBLE);
-
 					}
 				});
 

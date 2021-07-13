@@ -88,7 +88,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	private long originalBegin;
 	private long originalEnd;
 
-	private Integer DEFAULT_HEIGHT_OF_BOTTOMSHEET;
 	private CalendarViewModel calendarViewModel;
 	private PlaceCategoryViewModel placeCategoryViewModel;
 
@@ -243,7 +242,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 				final int headerbarHeight = (int) getResources().getDimension(R.dimen.map_header_bar_height);
 				final int headerbarTopMargin = (int) getResources().getDimension(R.dimen.map_header_bar_top_margin);
 				final int headerbarMargin = (int) (headerbarTopMargin * 1.5f);
-				DEFAULT_HEIGHT_OF_BOTTOMSHEET = binding.naverMapFragmentRootLayout.getHeight() - headerbarHeight - headerbarMargin;
 
 				if (eventValues.getAsString(CalendarContract.Events.EVENT_LOCATION) != null) {
 					locationViewModel.getLocation(eventId, new DbQueryCallback<LocationDTO>() {

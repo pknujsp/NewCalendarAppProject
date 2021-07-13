@@ -74,9 +74,9 @@ public class HeaderInstancesView extends ViewGroup {
 
 	@Override
 	protected void onLayout(boolean b, int i, int i1, int i2, int i3) {
-		final int CHILD_COUNT = getChildCount();
+		final int childCount = getChildCount();
 
-		for (int childIdx = 0; childIdx < CHILD_COUNT; childIdx++) {
+		for (int childIdx = 0; childIdx < childCount; childIdx++) {
 			InstanceView childView = (InstanceView) getChildAt(childIdx);
 			EventData eventData = eventCellsList.get(childIdx);
 

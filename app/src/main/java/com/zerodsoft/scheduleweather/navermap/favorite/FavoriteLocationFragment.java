@@ -88,7 +88,7 @@ public class FavoriteLocationFragment extends FavoriteLocationsBaseFragment impl
 				calcDistance(list);
 				sort(list);
 
-				favoriteLocationAdapter.setList(list);
+				//favoriteLocationAdapter.setList(list);
 				favoriteLocationAdapter.notifyDataSetChanged();
 			}
 		}

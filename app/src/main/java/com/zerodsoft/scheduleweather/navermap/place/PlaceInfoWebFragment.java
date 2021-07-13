@@ -3,6 +3,7 @@ package com.zerodsoft.scheduleweather.navermap.place;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -21,7 +22,7 @@ public class PlaceInfoWebFragment extends Fragment {
 	private FragmentPlaceInfoWebBinding binding;
 	private String placeId;
 
-	private View.OnKeyListener onKeyListener = new View.OnKeyListener() {
+	private final View.OnKeyListener onKeyListener = new View.OnKeyListener() {
 		@Override
 		public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
 			if (keyCode == KeyEvent.KEYCODE_BACK && keyEvent.getAction() == KeyEvent.ACTION_UP) {
@@ -36,9 +37,22 @@ public class PlaceInfoWebFragment extends Fragment {
 		}
 	};
 
+	public final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
+		@Override
+		public void handleOnBackPressed() {
+			if (binding.webview.canGoBack()) {
+				binding.webview.goBack();
+			} else {
+				getParentFragmentManager().popBackStackImmediate();
+			}
+		}
+	};
+
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
 		Bundle bundle = getArguments();
 		placeId = bundle.getString("placeId");
 	}
@@ -54,9 +68,14 @@ public class PlaceInfoWebFragment extends Fragment {
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		initWebView();
-		binding.webview.setOnKeyListener(onKeyListener);
+		//binding.webview.setOnKeyListener(onKeyListener);
 	}
 
+	@Override
+	public void onDestroy() {
+		onBackPressedCallback.remove();
+		super.onDestroy();
+	}
 
 	public boolean webCanGoBack() {
 		return binding.webview.canGoBack();

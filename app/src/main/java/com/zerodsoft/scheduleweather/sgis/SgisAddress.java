@@ -40,13 +40,11 @@ public class SgisAddress {
 
 		Call<ReverseGeoCodingResponse> call = querys.reverseGeoCoding(parameter.toMap());
 		call.enqueue(new Callback<ReverseGeoCodingResponse>() {
-			@SneakyThrows
 			@Override
 			public void onResponse(Call<ReverseGeoCodingResponse> call, Response<ReverseGeoCodingResponse> response) {
 				callback.processResult(response);
 			}
 
-			@SneakyThrows
 			@Override
 			public void onFailure(Call<ReverseGeoCodingResponse> call, Throwable t) {
 				callback.processResult(t);
