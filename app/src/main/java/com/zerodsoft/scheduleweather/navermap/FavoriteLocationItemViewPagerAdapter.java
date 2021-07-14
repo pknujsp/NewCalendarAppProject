@@ -119,7 +119,7 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
 		public void bind() {
 			final int position = getBindingAdapterPosition();
 
-			if (favoriteLocationsMap.get(favoriteLocationsMap.keyAt(position)) != null) {
+			if (favoriteLocationsMap.valueAt(position) != null) {
 				setDataView(favoriteLocationsMap.get(favoriteLocationsMap.keyAt(position)));
 			}
 		}

@@ -18,6 +18,7 @@ import androidx.viewpager2.widget.MarginPageTransformer;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.provider.CalendarContract;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -115,7 +116,6 @@ public class InstanceListWeekDialogFragment extends DialogFragment implements On
 			public void onChanged(Boolean aBoolean) {
 				if (!initializing) {
 					refreshView();
-
 				}
 			}
 		});
@@ -125,7 +125,6 @@ public class InstanceListWeekDialogFragment extends DialogFragment implements On
 			public void onChanged(Boolean aBoolean) {
 				if (!initializing) {
 					refreshView();
-
 				}
 			}
 		});
@@ -135,7 +134,6 @@ public class InstanceListWeekDialogFragment extends DialogFragment implements On
 			public void onChanged(Long aLong) {
 				if (!initializing) {
 					refreshView();
-
 				}
 			}
 		});
@@ -143,8 +141,9 @@ public class InstanceListWeekDialogFragment extends DialogFragment implements On
 		calendarViewModel.getOnModifiedFutureInstancesLiveData().observe(this, new Observer<Long>() {
 			@Override
 			public void onChanged(Long aLong) {
-				refreshView();
-
+				if (!initializing) {
+					refreshView();
+				}
 			}
 		});
 
@@ -153,7 +152,6 @@ public class InstanceListWeekDialogFragment extends DialogFragment implements On
 			public void onChanged(Long aLong) {
 				if (!initializing) {
 					refreshView();
-
 				}
 			}
 		});
@@ -163,7 +161,6 @@ public class InstanceListWeekDialogFragment extends DialogFragment implements On
 			public void onChanged(Long aLong) {
 				if (!initializing) {
 					refreshView();
-
 				}
 			}
 		});
@@ -281,7 +278,6 @@ public class InstanceListWeekDialogFragment extends DialogFragment implements On
 
 		for (ContentValues instance : instanceSet) {
 			eventHelper.removeEvent(EventHelper.EventEditType.REMOVE_ALL_EVENTS, instance);
-
 		}
 
 	}

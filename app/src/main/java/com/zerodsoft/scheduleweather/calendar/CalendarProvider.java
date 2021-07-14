@@ -549,13 +549,7 @@ public class CalendarProvider implements ICalendarProvider {
 	@Override
 	public Map<Integer, CalendarInstance> getInstances(Long begin, Long end) {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
-			Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
-			ContentUris.appendId(builder, begin);
-			ContentUris.appendId(builder, end);
-			Uri uri = builder.build();
-
-			ContentResolver contentResolver = context.getContentResolver();
-			Cursor cursor = contentResolver.query(uri, null, null, null, null);
+			Cursor cursor = CalendarContract.Instances.query(context.getContentResolver(), null, begin, end);
 			Map<Integer, CalendarInstance> calendarInstanceMap = new HashMap<>();
 			int calendarId = 0;
 

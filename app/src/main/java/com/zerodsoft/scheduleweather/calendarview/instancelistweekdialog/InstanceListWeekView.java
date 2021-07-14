@@ -3,6 +3,8 @@ package com.zerodsoft.scheduleweather.calendarview.instancelistweekdialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.provider.CalendarContract;
+import android.provider.CalendarContract.Events;
+import android.provider.CalendarContract.Instances;
 import android.util.ArrayMap;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -137,45 +139,43 @@ public class InstanceListWeekView extends LinearLayout implements CalendarViewIn
 
 		final int marginLR = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 13f, getResources().getDisplayMetrics());
 		int[] margins = null;
+		boolean allDay = false;
 
 		for (Integer calendarIdKey : connectedCalendarIdSet) {
 			if (integerCalendarInstanceMap.containsKey(calendarIdKey)) {
 				List<ContentValues> instanceList = integerCalendarInstanceMap.get(calendarIdKey).getInstanceList();
 
 				for (ContentValues instance : instanceList) {
-					beginCalendar.setTimeInMillis(instance.getAsLong(CalendarContract.Instances.BEGIN));
-					endCalendar.setTimeInMillis(instance.getAsLong(CalendarContract.Instances.END));
-					boolean allDay = instance.getAsInteger(CalendarContract.Instances.ALL_DAY) == 1;
-					if (allDay) {
-						endCalendar.add(Calendar.DATE, -1);
+					beginCalendar.setTimeInMillis(instance.getAsLong(Instances.BEGIN));
+					endCalendar.setTimeInMillis(instance.getAsLong(Instances.END));
+					allDay = instance.getAsInteger(Instances.ALL_DAY) == 1;
+
+
+					//일요일과의 일수차이 계산
+					int startIndex = ClockUtil.calcBeginDayDifference(beginCalendar.getTimeInMillis(), begin);
+					int endIndex = ClockUtil.calcEndDayDifference(endCalendar.getTimeInMillis(), begin, allDay);
+
+					if (startIndex < 0) {
+						startIndex = 0;
 					}
 
-					int beginIndex = 0;
-					int endIndex = 6;
-
-					for (int index = 0; index < 7; index++) {
-						long compareTime = dateList.get(index).getTime();
-
-						if (ClockUtil.areSameDate(beginCalendar.getTime().getTime(), compareTime)) {
-							beginIndex = index;
-						}
-						if (ClockUtil.areSameDate(endCalendar.getTime().getTime(), compareTime)) {
-							endIndex = index;
-						}
+					if (endIndex >= 7) {
+						endIndex = 6;
+					} else if (endIndex < 0) {
+						continue;
 					}
 
-					for (int index = beginIndex; index <= endIndex; index++) {
-						margins = EventUtil.getViewSideMargin(beginCalendar.getTimeInMillis()
-								, instance.getAsLong(CalendarContract.Instances.END)
+					for (int index = startIndex; index <= endIndex; index++) {
+						margins = EventUtil.getViewSideMargin(beginCalendar.getTimeInMillis(),
+								endCalendar.getTimeInMillis()
 								, dateList.get(index).getTime()
-								, dateList.get(index + 1).getTime(), marginLR,
-								allDay);
-
+								, dateList.get(index + 1).getTime(), marginLR, allDay);
 						InstanceValues instanceValues = new InstanceValues(margins[0], margins[1], instance);
 						instancesList.get(index).add(instanceValues);
 					}
-				}
 
+
+				}
 			}
 		}
 

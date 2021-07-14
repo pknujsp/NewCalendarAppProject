@@ -57,18 +57,14 @@ public abstract class FavoriteLocationsBaseFragment extends Fragment implements 
 		favoriteLocationViewModel.getAddedFavoriteLocationMutableLiveData().observe(this, new Observer<FavoriteLocationDTO>() {
 			@Override
 			public void onChanged(FavoriteLocationDTO favoriteLocationDTO) {
-				if (favoriteLocationDTO.getType() != FavoriteLocationDTO.RESTAURANT) {
-					onAddedFavoriteLocation(favoriteLocationDTO);
-				}
+				onAddedFavoriteLocation(favoriteLocationDTO);
 			}
 		});
 
 		favoriteLocationViewModel.getRemovedFavoriteLocationMutableLiveData().observe(this, new Observer<FavoriteLocationDTO>() {
 			@Override
 			public void onChanged(FavoriteLocationDTO favoriteLocationDTO) {
-				if (favoriteLocationDTO.getType() != FavoriteLocationDTO.RESTAURANT) {
-					onRemovedFavoriteLocation(favoriteLocationDTO);
-				}
+				onRemovedFavoriteLocation(favoriteLocationDTO);
 			}
 		});
 	}
@@ -161,7 +157,7 @@ public abstract class FavoriteLocationsBaseFragment extends Fragment implements 
 	protected final void setFavoriteLocationList() {
 		binding.customProgressViewForFavoriteAddressPlace.onStartedProcessingData();
 
-		favoriteLocationViewModel.getFavoriteLocations(FavoriteLocationDTO.EXCEPT_RESTAURANT, new DbQueryCallback<List<FavoriteLocationDTO>>() {
+		favoriteLocationViewModel.getFavoriteLocations(FavoriteLocationDTO.ONLY_FOR_MAP, new DbQueryCallback<List<FavoriteLocationDTO>>() {
 			@Override
 			public void onResultSuccessful(List<FavoriteLocationDTO> list) {
 				onLoadedFavoriteLocationsList(list);

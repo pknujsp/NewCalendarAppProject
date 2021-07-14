@@ -109,6 +109,7 @@ import com.zerodsoft.scheduleweather.navermap.viewmodel.MapSharedViewModel;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.SearchHistoryViewModel;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.address.ReverseGeoCodingParameter;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.EmptyKakaoLocalDocument;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
@@ -323,6 +324,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		markerWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
 		markerHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
 		favoriteMarkerSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
+
+
 	}
 
 
@@ -713,24 +716,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			}
 		});
 
-		final int rlPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 14f, getResources().getDisplayMetrics());
-		final int bPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
-		final int margin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 3f, getResources().getDisplayMetrics());
 
-		locationItemBottomSheetViewPager.setPadding(rlPadding, 0, rlPadding, bPadding);
-		locationItemBottomSheetViewPager.setOffscreenPageLimit(2);
-		locationItemBottomSheetViewPager.getChildAt(0).setOverScrollMode(View.OVER_SCROLL_NEVER);
-
-		CompositePageTransformer compositePageTransformer = new CompositePageTransformer();
-		//compositePageTransformer.addTransformer(new MarginPageTransformer(margin));
-		compositePageTransformer.addTransformer(new ViewPager2.PageTransformer() {
-			@Override
-			public void transformPage(@NonNull View page, float position) {
-				float r = 1 - Math.abs(position);
-				page.setScaleY(0.8f + r * 0.2f);
-			}
-		});
-		locationItemBottomSheetViewPager.setPageTransformer(compositePageTransformer);
+		locationItemBottomSheetViewPager.setOffscreenPageLimit(3);
 
 		BottomSheetBehavior locationItemBottomSheetBehavior = BottomSheetBehavior.from(locationItemBottomSheet);
 		locationItemBottomSheetBehavior.setDraggable(true);
@@ -796,7 +783,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		locationOverlay.setVisible(false);
 
 		loadFavoriteLocations();
-
 		loadingDialog.dismiss();
 	}
 
@@ -902,6 +888,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		if (markerHolder.markerType == MarkerType.FAVORITE) {
 			itemPosition =
 					((FavoriteLocationItemViewPagerAdapter) adapter).getItemPosition(((FavoriteMarkerHolder) markerHolder).favoriteLocationDTO);
+			loadFavoriteLocationsData();
 		} else {
 			itemPosition = adapter.getItemPosition(markerHolder.kakaoLocalDocument);
 		}
@@ -909,10 +896,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		locationItemBottomSheetViewPager.setTag(markerHolder.markerType);
 		locationItemBottomSheetViewPager.setAdapter(adapter);
 		locationItemBottomSheetViewPager.setCurrentItem(itemPosition, false);
-
-		if (markerHolder.markerType == MarkerType.FAVORITE) {
-			loadFavoriteLocationsData();
-		}
 
 		setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_EXPANDED);
 	}
@@ -1642,10 +1625,12 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 
 	protected void addFavoriteLocationsPoiItem(FavoriteLocationDTO favoriteLocationDTO) {
-		FavoriteLocationItemViewPagerAdapter adapter = (FavoriteLocationItemViewPagerAdapter) viewPagerAdapterMap.get(MarkerType.FAVORITE);
-		adapter.addFavoriteLocation(favoriteLocationDTO);
-		adapter.notifyDataSetChanged();
-		createFavoriteLocationMarker(favoriteLocationDTO);
+		if (App.isPreference_key_show_favorite_locations_markers_on_map()) {
+			FavoriteLocationItemViewPagerAdapter adapter = (FavoriteLocationItemViewPagerAdapter) viewPagerAdapterMap.get(MarkerType.FAVORITE);
+			adapter.addFavoriteLocation(favoriteLocationDTO);
+			adapter.notifyDataSetChanged();
+			createFavoriteLocationMarker(favoriteLocationDTO);
+		}
 	}
 
 
@@ -1710,10 +1695,10 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 		final int finalRequestCount = requestCount;
 		JsonDownloader<KakaoLocalDocument> primaryCallback = new JsonDownloader<KakaoLocalDocument>() {
-			int responseCount = 0;
-			int successCount = 0;
-			int failedCount = 0;
-			List<Exception> exceptionList = new ArrayList<>();
+			volatile int responseCount = 0;
+			volatile int successCount = 0;
+			volatile int failedCount = 0;
+			volatile List<Exception> exceptionList = new ArrayList<>();
 
 			@Override
 			public void onResponseSuccessful(KakaoLocalDocument result) {
@@ -1732,13 +1717,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 			private void onCompleted() {
 				if (finalRequestCount == responseCount) {
-					if (successCount == finalRequestCount) {
-						adapter.setFavoriteLocationsMap(map);
-						adapter.notifyDataSetChanged();
-						//success
-					} else {
-						//fail
-					}
+					adapter.setFavoriteLocationsMap(map);
+					adapter.notifyDataSetChanged();
 				}
 			}
 		};
@@ -1761,6 +1741,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 					@Override
 					public void onResponseFailed(Exception e) {
+						map.put(favoriteLocationDTO, new EmptyKakaoLocalDocument());
 						primaryCallback.onResponseFailed(e);
 					}
 				});
@@ -1781,6 +1762,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 					@Override
 					public void onResponseFailed(Exception e) {
+						map.put(favoriteLocationDTO, new EmptyKakaoLocalDocument());
 						primaryCallback.onResponseFailed(e);
 					}
 				});

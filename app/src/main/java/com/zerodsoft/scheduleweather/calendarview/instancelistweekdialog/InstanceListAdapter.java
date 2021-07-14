@@ -44,11 +44,13 @@ public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapte
 	}
 
 	public void setInstancesList(List<List<InstanceListWeekView.InstanceValues>> instancesList) {
-		this.instancesList = instancesList;
+		this.instancesList.clear();
+		this.instancesList.addAll(instancesList);
 	}
 
 	public void setDateList(List<Date> dateList) {
-		this.dateList = dateList;
+		this.dateList.clear();
+		this.dateList.addAll(dateList);
 	}
 
 	public List<List<InstanceListWeekView.InstanceValues>> getInstancesList() {

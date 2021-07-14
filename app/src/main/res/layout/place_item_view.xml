@@ -13,7 +13,7 @@
         android:ellipsize="marquee"
         android:singleLine="true"
         android:text="XX편의점"
-        android:textColor="@color/black"
+        android:textColor="@color/colorPrimary"
         android:textSize="14sp" />
 
     <TextView
