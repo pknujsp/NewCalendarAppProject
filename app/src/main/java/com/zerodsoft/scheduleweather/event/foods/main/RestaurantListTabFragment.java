@@ -111,7 +111,6 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-
 		adapter = new FoodCategoryFragmentListAdapter(RestaurantListTabFragment.this);
 		binding.viewpager.setAdapter(adapter);
 
@@ -127,7 +126,6 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 						adapter.notifyDataSetChanged();
 					}
 				});
-
 			}
 
 			@Override
@@ -135,7 +133,6 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 
 			}
 		});
-
 		Bundle bundle = new Bundle();
 		bundle.putInt("firstSelectedFoodMenuIndex", firstSelectedFoodMenuIndex);
 		headerRestaurantListFragment.setArguments(bundle);

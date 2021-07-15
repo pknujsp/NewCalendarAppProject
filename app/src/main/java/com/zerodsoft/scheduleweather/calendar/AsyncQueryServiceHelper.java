@@ -105,8 +105,8 @@ public class AsyncQueryServiceHelper extends IntentService {
 	@Override
 	protected void onHandleIntent(@Nullable @org.jetbrains.annotations.Nullable Intent intent) {
 		OperationInfo args;
-		long originalEventId = -1;
-		long newEventId = -1;
+		Long originalEventId = null;
+		Long newEventId = null;
 
 		synchronized (sWorkQueue) {
 			while (true) {
@@ -182,8 +182,8 @@ public class AsyncQueryServiceHelper extends IntentService {
 
 				case AsyncQueryService.Operation.EVENT_ARG_BATCH:
 					try {
-						int insertNewEventIndex = -1;
-						int updateOriginalEventIndex = -1;
+						Integer insertNewEventIndex = null;
+						Integer updateOriginalEventIndex = null;
 
 						ArrayList<ContentProviderOperation> cpo = args.cpo;
 
@@ -204,11 +204,11 @@ public class AsyncQueryServiceHelper extends IntentService {
 						ContentProviderResult[] contentProviderResults = resolver.applyBatch(args.authority, args.cpo);
 						args.result = contentProviderResults;
 
-						if (insertNewEventIndex != -1) {
+						if (insertNewEventIndex != null) {
 							newEventId = ContentUris.parseId(contentProviderResults[insertNewEventIndex].uri);
 							args.editEventPrimaryValues.setNewEventId(newEventId);
 						}
-						if (updateOriginalEventIndex != -1) {
+						if (updateOriginalEventIndex != null) {
 							originalEventId = ContentUris.parseId(cpo.get(updateOriginalEventIndex).getUri());
 							args.editEventPrimaryValues.setOriginalEventId(originalEventId);
 						}
@@ -223,52 +223,71 @@ public class AsyncQueryServiceHelper extends IntentService {
 					break;
 			}
 
-			/*
-			 * passing the original token value back to the caller on top of the
-			 * event values in arg1.
-			 */
+			final EventHelper.EventEditType eventEditType = args.editEventPrimaryValues.getEventEditType();
+			final LocationIntentCode locationIntentCode = args.editEventPrimaryValues.getLocationIntentCode();
+			final LocationDTO locationDTO = args.editEventPrimaryValues.getNewLocationDto();
+			locationRepository = new LocationRepository(getApplicationContext());
 
-			LocationIntentCode locationIntentCode = args.editEventPrimaryValues.getLocationIntentCode();
-			if (locationIntentCode != null) {
-				locationRepository = new LocationRepository(getApplicationContext());
+			if (eventEditType == EventHelper.EventEditType.SAVE_NEW_EVENT) {
+				if (locationIntentCode != null) {
+					locationDTO.setEventId(newEventId);
+					locationRepository.addLocation(locationDTO, null);
+				}
+			} else if (eventEditType == EventHelper.EventEditType.UPDATE_ALL_EVENTS) {
+				if (locationIntentCode != null) {
+					locationDTO.setEventId(originalEventId);
 
-				if (locationIntentCode == LocationIntentCode.RESULT_CODE_REMOVED_LOCATION) {
-					locationRepository.removeLocation(originalEventId, null);
-				} else {
-					LocationDTO locationDTO = args.editEventPrimaryValues.getNewLocationDto();
-					if (locationIntentCode == LocationIntentCode.REQUEST_CODE_CHANGE_LOCATION) {
+					if (locationIntentCode == LocationIntentCode.RESULT_CODE_CHANGED_LOCATION) {
 						locationRepository.removeLocation(originalEventId, null);
+						locationRepository.addLocation(locationDTO, null);
+					} else if (locationIntentCode == LocationIntentCode.RESULT_CODE_REMOVED_LOCATION) {
+						locationRepository.removeLocation(originalEventId, null);
+					} else if (locationIntentCode == LocationIntentCode.RESULT_CODE_SELECTED_LOCATION) {
+						locationRepository.addLocation(locationDTO, null);
 					}
+				} else if (locationDTO != null) {
 
-					if (newEventId != -1) {
+				}
+			} else if (eventEditType == EventHelper.EventEditType.UPDATE_FOLLOWING_EVENTS) {
+				if (locationIntentCode != null) {
+					if (newEventId != null) {
 						locationDTO.setEventId(newEventId);
-						locationRepository.addLocation(locationDTO, new DbQueryCallback<LocationDTO>() {
-							@Override
-							public void onResultSuccessful(LocationDTO result) {
-
-							}
-
-							@Override
-							public void onResultNoData() {
-
-							}
-						});
-					}
-					if (originalEventId != -1) {
+					} else {
 						locationDTO.setEventId(originalEventId);
-						locationRepository.addLocation(locationDTO, new DbQueryCallback<LocationDTO>() {
-							@Override
-							public void onResultSuccessful(LocationDTO result) {
-
-							}
-
-							@Override
-							public void onResultNoData() {
-
-							}
-						});
 					}
 
+					if (locationIntentCode == LocationIntentCode.RESULT_CODE_CHANGED_LOCATION) {
+						if (newEventId == null) {
+							locationRepository.removeLocation(originalEventId, null);
+						}
+						locationRepository.addLocation(locationDTO, null);
+					} else if (locationIntentCode == LocationIntentCode.RESULT_CODE_REMOVED_LOCATION) {
+						locationRepository.removeLocation(originalEventId, null);
+					} else if (locationIntentCode == LocationIntentCode.RESULT_CODE_SELECTED_LOCATION) {
+						locationRepository.addLocation(locationDTO, null);
+					}
+				} else if (locationDTO != null) {
+					if (newEventId != null) {
+						locationDTO.setEventId(newEventId);
+					} else {
+						locationDTO.setEventId(originalEventId);
+					}
+					locationRepository.addLocation(locationDTO, null);
+				}
+			} else if (eventEditType == EventHelper.EventEditType.UPDATE_ONLY_THIS_EVENT) {
+				if (locationIntentCode != null) {
+					locationDTO.setEventId(newEventId);
+
+					if (locationIntentCode == LocationIntentCode.RESULT_CODE_CHANGED_LOCATION) {
+						locationRepository.addLocation(locationDTO, null);
+					} else if (locationIntentCode == LocationIntentCode.RESULT_CODE_REMOVED_LOCATION) {
+						locationRepository.removeLocation(originalEventId, null);
+					} else if (locationIntentCode == LocationIntentCode.RESULT_CODE_SELECTED_LOCATION) {
+						locationRepository.addLocation(locationDTO, null);
+					}
+				} else if (locationDTO != null) {
+					locationDTO.setEventId(newEventId);
+					locationRepository.addLocation(locationDTO, null);
 				}
 			}
 

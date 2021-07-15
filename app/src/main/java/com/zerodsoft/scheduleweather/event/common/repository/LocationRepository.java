@@ -112,13 +112,15 @@ public class LocationRepository implements ILocationDao {
 	}
 
 	@Override
-	public void addLocation(LocationDTO location, DbQueryCallback<LocationDTO> resultCallback) {
+	public void addLocation(LocationDTO location, @Nullable DbQueryCallback<LocationDTO> resultCallback) {
 		App.executorService.execute(new Runnable() {
 			@Override
 			public void run() {
 				long id = locationDAO.insert(location);
 				LocationDTO result = locationDAO.getLocation((int) id);
-				resultCallback.processResult(result);
+				if (resultCallback != null) {
+					resultCallback.processResult(result);
+				}
 			}
 		});
 	}

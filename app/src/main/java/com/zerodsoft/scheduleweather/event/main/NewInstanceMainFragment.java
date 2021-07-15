@@ -35,6 +35,7 @@ import android.widget.CompoundButton;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.chip.Chip;
@@ -799,7 +800,12 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 
 					@Override
 					public void onResultNoData() {
-
+						requireActivity().runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								Toast.makeText(getActivity(), getString(R.string.not_founded_search_result), Toast.LENGTH_SHORT).show();
+							}
+						});
 					}
 				}, selectedPlaceCategoryCode);
 			} else if (placeCategoryChipGroup.getCheckedChipIds().isEmpty()
@@ -868,8 +874,13 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						createMarkers(placeDocuments, MarkerType.RESTAURANT);
-						showMarkers(MarkerType.RESTAURANT);
+						if (placeDocuments.size() == 0) {
+							Toast.makeText(getActivity(), getString(R.string.not_founded_search_result), Toast.LENGTH_SHORT).show();
+							removeMarkers(MarkerType.RESTAURANT);
+						} else {
+							createMarkers(placeDocuments, MarkerType.RESTAURANT);
+							showMarkers(MarkerType.RESTAURANT);
+						}
 					}
 				});
 
@@ -877,7 +888,13 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 
 			@Override
 			public void onResultNoData() {
-
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						Toast.makeText(getActivity(), getString(R.string.not_founded_search_result), Toast.LENGTH_SHORT).show();
+						removeMarkers(MarkerType.RESTAURANT);
+					}
+				});
 			}
 		});
 	}

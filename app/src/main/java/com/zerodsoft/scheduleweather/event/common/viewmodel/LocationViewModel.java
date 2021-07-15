@@ -40,7 +40,7 @@ public class LocationViewModel extends AndroidViewModel implements ILocationDao 
 	}
 
 	@Override
-	public void addLocation(LocationDTO location, DbQueryCallback<LocationDTO> resultCallback) {
+	public void addLocation(LocationDTO location, @Nullable DbQueryCallback<LocationDTO> resultCallback) {
 		locationRepository.addLocation(location, resultCallback);
 	}
 

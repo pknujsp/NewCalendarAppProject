@@ -16,7 +16,7 @@ public interface ILocationDao {
 
 	public void hasDetailLocation(long eventId, DbQueryCallback<Boolean> resultCallback);
 
-	public void addLocation(LocationDTO location, DbQueryCallback<LocationDTO> resultCallback);
+	public void addLocation(LocationDTO location, @Nullable DbQueryCallback<LocationDTO> resultCallback);
 
 	public void removeLocation(long eventId, @Nullable DbQueryCallback<Boolean> resultCallback);
 

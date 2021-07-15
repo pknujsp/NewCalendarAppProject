@@ -94,6 +94,11 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		binding.saveBtn.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
+				/*
+				반복값을 수정하지 않았을 경우 : update this/following events/all events
+				반복값을 수정한 경우 : update this/following events
+				반복값을 삭제한 경우 : remove all events and save new event
+				 */
 				if (originalEvent.get(Events.RRULE) != null) {
 					String[] dialogMenus = null;
 					int[] dialogMenusIndexArr = null;
@@ -104,26 +109,63 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 					if (eventDataViewModel.isModified(Events.RRULE)) {
 						if (eventDataViewModel.getNEW_EVENT().get(Events.RRULE) == null) {
-							//기존 이벤트에 반복이 있었으나 삭제된 경우 : update this
-							updateThisEvent();
+							//반복값을 삭제한 경우 : remove all events and save new event
+							EventHelper eventRemoveHelper = new EventHelper(new AsyncQueryService(getActivity(),
+									(OnEditEventResultListener) calendarViewModel));
+							eventRemoveHelper.removeEvent(EventHelper.EventEditType.REMOVE_ALL_EVENTS, originalEvent);
+
+							ContentValues modifiedEvent = eventDataViewModel.getNEW_EVENT();
+							ContentValues newEventValues = new ContentValues();
+							List<ContentValues> newReminderList = eventDataViewModel.getNEW_REMINDERS();
+							List<ContentValues> newAttendeeList = eventDataViewModel.getNEW_ATTENDEES();
+
+							setNewEventValues(Events.TITLE, newEventValues, modifiedEvent);
+							setNewEventValues(Events.EVENT_COLOR_KEY, newEventValues, modifiedEvent);
+							setNewEventValues(Events.EVENT_COLOR, newEventValues, modifiedEvent);
+							setNewEventValues(Events.CALENDAR_ID, newEventValues, modifiedEvent);
+							setNewEventValues(Events.ALL_DAY, newEventValues, modifiedEvent);
+							setNewEventValues(Events.DTSTART, newEventValues, modifiedEvent);
+							setNewEventValues(Events.DTEND, newEventValues, modifiedEvent);
+							setNewEventValues(Events.EVENT_TIMEZONE, newEventValues, modifiedEvent);
+							setNewEventValues(Events.DESCRIPTION, newEventValues, modifiedEvent);
+							setNewEventValues(Events.EVENT_LOCATION, newEventValues, modifiedEvent);
+							setNewEventValues(Events.AVAILABILITY, newEventValues, modifiedEvent);
+							setNewEventValues(Events.ACCESS_LEVEL, newEventValues, modifiedEvent);
+							setNewEventValues(Events.GUESTS_CAN_INVITE_OTHERS, newEventValues, modifiedEvent);
+							setNewEventValues(Events.GUESTS_CAN_MODIFY, newEventValues, modifiedEvent);
+							setNewEventValues(Events.GUESTS_CAN_SEE_GUESTS, newEventValues, modifiedEvent);
+							setNewEventValues(Events.IS_ORGANIZER, newEventValues, modifiedEvent);
+							setNewEventValues(Events.RRULE, newEventValues, modifiedEvent);
+
+							if (eventDataViewModel.isModified(Events.DTSTART) || eventDataViewModel.isModified(Events.DTEND)) {
+								newEventValues.put(Events.DTSTART, modifiedEvent.getAsLong(CalendarContract.Events.DTSTART));
+								newEventValues.put(Events.DTEND, modifiedEvent.getAsLong(CalendarContract.Events.DTEND));
+							} else {
+								newEventValues.put(CalendarContract.Events.DTSTART, originalInstanceBeginDate);
+								newEventValues.put(CalendarContract.Events.DTEND, originalInstanceEndDate);
+							}
+
+							EventHelper eventHelper = new EventHelper(new AsyncQueryService(getActivity(), (OnEditEventResultListener) calendarViewModel));
+							eventHelper.saveNewEvent(newEventValues, locationDTO, newReminderList, newAttendeeList, locationIntentCode);
+
+							onEditEventResultListener.onSavedNewEvent(newEventValues.getAsLong(Events.DTSTART));
 							return;
 						} else {
-							//기존 이벤트에 반복이 있었고 수정된 경우(반복 삭제X) : update following/all
+							//	반복값을 수정한 경우 : update this/following events
 							dialogMenus = new String[]{
 									getString(R.string.save_all_future_events_including_current_event),
 									getString(R.string.save_all_events)};
 
-							dialogMenusIndexArr = new int[]{UPDATE_FOLLOWING_EVENTS, UPDATE_ALL_EVENTS};
+							dialogMenusIndexArr = new int[]{UPDATE_FOLLOWING_EVENTS, UPDATE_THIS_EVENT};
 						}
 					} else {
-						//기존 이벤트에 반복이 있었고 수정되지 않은 경우 : update this/following/all
-						//기존 이벤트에 반복이 있었고 수정된 경우(반복 삭제X) : update following/all
+						//반복값을 수정하지 않았을 경우 : update this/following events/all events
 						dialogMenus = new String[]{
 								getString(R.string.save_only_current_event),
 								getString(R.string.save_all_future_events_including_current_event),
 								getString(R.string.save_all_events)};
 
-						dialogMenusIndexArr = new int[]{UPDATE_THIS_EVENT, UPDATE_FOLLOWING_EVENTS, UPDATE_ALL_EVENTS};
+						dialogMenusIndexArr = new int[]{UPDATE_ALL_EVENTS, UPDATE_FOLLOWING_EVENTS, UPDATE_THIS_EVENT};
 					}
 
 					int[] finalDialogMenusIndexArr = dialogMenusIndexArr;
@@ -643,12 +685,6 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		ContentValues modifiedEvent = eventDataViewModel.getNEW_EVENT();
 		List<ContentValues> newReminderList = eventDataViewModel.getNEW_REMINDERS();
 		List<ContentValues> newAttendeeList = eventDataViewModel.getNEW_ATTENDEES();
-
-		if (!modifiedEvent.containsKey(Events.DTEND)) {
-			modifiedEvent.put(Events.DTSTART, originalInstanceBeginDate);
-			modifiedEvent.put(Events.DTEND, originalInstanceEndDate);
-			modifiedEvent.put(Events.ALL_DAY, binding.timeLayout.timeAlldaySwitch.isChecked() ? 1 : 0);
-		}
 
 		EventHelper eventHelper = new EventHelper(getAsyncQueryService());
 		eventHelper.updateEvent(EventHelper.EventEditType.UPDATE_ALL_EVENTS, originalEvent, modifiedEvent, originalReminderList

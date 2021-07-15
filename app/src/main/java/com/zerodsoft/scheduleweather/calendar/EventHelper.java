@@ -562,28 +562,26 @@ public class EventHelper implements Serializable {
 
 	public void setDuration(ContentValues newEvent) {
 		//반복 이벤트면 dtEnd를 삭제하고 duration추가
-		if (newEvent.containsKey(Events.RRULE)) {
-			if (newEvent.get(Events.RRULE) != null) {
-				final long start = newEvent.getAsLong(Events.DTSTART);
-				final long end = newEvent.getAsLong(Events.DTEND);
-				final boolean isAllDay = newEvent.getAsInteger(Events.ALL_DAY) == 1;
+		if (newEvent.get(Events.RRULE) != null) {
+			final long start = newEvent.getAsLong(Events.DTSTART);
+			final long end = newEvent.getAsLong(Events.DTEND);
+			final boolean isAllDay = newEvent.getAsInteger(Events.ALL_DAY) == 1;
 
-				String duration = null;
+			String duration = null;
 
-				if (isAllDay) {
-					// if it's all day compute the duration in days
-					long days = (end - start + DateUtils.DAY_IN_MILLIS - 1)
-							/ DateUtils.DAY_IN_MILLIS;
-					duration = "P" + days + "D";
-				} else {
-					// otherwise compute the duration in seconds
-					long seconds = (end - start) / DateUtils.SECOND_IN_MILLIS;
-					duration = "P" + seconds + "S";
-				}
-				// recurring events should have a duration and dtend set to null
-				newEvent.put(Events.DURATION, duration);
-				newEvent.put(Events.DTEND, (String) null);
+			if (isAllDay) {
+				// if it's all day compute the duration in days
+				long days = (end - start + DateUtils.DAY_IN_MILLIS - 1)
+						/ DateUtils.DAY_IN_MILLIS;
+				duration = "P" + days + "D";
+			} else {
+				// otherwise compute the duration in seconds
+				long seconds = (end - start) / DateUtils.SECOND_IN_MILLIS;
+				duration = "P" + seconds + "S";
 			}
+			// recurring events should have a duration and dtend set to null
+			newEvent.put(Events.DURATION, duration);
+			newEvent.put(Events.DTEND, (String) null);
 		} else {
 			newEvent.remove(Events.DURATION);
 		}
