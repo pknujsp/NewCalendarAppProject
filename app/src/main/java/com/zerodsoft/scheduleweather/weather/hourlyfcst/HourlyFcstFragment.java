@@ -10,6 +10,7 @@ import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.TextPaint;
+import android.util.ArrayMap;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -41,6 +42,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class HourlyFcstFragment extends Fragment {
 	private VilageFcstFragmentBinding binding;
@@ -48,6 +50,8 @@ public class HourlyFcstFragment extends Fragment {
 	private HourlyFcstProcessing hourlyFcstProcessing;
 
 	private Map<Integer, Date> vilageFcstXMap = new HashMap<>();
+
+	private DateView dateRow;
 
 	public HourlyFcstFragment(WeatherAreaCodeDTO weatherAreaCodeDTO) {
 		this.weatherAreaCode = weatherAreaCodeDTO;
@@ -96,6 +100,15 @@ public class HourlyFcstFragment extends Fragment {
 				}
 			}
 		});
+
+		binding.scrollView.setOnScrollChangeListener(new View.OnScrollChangeListener() {
+			@Override
+			public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+				if (dateRow != null) {
+					dateRow.reDraw(scrollX);
+				}
+			}
+		});
 	}
 
 	public void refresh() {
@@ -130,12 +143,7 @@ public class HourlyFcstFragment extends Fragment {
 			}
 		});
 
-		binding.scrollView.setOnScrollChangeListener(new View.OnScrollChangeListener() {
-			@Override
-			public void onScrollChange(View v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
-				Log.e("vilageScrollViewListener", scrollX + " - " + scrollY + " - " + oldScrollX + " - " + oldScrollY);
-			}
-		});
+
 	}
 
 	public void clearViews() {
@@ -147,6 +155,8 @@ public class HourlyFcstFragment extends Fragment {
 		final int COLUMN_WIDTH = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 55f, getResources().getDisplayMetrics());
 		final int TB_MARGIN = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
 
+		final int DATE_ROW_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f,
+				getResources().getDisplayMetrics());
 		final int CLOCK_ROW_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 34f,
 				getResources().getDisplayMetrics());
 		final int SKY_ROW_HEIGHT = COLUMN_WIDTH;
@@ -167,6 +177,7 @@ public class HourlyFcstFragment extends Fragment {
 		Context context = getContext();
 
 		//label column 설정
+		TextView dateLabel = new TextView(context);
 		TextView clockLabel = new TextView(context);
 		TextView skyLabel = new TextView(context);
 		TextView tempLabel = new TextView(context);
@@ -175,6 +186,7 @@ public class HourlyFcstFragment extends Fragment {
 		TextView windLabel = new TextView(context);
 		TextView humidityLabel = new TextView(context);
 
+		setLabelTextView(dateLabel, getString(R.string.date));
 		setLabelTextView(clockLabel, getString(R.string.clock));
 		setLabelTextView(skyLabel, getString(R.string.sky));
 		setLabelTextView(tempLabel, getString(R.string.temperature));
@@ -182,6 +194,9 @@ public class HourlyFcstFragment extends Fragment {
 		setLabelTextView(chanceOfShowerLabel, getString(R.string.chance_of_shower));
 		setLabelTextView(windLabel, getString(R.string.wind));
 		setLabelTextView(humidityLabel, getString(R.string.humidity));
+
+		LinearLayout.LayoutParams dateLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DATE_ROW_HEIGHT);
+		dateLabelParams.topMargin = TB_MARGIN;
 
 		LinearLayout.LayoutParams clockLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, CLOCK_ROW_HEIGHT);
 		clockLabelParams.topMargin = TB_MARGIN;
@@ -208,6 +223,7 @@ public class HourlyFcstFragment extends Fragment {
 		humidityLabelParams.topMargin = TB_MARGIN;
 		humidityLabelParams.bottomMargin = TB_MARGIN;
 
+		dateLabelParams.gravity = Gravity.CENTER;
 		clockLabelParams.gravity = Gravity.CENTER;
 		skyLabelParams.gravity = Gravity.CENTER;
 		tempLabelParams.gravity = Gravity.CENTER;
@@ -216,6 +232,7 @@ public class HourlyFcstFragment extends Fragment {
 		windLabelParams.gravity = Gravity.CENTER;
 		humidityLabelParams.gravity = Gravity.CENTER;
 
+		binding.vilageFcstHeaderCol.addView(dateLabel, dateLabelParams);
 		binding.vilageFcstHeaderCol.addView(clockLabel, clockLabelParams);
 		binding.vilageFcstHeaderCol.addView(skyLabel, skyLabelParams);
 		binding.vilageFcstHeaderCol.addView(tempLabel, tempLabelParams);
@@ -224,7 +241,8 @@ public class HourlyFcstFragment extends Fragment {
 		binding.vilageFcstHeaderCol.addView(windLabel, windLabelParams);
 		binding.vilageFcstHeaderCol.addView(humidityLabel, humidityLabelParams);
 
-		//시각, 하늘, 기온, 강수량, 강수확률, 바람, 습도 순으로 행 등록
+		//날짜, 시각, 하늘, 기온, 강수량, 강수확률, 바람, 습도 순으로 행 등록
+		dateRow = null;
 		LinearLayout clockRow = new LinearLayout(context);
 		SkyView skyRow = new SkyView(context, dataList);
 		TempView tempRow = new TempView(context, dataList);
@@ -245,15 +263,24 @@ public class HourlyFcstFragment extends Fragment {
 		date.add(Calendar.DATE, -10);
 		long lastDate = date.getTimeInMillis();
 
+		List<DateValue> dateValueList = new ArrayList<>();
+
+		int beginX = 0;
+
 		for (int col = 0; col < COLUMN_SIZE; col++) {
 			TextView textView = new TextView(context);
 			date.setTime(dataList.get(col).getFcstDateTime());
 
 			if (date.get(Calendar.HOUR_OF_DAY) == 0 || col == 0) {
-				setValueTextView(textView, ClockUtil.MdE_FORMAT.format(date.getTime()) + "\n" + Integer.toString(date.get(Calendar.HOUR_OF_DAY)));
-			} else {
-				setValueTextView(textView, Integer.toString(date.get(Calendar.HOUR_OF_DAY)));
+				if (dateValueList.size() > 0) {
+					dateValueList.get(dateValueList.size() - 1).endX = COLUMN_WIDTH * (col - 1) + COLUMN_WIDTH / 2;
+				}
+
+				beginX = COLUMN_WIDTH * col + COLUMN_WIDTH / 2;
+				dateValueList.add(new DateValue(beginX, ClockUtil.MdE_FORMAT.format(date.getTime())));
 			}
+
+			setValueTextView(textView, Integer.toString(date.get(Calendar.HOUR_OF_DAY)));
 
 			if (!ClockUtil.areSameDate(lastDate, date.getTimeInMillis())) {
 				vilageFcstXMap.put(COLUMN_WIDTH * col, date.getTime());
@@ -264,6 +291,11 @@ public class HourlyFcstFragment extends Fragment {
 			textParams.gravity = Gravity.CENTER;
 			clockRow.addView(textView, textParams);
 		}
+
+		dateValueList.get(dateValueList.size() - 1).endX = COLUMN_WIDTH * (COLUMN_SIZE - 1) + COLUMN_WIDTH / 2;
+
+		dateRow = new DateView(getContext(), dateValueList);
+		dateRow.measure(VIEW_WIDTH, DATE_ROW_HEIGHT);
 
 		//하늘 ---------------------------------------------------------------------------
 		skyRow.measure(VIEW_WIDTH, SKY_ROW_HEIGHT);
@@ -304,6 +336,9 @@ public class HourlyFcstFragment extends Fragment {
 			humidityRow.addView(textView, textParams);
 		}
 
+		LinearLayout.LayoutParams dateRowParams = new LinearLayout.LayoutParams(VIEW_WIDTH, DATE_ROW_HEIGHT);
+		dateRowParams.topMargin = TB_MARGIN;
+
 		LinearLayout.LayoutParams clockRowParams = new LinearLayout.LayoutParams(VIEW_WIDTH, CLOCK_ROW_HEIGHT);
 		clockRowParams.topMargin = TB_MARGIN;
 		clockRowParams.bottomMargin = TB_MARGIN;
@@ -329,6 +364,7 @@ public class HourlyFcstFragment extends Fragment {
 		humidityRowParams.topMargin = TB_MARGIN;
 		humidityRowParams.bottomMargin = TB_MARGIN;
 
+		binding.vilageFcstView.addView(dateRow, dateRowParams);
 		binding.vilageFcstView.addView(clockRow, clockRowParams);
 		binding.vilageFcstView.addView(skyRow, skyRowParams);
 		binding.vilageFcstView.addView(tempRow, tempRowParams);
@@ -607,21 +643,85 @@ public class HourlyFcstFragment extends Fragment {
 			rect.right = 0;
 
 			String rn1 = null;
-			final String compareV1 = "1mm 미만";
 
 			for (String value : rainfallList) {
 				rect.left = rect.right;
 				rect.right = rect.left + COLUMN_WIDTH;
 
 				rn1 = value;
-				if (rn1.equals(compareV1)) {
-					rn1 = "-";
-				} else if (!rn1.isEmpty()) {
-					rn1 = rn1.substring(0, rn1.length() - 2);
-				}
-
 				canvas.drawText(rn1, rect.centerX(), Y, VALUE_PAINT);
 			}
+		}
+	}
+
+	class DateView extends View {
+		private final List<DateValue> dateValueList;
+		private final TextPaint dateTextPaint;
+		private final int textHeight;
+		private final int firstColX;
+
+		private int currentX;
+
+
+		public DateView(Context context, List<DateValue> dateValueList) {
+			super(context);
+
+			dateTextPaint = new TextPaint();
+			dateTextPaint.setTextAlign(Paint.Align.CENTER);
+			dateTextPaint.setColor(Color.GRAY);
+			dateTextPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 13f, getResources().getDisplayMetrics()));
+
+			Rect rect = new Rect();
+			dateTextPaint.getTextBounds("0", 0, 1, rect);
+			textHeight = rect.height();
+
+			this.dateValueList = dateValueList;
+			this.firstColX = dateValueList.get(0).beginX;
+		}
+
+		@Override
+		protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+			super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+		}
+
+		@Override
+		protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+			super.onLayout(changed, left, top, right, bottom);
+		}
+
+		@Override
+		protected void onDraw(Canvas canvas) {
+			super.onDraw(canvas);
+			final int y = getHeight() / 2 + textHeight / 2;
+
+			for (DateValue dateValue : dateValueList) {
+				canvas.drawText(dateValue.date, dateValue.beginX, y, dateTextPaint);
+			}
+
+			if (currentX > 0) {
+				for (DateValue dateValue : dateValueList) {
+					if (currentX >= dateValue.beginX + firstColX && currentX < dateValue.endX - firstColX) {
+						canvas.drawText(dateValue.date, currentX + firstColX, y, dateTextPaint);
+						break;
+					}
+				}
+			}
+		}
+
+		public void reDraw(int newX) {
+			this.currentX = newX;
+			invalidate();
+		}
+	}
+
+	static class DateValue {
+		final int beginX;
+		int endX;
+		final String date;
+
+		public DateValue(int beginX, String date) {
+			this.beginX = beginX;
+			this.date = date;
 		}
 	}
 }
