@@ -21,6 +21,7 @@ import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -54,6 +55,8 @@ public class EventHelper implements Serializable {
 		setDuration(newEvent);
 		contentProviderOperationList.add(ContentProviderOperation.newInsert(Events.CONTENT_URI).withValues(newEvent)
 				.build());
+
+		Date start = new Date(newEvent.getAsLong(Events.DTSTART));
 
 		if (!newReminderList.isEmpty()) {
 			saveRemindersWithBackRef(contentProviderOperationList, eventIdIndex, null,
@@ -109,12 +112,13 @@ public class EventHelper implements Serializable {
 		convertDtEndForAllDay(newEvent);
 
 		if (eventEditType == EventEditType.UPDATE_ONLY_THIS_EVENT) {
+			Uri exceptionUri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_EXCEPTION_URI,
+					originalEvent.getAsLong(Instances.EVENT_ID));
+
 			ContentValues exceptionValues = new ContentValues();
 			exceptionValues.put(Events.ORIGINAL_INSTANCE_TIME, originalEvent.getAsLong(Instances.BEGIN));
 			exceptionValues.put(Events.STATUS, Events.STATUS_CANCELED);
 
-			Uri exceptionUri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_EXCEPTION_URI,
-					originalEvent.getAsLong(Instances.EVENT_ID));
 			contentProviderOperationList.add(ContentProviderOperation.newInsert(exceptionUri).withValues(exceptionValues)
 					.build());
 
@@ -494,6 +498,10 @@ public class EventHelper implements Serializable {
 	}
 
 	private void checkTimeDependentFields(ContentValues originalEvent, ContentValues newEvent, EventEditType eventEditType) {
+		if (!newEvent.containsKey(Events.DTSTART)) {
+			return;
+		}
+
 		final long originalBegin = originalEvent.getAsLong(Instances.DTSTART);
 		final boolean originalAllDay = originalEvent.getAsInteger(Events.ALL_DAY) == 1;
 		final long originalEnd = originalAllDay ? originalEvent.getAsLong(Instances.END) : originalEvent.getAsLong(Instances.DTEND);
@@ -514,7 +522,6 @@ public class EventHelper implements Serializable {
 		} else if (eventEditType == EventEditType.UPDATE_ALL_EVENTS) {
 			long oldStartMillis = originalEvent.getAsLong(Events.DTSTART);
 			if (originalBegin != newBegin) {
-				// The user changed the start time of this event
 				long offset = newBegin - originalBegin;
 				oldStartMillis += offset;
 			}
@@ -548,13 +555,13 @@ public class EventHelper implements Serializable {
 
 	public void convertDtEndForAllDay(ContentValues contentValues) {
 		if (!contentValues.containsKey(Events.RRULE) && contentValues.containsKey(Events.DTSTART)) {
-			if (contentValues.containsKey(CalendarContract.Events.ALL_DAY)) {
-				if (contentValues.getAsInteger(CalendarContract.Events.ALL_DAY) == 1) {
+			if (contentValues.containsKey(Events.ALL_DAY)) {
+				if (contentValues.getAsInteger(Events.ALL_DAY) == 1) {
 					Calendar calendar = Calendar.getInstance();
-					calendar.setTimeInMillis(contentValues.getAsLong(CalendarContract.Events.DTEND));
+					calendar.setTimeInMillis(contentValues.getAsLong(Events.DTEND));
 					calendar.add(Calendar.DAY_OF_YEAR, 1);
 
-					contentValues.put(CalendarContract.Events.DTEND, calendar.getTimeInMillis());
+					contentValues.put(Events.DTEND, calendar.getTimeInMillis());
 				}
 			}
 		}
@@ -562,6 +569,10 @@ public class EventHelper implements Serializable {
 
 	public void setDuration(ContentValues newEvent) {
 		//반복 이벤트면 dtEnd를 삭제하고 duration추가
+		if (!newEvent.containsKey(Events.DTSTART)) {
+			return;
+		}
+
 		if (newEvent.get(Events.RRULE) != null) {
 			final long start = newEvent.getAsLong(Events.DTSTART);
 			final long end = newEvent.getAsLong(Events.DTEND);

@@ -88,8 +88,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:scrollbarSize="2dp"
+                        android:scrollbarSize="3dp"
                         android:scrollbarStyle="insideInset"
+                        android:scrollbars="horizontal"
                         tools:itemCount="1"
                         tools:listitem="@layout/building_floor_company_item_view" />
 

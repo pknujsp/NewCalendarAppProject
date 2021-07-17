@@ -373,7 +373,7 @@ public class DayView extends HourEventsView implements CalendarViewInitializer, 
 		protected void onDraw(Canvas canvas) {
 			super.onDraw(canvas);
 
-			itemCell.eventColorPaint = EventUtil.getEventColorPaint(itemCell.instance.getAsInteger(CalendarContract.Instances.EVENT_COLOR));
+			itemCell.eventColorPaint = EventUtil.getEventColorPaint(itemCell.instance);
 			itemCell.eventTextPaint = EventUtil.getEventTextPaint(EVENT_TEXT_HEIGHT);
 
 			canvas.drawRect(0, 0, getWidth(), getHeight(), itemCell.eventColorPaint);

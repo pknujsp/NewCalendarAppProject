@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.provider.CalendarContract;
+import android.provider.CalendarContract.Events;
 import android.text.TextPaint;
 
 import com.zerodsoft.scheduleweather.R;
@@ -23,23 +24,24 @@ public class EventUtil {
 	private EventUtil() {
 	}
 
-	public static int getColor(int color) {
-		if (color == 0) {
+	public static int getColor(Integer color) {
+		if (color == null) {
 			return Color.LTGRAY;
 		} else {
-			int alpha = Color.alpha(color);
-			int red = Color.red(color);
-			int green = Color.green(color);
-			int blue = Color.blue(color);
+			int finalColor = color;
+
+			int alpha = Color.alpha(finalColor);
+			int red = Color.red(finalColor);
+			int green = Color.green(finalColor);
+			int blue = Color.blue(finalColor);
 
 			return Color.argb(alpha, red, green, blue);
 		}
 	}
 
-	public static Paint getEventColorPaint(int color) {
+	public static Paint getEventColorPaint(ContentValues event) {
 		Paint eventColorPaint = new Paint();
-		eventColorPaint.setColor(getColor(color));
-
+		eventColorPaint.setColor(event.size() > 0 ? getColor(event.getAsInteger(Events.EVENT_COLOR)) : Color.RED);
 		return eventColorPaint;
 	}
 

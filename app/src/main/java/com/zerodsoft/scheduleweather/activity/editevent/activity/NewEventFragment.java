@@ -191,8 +191,8 @@ public class NewEventFragment extends EventBaseFragment {
 
 	@Override
 	protected void initDatePicker() {
-		final long finalDtStart = eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTSTART);
-		final long finalDtEnd = eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTEND);
+		final long finalDtStart = eventDataViewModel.getNEW_EVENT().getAsLong(Events.DTSTART);
+		final long finalDtEnd = eventDataViewModel.getNEW_EVENT().getAsLong(Events.DTEND);
 		showDatePicker(finalDtStart, finalDtEnd, null);
 	}
 

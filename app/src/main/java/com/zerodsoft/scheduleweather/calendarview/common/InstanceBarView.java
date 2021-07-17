@@ -29,7 +29,8 @@ public class InstanceBarView extends View {
 		TITLE_PAINT = new TextPaint();
 		PADDING = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2f, context.getResources().getDisplayMetrics());
 
-		BAR_PAINT.setColor(INSTANCE == null ? Color.RED : EventUtil.getColor(INSTANCE.getAsInteger(CalendarContract.Instances.EVENT_COLOR)));
+		BAR_PAINT.setColor(INSTANCE == null ? Color.RED :
+				EventUtil.getColor(INSTANCE.getAsInteger(CalendarContract.Instances.EVENT_COLOR)));
 		TITLE_PAINT.setAntiAlias(true);
 		TITLE_PAINT.setColor(Color.WHITE);
 	}

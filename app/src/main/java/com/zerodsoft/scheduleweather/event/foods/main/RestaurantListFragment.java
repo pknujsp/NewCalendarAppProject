@@ -141,6 +141,8 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		binding.customProgressView.setContentView(binding.recyclerView);
+		binding.customProgressView.onSuccessfulProcessingData();
+
 		kakaoRestaurantsViewModel = new ViewModelProvider(this).get(KakaoRestaurantsViewModel.class);
 
 		binding.recyclerView.setLayoutManager(new LinearLayoutManager(view.getContext(), RecyclerView.VERTICAL, false));
@@ -156,6 +158,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 				if (adapterDataObserver != null) {
 					if (itemCount > 0) {
 						adapterDataObserver.onItemRangeInserted(positionStart, itemCount);
+						adapterDataObserver = null;
 					}
 				}
 			}
@@ -209,7 +212,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 				criteriaLatitude, criteriaLongitude,
 				LocalApiPlaceParameter.DEFAULT_SIZE, LocalApiPlaceParameter.DEFAULT_PAGE,
 				LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
-		placeParameter.setRadius("10000");
+		placeParameter.setRadius("7000");
 
 		kakaoRestaurantsViewModel.init(placeParameter, new PagedList.BoundaryCallback<PlaceDocuments>() {
 			@Override
@@ -217,6 +220,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 				super.onZeroItemsLoaded();
 				if (adapterDataObserver != null) {
 					adapterDataObserver.onItemRangeChanged(0, 0);
+					adapterDataObserver = null;
 				}
 
 				requireActivity().runOnUiThread(new Runnable() {

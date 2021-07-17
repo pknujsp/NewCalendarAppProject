@@ -769,6 +769,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 				}
 
 				modifyRruleIfFreqMonthly(startDate.getTimeInMillis());
+				modifyRruleIfFreqWeekly(startDate.getTimeInMillis());
 				datePicker.dismiss();
 			}
 		});
@@ -805,6 +806,30 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 					// bydaynum은 weekofmonth 값
 					// byday의 문자열 변환 값이 4SU 이면 byday는 EventRecurrence.SU값 하나를 가지고
 					// bydaynum은 4값 하나를 가짐
+				}
+
+				String rrule = eventRecurrence.toString();
+				eventDataViewModel.setRecurrence(rrule);
+				setRecurrenceText(rrule);
+			}
+		}
+	}
+
+	protected final void modifyRruleIfFreqWeekly(long startDate) {
+		if (eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.RRULE)) {
+			EventRecurrence eventRecurrence = new EventRecurrence();
+			eventRecurrence.parse(eventDataViewModel.getNEW_EVENT().getAsString(CalendarContract.Events.RRULE));
+
+			if (eventRecurrence.freq == EventRecurrence.WEEKLY) {
+				Calendar calendar = Calendar.getInstance();
+				calendar.setTimeInMillis(startDate);
+
+				if (eventRecurrence.bydayCount > 0) {
+					int dayOfWeek = EventRecurrence.calendarDay2Day(calendar.get(Calendar.DAY_OF_WEEK));
+
+					eventRecurrence.byday = new int[]{dayOfWeek};
+					eventRecurrence.bydayNum = new int[]{0};
+					eventRecurrence.bydayCount = 1;
 				}
 
 				String rrule = eventRecurrence.toString();

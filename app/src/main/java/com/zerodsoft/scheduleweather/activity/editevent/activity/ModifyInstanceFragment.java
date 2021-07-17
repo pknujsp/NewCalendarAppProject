@@ -608,6 +608,10 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		setNewEventValues(Events.IS_ORGANIZER, newEventValues, modifiedEvent);
 		setNewEventValues(Events.RRULE, newEventValues, modifiedEvent);
 
+		if (!eventDataViewModel.isModified(Events.RRULE)) {
+			newEventValues.put(Events.RRULE, (String) null);
+		}
+
 		if (eventDataViewModel.isModified(Events.DTSTART) || eventDataViewModel.isModified(Events.DTEND)) {
 			newEventValues.put(Events.DTSTART, modifiedEvent.getAsLong(CalendarContract.Events.DTSTART));
 			newEventValues.put(Events.DTEND, modifiedEvent.getAsLong(CalendarContract.Events.DTEND));

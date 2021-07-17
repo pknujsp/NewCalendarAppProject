@@ -518,7 +518,7 @@ public class WeekView extends HourEventsView implements CalendarViewInitializer,
 		protected void onDraw(Canvas canvas) {
 			super.onDraw(canvas);
 
-			itemCell.eventColorPaint = EventUtil.getEventColorPaint(itemCell.instance.getAsInteger(CalendarContract.Instances.EVENT_COLOR));
+			itemCell.eventColorPaint = EventUtil.getEventColorPaint(itemCell.instance);
 			itemCell.eventTextPaint = EventUtil.getEventTextPaint(EVENT_TEXT_HEIGHT);
 
 			canvas.drawRect(EVENT_RECT_MARGIN, 0, getWidth() - EVENT_RECT_MARGIN, getHeight(), itemCell.eventColorPaint);

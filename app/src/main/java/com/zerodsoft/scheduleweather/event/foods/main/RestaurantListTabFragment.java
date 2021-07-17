@@ -152,15 +152,12 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 				public void onItemRangeInserted(int positionStart, int itemCount) {
 					if (itemCount > 0) {
 						callback.onResultSuccessful(fragment.adapter.getCurrentList().snapshot());
-						fragment.adapterDataObserver = null;
 					}
 				}
 
 				@Override
 				public void onItemRangeChanged(int positionStart, int itemCount) {
-					super.onItemRangeChanged(positionStart, itemCount);
 					callback.onResultNoData();
-					fragment.adapterDataObserver = null;
 				}
 			});
 		} else {

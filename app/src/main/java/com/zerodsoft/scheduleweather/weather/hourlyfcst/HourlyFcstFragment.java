@@ -147,6 +147,7 @@ public class HourlyFcstFragment extends Fragment {
 	}
 
 	public void clearViews() {
+		binding.scrollView.scrollTo(0, 0);
 		binding.vilageFcstHeaderCol.removeAllViews();
 		binding.vilageFcstView.removeAllViews();
 	}
@@ -695,16 +696,12 @@ public class HourlyFcstFragment extends Fragment {
 			final int y = getHeight() / 2 + textHeight / 2;
 
 			for (DateValue dateValue : dateValueList) {
-				canvas.drawText(dateValue.date, dateValue.beginX, y, dateTextPaint);
-			}
-
-			if (currentX > 0) {
-				for (DateValue dateValue : dateValueList) {
-					if (currentX >= dateValue.beginX + firstColX && currentX < dateValue.endX - firstColX) {
-						canvas.drawText(dateValue.date, currentX + firstColX, y, dateTextPaint);
-						break;
-					}
+				if (currentX >= dateValue.beginX - firstColX && currentX < dateValue.endX - firstColX) {
+					dateValue.lastX = currentX + firstColX;
+				} else if (currentX < dateValue.beginX) {
+					dateValue.lastX = dateValue.beginX;
 				}
+				canvas.drawText(dateValue.date, dateValue.lastX, y, dateTextPaint);
 			}
 		}
 
@@ -716,12 +713,14 @@ public class HourlyFcstFragment extends Fragment {
 
 	static class DateValue {
 		final int beginX;
-		int endX;
 		final String date;
+		int endX;
+		int lastX;
 
 		public DateValue(int beginX, String date) {
 			this.beginX = beginX;
 			this.date = date;
+			this.lastX = beginX;
 		}
 	}
 }

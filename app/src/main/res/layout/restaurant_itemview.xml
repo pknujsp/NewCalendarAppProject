@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="95dp"
+    android:layout_height="wrap_content"
     android:background="?attr/selectableItemBackground"
     android:clickable="true"
     android:orientation="horizontal">
@@ -12,7 +12,8 @@
         android:layout_height="match_parent"
         android:padding="16dp"
         android:scaleType="fitXY"
-        android:src="@drawable/not_image" />
+        android:src="@drawable/not_image"
+        android:visibility="gone" />
 
 
     <LinearLayout
@@ -26,7 +27,6 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
             android:orientation="horizontal">
 
             <TextView
@@ -54,8 +54,9 @@
             android:id="@+id/restaurant_review_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
-            android:orientation="horizontal">
+            android:layout_marginTop="4dp"
+            android:orientation="horizontal"
+            android:visibility="gone">
 
             <ImageView
                 android:layout_width="16dp"
@@ -80,10 +81,12 @@
             android:id="@+id/restaurant_menuinfo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
             android:ellipsize="end"
             android:singleLine="true"
             android:text="@string/not_menuinfo"
-            android:textSize="14sp" />
+            android:textSize="14sp"
+            android:visibility="gone" />
 
     </LinearLayout>
 

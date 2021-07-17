@@ -2,6 +2,7 @@ package com.zerodsoft.scheduleweather.calendarview.instancelistdaydialog.adapter
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.graphics.Color;
 import android.provider.CalendarContract;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -143,7 +144,8 @@ public class EventsInfoRecyclerViewAdapter extends RecyclerView.Adapter<EventsIn
 			layoutParams.rightMargin = margin[1];
 
 			rootLayout.setLayoutParams(layoutParams);
-			rootLayout.setBackgroundColor(EventUtil.getColor(instances.get(position).getAsInteger(CalendarContract.Instances.EVENT_COLOR)));
+			rootLayout.setBackgroundColor(instances.get(position).containsKey(CalendarContract.Events.EVENT_COLOR) ?
+					EventUtil.getColor(instances.get(position).getAsInteger(CalendarContract.Instances.EVENT_COLOR)) : Color.GRAY);
 			if (instances.get(position).getAsString(CalendarContract.Instances.TITLE) != null) {
 				if (instances.get(position).getAsString(CalendarContract.Instances.TITLE).isEmpty()) {
 					instanceTitleTextView.setText(context.getString(R.string.empty_title));

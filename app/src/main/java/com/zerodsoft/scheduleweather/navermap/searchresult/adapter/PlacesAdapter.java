@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.navermap.callback.PlaceItemCallback;
+import com.zerodsoft.scheduleweather.navermap.util.LocationUtil;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 
 public class PlacesAdapter extends PagedListAdapter<PlaceDocuments, PlacesAdapter.ItemViewHolder> {
@@ -48,7 +49,8 @@ public class PlacesAdapter extends PagedListAdapter<PlaceDocuments, PlacesAdapte
 			placeIndex.setText(String.valueOf(getBindingAdapterPosition() + 1));
 			placeCategory.setText(item.getCategoryName());
 			placeAddressName.setText(item.getAddressName());
-			placeDistance.setText(item.getDistance() + "M");
+			placeDistance.setText(LocationUtil.convertMeterToKm(item.getDistance()));
+
 
 			itemView.getRootView().setOnClickListener(new View.OnClickListener() {
 				@Override

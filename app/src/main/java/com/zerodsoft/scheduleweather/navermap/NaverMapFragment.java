@@ -73,6 +73,7 @@ import com.naver.maps.map.overlay.LocationOverlay;
 import com.naver.maps.map.overlay.Marker;
 import com.naver.maps.map.overlay.Overlay;
 import com.naver.maps.map.overlay.OverlayImage;
+import com.naver.maps.map.util.CameraUtils;
 import com.naver.maps.map.util.FusedLocationSource;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
@@ -540,7 +541,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			loadingDialog.show();
 
 			NaverMapOptions naverMapOptions = new NaverMapOptions();
-			naverMapOptions.scaleBarEnabled(true).locationButtonEnabled(false).compassEnabled(false).zoomControlEnabled(false)
+			naverMapOptions.scaleBarEnabled(true).locationButtonEnabled(false).compassEnabled(false).zoomControlEnabled(false).rotateGesturesEnabled(false)
 					.mapType(NaverMap.MapType.Basic).camera(new CameraPosition(new LatLng(37.6076585, 127.0965492), 11));
 
 			mapFragment = MapFragment.newInstance(naverMapOptions);
@@ -1106,17 +1107,21 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		for (MarkerType markerType : markerTypes) {
 			List<Marker> markerList = markersMap.get(markerType);
 
-			if (!markerList.isEmpty()) {
-				for (Marker marker : markerList) {
-					latLngList.add(marker.getPosition());
-				}
+			for (Marker marker : markerList) {
+				latLngList.add(marker.getPosition());
 			}
 		}
 
 		if (!latLngList.isEmpty()) {
-			LatLngBounds.Builder builder = new LatLngBounds.Builder();
-			builder.include(latLngList);
-			CameraUpdate cameraUpdate = CameraUpdate.fitBounds(builder.build(), 20);
+			LatLngBounds latLngBounds = LatLngBounds.from(latLngList);
+
+			int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, getResources().getDisplayMetrics());
+			double fittableZoom = CameraUtils.getFittableZoom(naverMap, latLngBounds, padding);
+			if (fittableZoom >= 16) {
+				fittableZoom = 16;
+			}
+
+			CameraUpdate cameraUpdate = CameraUpdate.scrollAndZoomTo(latLngBounds.getCenter(), fittableZoom);
 			naverMap.moveCamera(cameraUpdate);
 		}
 	}

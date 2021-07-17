@@ -14,16 +14,16 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 
 public class InstanceView extends View {
-	private ContentValues instance;
-
-	private Paint instanceViewPaint;
-	private TextPaint instanceTextPaint;
-
 	//spacing, margin
 	public final int TEXT_LEFT_MARGIN;
 	public final int TEXT_TOP_BOTTOM_MARGIN;
 	//textsize
 	public final int TEXT_SIZE;
+
+	private ContentValues instance;
+	private Paint instanceViewPaint;
+	private TextPaint instanceTextPaint;
+
 
 	private Integer TEXT_HEIGHT;
 
@@ -40,8 +40,7 @@ public class InstanceView extends View {
 	public void init(ContentValues instance) {
 		this.instance = instance;
 
-		instanceViewPaint = EventUtil.getEventColorPaint(instance.size() == 0 ?
-				Color.RED : instance.getAsInteger(CalendarContract.Instances.EVENT_COLOR));
+		instanceViewPaint = EventUtil.getEventColorPaint(instance);
 		instanceTextPaint = EventUtil.getEventTextPaint(TEXT_SIZE);
 
 		Rect rect = new Rect();
