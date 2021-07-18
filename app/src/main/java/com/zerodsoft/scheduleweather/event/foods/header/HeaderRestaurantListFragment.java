@@ -32,8 +32,10 @@ import com.zerodsoft.scheduleweather.event.foods.main.RestaurantListTabFragment;
 import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationCloud;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
+import com.zerodsoft.scheduleweather.event.main.NewInstanceMainFragment;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
+import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.MapSharedViewModel;
 import com.zerodsoft.scheduleweather.room.dto.CustomFoodMenuDTO;
 
@@ -60,6 +62,10 @@ public class HeaderRestaurantListFragment extends Fragment {
 
 	public void setViewChangeBtnClickedListener(View.OnClickListener viewChangeBtnClickedListener) {
 		this.viewChangeBtnClickedListener = viewChangeBtnClickedListener;
+	}
+
+	public int getViewPagerVisibility() {
+		return viewPagerVisibility;
 	}
 
 	@Override
@@ -103,7 +109,8 @@ public class HeaderRestaurantListFragment extends Fragment {
 
 		RestaurantListTabFragment listTabFragment =
 				(RestaurantListTabFragment) getParentFragmentManager().findFragmentByTag(getString(R.string.tag_restaurant_list_tab_fragment));
-		iSetFoodMenuPoiItems.createRestaurantPoiItems(listTabFragment, listTabFragment);
+		iSetFoodMenuPoiItems.createRestaurantPoiItems((NewInstanceMainFragment.RestaurantsGetter) listTabFragment
+				, (OnExtraListDataListener<Integer>) listTabFragment);
 		iSetFoodMenuPoiItems.createCriteriaLocationMarker(CriteriaLocationCloud.getName(), CriteriaLocationCloud.getLatitude(),
 				CriteriaLocationCloud.getLongitude());
 
@@ -111,7 +118,6 @@ public class HeaderRestaurantListFragment extends Fragment {
 			@Override
 			public void onTabSelected(TabLayout.Tab tab) {
 				if (viewPagerVisibility == View.GONE) {
-					iSetFoodMenuPoiItems.onChangeFoodMenu();
 				}
 			}
 
@@ -129,7 +135,8 @@ public class HeaderRestaurantListFragment extends Fragment {
 		binding.viewChangeBtn.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				viewPagerVisibility = (viewPagerVisibility == View.VISIBLE) ? View.GONE : View.VISIBLE;
+				bottomSheetController.setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
+				viewPagerVisibility = viewPagerVisibility == View.VISIBLE ? View.GONE : View.VISIBLE;
 				onClickedChangeBtn();
 			}
 		});
@@ -139,7 +146,6 @@ public class HeaderRestaurantListFragment extends Fragment {
 			public void onResultSuccessful(List<CustomFoodMenuDTO> resultList) {
 				final String[] DEFAULT_FOOD_MENU_NAME_ARR = getResources().getStringArray(R.array.food_menu_list);
 				List<FoodCategoryItem> itemsList = new ArrayList<>();
-
 				TypedArray imgs = getResources().obtainTypedArray(R.array.food_menu_image_list);
 
 				for (int index = 0; index < DEFAULT_FOOD_MENU_NAME_ARR.length; index++) {
@@ -206,8 +212,6 @@ public class HeaderRestaurantListFragment extends Fragment {
 		if (viewPagerVisibility == View.GONE) {
 			setTextOfChangeBtn(viewPagerVisibility);
 			iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.CONTENT, viewPagerVisibility);
-
-			iSetFoodMenuPoiItems.onChangeFoodMenu();
 
 			Fragment contentFragment = fragmentManager.findFragmentByTag(getString(R.string.tag_restaurant_list_tab_fragment));
 			fragmentManager.beginTransaction().hide(contentFragment)

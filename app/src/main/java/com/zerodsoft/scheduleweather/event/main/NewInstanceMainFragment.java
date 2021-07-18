@@ -11,20 +11,16 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentContainerView;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.provider.CalendarContract;
 import android.util.ArrayMap;
-import android.util.AttributeSet;
 import android.util.TypedValue;
-import android.util.Xml;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -60,6 +56,7 @@ import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.event.fragments.EventFragment;
 import com.zerodsoft.scheduleweather.event.foods.RestaurantFragment;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.ISetFoodMenuPoiItems;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.RestaurantListListener;
 import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceItemsGetter;
 import com.zerodsoft.scheduleweather.event.places.PlacesOfSelectedCategoriesFragment;
@@ -73,7 +70,6 @@ import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 
 import org.jetbrains.annotations.NotNull;
-import org.xmlpull.v1.XmlPullParser;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -82,7 +78,7 @@ import java.util.Set;
 
 public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoodMenuPoiItems,
 		PlacesOfSelectedCategoriesFragment.PlaceCategoryChipsViewController
-		, IRefreshView {
+		, IRefreshView, RestaurantListListener {
 	private int calendarId;
 	private long eventId;
 	private long instanceId;
@@ -868,6 +864,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	public void onChangeFoodMenu() {
 		setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
 
+		/*
 		restaurantItemGetter.getRestaurants(new DbQueryCallback<List<PlaceDocuments>>() {
 			@Override
 			public void onResultSuccessful(List<PlaceDocuments> placeDocuments) {
@@ -897,6 +894,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 				});
 			}
 		});
+
+		 */
 	}
 
 
@@ -960,6 +959,22 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 			selectedLocationInEventMarker.setMap(null);
 			selectedLocationInEventMarker = null;
 		}
+	}
+
+	@Override
+	public void onLoadedInitialRestaurantList(String query, List<PlaceDocuments> restaurantList) {
+		if (restaurantList.size() == 0) {
+			Toast.makeText(getActivity(), getString(R.string.not_founded_search_result), Toast.LENGTH_SHORT).show();
+			removeMarkers(MarkerType.RESTAURANT);
+		} else {
+			createMarkers(restaurantList, MarkerType.RESTAURANT);
+			showMarkers(MarkerType.RESTAURANT);
+		}
+	}
+
+	@Override
+	public void onLoadedExtraRestaurantList(String query, List<PlaceDocuments> restaurantList) {
+
 	}
 
 

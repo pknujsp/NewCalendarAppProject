@@ -24,6 +24,7 @@ import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantListBinding;
 import com.zerodsoft.scheduleweather.event.foods.adapter.RestaurantListAdapter;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.RestaurantListListener;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 import com.zerodsoft.scheduleweather.kakaoplace.viewmodel.KakaoRestaurantsViewModel;
 import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
@@ -33,6 +34,7 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.Pl
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class RestaurantListFragment extends Fragment implements OnClickedListItem<PlaceDocuments> {
@@ -44,6 +46,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 	protected FavoriteLocationViewModel favoriteRestaurantViewModel;
 	protected RestaurantSharedViewModel restaurantSharedViewModel;
 	protected IOnSetView iOnSetView;
+	protected RestaurantListListener restaurantListListenerInTab;
 
 	protected String criteriaLatitude;
 	protected String criteriaLongitude;
@@ -61,6 +64,10 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 		query = bundle.getString("query");
 		criteriaLatitude = bundle.getString("criteriaLatitude");
 		criteriaLongitude = bundle.getString("criteriaLongitude");
+
+		if (getParentFragment() instanceof RestaurantListTabFragment) {
+			restaurantListListenerInTab = (RestaurantListListener) getParentFragment();
+		}
 
 		favoriteRestaurantViewModel =
 				new ViewModelProvider(getParentFragment().getParentFragment().getParentFragment().getParentFragment()).get(FavoriteLocationViewModel.class);
@@ -155,11 +162,8 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 				super.onItemRangeInserted(positionStart, itemCount);
 				binding.customProgressView.onSuccessfulProcessingData();
 
-				if (adapterDataObserver != null) {
-					if (itemCount > 0) {
-						adapterDataObserver.onItemRangeInserted(positionStart, itemCount);
-						adapterDataObserver = null;
-					}
+				if (restaurantListListenerInTab != null && itemCount > 0) {
+					restaurantListListenerInTab.onLoadedInitialRestaurantList(query, null);
 				}
 			}
 
@@ -218,17 +222,10 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 			@Override
 			public void onZeroItemsLoaded() {
 				super.onZeroItemsLoaded();
-				if (adapterDataObserver != null) {
-					adapterDataObserver.onItemRangeChanged(0, 0);
-					adapterDataObserver = null;
+				if (restaurantListListenerInTab != null) {
+					restaurantListListenerInTab.onLoadedInitialRestaurantList(query, null);
 				}
-
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						binding.customProgressView.onFailedProcessingData(getString(R.string.not_founded_search_result));
-					}
-				});
+				binding.customProgressView.onFailedProcessingData(getString(R.string.not_founded_search_result));
 			}
 		});
 		kakaoRestaurantsViewModel.getPagedListMutableLiveData().observe(getViewLifecycleOwner(), new Observer<PagedList<PlaceDocuments>>() {
@@ -263,5 +260,6 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 	public void deleteListItem(PlaceDocuments e, int position) {
 
 	}
+
 
 }

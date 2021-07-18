@@ -22,11 +22,4 @@
         android:icon="@drawable/search_icon"
         android:title="search"
         app:showAsAction="always" />
-
-    <item
-        android:id="@+id/settings"
-        android:enabled="true"
-        android:icon="@drawable/settings_black"
-        android:title="settings"
-        app:showAsAction="always" />
 </menu>

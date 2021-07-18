@@ -27,14 +27,12 @@ import com.zerodsoft.scheduleweather.event.foods.interfaces.ISetFoodMenuPoiItems
 import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
 import com.zerodsoft.scheduleweather.event.foods.main.RestaurantMainHostFragment;
 import com.zerodsoft.scheduleweather.event.foods.search.RestaurantSearchHostFragment;
-import com.zerodsoft.scheduleweather.event.foods.settings.RestaurantSettingsHostFragment;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
 
 import org.jetbrains.annotations.NotNull;
-
 
 public class RestaurantFragment extends Fragment implements IOnSetView {
 	private final int CALENDAR_ID;
@@ -126,10 +124,6 @@ public class RestaurantFragment extends Fragment implements IOnSetView {
 					case R.id.search:
 						destinationFragment = new RestaurantSearchHostFragment();
 						break;
-					case R.id.settings:
-						destinationFragment = new RestaurantSettingsHostFragment();
-						fragmentTransaction = null;
-						return false;
 				}
 
 				fragmentTransaction.add(binding.fragmentContainer.getId(), destinationFragment, tag);

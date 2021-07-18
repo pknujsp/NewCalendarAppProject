@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager2.widget.ViewPager2;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,6 +26,7 @@ import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLoc
 import com.zerodsoft.scheduleweather.event.foods.header.HeaderRestaurantListFragment;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.ISetFoodMenuPoiItems;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.RestaurantListListener;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 import com.zerodsoft.scheduleweather.event.main.NewInstanceMainFragment;
@@ -34,17 +36,20 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.Pl
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class RestaurantListTabFragment extends Fragment implements NewInstanceMainFragment.RestaurantsGetter, OnExtraListDataListener<Integer>,
 		OnHiddenFragmentListener
-		, OnClickedListItem<FoodCategoryItem> {
+		, OnClickedListItem<FoodCategoryItem>, RestaurantListListener {
 	private FragmentFoodCategoryTabBinding binding;
 	private ISetFoodMenuPoiItems ISetFoodMenuPoiItems;
 
 	private CustomFoodMenuViewModel customFoodCategoryViewModel;
 	private FavoriteLocationViewModel favoriteRestaurantViewModel;
 	private RestaurantSharedViewModel restaurantSharedViewModel;
+
+	private RestaurantListListener restaurantListListenerInMap;
 
 	private FoodCategoryFragmentListAdapter adapter;
 	private int firstSelectedFoodMenuIndex;
@@ -75,10 +80,10 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
 		iOnSetView = (IOnSetView) getParentFragment();
 
 		getParentFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, true);
+		restaurantListListenerInMap = (RestaurantListListener) getParentFragment().getParentFragment().getParentFragment();
 
 		Bundle bundle = getArguments();
 		firstSelectedFoodMenuIndex = bundle.getInt("firstSelectedFoodMenuIndex");
@@ -114,6 +119,17 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 		adapter = new FoodCategoryFragmentListAdapter(RestaurantListTabFragment.this);
 		binding.viewpager.setAdapter(adapter);
 
+		binding.viewpager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+			@Override
+			public void onPageSelected(int position) {
+				super.onPageSelected(position);
+				if (adapter.getFragments().get(position).adapter != null && headerRestaurantListFragment.getViewPagerVisibility() == View.GONE) {
+					restaurantListListenerInMap.onLoadedInitialRestaurantList(null,
+							adapter.getFragments().get(position).adapter.getCurrentList().snapshot());
+				}
+			}
+		});
+
 		headerRestaurantListFragment = new HeaderRestaurantListFragment();
 		headerRestaurantListFragment.setViewPager2(binding.viewpager);
 		headerRestaurantListFragment.setFoodMenuListDataProcessingCallback(new DataProcessingCallback<List<FoodCategoryItem>>() {
@@ -143,7 +159,7 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 
 	@Override
 	public void getRestaurants(DbQueryCallback<List<PlaceDocuments>> callback) {
-		final int index = headerRestaurantListFragment.getSelectedTabPosition();
+		final int index = binding.viewpager.getCurrentItem();
 		RestaurantListFragment fragment = adapter.getFragments().get(index);
 
 		if (fragment.adapter == null) {
@@ -161,9 +177,8 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 				}
 			});
 		} else {
-			callback.processResult(fragment.adapter.getCurrentList().snapshot());
+			callback.onResultSuccessful(fragment.adapter.getCurrentList().snapshot());
 		}
-		binding.viewpager.setCurrentItem(index, false);
 	}
 
 	@Override
@@ -178,7 +193,7 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 				fragment.adapter.unregisterAdapterDataObserver(this);
 			}
 		});
-		fragment.binding.recyclerView.scrollBy(0, 10000);
+		fragment.binding.recyclerView.scrollBy(0, 20000);
 	}
 
 	@Override
@@ -213,5 +228,34 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 	@Override
 	public void deleteListItem(FoodCategoryItem e, int position) {
 
+	}
+
+	@Override
+	public void onLoadedInitialRestaurantList(String query, @Nullable List<PlaceDocuments> restaurantList) {
+		if (headerRestaurantListFragment.getViewPagerVisibility() == View.GONE) {
+			int index = headerRestaurantListFragment.getSelectedTabPosition();
+			if (adapter.getFragments().get(index).query != null) {
+				if (adapter.getFragments().get(index).query.equals(query)) {
+					if (adapter.getFragments().get(index).adapter.getCurrentList().size() == 0) {
+						restaurantListListenerInMap.onLoadedInitialRestaurantList(query, new ArrayList<>());
+					} else {
+						restaurantListListenerInMap.onLoadedInitialRestaurantList(query, adapter.getFragments().get(index)
+								.adapter.getCurrentList().snapshot());
+					}
+
+				}
+			}
+		}
+
+	}
+
+	@Override
+	public void onLoadedExtraRestaurantList(String query, List<PlaceDocuments> restaurantList) {
+		int index = binding.viewpager.getCurrentItem();
+		if (headerRestaurantListFragment.getViewPagerVisibility() == View.GONE) {
+			if (adapter.getFragments().get(index).query.equals(query)) {
+				restaurantListListenerInMap.onLoadedExtraRestaurantList(query, restaurantList);
+			}
+		}
 	}
 }
