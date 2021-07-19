@@ -28,6 +28,7 @@ import com.zerodsoft.scheduleweather.databinding.FragmentHeaderRestaurantListBin
 import com.zerodsoft.scheduleweather.event.foods.dto.FoodCategoryItem;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.ISetFoodMenuPoiItems;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.RestaurantListListener;
 import com.zerodsoft.scheduleweather.event.foods.main.RestaurantListTabFragment;
 import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationCloud;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
@@ -55,6 +56,7 @@ public class HeaderRestaurantListFragment extends Fragment {
 	private ISetFoodMenuPoiItems iSetFoodMenuPoiItems;
 	private BottomSheetController bottomSheetController;
 	private MapSharedViewModel mapSharedViewModel;
+	private OnSelectedRestaurantTabListener onSelectedRestaurantTabListener;
 
 	private int viewPagerVisibility = View.VISIBLE;
 
@@ -93,6 +95,11 @@ public class HeaderRestaurantListFragment extends Fragment {
 
 	public int getSelectedTabPosition() {
 		return binding.tabLayout.getSelectedTabPosition();
+	}
+
+
+	public void setOnSelectedRestaurantTabListener(OnSelectedRestaurantTabListener onSelectedRestaurantTabListener) {
+		this.onSelectedRestaurantTabListener = onSelectedRestaurantTabListener;
 	}
 
 	public void setViewPager2(ViewPager2 viewPager2) {
@@ -210,14 +217,18 @@ public class HeaderRestaurantListFragment extends Fragment {
 		FragmentManager fragmentManager = getParentFragmentManager();
 
 		if (viewPagerVisibility == View.GONE) {
+			onSelectedRestaurantTabListener.onSelectedRestaurantTab();
+
 			setTextOfChangeBtn(viewPagerVisibility);
 			iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.CONTENT, viewPagerVisibility);
 
 			Fragment contentFragment = fragmentManager.findFragmentByTag(getString(R.string.tag_restaurant_list_tab_fragment));
 			fragmentManager.beginTransaction().hide(contentFragment)
 					.addToBackStack(getString(R.string.tag_showing_restaurant_list_on_map)).commit();
+
 		} else {
 			fragmentManager.popBackStackImmediate();
+			iSetFoodMenuPoiItems.removeRestaurantPoiItems();
 		}
 	}
 
@@ -269,4 +280,7 @@ public class HeaderRestaurantListFragment extends Fragment {
 		}
 	}
 
+	public interface OnSelectedRestaurantTabListener {
+		void onSelectedRestaurantTab();
+	}
 }

@@ -41,7 +41,7 @@ import java.util.List;
 
 public class RestaurantListTabFragment extends Fragment implements NewInstanceMainFragment.RestaurantsGetter, OnExtraListDataListener<Integer>,
 		OnHiddenFragmentListener
-		, OnClickedListItem<FoodCategoryItem>, RestaurantListListener {
+		, OnClickedListItem<FoodCategoryItem>, RestaurantListListener, HeaderRestaurantListFragment.OnSelectedRestaurantTabListener {
 	private FragmentFoodCategoryTabBinding binding;
 	private ISetFoodMenuPoiItems ISetFoodMenuPoiItems;
 
@@ -131,6 +131,7 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 		});
 
 		headerRestaurantListFragment = new HeaderRestaurantListFragment();
+		headerRestaurantListFragment.setOnSelectedRestaurantTabListener(this);
 		headerRestaurantListFragment.setViewPager2(binding.viewpager);
 		headerRestaurantListFragment.setFoodMenuListDataProcessingCallback(new DataProcessingCallback<List<FoodCategoryItem>>() {
 			@Override
@@ -215,6 +216,7 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 		if (hidden) {
 
 		} else {
+
 			headerRestaurantListFragment.popedBackStack();
 		}
 	}
@@ -257,5 +259,11 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 				restaurantListListenerInMap.onLoadedExtraRestaurantList(query, restaurantList);
 			}
 		}
+	}
+
+	@Override
+	public void onSelectedRestaurantTab() {
+		restaurantListListenerInMap.onLoadedInitialRestaurantList(null,
+				adapter.getFragments().get(headerRestaurantListFragment.getSelectedTabPosition()).adapter.getCurrentList().snapshot());
 	}
 }

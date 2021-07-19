@@ -322,6 +322,19 @@ public class PlaceCategorySettingsFragment extends Fragment implements PlaceCate
 							public void onResultSuccessful(Boolean deleted) {
 								for (int index = 0; index < customCategories.size(); index++) {
 									if (customCategories.get(index).getCode().equals(code)) {
+										if (categoryExpandableListAdapter.getCheckedStatesMap().get(CUSTOM_CATEGORY_INDEX).get(index)) {
+											placeCategoryViewModel.deleteSelected(code, new DbQueryCallback<Boolean>() {
+												@Override
+												public void onResultSuccessful(Boolean result) {
+
+												}
+
+												@Override
+												public void onResultNoData() {
+
+												}
+											});
+										}
 										categoryExpandableListAdapter.getCheckedStatesMap().get(CUSTOM_CATEGORY_INDEX).remove(index);
 										customCategories.remove(index);
 										break;
@@ -334,6 +347,8 @@ public class PlaceCategorySettingsFragment extends Fragment implements PlaceCate
 										categoryExpandableListAdapter.notifyDataSetChanged();
 									}
 								});
+
+
 							}
 
 							@Override

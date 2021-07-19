@@ -26,6 +26,7 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
 
 	public FavoriteLocationItemViewPagerAdapter(Context context) {
 		super(context, MarkerType.FAVORITE);
+		isVisibleSelectBtn = View.VISIBLE;
 	}
 
 	public void setFavoriteLocationList(List<FavoriteLocationDTO> favoriteLocationList) {
@@ -45,6 +46,7 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
 		for (FavoriteLocationDTO favoriteLocationDTO : keySet) {
 			if (removedFavoriteLocationDTO.equals(favoriteLocationDTO)) {
 				favoriteLocationsMap.removeAt(index);
+				localDocumentsList.remove(index);
 				break;
 			}
 			index++;
@@ -53,6 +55,8 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
 
 	public void setFavoriteLocationsMap(ArrayMap<FavoriteLocationDTO, KakaoLocalDocument> favoriteLocationsMap) {
 		this.favoriteLocationsMap.putAll(favoriteLocationsMap);
+		localDocumentsList.clear();
+		localDocumentsList.addAll(favoriteLocationsMap.values());
 	}
 
 	public ArrayMap<FavoriteLocationDTO, KakaoLocalDocument> getFavoriteLocationsMap() {
