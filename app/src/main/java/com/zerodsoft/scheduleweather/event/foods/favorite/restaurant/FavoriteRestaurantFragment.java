@@ -22,7 +22,7 @@ import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 
 import org.jetbrains.annotations.NotNull;
 
-public class FavoriteRestaurantFragment extends FavoriteRestaurantBaseFragment implements OnClickedListItem<PlaceDocuments> {
+public class FavoriteRestaurantFragment extends FavoriteRestaurantBaseFragment implements OnClickedListItem<FavoriteLocationDTO> {
 	private IOnSetView iOnSetView;
 
 	private final FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks =
@@ -85,11 +85,11 @@ public class FavoriteRestaurantFragment extends FavoriteRestaurantBaseFragment i
 
 
 	@Override
-	public void onClickedListItem(PlaceDocuments e, int position) {
+	public void onClickedListItem(FavoriteLocationDTO e, int position) {
 		if (e != null) {
 			PlaceInfoWebFragment placeInfoWebFragment = new PlaceInfoWebFragment();
 			Bundle bundle = new Bundle();
-			bundle.putString("placeId", ((PlaceDocuments) e).getId());
+			bundle.putString("placeId", e.getPlaceId());
 			placeInfoWebFragment.setArguments(bundle);
 
 			String tag = getString(R.string.tag_place_info_web_fragment);
@@ -104,7 +104,7 @@ public class FavoriteRestaurantFragment extends FavoriteRestaurantBaseFragment i
 	}
 
 	@Override
-	public void deleteListItem(PlaceDocuments e, int position) {
+	public void deleteListItem(FavoriteLocationDTO e, int position) {
 	}
 
 

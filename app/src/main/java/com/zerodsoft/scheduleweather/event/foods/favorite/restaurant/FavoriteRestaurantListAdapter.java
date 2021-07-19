@@ -25,16 +25,16 @@ import java.util.Set;
 
 public class FavoriteRestaurantListAdapter extends BaseExpandableListAdapter {
 	private Context context;
-	private ArrayMap<String, List<PlaceDocuments>> restaurantListMap = new ArrayMap<>();
+	private ArrayMap<String, List<FavoriteLocationDTO>> restaurantListMap = new ArrayMap<>();
 	private LayoutInflater layoutInflater;
 	private FavoriteLocationQuery favoriteLocationQuery;
 	private Set<String> placeIdSet = new HashSet<>();
 
 	private GroupViewHolder groupViewHolder;
 	private ChildViewHolder childViewHolder;
-	private OnClickedListItem<PlaceDocuments> onClickedListItem;
+	private OnClickedListItem<FavoriteLocationDTO> onClickedListItem;
 
-	public FavoriteRestaurantListAdapter(Context context, OnClickedListItem<PlaceDocuments> onClickedListItem
+	public FavoriteRestaurantListAdapter(Context context, OnClickedListItem<FavoriteLocationDTO> onClickedListItem
 			, FavoriteLocationQuery favoriteLocationQuery) {
 		this.context = context;
 		this.onClickedListItem = onClickedListItem;
@@ -47,9 +47,9 @@ public class FavoriteRestaurantListAdapter extends BaseExpandableListAdapter {
 		placeIdSet.clear();
 		Set<String> keySet = restaurantListMap.keySet();
 		for (String key : keySet) {
-			List<PlaceDocuments> placeDocumentsList = restaurantListMap.get(key);
-			for (PlaceDocuments placeDocument : placeDocumentsList) {
-				placeIdSet.add(placeDocument.getId());
+			List<FavoriteLocationDTO> favoriteLocationDTOList = restaurantListMap.get(key);
+			for (FavoriteLocationDTO favoriteLocationDTO : favoriteLocationDTOList) {
+				placeIdSet.add(favoriteLocationDTO.getPlaceId());
 			}
 		}
 	}
@@ -58,7 +58,7 @@ public class FavoriteRestaurantListAdapter extends BaseExpandableListAdapter {
 		return placeIdSet;
 	}
 
-	public ArrayMap<String, List<PlaceDocuments>> getRestaurantListMap() {
+	public ArrayMap<String, List<FavoriteLocationDTO>> getRestaurantListMap() {
 		return restaurantListMap;
 	}
 
@@ -152,9 +152,9 @@ public class FavoriteRestaurantListAdapter extends BaseExpandableListAdapter {
 		childViewHolder.favoriteButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				PlaceDocuments placeDocument = restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition);
+				FavoriteLocationDTO favoriteLocationDTO = restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition);
 
-				favoriteLocationQuery.contains(placeDocument.getId(), placeDocument.getY(), placeDocument.getX()
+				favoriteLocationQuery.contains(favoriteLocationDTO.getPlaceId(), favoriteLocationDTO.getLatitude(), favoriteLocationDTO.getLongitude()
 						, new DbQueryCallback<FavoriteLocationDTO>() {
 							@Override
 							public void onResultSuccessful(FavoriteLocationDTO result) {
@@ -163,8 +163,6 @@ public class FavoriteRestaurantListAdapter extends BaseExpandableListAdapter {
 
 							@Override
 							public void onResultNoData() {
-								FavoriteLocationDTO favoriteLocationDTO = new FavoriteLocationDTO();
-								favoriteLocationDTO.setRestaurantData(placeDocument);
 								favoriteLocationQuery.addNewFavoriteLocation(favoriteLocationDTO, null);
 							}
 						});

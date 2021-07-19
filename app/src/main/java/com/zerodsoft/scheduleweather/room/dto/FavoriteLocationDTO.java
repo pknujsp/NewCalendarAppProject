@@ -36,6 +36,12 @@ public class FavoriteLocationDTO {
 	@ColumnInfo(name = "added_datetime")
 	private String addedDateTime;
 
+	@ColumnInfo(name = "place_url")
+	private String placeUrl;
+
+	@ColumnInfo(name = "place_category_name")
+	private String placeCategoryName;
+
 	@Ignore
 	private int distance;
 
@@ -122,6 +128,22 @@ public class FavoriteLocationDTO {
 		return distance;
 	}
 
+	public void setPlaceUrl(String placeUrl) {
+		this.placeUrl = placeUrl;
+	}
+
+	public String getPlaceUrl() {
+		return placeUrl;
+	}
+
+	public void setPlaceCategoryName(String placeCategoryName) {
+		this.placeCategoryName = placeCategoryName;
+	}
+
+	public String getPlaceCategoryName() {
+		return placeCategoryName;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o)
@@ -136,12 +158,14 @@ public class FavoriteLocationDTO {
 				Objects.equals(latitude, that.latitude) &&
 				Objects.equals(longitude, that.longitude) &&
 				Objects.equals(type, that.type) &&
+				Objects.equals(placeUrl, that.placeUrl) &&
+				Objects.equals(placeCategoryName, that.placeCategoryName) &&
 				Objects.equals(addedDateTime, that.addedDateTime);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(id, placeName, address, placeId, latitude, longitude, type, addedDateTime);
+		return Objects.hash(id, placeName, address, placeId, latitude, longitude, type, addedDateTime, placeUrl, placeCategoryName, distance);
 	}
 
 	public void setRestaurantData(PlaceDocuments placeDocument) {
@@ -149,6 +173,8 @@ public class FavoriteLocationDTO {
 		this.placeId = placeDocument.getId();
 		this.latitude = placeDocument.getY();
 		this.longitude = placeDocument.getX();
+		this.placeUrl = placeDocument.getPlaceUrl();
+		this.placeCategoryName = placeDocument.getCategoryName();
 		this.type = FavoriteLocationDTO.RESTAURANT;
 		this.addedDateTime = String.valueOf(System.currentTimeMillis());
 	}

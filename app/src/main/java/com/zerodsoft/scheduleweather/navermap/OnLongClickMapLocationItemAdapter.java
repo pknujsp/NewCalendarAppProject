@@ -10,11 +10,12 @@ import androidx.annotation.NonNull;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnCoordToAddressListener;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddressDocuments;
 
 import org.jetbrains.annotations.NotNull;
 
-public class OnLongClickMapLocationItemAdapter extends LocationItemViewPagerAdapter {
+public class OnLongClickMapLocationItemAdapter extends LocationItemViewPagerAbstractAdapter {
 	private final OnCoordToAddressListener onCoordToAddressListener;
 	private String latitude;
 	private String longitude;
@@ -33,7 +34,7 @@ public class OnLongClickMapLocationItemAdapter extends LocationItemViewPagerAdap
 	}
 
 	@Override
-	public int getItemCount() {
+	public int getItemsCount() {
 		return 1;
 	}
 
@@ -77,6 +78,11 @@ public class OnLongClickMapLocationItemAdapter extends LocationItemViewPagerAdap
 
 				}
 			});
+		}
+
+		@Override
+		KakaoLocalDocument getKakaoLocalDocument(int position) {
+			return null;
 		}
 	}
 

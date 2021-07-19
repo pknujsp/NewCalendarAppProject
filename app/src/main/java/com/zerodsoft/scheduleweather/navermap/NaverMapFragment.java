@@ -14,7 +14,6 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.os.Bundle;
 
-import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
@@ -31,12 +30,9 @@ import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.viewpager2.widget.CompositePageTransformer;
-import androidx.viewpager2.widget.MarginPageTransformer;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.provider.Settings;
-import android.util.ArrayMap;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.util.Xml;
@@ -45,7 +41,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -80,18 +75,18 @@ import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.classes.AppPermission;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
-import com.zerodsoft.scheduleweather.common.interfaces.OnBackPressedCallbackController;
-import com.zerodsoft.scheduleweather.common.view.CustomProgressView;
 import com.zerodsoft.scheduleweather.databinding.FragmentNaverMapBinding;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
 import com.zerodsoft.scheduleweather.event.places.interfaces.MarkerOnClickListener;
-import com.zerodsoft.scheduleweather.event.weather.fragment.WeatherMainFragment;
+import com.zerodsoft.scheduleweather.kakaoplace.retrofit.KakaoLocalDownloader;
 import com.zerodsoft.scheduleweather.navermap.building.fragment.BuildingFragment;
 import com.zerodsoft.scheduleweather.navermap.building.fragment.BuildingListFragment;
 import com.zerodsoft.scheduleweather.navermap.favorite.FavoriteLocationFragment;
+import com.zerodsoft.scheduleweather.navermap.interfaces.ILoadLocationData;
+import com.zerodsoft.scheduleweather.navermap.interfaces.OnKakaoLocalApiCallback;
 import com.zerodsoft.scheduleweather.navermap.search.LocationSearchFragment;
 import com.zerodsoft.scheduleweather.navermap.searchheader.MapHeaderMainFragment;
 import com.zerodsoft.scheduleweather.navermap.searchheader.MapHeaderSearchFragment;
@@ -110,13 +105,11 @@ import com.zerodsoft.scheduleweather.navermap.viewmodel.MapSharedViewModel;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.SearchHistoryViewModel;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.address.ReverseGeoCodingParameter;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.EmptyKakaoLocalDocument;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddressDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceKakaoLocalResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.address.reversegeocoding.ReverseGeoCodingResponse;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
@@ -181,7 +174,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	final public Map<BottomSheetType, LinearLayout> bottomSheetViewMap = new HashMap<>();
 
 	final public Map<MarkerType, List<Marker>> markersMap = new HashMap<>();
-	final public Map<MarkerType, LocationItemViewPagerAdapter> viewPagerAdapterMap = new HashMap<>();
+	final public Map<MarkerType, LocationItemViewPagerAbstractAdapter> viewPagerAdapterMap = new HashMap<>();
 
 	protected final FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks = new FragmentManager.FragmentLifecycleCallbacks() {
 		@Override
@@ -709,7 +702,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 						onPageSelectedLocationItemBottomSheetViewPager(position, markerType);
 					}
 				} else {
-					if (position == viewPagerAdapterMap.get(markerType).getItemCount() - 1) {
+					if (position == viewPagerAdapterMap.get(markerType).getItemsCount() - 1) {
 						onPageSelectedLocationItemBottomSheetViewPager(position, markerType);
 					}
 				}
@@ -883,13 +876,12 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		cameraUpdate.animate(CameraAnimation.Easing, 150);
 		naverMap.moveCamera(cameraUpdate);
 
-		LocationItemViewPagerAdapter adapter = viewPagerAdapterMap.get(markerHolder.markerType);
+		LocationItemViewPagerAbstractAdapter adapter = viewPagerAdapterMap.get(markerHolder.markerType);
 		int itemPosition = 0;
 
 		if (markerHolder.markerType == MarkerType.FAVORITE) {
 			itemPosition =
 					((FavoriteLocationItemViewPagerAdapter) adapter).getItemPosition(((FavoriteMarkerHolder) markerHolder).favoriteLocationDTO);
-			loadFavoriteLocationsData();
 		} else {
 			itemPosition = adapter.getItemPosition(markerHolder.kakaoLocalDocument);
 		}
@@ -909,11 +901,25 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			removeMarkers(markerType);
 		}
 
-		LocationItemViewPagerAdapter adapter = null;
+		LocationItemViewPagerAbstractAdapter adapter = null;
 
 		if (markerType == MarkerType.FAVORITE) {
-			adapter = new FavoriteLocationItemViewPagerAdapter(getContext());
-
+			FavoriteLocationItemViewPagerAdapter favoriteLocationItemViewPagerAdapter =
+					new FavoriteLocationItemViewPagerAdapter(getContext());
+			favoriteLocationItemViewPagerAdapter.setiLoadLocationData(new ILoadLocationData() {
+				@Override
+				public void loadLocationData(int requestType, LocalApiPlaceParameter parameter, OnKakaoLocalApiCallback onKakaoLocalApiCallback) {
+					if (requestType == FavoriteLocationDTO.ADDRESS) {
+						// 주소 검색 순서 : 좌표로 주소 변환
+						KakaoLocalDownloader.coordToAddress(parameter, onKakaoLocalApiCallback);
+					} else if (requestType == FavoriteLocationDTO.PLACE || requestType == FavoriteLocationDTO.RESTAURANT) {
+						// 장소 검색 순서 : 장소의 위경도 내 10M 반경에서 장소 이름 검색(여러개 나올 경우 장소ID와 일치하는 장소를 선택)
+						KakaoLocalDownloader.getPlaces(parameter, onKakaoLocalApiCallback);
+					}
+				}
+			});
+			adapter = favoriteLocationItemViewPagerAdapter;
+			adapter.setVisibleSelectBtn(placeBottomSheetSelectBtnVisibility);
 		} else if (markerType == MarkerType.LONG_CLICKED_MAP) {
 			adapter = new OnLongClickMapLocationItemAdapter(getContext(), new OnCoordToAddressListener() {
 				@Override
@@ -938,7 +944,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			});
 
 		} else {
-			adapter = new LocationItemViewPagerAdapter(getContext(), markerType);
+			adapter = new LocationItemViewPagerAbstractAdapter(getContext(), markerType);
 			adapter.setVisibleSelectBtn(placeBottomSheetSelectBtnVisibility);
 			adapter.setVisibleUnSelectBtn(placeBottomSheetUnSelectBtnVisibility);
 
@@ -1029,7 +1035,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	@Override
 	public void addExtraMarkers(@NotNull List<? extends KakaoLocalDocument> kakaoLocalDocuments, @NotNull MarkerType markerType) {
 		if (!kakaoLocalDocuments.isEmpty()) {
-			final int LAST_INDEX = viewPagerAdapterMap.get(markerType).getItemCount() - 1;
+			final int LAST_INDEX = viewPagerAdapterMap.get(markerType).getItemsCount() - 1;
 			List<KakaoLocalDocument> currentList = viewPagerAdapterMap.get(markerType).getLocalDocumentsList();
 			List<? extends KakaoLocalDocument> subList = (List<? extends KakaoLocalDocument>) kakaoLocalDocuments.subList(LAST_INDEX + 1, kakaoLocalDocuments.size());
 
@@ -1222,7 +1228,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		MarkerHolder markerHolder = null;
 		Marker selectedMarker = null;
 
-		LocationItemViewPagerAdapter adapter = viewPagerAdapterMap.get(markerType);
+		LocationItemViewPagerAbstractAdapter adapter = viewPagerAdapterMap.get(markerType);
 		int position = adapter.getItemPosition(kakaoLocalDocument);
 
 		if (kakaoLocalDocument instanceof PlaceDocuments) {
@@ -1294,7 +1300,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		locationItemBottomSheetViewPager.setAdapter(adapter);
 		locationItemBottomSheetViewPager.setCurrentItem(selectedPosition, false);
 
-		loadFavoriteLocationsData();
 		setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_EXPANDED);
 	}
 
@@ -1317,7 +1322,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 				}
 			}
 		} else {
-			LocationItemViewPagerAdapter adapter = (LocationItemViewPagerAdapter) locationItemBottomSheetViewPager.getAdapter();
+			LocationItemViewPagerAbstractAdapter adapter = (LocationItemViewPagerAbstractAdapter) locationItemBottomSheetViewPager.getAdapter();
 			KakaoLocalDocument kakaoLocalDocument = adapter.getItem(position);
 
 			if (kakaoLocalDocument instanceof PlaceDocuments) {
@@ -1682,98 +1687,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		markersMap.get(MarkerType.FAVORITE).add(marker);
 	}
 
-	private void loadFavoriteLocationsData() {
-		FavoriteLocationItemViewPagerAdapter adapter = (FavoriteLocationItemViewPagerAdapter) viewPagerAdapterMap.get(MarkerType.FAVORITE);
-		ArrayMap<FavoriteLocationDTO, KakaoLocalDocument> map = adapter.getFavoriteLocationsMap();
-		int requestCount = 0;
-
-		Set<FavoriteLocationDTO> keySet = map.keySet();
-		for (FavoriteLocationDTO favoriteLocationDTO : keySet) {
-			if (map.get(favoriteLocationDTO) == null) {
-				requestCount++;
-			}
-		}
-
-		if (requestCount == 0) {
-			return;
-		}
-
-		final int finalRequestCount = requestCount;
-		JsonDownloader<KakaoLocalDocument> primaryCallback = new JsonDownloader<KakaoLocalDocument>() {
-			volatile int responseCount = 0;
-			volatile int successCount = 0;
-			volatile int failedCount = 0;
-			volatile List<Exception> exceptionList = new ArrayList<>();
-
-			@Override
-			public void onResponseSuccessful(KakaoLocalDocument result) {
-				++responseCount;
-				++successCount;
-				onCompleted();
-			}
-
-			@Override
-			public void onResponseFailed(Exception e) {
-				++responseCount;
-				++failedCount;
-				exceptionList.add(e);
-				onCompleted();
-			}
-
-			private void onCompleted() {
-				if (finalRequestCount == responseCount) {
-					adapter.setFavoriteLocationsMap(map);
-					adapter.notifyDataSetChanged();
-				}
-			}
-		};
-
-		for (FavoriteLocationDTO favoriteLocationDTO : keySet) {
-			if (favoriteLocationDTO.getType() == FavoriteLocationDTO.ADDRESS) {
-				// 주소 검색 순서 : 좌표로 주소 변환
-				LocalApiPlaceParameter parameter = LocalParameterUtil.getCoordToAddressParameter
-						(Double.parseDouble(favoriteLocationDTO.getLatitude()), Double.parseDouble(favoriteLocationDTO.getLongitude()));
-				CoordToAddressUtilByKakao.coordToAddress(parameter, new JsonDownloader<CoordToAddress>() {
-					@Override
-					public void onResponseSuccessful(CoordToAddress result) {
-						CoordToAddressDocuments coordToAddressDocuments = result.getCoordToAddressDocuments().get(0);
-						coordToAddressDocuments.getCoordToAddressAddress().setLatitude(favoriteLocationDTO.getLatitude());
-						coordToAddressDocuments.getCoordToAddressAddress().setLongitude(favoriteLocationDTO.getLongitude());
-
-						map.put(favoriteLocationDTO, coordToAddressDocuments);
-						primaryCallback.onResponseSuccessful(null);
-					}
-
-					@Override
-					public void onResponseFailed(Exception e) {
-						map.put(favoriteLocationDTO, new EmptyKakaoLocalDocument());
-						primaryCallback.onResponseFailed(e);
-					}
-				});
-
-			} else if (favoriteLocationDTO.getType() == FavoriteLocationDTO.PLACE || favoriteLocationDTO.getType() == FavoriteLocationDTO.RESTAURANT) {
-				// 장소 검색 순서 : 장소의 위경도 내 10M 반경에서 장소 이름 검색(여러개 나올 경우 장소ID와 일치하는 장소를 선택)
-				LocalApiPlaceParameter parameter = LocalParameterUtil.getPlaceParameter(favoriteLocationDTO.getPlaceName(),
-						String.valueOf(favoriteLocationDTO.getLatitude()), String.valueOf(favoriteLocationDTO.getLongitude()), LocalApiPlaceParameter.DEFAULT_SIZE,
-						LocalApiPlaceParameter.DEFAULT_PAGE, LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
-				parameter.setRadius("30");
-
-				locationViewModel.getPlaceItem(parameter, favoriteLocationDTO.getPlaceId(), new JsonDownloader<PlaceKakaoLocalResponse>() {
-					@Override
-					public void onResponseSuccessful(PlaceKakaoLocalResponse result) {
-						map.put(favoriteLocationDTO, result.getPlaceDocuments().get(0));
-						primaryCallback.onResponseSuccessful(null);
-					}
-
-					@Override
-					public void onResponseFailed(Exception e) {
-						map.put(favoriteLocationDTO, new EmptyKakaoLocalDocument());
-						primaryCallback.onResponseFailed(e);
-					}
-				});
-			}
-		}
-	}
 
 	protected final Object[] createBottomSheet(int fragmentContainerViewId) {
 		XmlPullParser parser = getResources().getXml(R.xml.persistent_bottom_sheet_default_attrs);

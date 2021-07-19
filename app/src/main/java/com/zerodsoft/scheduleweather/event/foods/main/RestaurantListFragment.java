@@ -77,6 +77,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 				new Observer<FavoriteLocationDTO>() {
 					@Override
 					public void onChanged(FavoriteLocationDTO addedFavoriteLocationDTO) {
+						/*
 						try {
 							Fragment primaryNavFragment = getParentFragment().getParentFragment().getParentFragmentManager().getPrimaryNavigationFragment();
 
@@ -102,13 +103,15 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 
 						}
 
-
+						 */
+						adapter.notifyDataSetChanged();
 					}
 				});
 
 		favoriteRestaurantViewModel.getRemovedFavoriteLocationMutableLiveData().observe(this, new Observer<FavoriteLocationDTO>() {
 			@Override
 			public void onChanged(FavoriteLocationDTO removedFavoriteLocationDTO) {
+				/*
 				try {
 					Fragment primaryNavFragment = getParentFragment().getParentFragment().getParentFragmentManager().getPrimaryNavigationFragment();
 
@@ -133,6 +136,9 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 				} catch (Exception e) {
 
 				}
+
+				 */
+				adapter.notifyDataSetChanged();
 			}
 		});
 	}

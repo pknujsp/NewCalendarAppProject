@@ -7,7 +7,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
 
 import android.util.ArrayMap;
 import android.view.LayoutInflater;
@@ -16,34 +15,24 @@ import android.view.ViewGroup;
 import android.widget.ExpandableListView;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.BaseFragmentFavoriteRestaurantBinding;
+import com.zerodsoft.scheduleweather.event.foods.favorite.RestaurantFavoritesHostFragment;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteRestaurantListAdapter;
-import com.zerodsoft.scheduleweather.favorites.restaurant.AllFavoriteRestaurantHostFragment;
-import com.zerodsoft.scheduleweather.kakaoplace.retrofit.KakaoPlaceDownloader;
-import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
-import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceKakaoLocalResponse;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-public abstract class FavoriteRestaurantBaseFragment extends Fragment implements OnClickedListItem<PlaceDocuments> {
+public abstract class FavoriteRestaurantBaseFragment extends Fragment implements OnClickedListItem<FavoriteLocationDTO> {
 	protected BaseFragmentFavoriteRestaurantBinding binding;
-
 	protected FavoriteLocationViewModel favoriteRestaurantViewModel;
 	protected FavoriteRestaurantListAdapter adapter;
-	protected KakaoPlaceDownloader kakaoPlaceDownloader = new KakaoPlaceDownloader();
+	protected boolean initializing = true;
 
 	protected abstract void onRemovedFavoriteRestaurant(FavoriteLocationDTO removedFavoriteRestaurant);
 
@@ -57,8 +46,12 @@ public abstract class FavoriteRestaurantBaseFragment extends Fragment implements
 		favoriteRestaurantViewModel.getAddedFavoriteLocationMutableLiveData().observe(this, new Observer<FavoriteLocationDTO>() {
 			@Override
 			public void onChanged(FavoriteLocationDTO addedFavoriteRestaurant) {
-				if (addedFavoriteRestaurant.getType() == FavoriteLocationDTO.RESTAURANT) {
-					onAddedFavoriteRestaurant(addedFavoriteRestaurant);
+				if (!(getParentFragment().getParentFragmentManager().getPrimaryNavigationFragment() instanceof RestaurantFavoritesHostFragment)) {
+					if (addedFavoriteRestaurant.getType() == FavoriteLocationDTO.RESTAURANT) {
+						onAddedFavoriteRestaurant(addedFavoriteRestaurant);
+						adapter.setPlaceIdSet();
+						adapter.notifyDataSetChanged();
+					}
 				}
 			}
 		});
@@ -66,8 +59,13 @@ public abstract class FavoriteRestaurantBaseFragment extends Fragment implements
 		favoriteRestaurantViewModel.getRemovedFavoriteLocationMutableLiveData().observe(this, new Observer<FavoriteLocationDTO>() {
 			@Override
 			public void onChanged(FavoriteLocationDTO removedFavoriteRestaurant) {
-				if (removedFavoriteRestaurant.getType() == FavoriteLocationDTO.RESTAURANT) {
-					onRemovedFavoriteRestaurant(removedFavoriteRestaurant);
+				if (!(getParentFragment().getParentFragmentManager().getPrimaryNavigationFragment() instanceof RestaurantFavoritesHostFragment)) {
+					if (removedFavoriteRestaurant.getType() == FavoriteLocationDTO.RESTAURANT) {
+						onRemovedFavoriteRestaurant(removedFavoriteRestaurant);
+
+						adapter.setPlaceIdSet();
+						adapter.notifyDataSetChanged();
+					}
 				}
 			}
 		});
@@ -105,68 +103,19 @@ public abstract class FavoriteRestaurantBaseFragment extends Fragment implements
 			}
 		});
 		binding.favoriteRestaurantList.setAdapter(adapter);
-
-		downloadPlaceDocuments();
-	}
-
-	protected final void downloadPlaceDocuments() {
 		binding.customProgressViewForFavoriteRestaurant.onStartedProcessingData();
 		favoriteRestaurantViewModel.getFavoriteLocations(FavoriteLocationDTO.RESTAURANT, new DbQueryCallback<List<FavoriteLocationDTO>>() {
-			int responseCount;
-
 			@Override
 			public void onResultSuccessful(List<FavoriteLocationDTO> savedFavoriteRestaurantList) {
-				if (savedFavoriteRestaurantList.isEmpty()) {
-					requireActivity().runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							binding.customProgressViewForFavoriteRestaurant.onFailedProcessingData(getString(R.string.not_data));
-							adapter.notifyDataSetChanged();
-						}
-					});
-					return;
-				}
-
-				final int requestCount = savedFavoriteRestaurantList.size();
-				responseCount = 0;
-
 				for (FavoriteLocationDTO favoriteRestaurant : savedFavoriteRestaurantList) {
-					LocalApiPlaceParameter placeParameter = LocalParameterUtil.getPlaceParameterForSpecific(favoriteRestaurant.getPlaceName()
-							, favoriteRestaurant.getLatitude(), favoriteRestaurant.getLongitude());
-
-					kakaoPlaceDownloader.getPlacesForSpecific(placeParameter, new JsonDownloader<PlaceKakaoLocalResponse>() {
-						@Override
-						public void onResponseSuccessful(PlaceKakaoLocalResponse result) {
-							//id값과 일치하는 장소 데이터 추출
-							++responseCount;
-							List<PlaceDocuments> placeDocumentsList = result.getPlaceDocuments();
-							final String restaurantId = favoriteRestaurant.getPlaceId();
-
-							int index = 0;
-							for (; index < placeDocumentsList.size(); index++) {
-								if (placeDocumentsList.get(index).getId().equals(restaurantId)) {
-									break;
-								}
-							}
-
-							createList(placeDocumentsList.get(index));
-
-							if (requestCount == responseCount) {
-								requireActivity().runOnUiThread(new Runnable() {
-									@Override
-									public void run() {
-										createListView();
-									}
-								});
-							}
-						}
-
-						@Override
-						public void onResponseFailed(Exception e) {
-
-						}
-					});
+					addFavoriteRestaurant(favoriteRestaurant);
 				}
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						createListView();
+					}
+				});
 			}
 
 			@Override
@@ -174,25 +123,14 @@ public abstract class FavoriteRestaurantBaseFragment extends Fragment implements
 
 			}
 		});
+
 	}
 
-
-	/*
-	장소를 카테고리 별로 분류해서 리스트 생성
-	key : categoryname의 값이 '음식점 > 한식 > 해물, 생선' 방식이므로
-	앞 2개로 구분을 짓는다
-	'음식점 > 한식'
-	 */
-	private final void createList(PlaceDocuments placeDocuments) {
-		ArrayMap<String, List<PlaceDocuments>> restaurantListMap = adapter.getRestaurantListMap();
-
-		final String category = placeDocuments.getCategoryName().split(" > ")[1];
-		if (!restaurantListMap.containsKey(category)) {
-			restaurantListMap.put(category, new ArrayList<>());
-		}
-		restaurantListMap.get(category).add(placeDocuments);
+	@Override
+	public void onStart() {
+		super.onStart();
+		initializing = false;
 	}
-
 
 	protected final void createListView() {
 		adapter.setPlaceIdSet();
@@ -200,65 +138,39 @@ public abstract class FavoriteRestaurantBaseFragment extends Fragment implements
 	}
 
 	@Override
-	public void onClickedListItem(PlaceDocuments e, int position) {
+	public void onClickedListItem(FavoriteLocationDTO e, int position) {
 
 	}
 
 	@Override
-	public void deleteListItem(PlaceDocuments e, int position) {
+	public void deleteListItem(FavoriteLocationDTO e, int position) {
 	}
 
+	/*
+장소를 카테고리 별로 분류해서 리스트 생성
+key : categoryname의 값이 '음식점 > 한식 > 해물, 생선' 방식이므로
+앞 2개로 구분을 짓는다
+'음식점 > 한식'
+ */
 	protected final void addFavoriteRestaurant(FavoriteLocationDTO addedFavoriteRestaurant) {
-		LocalApiPlaceParameter placeParameter = LocalParameterUtil.getPlaceParameterForSpecific(addedFavoriteRestaurant.getPlaceName()
-				, addedFavoriteRestaurant.getLatitude(), addedFavoriteRestaurant.getLongitude());
+		final String category = addedFavoriteRestaurant.getPlaceCategoryName().split(" > ")[1];
+		ArrayMap<String, List<FavoriteLocationDTO>> restaurantListMap = adapter.getRestaurantListMap();
 
-		kakaoPlaceDownloader.getPlacesForSpecific(placeParameter, new JsonDownloader<PlaceKakaoLocalResponse>() {
-			@Override
-			public void onResponseSuccessful(PlaceKakaoLocalResponse result) {
-				//id값과 일치하는 장소 데이터 추출
-				List<PlaceDocuments> downloadedPlaceDocumentsList = result.getPlaceDocuments();
-				final String addedPlaceId = addedFavoriteRestaurant.getPlaceId();
-
-				int index = 0;
-				for (; index < downloadedPlaceDocumentsList.size(); index++) {
-					if (downloadedPlaceDocumentsList.get(index).getId().equals(addedPlaceId)) {
-						break;
-					}
-				}
-
-				final String category = downloadedPlaceDocumentsList.get(index).getCategoryName().split(" > ")[1];
-
-				ArrayMap<String, List<PlaceDocuments>> restaurantListMap = adapter.getRestaurantListMap();
-				if (!restaurantListMap.containsKey(category)) {
-					restaurantListMap.put(category, new ArrayList<>());
-				}
-				restaurantListMap.get(category).add(downloadedPlaceDocumentsList.get(index));
-
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						adapter.setPlaceIdSet();
-						adapter.notifyDataSetChanged();
-					}
-				});
-			}
-
-			@Override
-			public void onResponseFailed(Exception e) {
-
-			}
-		});
+		if (!restaurantListMap.containsKey(category)) {
+			restaurantListMap.put(category, new ArrayList<>());
+		}
+		restaurantListMap.get(category).add(addedFavoriteRestaurant);
 	}
 
 
 	protected final void removeFavoriteRestaurant(FavoriteLocationDTO removedFavoriteRestaurant) {
-		ArrayMap<String, List<PlaceDocuments>> restaurantListArrMap = adapter.getRestaurantListMap();
+		ArrayMap<String, List<FavoriteLocationDTO>> restaurantListArrMap = adapter.getRestaurantListMap();
 
 		final String removedPlaceId = removedFavoriteRestaurant.getPlaceId();
 
 		for (int groupPosition = 0; groupPosition < restaurantListArrMap.size(); groupPosition++) {
 			for (int childPosition = 0; childPosition < restaurantListArrMap.valueAt(groupPosition).size(); childPosition++) {
-				if (restaurantListArrMap.valueAt(groupPosition).get(childPosition).getId().equals(removedPlaceId)) {
+				if (restaurantListArrMap.valueAt(groupPosition).get(childPosition).getPlaceId().equals(removedPlaceId)) {
 					restaurantListArrMap.valueAt(groupPosition).remove(childPosition);
 
 					if (restaurantListArrMap.valueAt(groupPosition).isEmpty()) {
@@ -271,9 +183,6 @@ public abstract class FavoriteRestaurantBaseFragment extends Fragment implements
 				}
 			}
 		}
-
-		adapter.setPlaceIdSet();
-		adapter.notifyDataSetChanged();
 	}
 
 }

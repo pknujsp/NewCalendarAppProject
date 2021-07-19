@@ -60,11 +60,11 @@ public class AllFavoriteRestaurantFragment extends FavoriteRestaurantBaseFragmen
 
 
 	@Override
-	public void onClickedListItem(PlaceDocuments e, int position) {
+	public void onClickedListItem(FavoriteLocationDTO e, int position) {
 		if (e != null) {
 			PlaceInfoWebFragment placeInfoWebFragment = new PlaceInfoWebFragment();
 			Bundle bundle = new Bundle();
-			bundle.putString("placeId", ((PlaceDocuments) e).getId());
+			bundle.putString("placeId", e.getPlaceId());
 			placeInfoWebFragment.setArguments(bundle);
 
 			String tag = getString(R.string.tag_place_info_web_fragment);
@@ -79,7 +79,7 @@ public class AllFavoriteRestaurantFragment extends FavoriteRestaurantBaseFragmen
 	}
 
 	@Override
-	public void deleteListItem(PlaceDocuments e, int position) {
+	public void deleteListItem(FavoriteLocationDTO e, int position) {
 	}
 
 }

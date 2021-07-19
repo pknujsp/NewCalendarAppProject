@@ -152,7 +152,6 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
 							favoriteButton.setImageDrawable(favoriteDisabledDrawable);
 						}
 					});
-
 		}
 
 		public void setData(KakaoPlaceJsonRoot kakaoPlaceJsonRoot) {

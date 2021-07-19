@@ -669,8 +669,8 @@ public class HourlyFcstFragment extends Fragment {
 
 			dateTextPaint = new TextPaint();
 			dateTextPaint.setTextAlign(Paint.Align.CENTER);
-			dateTextPaint.setColor(Color.GRAY);
-			dateTextPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 13f, getResources().getDisplayMetrics()));
+			dateTextPaint.setColor(Color.DKGRAY);
+			dateTextPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 14f, getResources().getDisplayMetrics()));
 
 			Rect rect = new Rect();
 			dateTextPaint.getTextBounds("0", 0, 1, rect);
