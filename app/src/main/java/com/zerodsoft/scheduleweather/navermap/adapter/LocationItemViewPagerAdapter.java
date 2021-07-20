@@ -1,23 +1,40 @@
-package com.zerodsoft.scheduleweather.navermap;
+package com.zerodsoft.scheduleweather.navermap.adapter;
 
 import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
+
+import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.navermap.MarkerType;
+import com.zerodsoft.scheduleweather.navermap.interfaces.OnKakaoLocalApiCallback;
+import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
+import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddressDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceKakaoLocalResponse;
+import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class LocationItemViewPagerAdapter extends LocationItemViewPagerAbstractAdapter {
-	List<KakaoLocalDocument> kakaoLocalDocumentList = new ArrayList<>();
+	private List<KakaoLocalDocument> kakaoLocalDocumentList = new ArrayList<>();
 
 	public LocationItemViewPagerAdapter(Context context, MarkerType MARKER_TYPE) {
 		super(context, MARKER_TYPE);
 	}
 
 	public void setLocalDocumentsList(List<? extends KakaoLocalDocument> localDocumentsList) {
+		this.kakaoLocalDocumentList.clear();
 		this.kakaoLocalDocumentList.addAll(localDocumentsList);
 	}
 
@@ -25,8 +42,40 @@ public class LocationItemViewPagerAdapter extends LocationItemViewPagerAbstractA
 		return kakaoLocalDocumentList;
 	}
 
+	@NonNull
+	@Override
+	public LocationItemInMapViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+		return new LocationItemInMapViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.cardview_places_item, parent, false));
+	}
+
+	@Override
+	public void onBindViewHolder(@NonNull @NotNull PlaceItemInMapViewHolder holder, int position) {
+		holder.bind();
+	}
+
 	@Override
 	public int getItemCount() {
+		return kakaoLocalDocumentList.size();
+	}
+
+	@Override
+	public KakaoLocalDocument getLocalItem(int position) {
+		return kakaoLocalDocumentList.get(position);
+	}
+
+	@Override
+	public int getLocalItemPosition(KakaoLocalDocument kakaoLocalDocument) {
+		int i = 0;
+		for (; i < kakaoLocalDocumentList.size(); i++) {
+			if (kakaoLocalDocumentList.get(i).equals(kakaoLocalDocument)) {
+				break;
+			}
+		}
+		return i;
+	}
+
+	@Override
+	public int getItemsCount() {
 		return kakaoLocalDocumentList.size();
 	}
 
@@ -73,5 +122,22 @@ public class LocationItemViewPagerAdapter extends LocationItemViewPagerAbstractA
 		}
 
 		return position;
+	}
+
+	class LocationItemInMapViewHolder extends PlaceItemInMapViewHolder {
+		public LocationItemInMapViewHolder(@NonNull View view) {
+			super(view);
+		}
+
+		@Override
+		KakaoLocalDocument getKakaoLocalDocument(int position) {
+			return kakaoLocalDocumentList.get(position);
+		}
+
+		@Override
+		public void bind() {
+			setDataView(getKakaoLocalDocument(getBindingAdapterPosition()));
+		}
+
 	}
 }

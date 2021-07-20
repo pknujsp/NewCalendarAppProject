@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.navermap;
+package com.zerodsoft.scheduleweather.navermap.adapter;
 
 import android.content.Context;
 import android.util.ArrayMap;
@@ -9,10 +9,9 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.navermap.MarkerType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.ILoadLocationData;
-import com.zerodsoft.scheduleweather.navermap.interfaces.OnClickedBottomSheetListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnKakaoLocalApiCallback;
-import com.zerodsoft.scheduleweather.navermap.interfaces.PlacesItemBottomSheetButtonOnClickListener;
 import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
@@ -77,7 +76,7 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
 
 	@Override
 	public void onBindViewHolder(@NonNull @NotNull PlaceItemInMapViewHolder holder, int position) {
-		((FavoriteLocationItemInMapViewHolder) holder).bind();
+		holder.bind();
 	}
 
 	public FavoriteLocationDTO getKey(int position) {
@@ -104,6 +103,27 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
 		return favoriteLocationsMap.size();
 	}
 
+	@Override
+	public KakaoLocalDocument getLocalItem(int position) {
+		return favoriteLocationsMap.valueAt(position);
+	}
+
+	@Override
+	public int getLocalItemPosition(KakaoLocalDocument kakaoLocalDocument) {
+		int i = 0;
+		for (; i < favoriteLocationsMap.size(); i++) {
+			if (favoriteLocationsMap.valueAt(i).equals(kakaoLocalDocument)) {
+				break;
+			}
+		}
+		return i;
+	}
+
+	@Override
+	public int getItemsCount() {
+		return favoriteLocationsMap.size();
+	}
+
 	class FavoriteLocationItemInMapViewHolder extends PlaceItemInMapViewHolder {
 
 		public FavoriteLocationItemInMapViewHolder(@NonNull View view) {
@@ -112,7 +132,7 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
 
 		@Override
 		KakaoLocalDocument getKakaoLocalDocument(int position) {
-			return null;
+			return favoriteLocationsMap.valueAt(position);
 		}
 
 		@Override

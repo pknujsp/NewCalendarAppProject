@@ -1,10 +1,8 @@
-package com.zerodsoft.scheduleweather.navermap;
+package com.zerodsoft.scheduleweather.navermap.adapter;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -12,9 +10,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
-import com.zerodsoft.scheduleweather.common.view.CustomProgressView;
 import com.zerodsoft.scheduleweather.databinding.CardviewPlacesItemBinding;
-import com.zerodsoft.scheduleweather.kakaoplace.retrofit.KakaoLocalDownloader;
+import com.zerodsoft.scheduleweather.navermap.MarkerType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnClickedBottomSheetListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.PlacesItemBottomSheetButtonOnClickListener;
 import com.zerodsoft.scheduleweather.navermap.util.LocationUtil;
@@ -69,42 +66,32 @@ public abstract class LocationItemViewPagerAbstractAdapter extends RecyclerView.
 		return this;
 	}
 
-
 	public final void setOnClickedBottomSheetListener(OnClickedBottomSheetListener onClickedBottomSheetListener) {
 		this.onClickedBottomSheetListener = onClickedBottomSheetListener;
 	}
 
-	@NonNull
-	@Override
-	public PlaceItemInMapViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-		return new PlaceItemInMapViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.cardview_places_item, parent, false));
-	}
+	abstract public int getItemsCount();
 
-	@Override
-	public void onBindViewHolder(@NonNull PlaceItemInMapViewHolder holder, int position) {
-		holder.bind();
-	}
+	abstract public KakaoLocalDocument getLocalItem(int position);
 
-
-	@Override
-	public int getItemCount() {
-		return 0;
-	}
+	abstract public int getLocalItemPosition(KakaoLocalDocument kakaoLocalDocument);
 
 	abstract class PlaceItemInMapViewHolder extends RecyclerView.ViewHolder {
 		protected CardviewPlacesItemBinding binding;
 		protected Integer favoriteLocationId;
-		protected CustomProgressView customProgressView;
 
 		public PlaceItemInMapViewHolder(@NonNull View view) {
 			super(view);
 			binding = CardviewPlacesItemBinding.bind(view);
 			binding.addressLayout.addressIndex.setVisibility(View.GONE);
-			binding.rootLayout.setOnClickListener(onClickListener);
+			binding.rootLayout.setOnClickListener(itemOnClickListener);
 
-			customProgressView = binding.customProgressView;
-			customProgressView.setContentView(view.findViewById(R.id.map_place_item_rows));
-			customProgressView.onStartedProcessingData();
+			binding.customProgressView.setContentView(view.findViewById(R.id.map_place_item_rows));
+			binding.customProgressView.onStartedProcessingData();
+
+			binding.selectThisPlaceButton.setVisibility(isVisibleSelectBtn);
+			binding.unselectThisPlaceButton.setVisibility(isVisibleUnSelectBtn);
+			binding.addToFavoritePlaceitemButton.setVisibility(isVisibleFavoriteBtn);
 
 			binding.selectThisPlaceButton.setOnClickListener(new View.OnClickListener() {
 				@Override
@@ -130,13 +117,13 @@ public abstract class LocationItemViewPagerAbstractAdapter extends RecyclerView.
 
 		abstract void bind();
 
-		public final void setDataView(KakaoLocalDocument kakaoLocalDocument) {
+		protected final void setDataView(KakaoLocalDocument kakaoLocalDocument) {
 			final int position = getBindingAdapterPosition();
 			String itemPosition = (position + 1) + " / " + getItemCount();
 			binding.itemPosition.setText(itemPosition);
 
 			if (kakaoLocalDocument instanceof EmptyKakaoLocalDocument) {
-				customProgressView.onFailedProcessingData(context.getString(R.string.error));
+				binding.customProgressView.onFailedProcessingData(context.getString(R.string.error));
 			} else {
 				PlaceDocuments placeDocument = null;
 				AddressResponseDocuments addressDocument = null;
@@ -184,10 +171,6 @@ public abstract class LocationItemViewPagerAbstractAdapter extends RecyclerView.
 					binding.addressLayout.getRoot().setVisibility(View.VISIBLE);
 				}
 
-				binding.selectThisPlaceButton.setVisibility(isVisibleSelectBtn);
-				binding.unselectThisPlaceButton.setVisibility(isVisibleUnSelectBtn);
-				binding.addToFavoritePlaceitemButton.setVisibility(isVisibleFavoriteBtn);
-
 				if (isVisibleFavoriteBtn == View.VISIBLE) {
 					String placeId = null;
 					String latitude = null;
@@ -220,7 +203,7 @@ public abstract class LocationItemViewPagerAbstractAdapter extends RecyclerView.
 							});
 				}
 
-				customProgressView.onSuccessfulProcessingData();
+				binding.customProgressView.onSuccessfulProcessingData();
 			}
 		}
 
@@ -236,6 +219,8 @@ public abstract class LocationItemViewPagerAbstractAdapter extends RecyclerView.
 				newFavoriteLocationDTO.setLatitude(String.valueOf(placeDocuments.getY()));
 				newFavoriteLocationDTO.setPlaceName(placeDocuments.getPlaceName());
 				newFavoriteLocationDTO.setPlaceId(placeDocuments.getId());
+				newFavoriteLocationDTO.setPlaceCategoryName(placeDocuments.getCategoryName());
+				newFavoriteLocationDTO.setPlaceUrl(placeDocuments.getPlaceUrl());
 			} else if (data instanceof AddressResponseDocuments) {
 				AddressResponseDocuments addressDocuments = (AddressResponseDocuments) data;
 
@@ -298,7 +283,7 @@ public abstract class LocationItemViewPagerAbstractAdapter extends RecyclerView.
 		abstract KakaoLocalDocument getKakaoLocalDocument(int position);
 	}
 
-	static class ViewHolderData {
+	static final class ViewHolderData {
 		KakaoLocalDocument kakaoLocalDocument;
 
 		public ViewHolderData(KakaoLocalDocument kakaoLocalDocument) {
@@ -306,7 +291,7 @@ public abstract class LocationItemViewPagerAbstractAdapter extends RecyclerView.
 		}
 	}
 
-	private final View.OnClickListener onClickListener = new View.OnClickListener() {
+	private final View.OnClickListener itemOnClickListener = new View.OnClickListener() {
 		@Override
 		public void onClick(View view) {
 			ViewHolderData viewHolderData = (ViewHolderData) view.getTag();

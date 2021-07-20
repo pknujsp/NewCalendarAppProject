@@ -28,11 +28,11 @@ public class FavoriteLocationViewModel extends AndroidViewModel implements Favor
 		removedFavoriteLocationMutableLiveData = restaurantRepository.getRemovedFavoriteLocationMutableLiveData();
 	}
 
-	public LiveData<FavoriteLocationDTO> getAddedFavoriteLocationMutableLiveData() {
+	public MutableLiveData<FavoriteLocationDTO> getAddedFavoriteLocationMutableLiveData() {
 		return addedFavoriteLocationMutableLiveData;
 	}
 
-	public LiveData<FavoriteLocationDTO> getRemovedFavoriteLocationMutableLiveData() {
+	public MutableLiveData<FavoriteLocationDTO> getRemovedFavoriteLocationMutableLiveData() {
 		return removedFavoriteLocationMutableLiveData;
 	}
 

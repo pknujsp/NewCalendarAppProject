@@ -95,7 +95,6 @@ public class FavoriteLocationFragment extends FavoriteLocationsBaseFragment impl
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-
 		sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
 		sharedPreferences.registerOnSharedPreferenceChangeListener(this);
 

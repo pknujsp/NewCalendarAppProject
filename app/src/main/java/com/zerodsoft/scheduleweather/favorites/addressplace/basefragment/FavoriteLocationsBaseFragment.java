@@ -57,14 +57,18 @@ public abstract class FavoriteLocationsBaseFragment extends Fragment implements 
 		favoriteLocationViewModel.getAddedFavoriteLocationMutableLiveData().observe(this, new Observer<FavoriteLocationDTO>() {
 			@Override
 			public void onChanged(FavoriteLocationDTO favoriteLocationDTO) {
-				onAddedFavoriteLocation(favoriteLocationDTO);
+				if (favoriteLocationAdapter.getItemCount() > 0) {
+					onAddedFavoriteLocation(favoriteLocationDTO);
+				}
 			}
 		});
 
 		favoriteLocationViewModel.getRemovedFavoriteLocationMutableLiveData().observe(this, new Observer<FavoriteLocationDTO>() {
 			@Override
 			public void onChanged(FavoriteLocationDTO favoriteLocationDTO) {
-				onRemovedFavoriteLocation(favoriteLocationDTO);
+				if (favoriteLocationAdapter.getItemCount() > 0) {
+					onRemovedFavoriteLocation(favoriteLocationDTO);
+				}
 			}
 		});
 	}

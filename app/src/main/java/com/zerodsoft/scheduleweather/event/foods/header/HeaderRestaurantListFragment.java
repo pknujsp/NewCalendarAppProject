@@ -125,6 +125,7 @@ public class HeaderRestaurantListFragment extends Fragment {
 			@Override
 			public void onTabSelected(TabLayout.Tab tab) {
 				if (viewPagerVisibility == View.GONE) {
+					bottomSheetController.setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
 				}
 			}
 
