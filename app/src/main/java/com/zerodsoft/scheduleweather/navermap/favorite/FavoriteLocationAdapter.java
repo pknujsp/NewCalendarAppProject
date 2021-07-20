@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FavoriteLocationItemBinding;
+import com.zerodsoft.scheduleweather.navermap.util.LocationUtil;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 
 import java.util.ArrayList;
@@ -93,7 +94,7 @@ public class FavoriteLocationAdapter extends RecyclerView.Adapter<FavoriteLocati
 				}
 			});
 
-			String distance = favoriteLocationDTO.getDistance() + "m";
+			String distance = LocationUtil.convertMeterToKm(String.valueOf(favoriteLocationDTO.getDistance()));
 
 			if (favoriteLocationDTO.getType() == FavoriteLocationDTO.PLACE || favoriteLocationDTO.getType() == FavoriteLocationDTO.RESTAURANT) {
 				binding.placeItemLayout.placeName.setText(favoriteLocationDTO.getPlaceName());

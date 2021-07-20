@@ -3,6 +3,7 @@ package com.zerodsoft.scheduleweather.calendarview.instancelistweekdialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.provider.CalendarContract;
+import android.provider.CalendarContract.Events;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -128,7 +129,7 @@ public class InstanceListAdapter extends RecyclerView.Adapter<InstanceListAdapte
 				});
 				instanceTextView.setClickable(true);
 
-				if (instance.getAsInteger(CalendarContract.Instances.CALENDAR_ACCESS_LEVEL) == CalendarContract.Instances.CAL_ACCESS_READ) {
+				if (instance.getAsInteger(Events.CALENDAR_ACCESS_LEVEL) == Events.CAL_ACCESS_READ) {
 					instanceTextView.setLongClickable(false);
 				} else {
 					instanceTextView.setLongClickable(true);

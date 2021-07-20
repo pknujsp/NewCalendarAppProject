@@ -270,9 +270,14 @@ public class WeekView extends HourEventsView implements CalendarViewInitializer,
 					for (int i = 0; i < itemCells.size(); i++) {
 						WeekItemView child = new WeekItemView(context, itemCells.get(i));
 						child.setClickable(true);
-						child.setLongClickable(true);
 						child.setOnClickListener(itemOnClickListener);
-						child.setOnLongClickListener(onLongClickListener);
+
+						if (child.itemCell.instance.getAsInteger(CalendarContract.Instances.CALENDAR_ACCESS_LEVEL) == CalendarContract.Instances.CAL_ACCESS_READ) {
+							child.setLongClickable(false);
+						} else {
+							child.setLongClickable(true);
+							child.setOnLongClickListener(onLongClickListener);
+						}
 						this.addView(child);
 					}
 				}

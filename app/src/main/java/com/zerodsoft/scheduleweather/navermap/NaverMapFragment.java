@@ -1672,6 +1672,10 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		marker.setIcon(OverlayImage.fromResource(R.drawable.favorite_icon));
 		marker.setOnClickListener(markerOnClickListener);
 		marker.setForceShowIcon(true);
+		marker.setCaptionColor(Color.BLUE);
+		marker.setCaptionText(favoriteLocationDTO.getType() == FavoriteLocationDTO.ADDRESS ? favoriteLocationDTO.getAddress() :
+				favoriteLocationDTO.getPlaceName());
+		marker.setSubCaptionTextSize(12f);
 
 		MarkerHolder markerHolder = new FavoriteMarkerHolder(favoriteLocationDTO, MarkerType.FAVORITE);
 		marker.setTag(markerHolder);

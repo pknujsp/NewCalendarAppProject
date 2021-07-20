@@ -11,6 +11,7 @@ import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -130,6 +131,17 @@ public class CustomSearchView extends LinearLayout {
 				}
 			}
 		});
+
+		searchEditText.setOnKeyListener(new OnKeyListener() {
+			@Override
+			public boolean onKey(View v, int keyCode, KeyEvent event) {
+				if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN) {
+					searchBtn.callOnClick();
+					return true;
+				}
+				return false;
+			}
+		});
 	}
 
 	@Override
@@ -161,56 +173,5 @@ public class CustomSearchView extends LinearLayout {
 	public String getQuery() {
 		return searchEditText.getText().length() > 0 ? searchEditText.getText().toString() : "";
 	}
-
-	public void setEditTextOnKeyListener(OnKeyListener l) {
-		searchEditText.setOnKeyListener(l);
-	}
-
-	/*
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="36dp"
-    android:gravity="center_vertical"
-    android:orientation="horizontal"
-    android:paddingLeft="12dp"
-    android:paddingTop="4dp"
-    android:paddingRight="12dp"
-    android:paddingBottom="4dp">
-
-    <ImageView
-        android:id="@+id/back_btn"
-        android:layout_width="28dp"
-        android:layout_height="24dp"
-        android:layout_marginRight="8dp"
-        android:background="?attr/selectableItemBackground"
-        android:clickable="true"
-        android:scaleType="fitXY"
-        android:src="@drawable/arrow_back_icon" />
-
-    <com.zerodsoft.scheduleweather.common.view.CustomEditText
-        android:id="@+id/search_edittext"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:background="@color/transparent"
-        android:hint="@string/hint_request_input_menu_restaurant_name"
-        android:inputType="text"
-        android:singleLine="true"
-        android:textCursorDrawable="@drawable/edittext_cursor"
-        android:textSize="14sp" />
-
-    <ImageView
-        android:id="@+id/search_btn"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_marginLeft="8dp"
-        android:background="?attr/selectableItemBackground"
-        android:clickable="true"
-        android:scaleType="fitXY"
-        android:src="@drawable/search_icon" />
-
-</LinearLayout>
-	 */
 
 }

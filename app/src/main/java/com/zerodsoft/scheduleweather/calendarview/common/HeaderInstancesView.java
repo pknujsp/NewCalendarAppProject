@@ -93,9 +93,14 @@ public class HeaderInstancesView extends ViewGroup {
 			childView.measure(right - left, bottom - top);
 			childView.layout(left, top, right, bottom);
 			childView.setClickable(true);
-			childView.setLongClickable(true);
 			childView.setOnClickListener(itemOnClickListener);
-			childView.setOnLongClickListener(onLongClickListener);
+
+			if (eventData.getEvent().getAsInteger(CalendarContract.Instances.CALENDAR_ACCESS_LEVEL) == CalendarContract.Instances.CAL_ACCESS_READ) {
+				childView.setLongClickable(false);
+			} else {
+				childView.setLongClickable(true);
+				childView.setOnLongClickListener(onLongClickListener);
+			}
 		}
 	}
 

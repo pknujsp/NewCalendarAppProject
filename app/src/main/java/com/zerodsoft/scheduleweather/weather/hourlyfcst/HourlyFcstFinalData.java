@@ -93,6 +93,9 @@ public class HourlyFcstFinalData {
 		} else if (chanceOfShower.equals("0")) {
 			chanceOfShower = "-";
 		}
+		if (rainPrecipitation1Hour.equals("1mm 미만")) {
+			rainPrecipitation1Hour = "0";
+		}
 	}
 
 	public String getNx() {

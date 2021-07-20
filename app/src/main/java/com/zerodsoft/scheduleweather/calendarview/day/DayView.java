@@ -283,6 +283,13 @@ public class DayView extends HourEventsView implements CalendarViewInitializer, 
 			childView.setLongClickable(true);
 			childView.setClickable(true);
 
+			if (childView.itemCell.instance.getAsInteger(CalendarContract.Instances.CALENDAR_ACCESS_LEVEL) == CalendarContract.Instances.CAL_ACCESS_READ) {
+				childView.setLongClickable(false);
+			} else {
+				childView.setOnLongClickListener(itemOnLongClickListener);
+				childView.setLongClickable(true);
+			}
+
 			addView(childView);
 		}
 		receivedTimeTick(null);

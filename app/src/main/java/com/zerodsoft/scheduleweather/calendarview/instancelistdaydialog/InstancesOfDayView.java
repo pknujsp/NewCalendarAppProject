@@ -77,7 +77,6 @@ public class InstancesOfDayView implements CalendarViewInitializer {
 		deleteInstancesBtn.setVisibility(View.GONE);
 
 		moreButton.setOnClickListener(new View.OnClickListener() {
-
 			@Override
 			public void onClick(View view) {
 				if (adapter == null) {

@@ -164,18 +164,6 @@ public class MapHeaderSearchFragment extends Fragment {
 		});
 
 
-		binding.searchView.setEditTextOnKeyListener(new View.OnKeyListener() {
-			@Override
-			public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
-				if (keyCode == KeyEvent.KEYCODE_ENTER && keyEvent.getAction() == KeyEvent.ACTION_DOWN) {
-					//검색
-					search(binding.searchView.getQuery());
-					return true;
-				}
-				return false;
-			}
-		});
-
 		binding.searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 			@Override
 			public boolean onQueryTextSubmit(String query) {
@@ -206,7 +194,6 @@ public class MapHeaderSearchFragment extends Fragment {
 				return false;
 			}
 		});
-
 		binding.viewTypeButton.setVisibility(View.GONE);
 
 		mapDrawable = ContextCompat.getDrawable(getContext(), R.drawable.map_icon);
