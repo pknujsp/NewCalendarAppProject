@@ -20,7 +20,7 @@ import com.zerodsoft.scheduleweather.event.foods.searchlocation.interfaces.OnSel
 import com.zerodsoft.scheduleweather.navermap.searchresult.adapter.SearchResultListAdapter;
 import com.zerodsoft.scheduleweather.navermap.searchresult.interfaces.IndicatorCreater;
 import com.zerodsoft.scheduleweather.navermap.model.SearchResultChecker;
-import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
+import com.zerodsoft.scheduleweather.kakaoplace.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalResponse;

@@ -32,14 +32,14 @@
                     android:textSize="18sp" />
 
                 <TextView
-                    android:id="@+id/more_favorite_address_place_list"
+                    android:id="@+id/show_all_favorites"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:background="@drawable/secondary_button"
                     android:clickable="true"
                     android:focusable="true"
-                    android:text="@string/open_map"
+                    android:text="@string/show_all"
                     android:textColor="@color/primary_button_color"
                     android:textSize="14sp" />
 

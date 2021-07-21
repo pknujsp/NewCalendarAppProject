@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.navermap.util;
+package com.zerodsoft.scheduleweather.kakaoplace;
 
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
@@ -54,6 +54,12 @@ public class LocalParameterUtil {
 	}
 
 	public static LocalApiPlaceParameter getCoordToAddressParameter(double latitude, double longitude) {
+		LocalApiPlaceParameter parameter = new LocalApiPlaceParameter();
+		parameter.setX(String.valueOf(longitude)).setY(String.valueOf(latitude));
+		return parameter;
+	}
+
+	public static LocalApiPlaceParameter getCoordToRegionCodeParameter(double latitude, double longitude) {
 		LocalApiPlaceParameter parameter = new LocalApiPlaceParameter();
 		parameter.setX(String.valueOf(longitude)).setY(String.valueOf(latitude));
 		return parameter;

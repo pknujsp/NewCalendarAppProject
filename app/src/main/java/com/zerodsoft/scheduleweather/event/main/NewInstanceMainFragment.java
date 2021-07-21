@@ -717,7 +717,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		placeCategoryListChip.setText(R.string.open_list);
 		placeCategoryListChip.setClickable(true);
 		placeCategoryListChip.setCheckable(false);
-		placeCategoryListChip.setTextColor(Color.BLACK);
+		placeCategoryListChip.setTextColor(Color.BLUE);
 		placeCategoryListChip.setOnClickListener(new View.OnClickListener() {
 			boolean initializing = true;
 
@@ -757,7 +757,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		placeCategorySettingsChip.setText(R.string.app_settings);
 		placeCategorySettingsChip.setClickable(true);
 		placeCategorySettingsChip.setCheckable(false);
-		placeCategorySettingsChip.setTextColor(Color.BLACK);
+		placeCategorySettingsChip.setTextColor(Color.BLUE);
 		placeCategorySettingsChip.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {

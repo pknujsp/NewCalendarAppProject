@@ -41,7 +41,7 @@ public class AllFavoriteLocationsFragment extends FavoriteLocationsBaseFragment 
 	@Override
 	public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		binding.moreFavoriteAddressPlaceList.setVisibility(View.GONE);
+		binding.showAllFavorites.setVisibility(View.GONE);
 		spinnerAdapter = ArrayAdapter.createFromResource(getContext(),
 				R.array.all_favorite_locations_sort_spinner, android.R.layout.simple_spinner_item);
 

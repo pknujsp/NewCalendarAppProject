@@ -66,6 +66,7 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
 
 	class ItemViewHolder extends RecyclerView.ViewHolder {
 		private TextView restaurantName;
+		private TextView restaurantAddress;
 		private ImageView restaurantImage;
 		private TextView restaurantMenuInfo;
 		private TextView restaurantRating;
@@ -77,6 +78,7 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
 			super(view);
 
 			restaurantName = (TextView) view.findViewById(R.id.restaurant_name);
+			restaurantAddress = (TextView) view.findViewById(R.id.restaurant_address);
 			restaurantImage = (ImageView) view.findViewById(R.id.restaurant_image);
 			restaurantRating = (TextView) view.findViewById(R.id.restaurant_rating);
 			favoriteButton = (ImageView) view.findViewById(R.id.favorite_button);
@@ -92,6 +94,7 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
 		public void bind(PlaceDocuments item) {
 			restaurantPlaceIdMap.put(item.getId(), getBindingAdapterPosition());
 			restaurantName.setText(item.getPlaceName());
+			restaurantAddress.setText(item.getAddressName());
 
             /*
             if (kakaoPlacesArr.get(getBindingAdapterPosition()) == null)

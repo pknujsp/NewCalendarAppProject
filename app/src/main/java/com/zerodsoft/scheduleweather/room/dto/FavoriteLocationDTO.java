@@ -170,6 +170,7 @@ public class FavoriteLocationDTO {
 
 	public void setRestaurantData(PlaceDocuments placeDocument) {
 		this.placeName = placeDocument.getPlaceName();
+		this.address = placeDocument.getAddressName();
 		this.placeId = placeDocument.getId();
 		this.latitude = placeDocument.getY();
 		this.longitude = placeDocument.getX();

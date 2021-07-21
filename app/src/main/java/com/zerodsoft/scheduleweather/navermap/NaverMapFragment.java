@@ -53,7 +53,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.naver.maps.geometry.LatLng;
 import com.naver.maps.geometry.LatLngBounds;
-import com.naver.maps.geometry.Utmk;
 import com.naver.maps.map.CameraAnimation;
 import com.naver.maps.map.CameraPosition;
 import com.naver.maps.map.CameraUpdate;
@@ -73,7 +72,6 @@ import com.naver.maps.map.util.FusedLocationSource;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.classes.AppPermission;
-import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.databinding.FragmentNaverMapBinding;
 import com.zerodsoft.scheduleweather.etc.LocationType;
@@ -100,25 +98,22 @@ import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.navermap.interfaces.INetwork;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnClickedBottomSheetListener;
-import com.zerodsoft.scheduleweather.navermap.interfaces.OnCoordToAddressListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.PlacesItemBottomSheetButtonOnClickListener;
-import com.zerodsoft.scheduleweather.navermap.model.CoordToAddressUtilByKakao;
 import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebDialogFragment;
-import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
+import com.zerodsoft.scheduleweather.kakaoplace.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.MapSharedViewModel;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.SearchHistoryViewModel;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.address.ReverseGeoCodingParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddressDocuments;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoregioncoderesponse.CoordToRegionCode;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.address.reversegeocoding.ReverseGeoCodingResponse;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
-import com.zerodsoft.scheduleweather.sgis.SgisAddress;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
 import org.jetbrains.annotations.NotNull;
@@ -812,43 +807,37 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 				}
 			});
 
-
-	private final JsonDownloader<ReverseGeoCodingResponse> reverseGeoCodingResponseJsonDownloader =
-			new JsonDownloader<ReverseGeoCodingResponse>() {
-				@Override
-				public void onResponseSuccessful(ReverseGeoCodingResponse result) {
-					if (getActivity() != null) {
-						requireActivity().runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								if (result.getResult() != null) {
-									if (!result.getResult().isEmpty()) {
-										binding.naverMapButtonsLayout.currentAddress.setText(result.getResult().get(0).getFullAddress());
-									}
-								} else {
-									binding.naverMapButtonsLayout.currentAddress.setText("");
-								}
-							}
-						});
+	private final OnKakaoLocalApiCallback reverseGeoCodingResponseCallback = new OnKakaoLocalApiCallback() {
+		@Override
+		public void onResultSuccessful(int type, KakaoLocalResponse result) {
+			if (getActivity() != null) {
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						binding.naverMapButtonsLayout.currentAddress.setText(((CoordToRegionCode) result).getCoordToRegionCodeDocuments()
+								.get(0).getAddressName());
 					}
-				}
+				});
+			}
+		}
 
-				@Override
-				public void onResponseFailed(Exception e) {
-					if (getActivity() != null) {
-						requireActivity().runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								binding.naverMapButtonsLayout.currentAddress.setText("");
-							}
-						});
+		@Override
+		public void onResultNoData() {
+			if (getActivity() != null) {
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						binding.naverMapButtonsLayout.currentAddress.setText("");
 					}
-				}
-			};
+				});
+			}
+		}
+	};
 
 	public void setCurrentAddress() {
 		//sgis reverse geocoding 이용
 		LatLng latLng = naverMap.getCameraPosition().target;
+		/*
 		Utmk utmk = Utmk.valueOf(latLng);
 
 		ReverseGeoCodingParameter parameter = new ReverseGeoCodingParameter();
@@ -857,6 +846,11 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		parameter.setyCoor(String.valueOf(utmk.y));
 
 		SgisAddress.reverseGeoCoding(parameter, reverseGeoCodingResponseJsonDownloader);
+
+		 */
+
+		LocalApiPlaceParameter reverseGeoCodingParameter = LocalParameterUtil.getCoordToRegionCodeParameter(latLng.latitude, latLng.longitude);
+		KakaoLocalDownloader.coordToRegionCode(reverseGeoCodingParameter, reverseGeoCodingResponseCallback);
 	}
 
 
@@ -932,7 +926,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 					KakaoLocalDownloader.coordToAddress(parameter, onKakaoLocalApiCallback);
 				}
 			});
-
 		} else {
 			adapter = new LocationItemViewPagerAdapter(getContext(), markerType);
 			adapter.setVisibleSelectBtn(placeBottomSheetSelectBtnVisibility);

@@ -2,6 +2,7 @@ package com.zerodsoft.scheduleweather.retrofit.queryresponse.map;
 
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressKakaoLocalResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoregioncoderesponse.CoordToRegionCode;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceKakaoLocalResponse;
 
 public class KakaoLocalResponse {
@@ -14,8 +15,9 @@ public class KakaoLocalResponse {
 			isEmpty = ((AddressKakaoLocalResponse) this).getAddressResponseDocumentsList().isEmpty();
 		} else if (this instanceof CoordToAddress) {
 			isEmpty = ((CoordToAddress) this).getCoordToAddressDocuments().isEmpty();
+		} else if (this instanceof CoordToRegionCode) {
+			isEmpty = ((CoordToRegionCode) this).getCoordToRegionCodeDocuments().isEmpty();
 		}
-
 
 		return isEmpty;
 	}
@@ -29,6 +31,8 @@ public class KakaoLocalResponse {
 			size = ((AddressKakaoLocalResponse) this).getAddressResponseDocumentsList().size();
 		} else if (this instanceof CoordToAddress) {
 			size = ((CoordToAddress) this).getCoordToAddressDocuments().size();
+		} else if (this instanceof CoordToRegionCode) {
+			size = ((CoordToRegionCode) this).getCoordToRegionCodeDocuments().size();
 		}
 
 		return size;

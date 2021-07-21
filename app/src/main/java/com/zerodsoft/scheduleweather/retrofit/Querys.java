@@ -7,6 +7,7 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.NearbyM
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.kakaoplace.KakaoPlaceJsonRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressKakaoLocalResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoregioncoderesponse.CoordToRegionCode;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.address.reversegeocoding.ReverseGeoCodingResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.auth.SgisAuthResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.building.buildingarea.BuildingAreaResponse;
@@ -45,6 +46,10 @@ public interface Querys {
 	@Headers({"Authorization: " + HttpCommunicationClient.KAKAO_APP_KEY})
 	@GET("geo/coord2address.json")
 	Call<CoordToAddress> getCoordToAddress(@QueryMap(encoded = true) Map<String, String> queryMap);
+
+	@Headers({"Authorization: " + HttpCommunicationClient.KAKAO_APP_KEY})
+	@GET("geo/coord2regioncode.json")
+	Call<CoordToRegionCode> getCoordToRegionCode(@QueryMap(encoded = true) Map<String, String> queryMap);
 
 	// weather
 	//초단기 실황

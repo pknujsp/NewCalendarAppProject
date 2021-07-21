@@ -28,13 +28,12 @@ import com.zerodsoft.scheduleweather.event.foods.interfaces.RestaurantListListen
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 import com.zerodsoft.scheduleweather.kakaoplace.viewmodel.KakaoRestaurantsViewModel;
 import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
-import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
+import com.zerodsoft.scheduleweather.kakaoplace.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class RestaurantListFragment extends Fragment implements OnClickedListItem<PlaceDocuments> {

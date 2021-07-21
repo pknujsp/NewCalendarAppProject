@@ -28,7 +28,7 @@ import com.zerodsoft.scheduleweather.navermap.searchresult.adapter.SearchResultL
 import com.zerodsoft.scheduleweather.navermap.searchresult.interfaces.IndicatorCreater;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.navermap.model.SearchResultChecker;
-import com.zerodsoft.scheduleweather.navermap.util.LocalParameterUtil;
+import com.zerodsoft.scheduleweather.kakaoplace.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.MapSharedViewModel;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;

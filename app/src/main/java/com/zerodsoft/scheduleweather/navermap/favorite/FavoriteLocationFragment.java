@@ -118,7 +118,21 @@ public class FavoriteLocationFragment extends FavoriteLocationsBaseFragment impl
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		binding.moreFavoriteAddressPlaceList.setVisibility(View.GONE);
+
+		binding.showAllFavorites.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if (favoriteLocationAdapter.getItemCount() > 0) {
+					if (!markerVisibilitySwitch.isChecked()) {
+						markerVisibilitySwitch.setChecked(true);
+					}
+					iMapData.showMarkers(MarkerType.FAVORITE);
+					getParentFragmentManager().popBackStackImmediate();
+				} else {
+					Toast.makeText(getContext(), R.string.empty_favorite_locations_list, Toast.LENGTH_SHORT).show();
+				}
+			}
+		});
 
 		LinearLayout settingsLayout = new LinearLayout(getContext());
 		LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,

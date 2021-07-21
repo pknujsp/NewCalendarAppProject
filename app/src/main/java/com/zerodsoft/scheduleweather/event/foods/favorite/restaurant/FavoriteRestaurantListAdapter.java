@@ -123,6 +123,7 @@ public class FavoriteRestaurantListAdapter extends BaseExpandableListAdapter {
 
 			childViewHolder = new ChildViewHolder();
 			childViewHolder.restaurantName = (TextView) view.findViewById(R.id.restaurant_name);
+			childViewHolder.restaurantAddress = (TextView) view.findViewById(R.id.restaurant_address);
 			childViewHolder.restaurantImage = (ImageView) view.findViewById(R.id.restaurant_image);
 			childViewHolder.restaurantRating = (TextView) view.findViewById(R.id.restaurant_rating);
 			childViewHolder.favoriteButton = (ImageView) view.findViewById(R.id.favorite_button);
@@ -140,6 +141,7 @@ public class FavoriteRestaurantListAdapter extends BaseExpandableListAdapter {
 		}
 
 		childViewHolder.restaurantName.setText(restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition).getPlaceName());
+		childViewHolder.restaurantAddress.setText(restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition).getAddress());
 		childViewHolder.favoriteButton.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.favorite_enabled_icon));
 
 		view.setOnClickListener(new View.OnClickListener() {
@@ -183,6 +185,7 @@ public class FavoriteRestaurantListAdapter extends BaseExpandableListAdapter {
 
 	static class ChildViewHolder {
 		TextView restaurantName;
+		TextView restaurantAddress;
 		ImageView restaurantImage;
 		TextView restaurantMenuInfo;
 		TextView restaurantRating;
