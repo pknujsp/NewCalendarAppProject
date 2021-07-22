@@ -62,11 +62,10 @@ public class FavoriteLocationFragment extends FavoriteLocationsBaseFragment impl
 	private MapSharedViewModel mapSharedViewModel;
 	private LatLng latLngOnCurrentLocation;
 	private SharedPreferences sharedPreferences;
-
 	private SwitchMaterial markerVisibilitySwitch;
 
 	@Override
-	protected void onAddedFavoriteLocation(FavoriteLocationDTO addedFavoriteLocation) {
+	public void onAddedFavoriteLocation(FavoriteLocationDTO addedFavoriteLocation) {
 		List<FavoriteLocationDTO> list = favoriteLocationAdapter.getList();
 		list.add(addedFavoriteLocation);
 		calcDistance(list);

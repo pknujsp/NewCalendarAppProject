@@ -2,6 +2,7 @@ package com.zerodsoft.scheduleweather.navermap.adapter;
 
 import android.content.Context;
 import android.util.ArrayMap;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,11 +25,12 @@ import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerAbstractAdapter {
-	private ArrayMap<FavoriteLocationDTO, KakaoLocalDocument> favoriteLocationsMap = new ArrayMap<>();
+	private List<FavoriteHolder> favoriteHolderList = new ArrayList<>();
 	private ILoadLocationData iLoadLocationData;
 
 	public FavoriteLocationItemViewPagerAdapter(Context context) {
@@ -40,32 +42,27 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
 	}
 
 	public void setFavoriteLocationList(List<FavoriteLocationDTO> favoriteLocationList) {
-		favoriteLocationsMap.clear();
+		favoriteHolderList.clear();
 
 		for (FavoriteLocationDTO favoriteLocationDTO : favoriteLocationList) {
-			favoriteLocationsMap.put(favoriteLocationDTO, null);
+			favoriteHolderList.add(new FavoriteHolder(favoriteLocationDTO, null));
 		}
 	}
 
 	public void addFavoriteLocation(FavoriteLocationDTO newFavoriteLocationDTO) {
-		favoriteLocationsMap.put(newFavoriteLocationDTO, null);
+		favoriteHolderList.add(new FavoriteHolder(newFavoriteLocationDTO, null));
 	}
 
 	public void removeFavoriteLocation(FavoriteLocationDTO removedFavoriteLocationDTO) {
 		int index = 0;
-		Set<FavoriteLocationDTO> keySet = favoriteLocationsMap.keySet();
 
-		for (FavoriteLocationDTO favoriteLocationDTO : keySet) {
-			if (removedFavoriteLocationDTO.getId().equals(favoriteLocationDTO.getId())) {
-				favoriteLocationsMap.removeAt(index);
+		for (FavoriteHolder favoriteHolder : favoriteHolderList) {
+			if (favoriteHolder.favoriteLocationDTO.getId().equals(removedFavoriteLocationDTO.getId())) {
+				favoriteHolderList.remove(index);
 				break;
 			}
 			index++;
 		}
-	}
-
-	public ArrayMap<FavoriteLocationDTO, KakaoLocalDocument> getFavoriteLocationsMap() {
-		return favoriteLocationsMap;
 	}
 
 	@NonNull
@@ -80,48 +77,48 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
 	}
 
 	public FavoriteLocationDTO getKey(int position) {
-		return favoriteLocationsMap.keyAt(position);
+		return favoriteHolderList.get(position).favoriteLocationDTO;
 	}
 
 	public int getItemPosition(FavoriteLocationDTO favoriteLocationDTO) {
 		final int id = favoriteLocationDTO.getId();
-		Set<FavoriteLocationDTO> keySet = favoriteLocationsMap.keySet();
+		int index = 0;
 
-		int position = 0;
-		for (FavoriteLocationDTO favoriteLocation : keySet) {
-			if (id == favoriteLocation.getId()) {
+		for (FavoriteHolder favoriteHolder : favoriteHolderList) {
+			if (favoriteHolder.favoriteLocationDTO.getId().equals(favoriteLocationDTO.getId())) {
 				break;
 			}
-			position++;
+			index++;
 		}
-
-		return position;
+		return index;
 	}
 
 	@Override
 	public int getItemCount() {
-		return favoriteLocationsMap.size();
+		return favoriteHolderList.size();
 	}
 
 	@Override
 	public KakaoLocalDocument getLocalItem(int position) {
-		return favoriteLocationsMap.valueAt(position);
+		return favoriteHolderList.get(position).kakaoLocalDocument;
 	}
 
 	@Override
 	public int getLocalItemPosition(KakaoLocalDocument kakaoLocalDocument) {
-		int i = 0;
-		for (; i < favoriteLocationsMap.size(); i++) {
-			if (favoriteLocationsMap.valueAt(i).equals(kakaoLocalDocument)) {
+		int index = 0;
+
+		for (FavoriteHolder favoriteHolder : favoriteHolderList) {
+			if (favoriteHolder.kakaoLocalDocument.equals(kakaoLocalDocument)) {
 				break;
 			}
+			index++;
 		}
-		return i;
+		return index;
 	}
 
 	@Override
 	public int getItemsCount() {
-		return favoriteLocationsMap.size();
+		return favoriteHolderList.size();
 	}
 
 	class FavoriteLocationItemInMapViewHolder extends PlaceItemInMapViewHolder {
@@ -132,15 +129,15 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
 
 		@Override
 		KakaoLocalDocument getKakaoLocalDocument(int position) {
-			return favoriteLocationsMap.valueAt(position);
+			return favoriteHolderList.get(position).kakaoLocalDocument;
 		}
 
 		@Override
 		public void bind() {
 			final int position = getBindingAdapterPosition();
 
-			if (favoriteLocationsMap.valueAt(position) == null) {
-				FavoriteLocationDTO favoriteLocationDTO = favoriteLocationsMap.keyAt(position);
+			if (favoriteHolderList.get(position).kakaoLocalDocument == null) {
+				FavoriteLocationDTO favoriteLocationDTO = favoriteHolderList.get(position).favoriteLocationDTO;
 				LocalApiPlaceParameter parameter = null;
 
 				if (favoriteLocationDTO.getType() == FavoriteLocationDTO.ADDRESS) {
@@ -166,14 +163,15 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
 								}
 								index++;
 							}
-							favoriteLocationsMap.put(favoriteLocationDTO, placeDocumentsList.get(index));
+							favoriteHolderList.get(position).kakaoLocalDocument = placeDocumentsList.get(index);
 						} else {
 							CoordToAddressDocuments coordToAddressDocument = ((CoordToAddress) result).getCoordToAddressDocuments().get(0);
 							coordToAddressDocument.getCoordToAddressAddress().setLatitude(favoriteLocationDTO.getLatitude());
 							coordToAddressDocument.getCoordToAddressAddress().setLongitude(favoriteLocationDTO.getLongitude());
-							favoriteLocationsMap.put(favoriteLocationDTO, coordToAddressDocument);
+
+							favoriteHolderList.get(position).kakaoLocalDocument = coordToAddressDocument;
 						}
-						setDataView(favoriteLocationsMap.valueAt(position));
+						setDataView(favoriteHolderList.get(position).kakaoLocalDocument);
 					}
 
 					@Override
@@ -182,8 +180,18 @@ public class FavoriteLocationItemViewPagerAdapter extends LocationItemViewPagerA
 					}
 				});
 			} else {
-				setDataView(favoriteLocationsMap.valueAt(position));
+				setDataView(favoriteHolderList.get(position).kakaoLocalDocument);
 			}
+		}
+	}
+
+	static class FavoriteHolder {
+		final FavoriteLocationDTO favoriteLocationDTO;
+		KakaoLocalDocument kakaoLocalDocument;
+
+		public FavoriteHolder(FavoriteLocationDTO favoriteLocationDTO, KakaoLocalDocument kakaoLocalDocument) {
+			this.favoriteLocationDTO = favoriteLocationDTO;
+			this.kakaoLocalDocument = kakaoLocalDocument;
 		}
 	}
 

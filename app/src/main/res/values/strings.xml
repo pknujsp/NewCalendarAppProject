@@ -640,4 +640,5 @@
     <string name="repeat_default">반복 기본</string>
     <string name="repeat_specific_until">특정 날짜까지 반복</string>
     <string name="hourly_fcst">시간별 예보</string>
+    <string name="windpower">바람세기</string>
 </resources>

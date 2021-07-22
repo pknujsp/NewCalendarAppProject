@@ -225,4 +225,17 @@ SKY와 PTY는 별개의 데이터
 			return "약한 바람";
 		}
 	}
+
+	public static String getSimpleWindSpeedDescription(String windSpeed) {
+		double speed = Double.valueOf(windSpeed);
+		if (speed >= 14) {
+			return "매우 강";
+		} else if (speed >= 9) {
+			return "강";
+		} else if (speed >= 4) {
+			return "약간 강";
+		} else {
+			return "약";
+		}
+	}
 }

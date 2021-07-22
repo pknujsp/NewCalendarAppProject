@@ -91,6 +91,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
+                android:scrollbarStyle="insideOverlay"
+                android:scrollbars="vertical"
                 tools:itemCount="3"
                 tools:listitem="@layout/favorite_address_item_view" />
 

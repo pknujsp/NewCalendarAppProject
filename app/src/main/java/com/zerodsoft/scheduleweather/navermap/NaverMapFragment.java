@@ -867,12 +867,12 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 	private void onClickedMarkerByTouch(Marker marker) {
 		//poiitem을 직접 선택한 경우 호출
-		MarkerHolder markerHolder = (MarkerHolder) marker.getTag();
 
 		CameraUpdate cameraUpdate = CameraUpdate.scrollTo(marker.getPosition());
-		cameraUpdate.animate(CameraAnimation.Easing, 150);
+		cameraUpdate.animate(CameraAnimation.Easing, 160);
 		naverMap.moveCamera(cameraUpdate);
 
+		MarkerHolder markerHolder = (MarkerHolder) marker.getTag();
 		LocationItemViewPagerAbstractAdapter adapter = viewPagerAdapterMap.get(markerHolder.markerType);
 		int itemPosition = 0;
 
@@ -1264,9 +1264,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		MarkerHolder markerHolder = null;
 		Marker selectedMarker = null;
 
-		FavoriteLocationItemViewPagerAdapter adapter = (FavoriteLocationItemViewPagerAdapter) viewPagerAdapterMap.get(MarkerType.FAVORITE);
-		int selectedPosition = adapter.getItemPosition(favoriteLocationDTO);
-
 		for (Marker marker : markerList) {
 			markerHolder = (MarkerHolder) marker.getTag();
 			if (((FavoriteMarkerHolder) markerHolder).favoriteLocationDTO.getId().equals(favoriteLocationDTO.getId())) {
@@ -1275,16 +1272,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			}
 		}
 
-		CameraUpdate cameraUpdate = CameraUpdate.scrollTo(selectedMarker.getPosition());
-		cameraUpdate.animate(CameraAnimation.Easing, 150);
-		naverMap.moveCamera(cameraUpdate);
-
-		//선택된 마커의 아이템 리스트내 위치 파악 후 뷰 페이저 이동
-		locationItemBottomSheetViewPager.setTag(MarkerType.FAVORITE);
-		locationItemBottomSheetViewPager.setAdapter(adapter);
-		locationItemBottomSheetViewPager.setCurrentItem(selectedPosition, false);
-
-		setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_EXPANDED);
+		onClickedMarkerByTouch(selectedMarker);
 	}
 
 	@Override
@@ -1524,7 +1512,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 		MarkerHolder markerHolder = new MarkerHolder(null, MarkerType.LONG_CLICKED_MAP);
 		markerOfSelectedLocation.setTag(markerHolder);
-		markerOfSelectedLocation.setMap(naverMap);
 
 		markerOfSelectedLocation.setOnClickListener(new Overlay.OnClickListener() {
 			@Override
@@ -1534,6 +1521,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 				return true;
 			}
 		});
+
+		markerOfSelectedLocation.setMap(naverMap);
 
 		createMarkers(new ArrayList<>(), MarkerType.LONG_CLICKED_MAP);
 		markersMap.get(MarkerType.LONG_CLICKED_MAP).add(markerOfSelectedLocation);
@@ -1619,12 +1608,11 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 
 	protected void addFavoriteLocationsPoiItem(FavoriteLocationDTO favoriteLocationDTO) {
-		if (App.isPreference_key_show_favorite_locations_markers_on_map()) {
-			FavoriteLocationItemViewPagerAdapter adapter = (FavoriteLocationItemViewPagerAdapter) viewPagerAdapterMap.get(MarkerType.FAVORITE);
-			adapter.addFavoriteLocation(favoriteLocationDTO);
-			adapter.notifyDataSetChanged();
-			createFavoriteLocationMarker(favoriteLocationDTO);
-		}
+		FavoriteLocationItemViewPagerAdapter adapter = (FavoriteLocationItemViewPagerAdapter) viewPagerAdapterMap.get(MarkerType.FAVORITE);
+		adapter.addFavoriteLocation(favoriteLocationDTO);
+		adapter.notifyDataSetChanged();
+
+		createFavoriteLocationMarker(favoriteLocationDTO);
 	}
 
 
@@ -1657,11 +1645,11 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 	protected void createFavoriteLocationMarker(FavoriteLocationDTO favoriteLocationDTO) {
 		Marker marker = new Marker();
+
 		marker.setWidth(favoriteMarkerSize);
 		marker.setHeight(favoriteMarkerSize);
 		marker.setPosition(new LatLng(Double.parseDouble(favoriteLocationDTO.getLatitude())
 				, Double.parseDouble(favoriteLocationDTO.getLongitude())));
-		marker.setMap(naverMap);
 		marker.setIcon(OverlayImage.fromResource(R.drawable.favorite_icon));
 		marker.setOnClickListener(markerOnClickListener);
 		marker.setForceShowIcon(true);
@@ -1673,6 +1661,10 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		MarkerHolder markerHolder = new FavoriteMarkerHolder(favoriteLocationDTO, MarkerType.FAVORITE);
 		marker.setTag(markerHolder);
 		markersMap.get(MarkerType.FAVORITE).add(marker);
+
+		if (App.isPreference_key_show_favorite_locations_markers_on_map()) {
+			marker.setMap(naverMap);
+		}
 	}
 
 

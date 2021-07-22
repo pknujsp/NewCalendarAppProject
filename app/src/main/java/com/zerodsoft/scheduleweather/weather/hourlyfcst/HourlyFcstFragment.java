@@ -166,6 +166,8 @@ public class HourlyFcstFragment extends Fragment {
 		final int CHANCE_OF_SHOWER_ROW_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 34f,
 				getResources().getDisplayMetrics());
 		final int WIND_ROW_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 34f, getResources().getDisplayMetrics());
+		final int WIND_POWER_ROW_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 34f,
+				getResources().getDisplayMetrics());
 		final int HUMIDITY_ROW_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 34f,
 				getResources().getDisplayMetrics());
 
@@ -185,6 +187,7 @@ public class HourlyFcstFragment extends Fragment {
 		TextView rainfallLabel = new TextView(context);
 		TextView chanceOfShowerLabel = new TextView(context);
 		TextView windLabel = new TextView(context);
+		TextView windPowerLabel = new TextView(context);
 		TextView humidityLabel = new TextView(context);
 
 		setLabelTextView(dateLabel, getString(R.string.date));
@@ -194,6 +197,7 @@ public class HourlyFcstFragment extends Fragment {
 		setLabelTextView(rainfallLabel, getString(R.string.rainfall));
 		setLabelTextView(chanceOfShowerLabel, getString(R.string.chance_of_shower));
 		setLabelTextView(windLabel, getString(R.string.wind));
+		setLabelTextView(windPowerLabel, getString(R.string.windpower));
 		setLabelTextView(humidityLabel, getString(R.string.humidity));
 
 		LinearLayout.LayoutParams dateLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, DATE_ROW_HEIGHT);
@@ -220,6 +224,11 @@ public class HourlyFcstFragment extends Fragment {
 		windLabelParams.topMargin = TB_MARGIN;
 		windLabelParams.bottomMargin = TB_MARGIN;
 
+		LinearLayout.LayoutParams windPowerLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+				WIND_POWER_ROW_HEIGHT);
+		windPowerLabelParams.topMargin = TB_MARGIN;
+		windPowerLabelParams.bottomMargin = TB_MARGIN;
+
 		LinearLayout.LayoutParams humidityLabelParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, HUMIDITY_ROW_HEIGHT);
 		humidityLabelParams.topMargin = TB_MARGIN;
 		humidityLabelParams.bottomMargin = TB_MARGIN;
@@ -231,6 +240,7 @@ public class HourlyFcstFragment extends Fragment {
 		rainfallLabelParams.gravity = Gravity.CENTER;
 		chanceOfShowerLabelParams.gravity = Gravity.CENTER;
 		windLabelParams.gravity = Gravity.CENTER;
+		windPowerLabelParams.gravity = Gravity.CENTER;
 		humidityLabelParams.gravity = Gravity.CENTER;
 
 		binding.vilageFcstHeaderCol.addView(dateLabel, dateLabelParams);
@@ -240,9 +250,10 @@ public class HourlyFcstFragment extends Fragment {
 		binding.vilageFcstHeaderCol.addView(rainfallLabel, rainfallLabelParams);
 		binding.vilageFcstHeaderCol.addView(chanceOfShowerLabel, chanceOfShowerLabelParams);
 		binding.vilageFcstHeaderCol.addView(windLabel, windLabelParams);
+		binding.vilageFcstHeaderCol.addView(windPowerLabel, windPowerLabelParams);
 		binding.vilageFcstHeaderCol.addView(humidityLabel, humidityLabelParams);
 
-		//날짜, 시각, 하늘, 기온, 강수량, 강수확률, 바람, 습도 순으로 행 등록
+		//날짜, 시각, 하늘, 기온, 강수량, 강수확률, 바람, 바람세기, 습도 순으로 행 등록
 		dateRow = null;
 		LinearLayout clockRow = new LinearLayout(context);
 		SkyView skyRow = new SkyView(context, dataList);
@@ -250,11 +261,13 @@ public class HourlyFcstFragment extends Fragment {
 		RainfallView rainfallRow = new RainfallView(context, dataList);
 		LinearLayout chanceOfShowerRow = new LinearLayout(context);
 		LinearLayout windRow = new LinearLayout(context);
+		LinearLayout windPowerRow = new LinearLayout(context);
 		LinearLayout humidityRow = new LinearLayout(context);
 
 		clockRow.setOrientation(LinearLayout.HORIZONTAL);
 		chanceOfShowerRow.setOrientation(LinearLayout.HORIZONTAL);
 		windRow.setOrientation(LinearLayout.HORIZONTAL);
+		windPowerRow.setOrientation(LinearLayout.HORIZONTAL);
 		humidityRow.setOrientation(LinearLayout.HORIZONTAL);
 
 		//시각 --------------------------------------------------------------------------
@@ -327,6 +340,16 @@ public class HourlyFcstFragment extends Fragment {
 			windRow.addView(textView, textParams);
 		}
 
+		//바람세기 ------------------------------------------------------------------------------
+		for (int col = 0; col < COLUMN_SIZE; col++) {
+			TextView textView = new TextView(context);
+			setValueTextView(textView, WeatherDataConverter.getSimpleWindSpeedDescription(dataList.get(col).getWindSpeed()));
+
+			LinearLayout.LayoutParams textParams = new LinearLayout.LayoutParams(COLUMN_WIDTH, WIND_POWER_ROW_HEIGHT);
+			textParams.gravity = Gravity.CENTER;
+			windPowerRow.addView(textView, textParams);
+		}
+
 		//습도 ------------------------------------------------------------------------------
 		for (int col = 0; col < COLUMN_SIZE; col++) {
 			TextView textView = new TextView(context);
@@ -361,6 +384,10 @@ public class HourlyFcstFragment extends Fragment {
 		windRowParams.topMargin = TB_MARGIN;
 		windRowParams.bottomMargin = TB_MARGIN;
 
+		LinearLayout.LayoutParams windPowerRowParams = new LinearLayout.LayoutParams(VIEW_WIDTH, WIND_POWER_ROW_HEIGHT);
+		windPowerRowParams.topMargin = TB_MARGIN;
+		windPowerRowParams.bottomMargin = TB_MARGIN;
+
 		LinearLayout.LayoutParams humidityRowParams = new LinearLayout.LayoutParams(VIEW_WIDTH, HUMIDITY_ROW_HEIGHT);
 		humidityRowParams.topMargin = TB_MARGIN;
 		humidityRowParams.bottomMargin = TB_MARGIN;
@@ -372,6 +399,7 @@ public class HourlyFcstFragment extends Fragment {
 		binding.vilageFcstView.addView(rainfallRow, rainfallRowParams);
 		binding.vilageFcstView.addView(chanceOfShowerRow, chanceOfShowerRowParams);
 		binding.vilageFcstView.addView(windRow, windRowParams);
+		binding.vilageFcstView.addView(windPowerRow, windPowerRowParams);
 		binding.vilageFcstView.addView(humidityRow, humidityRowParams);
 	}
 

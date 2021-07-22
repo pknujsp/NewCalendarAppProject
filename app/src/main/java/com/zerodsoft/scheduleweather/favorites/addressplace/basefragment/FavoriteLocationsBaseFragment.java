@@ -81,7 +81,7 @@ public abstract class FavoriteLocationsBaseFragment extends Fragment implements 
 		return binding.getRoot();
 	}
 
-	protected abstract void onAddedFavoriteLocation(FavoriteLocationDTO addedFavoriteLocation);
+	abstract public void onAddedFavoriteLocation(FavoriteLocationDTO addedFavoriteLocation);
 
 	protected void onRemovedFavoriteLocation(FavoriteLocationDTO removedFavoriteLocation) {
 		List<FavoriteLocationDTO> list = favoriteLocationAdapter.getList();

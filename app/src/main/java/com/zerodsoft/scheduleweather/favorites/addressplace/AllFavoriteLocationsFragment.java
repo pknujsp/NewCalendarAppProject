@@ -55,7 +55,7 @@ public class AllFavoriteLocationsFragment extends FavoriteLocationsBaseFragment 
 	}
 
 	@Override
-	protected void onAddedFavoriteLocation(FavoriteLocationDTO addedFavoriteLocation) {
+	public void onAddedFavoriteLocation(FavoriteLocationDTO addedFavoriteLocation) {
 		List<FavoriteLocationDTO> list = favoriteLocationAdapter.getList();
 		list.add(addedFavoriteLocation);
 		sort(list);
