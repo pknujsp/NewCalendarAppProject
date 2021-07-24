@@ -38,11 +38,14 @@ import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationCloud;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
+import com.zerodsoft.scheduleweather.kakaoplace.retrofit.KakaoLocalDownloader;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
+import com.zerodsoft.scheduleweather.navermap.interfaces.OnKakaoLocalApiCallback;
 import com.zerodsoft.scheduleweather.navermap.model.CoordToAddressUtilByKakao;
 import com.zerodsoft.scheduleweather.kakaoplace.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.MapSharedViewModel;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddressDocuments;
 import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationInfoDTO;
@@ -482,11 +485,11 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 				LocalParameterUtil.getCoordToAddressParameter(Double.parseDouble(locationDtoByGps.getLatitude()),
 						Double.parseDouble(locationDtoByGps.getLongitude()));
 
-		CoordToAddressUtilByKakao.coordToAddress(localApiPlaceParameter, new JsonDownloader<CoordToAddress>() {
+		KakaoLocalDownloader.coordToAddress(localApiPlaceParameter, new OnKakaoLocalApiCallback() {
 			@Override
-			public void onResponseSuccessful(CoordToAddress result) {
+			public void onResultSuccessful(int type, KakaoLocalResponse result) {
 				LocationDTO locationDTO = new LocationDTO();
-				CoordToAddressDocuments coordToAddressDocument = result.getCoordToAddressDocuments().get(0);
+				CoordToAddressDocuments coordToAddressDocument = ((CoordToAddress) result).getCoordToAddressDocuments().get(0);
 
 				locationDTO.setAddress(coordToAddressDocument.getCoordToAddressAddress().getAddressName(), null,
 						locationDtoByGps.getLatitude(),
@@ -509,10 +512,11 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 			}
 
 			@Override
-			public void onResponseFailed(Exception e) {
-				binding.customProgressView.onFailedProcessingData(e.getMessage().toString());
+			public void onResultNoData() {
+				binding.customProgressView.onFailedProcessingData(getString(R.string.error_downloading_address));
 			}
 		});
+
 	}
 
 	private ActivityResultLauncher<String> requestLocationPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission()

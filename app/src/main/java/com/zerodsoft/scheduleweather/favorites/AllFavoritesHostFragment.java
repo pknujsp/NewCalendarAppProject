@@ -48,7 +48,7 @@ public class AllFavoritesHostFragment extends Fragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		new ViewModelProvider(this).get(FavoriteLocationViewModel.class);
+		new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
 	}
 
 	@Override

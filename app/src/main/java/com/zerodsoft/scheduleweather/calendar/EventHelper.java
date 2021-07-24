@@ -96,12 +96,6 @@ public class EventHelper implements Serializable {
 			                List<ContentValues> newReminderList,
 			                List<ContentValues> newAttendeeList,
 			                ContentValues selectedCalendar, LocationDTO newLocationDto, LocationIntentCode locationIntentCode) {
-		if (newEvent.size() == 0) {
-			return;
-		} else if (isUnchanged(newEvent)) {
-			return;
-		}
-
 		Uri uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI
 				, originalEvent.getAsLong(Instances.EVENT_ID));
 		ArrayList<ContentProviderOperation> contentProviderOperationList
@@ -109,62 +103,41 @@ public class EventHelper implements Serializable {
 		int eventIdIndex = -1;
 		boolean forceSaveReminders = false;
 
-		convertDtEndForAllDay(newEvent);
+		if (newEvent.size() != 0 || !isUnchanged(newEvent)) {
+			convertDtEndForAllDay(newEvent);
 
-		if (eventEditType == EventEditType.UPDATE_ONLY_THIS_EVENT) {
-			Uri exceptionUri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_EXCEPTION_URI,
-					originalEvent.getAsLong(Instances.EVENT_ID));
+			if (eventEditType == EventEditType.UPDATE_ONLY_THIS_EVENT) {
+				Uri exceptionUri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_EXCEPTION_URI,
+						originalEvent.getAsLong(Instances.EVENT_ID));
 
-			ContentValues exceptionValues = new ContentValues();
-			exceptionValues.put(Events.ORIGINAL_INSTANCE_TIME, originalEvent.getAsLong(Instances.BEGIN));
-			exceptionValues.put(Events.STATUS, Events.STATUS_CANCELED);
+				ContentValues exceptionValues = new ContentValues();
+				exceptionValues.put(Events.ORIGINAL_INSTANCE_TIME, originalEvent.getAsLong(Instances.BEGIN));
+				exceptionValues.put(Events.STATUS, Events.STATUS_CANCELED);
 
-			contentProviderOperationList.add(ContentProviderOperation.newInsert(exceptionUri).withValues(exceptionValues)
-					.build());
-
-			eventIdIndex = contentProviderOperationList.size();
-			newEvent.put(Events.STATUS, originalEvent.getAsInteger(Events.STATUS));
-			setDuration(newEvent);
-			contentProviderOperationList.add(ContentProviderOperation.newInsert(Events.CONTENT_URI).withValues(newEvent)
-					.build());
-			forceSaveReminders = true;
-		} else if (eventEditType == EventEditType.UPDATE_FOLLOWING_EVENTS) {
-			newEvent.remove(Events._ID);
-
-			boolean hasRRuleInNewEvent = false;
-			if (newEvent.containsKey(Events.RRULE)) {
-				if (newEvent.get(Events.RRULE) != null) {
-					hasRRuleInNewEvent = true;
-				}
-			}
-
-			if (!hasRRuleInNewEvent) {
-				if (isFirstInstance(originalEvent)) {
-					contentProviderOperationList.add(
-							ContentProviderOperation.newDelete(uri).build());
-				} else {
-					updatePastEvents(contentProviderOperationList,
-							originalEvent, newEvent);
-				}
+				contentProviderOperationList.add(ContentProviderOperation.newInsert(exceptionUri).withValues(exceptionValues)
+						.build());
 
 				eventIdIndex = contentProviderOperationList.size();
 				newEvent.put(Events.STATUS, originalEvent.getAsInteger(Events.STATUS));
 				setDuration(newEvent);
-
 				contentProviderOperationList.add(ContentProviderOperation.newInsert(Events.CONTENT_URI).withValues(newEvent)
 						.build());
-			} else {
-				if (isFirstInstance(originalEvent)) {
-					checkTimeDependentFields(originalEvent, newEvent, eventEditType);
-					setDuration(newEvent);
+				forceSaveReminders = true;
+			} else if (eventEditType == EventEditType.UPDATE_FOLLOWING_EVENTS) {
+				newEvent.remove(Events._ID);
+				boolean hasRRuleInNewEvent = false;
 
-					ContentProviderOperation.Builder b = ContentProviderOperation.newUpdate(uri)
-							.withValues(newEvent);
-					contentProviderOperationList.add(b.build());
-				} else {
-					String newRRule = updatePastEvents(contentProviderOperationList, originalEvent, newEvent);
-					if (newEvent.getAsString(Events.RRULE).equals(originalEvent.getAsString(Events.RRULE))) {
-						newEvent.put(Events.RRULE, originalEvent.getAsString(Events.RRULE));
+				if (newEvent.containsKey(Events.RRULE)) {
+					if (newEvent.get(Events.RRULE) != null) {
+						hasRRuleInNewEvent = true;
+					}
+				}
+
+				if (!hasRRuleInNewEvent) {
+					if (isFirstInstance(originalEvent)) {
+						contentProviderOperationList.add(ContentProviderOperation.newDelete(uri).build());
+					} else {
+						updatePastEvents(contentProviderOperationList, originalEvent, newEvent);
 					}
 					eventIdIndex = contentProviderOperationList.size();
 					newEvent.put(Events.STATUS, originalEvent.getAsInteger(Events.STATUS));
@@ -172,26 +145,52 @@ public class EventHelper implements Serializable {
 
 					contentProviderOperationList.add(ContentProviderOperation.newInsert(Events.CONTENT_URI).withValues(newEvent)
 							.build());
-				}
-			}
+				} else {
+					if (isFirstInstance(originalEvent)) {
+						checkTimeDependentFields(originalEvent, newEvent, eventEditType);
+						setDuration(newEvent);
 
-			forceSaveReminders = true;
-		} else if (eventEditType == EventEditType.UPDATE_ALL_EVENTS) {
-			boolean hasRRuleInNewEvent = false;
-			if (newEvent.containsKey(Events.RRULE)) {
-				if (newEvent.get(Events.RRULE) != null) {
-					hasRRuleInNewEvent = true;
-				}
-			}
+						ContentProviderOperation.Builder b = ContentProviderOperation.newUpdate(uri)
+								.withValues(newEvent);
+						contentProviderOperationList.add(b.build());
+					} else {
+						String newRRule = updatePastEvents(contentProviderOperationList, originalEvent, newEvent);
+						EventRecurrence newEventRecurrence = new EventRecurrence();
+						EventRecurrence originalEventRecurrence = new EventRecurrence();
 
-			if (!hasRRuleInNewEvent) {
-				contentProviderOperationList.add(ContentProviderOperation.newUpdate(uri).withValues(newEvent)
-						.build());
+						newEventRecurrence.parse(newEvent.getAsString(Events.RRULE));
+						originalEventRecurrence.parse(originalEvent.getAsString(Events.RRULE));
+
+						if (newEventRecurrence.equals(originalEventRecurrence)) {
+							newEvent.put(Events.RRULE, newRRule);
+						}
+						eventIdIndex = contentProviderOperationList.size();
+						newEvent.put(Events.STATUS, originalEvent.getAsInteger(Events.STATUS));
+						setDuration(newEvent);
+
+						contentProviderOperationList.add(ContentProviderOperation.newInsert(Events.CONTENT_URI).withValues(newEvent)
+								.build());
+					}
+				}
+
 				forceSaveReminders = true;
-			} else {
-				checkTimeDependentFields(originalEvent, newEvent, eventEditType);
-				setDuration(newEvent);
-				contentProviderOperationList.add(ContentProviderOperation.newUpdate(uri).withValues(newEvent).build());
+			} else if (eventEditType == EventEditType.UPDATE_ALL_EVENTS) {
+				boolean hasRRuleInNewEvent = false;
+				if (newEvent.containsKey(Events.RRULE)) {
+					if (newEvent.get(Events.RRULE) != null) {
+						hasRRuleInNewEvent = true;
+					}
+				}
+
+				if (!hasRRuleInNewEvent) {
+					contentProviderOperationList.add(ContentProviderOperation.newUpdate(uri).withValues(newEvent)
+							.build());
+					forceSaveReminders = true;
+				} else {
+					checkTimeDependentFields(originalEvent, newEvent, eventEditType);
+					setDuration(newEvent);
+					contentProviderOperationList.add(ContentProviderOperation.newUpdate(uri).withValues(newEvent).build());
+				}
 			}
 		}
 
@@ -204,7 +203,7 @@ public class EventHelper implements Serializable {
 		} else {
 			long eventId = ContentUris.parseId(uri);
 			saveReminders(contentProviderOperationList, eventId, newReminderList
-					, originalReminderList, forceSaveReminders);
+					, originalReminderList);
 		}
 
 		//attendees
@@ -238,7 +237,7 @@ public class EventHelper implements Serializable {
 				newAttendee.put(Attendees.ATTENDEE_STATUS, Attendees.ATTENDEE_STATUS_INVITED);
 
 				attendeeOperationBuilder = ContentProviderOperation.newInsert(Attendees.CONTENT_URI)
-						.withValues(values);
+						.withValues(newAttendee);
 				attendeeOperationBuilder.withValueBackReference(Attendees.EVENT_ID, eventIdIndex);
 				contentProviderOperationList.add(attendeeOperationBuilder.build());
 			}
@@ -382,23 +381,21 @@ public class EventHelper implements Serializable {
 
 
 	public boolean saveReminders(ArrayList<ContentProviderOperation> ops, long eventId,
-	                             List<ContentValues> newReminderList, List<ContentValues> originalReminderList,
-	                             boolean forceSave) {
-		if (newReminderList.equals(originalReminderList) && !forceSave) {
-			return false;
+	                             List<ContentValues> newReminderList, List<ContentValues> originalReminderList) {
+		if (originalReminderList.size() > 0) {
+			String where = Reminders.EVENT_ID + "=?";
+			String[] args = new String[]{Long.toString(eventId)};
+			ContentProviderOperation.Builder b = ContentProviderOperation.newDelete(Reminders.CONTENT_URI);
+			b.withSelection(where, args);
+			ops.add(b.build());
 		}
 
-		String where = Reminders.EVENT_ID + "=?";
-		String[] args = new String[]{Long.toString(eventId)};
-		ContentProviderOperation.Builder b = ContentProviderOperation
-				.newDelete(Reminders.CONTENT_URI);
-		b.withSelection(where, args);
-		ops.add(b.build());
-
-		for (ContentValues reminder : newReminderList) {
-			reminder.put(Reminders.EVENT_ID, eventId);
-			b = ContentProviderOperation.newInsert(Reminders.CONTENT_URI).withValues(reminder);
-			ops.add(b.build());
+		if (newReminderList.size() > 0) {
+			for (ContentValues reminder : newReminderList) {
+				reminder.put(Reminders.EVENT_ID, eventId);
+				ContentProviderOperation.Builder b = ContentProviderOperation.newInsert(Reminders.CONTENT_URI).withValues(reminder);
+				ops.add(b.build());
+			}
 		}
 		return true;
 	}

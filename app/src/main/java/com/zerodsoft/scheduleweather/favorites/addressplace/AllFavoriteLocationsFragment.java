@@ -29,7 +29,7 @@ public class AllFavoriteLocationsFragment extends FavoriteLocationsBaseFragment 
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		favoriteLocationViewModel = new ViewModelProvider(getParentFragment().getParentFragment()).get(FavoriteLocationViewModel.class);
+		favoriteLocationViewModel = new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
 		super.onCreate(savedInstanceState);
 	}
 

@@ -19,6 +19,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.provider.CalendarContract;
+import android.provider.CalendarContract.Events;
 import android.util.ArrayMap;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -301,6 +302,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 
 	private void createFunctionList() {
 		//이벤트 정보, 날씨, 음식점
+
+
 		functionButton = new TextView(getContext());
 		functionButton.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.map_button_rect));
 		functionButton.setElevation(4f);
@@ -438,7 +441,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 				eventId = newEventId;
 				eventValues = calendarViewModel.getEvent(eventId);
 
-				if (eventValues.getAsString(CalendarContract.Events.EVENT_LOCATION) != null) {
+				if (eventValues.getAsString(Events.EVENT_LOCATION) != null) {
 					locationViewModel.getLocation(eventId, new DbQueryCallback<LocationDTO>() {
 						@Override
 						public void onResultSuccessful(LocationDTO savedLocationDto) {
@@ -461,9 +464,16 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 										binding.headerLayout.setVisibility(View.VISIBLE);
 										binding.naverMapButtonsLayout.getRoot().setVisibility(View.VISIBLE);
 
-										createFunctionList();
-										addPlaceCategoryListFragmentIntoBottomSheet();
-										createPlaceCategoryListChips();
+										if (functionButton == null) {
+											createFunctionList();
+										}
+
+										if (!bottomSheetFragmentMap.containsKey(BottomSheetType.SELECTED_PLACE_CATEGORY)) {
+											addPlaceCategoryListFragmentIntoBottomSheet();
+										}
+										if (chipsLayout == null) {
+											createPlaceCategoryListChips();
+										}
 										loadMap();
 									}
 								});
@@ -955,6 +965,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	public void refreshView() {
 		removeAllMarkers();
 		selectedLocationDtoInEvent = null;
+
 		if (selectedLocationInEventMarker != null) {
 			selectedLocationInEventMarker.setMap(null);
 			selectedLocationInEventMarker = null;

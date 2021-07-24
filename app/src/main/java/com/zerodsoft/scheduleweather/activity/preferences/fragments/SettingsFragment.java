@@ -534,7 +534,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		favoriteLocationViewModel = new ViewModelProvider(this).get(FavoriteLocationViewModel.class);
+		favoriteLocationViewModel = new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
 		weatherDbViewModel = new ViewModelProvider(this).get(WeatherDbViewModel.class);
 	}
 

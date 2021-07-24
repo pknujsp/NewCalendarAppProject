@@ -14,23 +14,16 @@ import android.os.Bundle;
 import android.provider.CalendarContract;
 
 import androidx.core.content.ContextCompat;
-import androidx.lifecycle.MutableLiveData;
 
-import com.zerodsoft.scheduleweather.calendar.calendarcommon2.EventRecurrence;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
 import com.zerodsoft.scheduleweather.calendar.interfaces.ICalendarProvider;
-import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import biweekly.property.RecurrenceRule;
 
 public class CalendarProvider implements ICalendarProvider {
 	private Context context;
@@ -87,6 +80,16 @@ public class CalendarProvider implements ICalendarProvider {
 		EVENT_QUERY = stringBuilder.append(CalendarContract.Events._ID).append("=?").toString();
 	}
 
+	@Override
+	public void updateEventStatus(Long eventId, Integer newStatus) {
+		if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
+			Uri uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventId);
+			ContentValues contentValues = new ContentValues();
+			contentValues.put(CalendarContract.Events.STATUS, newStatus);
+
+			context.getContentResolver().update(uri, contentValues, null, null);
+		}
+	}
 
 	// account
 	@Override

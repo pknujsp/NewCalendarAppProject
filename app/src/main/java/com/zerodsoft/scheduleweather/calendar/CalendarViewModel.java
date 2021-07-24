@@ -60,6 +60,12 @@ public class CalendarViewModel extends AndroidViewModel implements ICalendarProv
 		return onModifiedFutureInstancesLiveData;
 	}
 
+
+	@Override
+	public void updateEventStatus(Long eventId, Integer newStatus) {
+		calendarProvider.updateEventStatus(eventId, newStatus);
+	}
+
 	@Override
 	public List<ContentValues> getGoogleAccounts() {
 		return calendarProvider.getGoogleAccounts();

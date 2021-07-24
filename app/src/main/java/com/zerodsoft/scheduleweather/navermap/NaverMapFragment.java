@@ -17,11 +17,13 @@ import android.os.Bundle;
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContract;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
@@ -77,7 +79,6 @@ import com.zerodsoft.scheduleweather.databinding.FragmentNaverMapBinding;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedFavoriteButtonListener;
 import com.zerodsoft.scheduleweather.event.places.interfaces.MarkerOnClickListener;
 import com.zerodsoft.scheduleweather.kakaoplace.retrofit.KakaoLocalDownloader;
 import com.zerodsoft.scheduleweather.navermap.adapter.FavoriteLocationItemViewPagerAdapter;
@@ -129,13 +130,14 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		MarkerOnClickListener, OnClickedBottomSheetListener,
 		NaverMap.OnMapClickListener,
 		NaverMap.OnCameraIdleListener, CameraUpdate.FinishCallback, NaverMap.OnLocationChangeListener,
-		FragmentManager.OnBackStackChangedListener, BottomSheetController, NaverMap.OnMapLongClickListener,
-		OnClickedFavoriteButtonListener {
+		FragmentManager.OnBackStackChangedListener, BottomSheetController, NaverMap.OnMapLongClickListener {
 	public static final int PERMISSION_REQUEST_CODE = 100;
 	public static final int REQUEST_CODE_LOCATION = 10000;
 	public static final int BUILDING_RANGE_OVERLAY_TAG = 1500;
 
 	protected Integer DEFAULT_HEIGHT_OF_BOTTOMSHEET;
+
+	protected boolean initializingFavoriteLocations = true;
 
 	private FusedLocationSource fusedLocationSource;
 	private LocationManager locationManager;
@@ -266,7 +268,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
-		favoriteLocationViewModel = new ViewModelProvider(this).get(FavoriteLocationViewModel.class);
+		favoriteLocationViewModel = new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
 		getChildFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false);
 
 		mapSharedViewModel = new ViewModelProvider(this).get(MapSharedViewModel.class);
@@ -778,18 +780,22 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		loadingDialog.dismiss();
 	}
 
+	private final ActivityResultCallback<ActivityResult> requestOnGpsResultCallback = new ActivityResultCallback<ActivityResult>() {
+		@Override
+		public void onActivityResult(ActivityResult result) {
+			if (NaverMapFragment.this.isHidden()) {
+				return;
+			}
+			if (AppPermission.grantedPermissions(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)) {
+				gpsButton.callOnClick();
+			} else {
+
+			}
+		}
+	};
+
 	private final ActivityResultLauncher<Intent> requestOnGpsLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-			new ActivityResultCallback<ActivityResult>() {
-				@Override
-				public void onActivityResult(ActivityResult result) {
-					if (AppPermission.grantedPermissions(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)) {
-						gpsButton.callOnClick();
-					} else {
-
-					}
-				}
-			});
-
+			requestOnGpsResultCallback);
 
 	private final ActivityResultLauncher<String> requestLocationPermission = registerForActivityResult(new ActivityResultContracts.RequestPermission(),
 			new ActivityResultCallback<Boolean>() {
@@ -802,7 +808,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 						naverMap.setLocationTrackingMode(LocationTrackingMode.NoFollow);
 					} else {
 						Toast.makeText(getActivity(), getString(R.string.message_needs_location_permission), Toast.LENGTH_SHORT).show();
-						naverMap.setLocationSource(null);
 					}
 				}
 			});
@@ -1537,16 +1542,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	}
 
 	@Override
-	public void onClickedFavoriteButton(KakaoLocalDocument kakaoLocalDocument, FavoriteLocationDTO favoriteLocationDTO, int groupPosition, int childPosition) {
-
-	}
-
-	@Override
-	public void onClickedFavoriteButton(KakaoLocalDocument kakaoLocalDocument, FavoriteLocationDTO favoriteLocationDTO, int position) {
-	}
-
-
-	@Override
 	public void showMarkers(MarkerType markerType, boolean isShow) {
 		if (markersMap.containsKey(markerType)) {
 			List<Marker> markers = markersMap.get(markerType);
@@ -1557,6 +1552,28 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	}
 
 	public void loadFavoriteLocations() {
+		favoriteLocationViewModel.getRemovedFavoriteLocationMutableLiveData().observe(this, new Observer<FavoriteLocationDTO>() {
+			@Override
+			public void onChanged(FavoriteLocationDTO favoriteLocationDTO) {
+				if (!initializingFavoriteLocations) {
+					if (naverMap != null) {
+						removeFavoriteLocationMarker(favoriteLocationDTO);
+					}
+				}
+			}
+		});
+
+		favoriteLocationViewModel.getAddedFavoriteLocationMutableLiveData().observe(this, new Observer<FavoriteLocationDTO>() {
+			@Override
+			public void onChanged(FavoriteLocationDTO favoriteLocationDTO) {
+				if (!initializingFavoriteLocations) {
+					if (naverMap != null) {
+						addFavoriteLocationsPoiItem(favoriteLocationDTO);
+					}
+				}
+			}
+		});
+
 		favoriteLocationViewModel.getFavoriteLocations(FavoriteLocationDTO.ONLY_FOR_MAP, new DbQueryCallback<List<FavoriteLocationDTO>>() {
 			@Override
 			public void onResultSuccessful(List<FavoriteLocationDTO> list) {
@@ -1568,6 +1585,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 						if (!list.isEmpty()) {
 							showMarkers(MarkerType.FAVORITE, App.isPreference_key_show_favorite_locations_markers_on_map());
 						}
+
+						initializingFavoriteLocations = false;
 					}
 				});
 			}
@@ -1575,24 +1594,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			@Override
 			public void onResultNoData() {
 
-			}
-		});
-
-		favoriteLocationViewModel.getRemovedFavoriteLocationMutableLiveData().observe(this, new Observer<FavoriteLocationDTO>() {
-			@Override
-			public void onChanged(FavoriteLocationDTO favoriteLocationDTO) {
-				if (naverMap != null) {
-					removeFavoriteLocationMarker(favoriteLocationDTO);
-				}
-			}
-		});
-
-		favoriteLocationViewModel.getAddedFavoriteLocationMutableLiveData().observe(this, new Observer<FavoriteLocationDTO>() {
-			@Override
-			public void onChanged(FavoriteLocationDTO favoriteLocationDTO) {
-				if (naverMap != null) {
-					addFavoriteLocationsPoiItem(favoriteLocationDTO);
-				}
 			}
 		});
 	}

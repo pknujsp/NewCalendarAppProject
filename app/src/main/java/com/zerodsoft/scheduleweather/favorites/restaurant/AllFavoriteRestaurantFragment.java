@@ -27,18 +27,16 @@ import org.jetbrains.annotations.NotNull;
 public class AllFavoriteRestaurantFragment extends FavoriteRestaurantBaseFragment {
 	@Override
 	protected void onAddedFavoriteRestaurant(FavoriteLocationDTO addedFavoriteRestaurant) {
-		addFavoriteRestaurant(addedFavoriteRestaurant);
 	}
 
 	@Override
 	protected void onRemovedFavoriteRestaurant(FavoriteLocationDTO removedFavoriteRestaurant) {
-		removeFavoriteRestaurant(removedFavoriteRestaurant);
 	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		favoriteRestaurantViewModel =
-				new ViewModelProvider(getParentFragment().getParentFragment()).get(FavoriteLocationViewModel.class);
+				new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
 		super.onCreate(savedInstanceState);
 	}
 

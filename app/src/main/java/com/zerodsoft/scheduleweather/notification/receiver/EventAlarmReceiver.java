@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.notification.receiver;
 
 import android.Manifest;
+import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -13,16 +14,25 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Build;
+import android.os.Bundle;
+import android.os.Parcelable;
+import android.os.PowerManager;
 import android.provider.CalendarContract;
+import android.provider.CalendarContract.Events;
+import android.provider.CalendarContract.Instances;
+import android.provider.CalendarContract.Reminders;
+import android.provider.CalendarContract.CalendarAlerts;
 import android.widget.RemoteViews;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.calendar.CalendarProvider;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.repository.LocationRepository;
+import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyItem;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
@@ -45,70 +55,98 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 	public static final String CHANNEL_ID = "channel_id";
 	public static final int NOTIFICATION_ID = 500;
 
+	private boolean isScreenOn(Context context) {
+		PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+		return pm.isInteractive();
+	}
+
+	private boolean checkDeviceLock(Context context) {
+		KeyguardManager myKM = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+		return myKM.inKeyguardRestrictedInputMode();
+	}
+
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		//alarmTime, android.intent.extra.ALARM_COUNT
-
+		//전달받는 값 : alarmTime, android.intent.extra.ALARM_COUNT
 		if (intent.getAction().equals("android.intent.action.EVENT_REMINDER")) {
 			if (ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
 				return;
 			}
-			final String selection = CalendarContract.CalendarAlerts.ALARM_TIME + " = ?";
-			final String[] selectionArgs = {String.valueOf(intent.getExtras().getLong(CalendarContract.CalendarAlerts.ALARM_TIME))};
-			Cursor cursor = context.getContentResolver().query(CalendarContract.CalendarAlerts.CONTENT_URI, null, selection, selectionArgs,
-					null);
-			List<ContentValues> contentValuesList = new ArrayList<>();
+			final Long alarmTime = intent.getExtras().getLong(CalendarAlerts.ALARM_TIME);
+
+			final String selection = CalendarAlerts.ALARM_TIME + " = ?";
+			final String[] selectionArgs = {alarmTime.toString()};
+
+			Cursor cursor = context.getContentResolver().query(CalendarAlerts.CONTENT_URI, null, selection, selectionArgs, null);
+			List<ContentValues> calendarAlertsList = new ArrayList<>();
 
 			while (cursor.moveToNext()) {
-				ContentValues contentValues = new ContentValues();
-				contentValuesList.add(contentValues);
+				ContentValues calendarAlert = new ContentValues();
+				calendarAlertsList.add(calendarAlert);
 
-				contentValues.put(CalendarContract.CalendarAlerts.EVENT_ID,
-						cursor.getLong(cursor.getColumnIndex(CalendarContract.CalendarAlerts.EVENT_ID)));
-				contentValues.put(CalendarContract.CalendarAlerts.BEGIN,
-						cursor.getLong(cursor.getColumnIndex(CalendarContract.CalendarAlerts.BEGIN)));
-				contentValues.put(CalendarContract.CalendarAlerts.CALENDAR_ID,
-						cursor.getInt(cursor.getColumnIndex(CalendarContract.CalendarAlerts.CALENDAR_ID)));
-				contentValues.put(CalendarContract.CalendarAlerts.ALARM_TIME,
-						cursor.getLong(cursor.getColumnIndex(CalendarContract.CalendarAlerts.ALARM_TIME)));
+				calendarAlert.put(CalendarAlerts.EVENT_ID, cursor.getLong(cursor.getColumnIndex(CalendarAlerts.EVENT_ID)));
+				calendarAlert.put(CalendarAlerts.BEGIN, cursor.getLong(cursor.getColumnIndex(CalendarAlerts.BEGIN)));
+				calendarAlert.put(CalendarAlerts.CALENDAR_ID, cursor.getInt(cursor.getColumnIndex(CalendarAlerts.CALENDAR_ID)));
+				calendarAlert.put(CalendarAlerts.ALARM_TIME, cursor.getLong(cursor.getColumnIndex(CalendarAlerts.ALARM_TIME)));
 			}
 			cursor.close();
 
-			List<ContentValues> instanceList = getInstanceList(context, contentValuesList);
+			List<ContentValues> instanceList = getInstanceList(context, calendarAlertsList);
+			if (instanceList.isEmpty()) {
+				return;
+			}
 			setNotifications(context, instanceList);
+
+			//화면이 켜져있으면 notification, 잠겨있으면 : activity, notification
+			if (checkDeviceLock(context)) {
+				try {
+					intent = new Intent(context, AlarmActivity.class);
+					Bundle bundle = new Bundle();
+					bundle.putParcelableArrayList("instanceList", (ArrayList<? extends Parcelable>) instanceList);
+					intent.putExtras(bundle);
+
+					PendingIntent pi = PendingIntent.getActivity(context, 0, intent,
+							PendingIntent.FLAG_ONE_SHOT);
+					pi.send();
+				} catch (PendingIntent.CanceledException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 
+
 	private void setNotifications(Context context, List<ContentValues> instanceList) {
 		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-		final long alarmTime = instanceList.get(0).getAsLong(CalendarContract.CalendarAlerts.ALARM_TIME);
+		final long alarmTime = instanceList.get(0).getAsLong(CalendarAlerts.ALARM_TIME);
 		int requestCode = (int) System.currentTimeMillis();
 
 		for (ContentValues instance : instanceList) {
+			/*
 			Intent activityIntent = new Intent(context, null);
 			activityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
-			activityIntent.putExtra(CalendarContract.Instances.CALENDAR_ID, instance.getAsInteger(CalendarContract.CalendarAlerts.CALENDAR_ID));
-			activityIntent.putExtra(CalendarContract.Instances._ID, instance.getAsLong(CalendarContract.Instances._ID));
-			activityIntent.putExtra(CalendarContract.Instances.EVENT_ID, instance.getAsLong(CalendarContract.CalendarAlerts.EVENT_ID));
-			activityIntent.putExtra(CalendarContract.Instances.BEGIN, instance.getAsLong(CalendarContract.CalendarAlerts.BEGIN));
-			activityIntent.putExtra(CalendarContract.Instances.END, instance.getAsLong(CalendarContract.CalendarAlerts.END));
+			activityIntent.putExtra(CalendarContract.Instances.CALENDAR_ID, instance.getAsInteger(CalendarAlerts.CALENDAR_ID));
+			activityIntent.putExtra(CalendarContract.Instances._ID, instance.getAsLong(Instances._ID));
+			activityIntent.putExtra(CalendarContract.Instances.EVENT_ID, instance.getAsLong(CalendarAlerts.EVENT_ID));
+			activityIntent.putExtra(CalendarContract.Instances.BEGIN, instance.getAsLong(CalendarAlerts.BEGIN));
+			activityIntent.putExtra(CalendarContract.Instances.END, instance.getAsLong(CalendarAlerts.END));
 
 			PendingIntent pendingIntent = PendingIntent.getActivity(context, requestCode++, activityIntent,
 					PendingIntent.FLAG_ONE_SHOT);
 
+			 */
+
 			NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID).setSmallIcon(
-					R.drawable.sunny_day_icon).setContentIntent(pendingIntent).setWhen(
+					R.drawable.sunny_day_icon).setWhen(
 					alarmTime).setAutoCancel(true)
-					.setContentTitle(instance.getAsString(CalendarContract.CalendarAlerts.TITLE).isEmpty() ? context.getString(
-							R.string.empty_title) : instance.getAsString(CalendarContract.CalendarAlerts.TITLE)).setContentText(
-							instance.containsKey(CalendarContract.CalendarAlerts.EVENT_LOCATION) ? instance.getAsString(
-									CalendarContract.CalendarAlerts.EVENT_LOCATION) : "위치 미설정")
+					.setContentTitle(EventUtil.convertTitle(context, instance.getAsString(CalendarAlerts.TITLE))).setContentText(
+							instance.containsKey(CalendarAlerts.EVENT_LOCATION) ? instance.getAsString(
+									CalendarAlerts.EVENT_LOCATION) : "위치 미설정")
 					.setPriority(Notification.PRIORITY_MAX)
-					.setFullScreenIntent(pendingIntent, true)
 					.setDefaults(NotificationCompat.DEFAULT_ALL);
 
-			if (instance.getAsString(CalendarContract.CalendarAlerts.EVENT_LOCATION) == null) {
+			if (instance.get(CalendarAlerts.EVENT_LOCATION) == null) {
 				notifyNotificationHasNotLocation(notificationManager, builder, context, instance);
 			} else {
 				LocationRepository locationRepository = new LocationRepository(context);
@@ -128,7 +166,6 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 							@Override
 							public void onResultNoData() {
 								notifyNotificationHasNotLocation(notificationManager, builder, context, instance);
-
 							}
 						});
 			}
@@ -141,6 +178,7 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 		builder.setStyle(new NotificationCompat.DecoratedCustomViewStyle());
 		builder.setCustomBigContentView(smallView);
 
+		/*
 		AreaCodeRepository areaCodeRepository = new AreaCodeRepository(context);
 
 		areaCodeRepository.getCodeOfProximateArea(Double.parseDouble(locationDTO.getLatitude()), Double.parseDouble(locationDTO.getLongitude())
@@ -160,8 +198,7 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 
 					}
 				});
-
-
+		 */
 	}
 
 	private void setWeatherData(AirConditionProcessing airConditionProcessing, UltraSrtNcstProcessing ultraSrtNcstProcessing, RemoteViews bigView,
@@ -206,15 +243,14 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 	}
 
 	private void setInstanceData(ContentValues contentValues, LocationDTO locationDTO, RemoteViews smallView, RemoteViews bigView, Context context) {
-		String title = contentValues.getAsString(CalendarContract.CalendarAlerts.TITLE).isEmpty() ? context.getString(
-				R.string.empty_title) : contentValues.getAsString(CalendarContract.CalendarAlerts.TITLE);
+		String title = EventUtil.convertTitle(context, contentValues.getAsString(CalendarAlerts.TITLE));
 
-		Date beginDate = new Date(contentValues.getAsLong(CalendarContract.CalendarAlerts.BEGIN));
-		Date endDate = new Date(contentValues.getAsLong(CalendarContract.CalendarAlerts.END));
+		Date beginDate = new Date(contentValues.getAsLong(CalendarAlerts.BEGIN));
+		Date endDate = new Date(contentValues.getAsLong(CalendarAlerts.END));
 
-		String begin = contentValues.getAsBoolean(CalendarContract.CalendarAlerts.ALL_DAY) ? ClockUtil.YYYY_M_D_E.format(beginDate)
+		String begin = contentValues.getAsBoolean(CalendarAlerts.ALL_DAY) ? ClockUtil.YYYY_M_D_E.format(beginDate)
 				: ClockUtil.DATE_FORMAT_NOT_ALLDAY.format(beginDate);
-		String end = contentValues.getAsBoolean(CalendarContract.CalendarAlerts.ALL_DAY) ? ClockUtil.YYYY_M_D_E.format(endDate)
+		String end = contentValues.getAsBoolean(CalendarAlerts.ALL_DAY) ? ClockUtil.YYYY_M_D_E.format(endDate)
 				: ClockUtil.DATE_FORMAT_NOT_ALLDAY.format(endDate);
 
 		String dateTime = begin + " - " + end;
@@ -296,48 +332,41 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 	}
 
 
-	private List<ContentValues> getInstanceList(Context context, List<ContentValues> contentValuesList) {
+	private List<ContentValues> getInstanceList(Context context, List<ContentValues> calendarAlertsList) {
 		if (ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
 		}
-		final String selection = CalendarContract.CalendarAlerts.EVENT_ID + " = ? AND " + CalendarContract.CalendarAlerts.BEGIN + " = ?";
+		final String selection = CalendarAlerts.EVENT_ID + " = ? AND " + CalendarAlerts.BEGIN + " = ?";
 		final String[] selectionArgs = new String[2];
 		Cursor cursor = null;
 
-		for (ContentValues contentValues : contentValuesList) {
-			selectionArgs[0] = contentValues.getAsString(CalendarContract.CalendarAlerts.EVENT_ID);
-			selectionArgs[1] = contentValues.getAsString(CalendarContract.CalendarAlerts.BEGIN);
-			cursor = context.getContentResolver().query(CalendarContract.CalendarAlerts.CONTENT_URI_BY_INSTANCE, null, selection,
+		for (ContentValues calendarAlert : calendarAlertsList) {
+			selectionArgs[0] = calendarAlert.getAsString(CalendarAlerts.EVENT_ID);
+			selectionArgs[1] = calendarAlert.getAsString(CalendarAlerts.BEGIN);
+			cursor = context.getContentResolver().query(CalendarAlerts.CONTENT_URI_BY_INSTANCE, null, selection,
 					selectionArgs, null);
 
 			while (cursor.moveToNext()) {
 				//title,begin,end,location,color
-				contentValues.put(CalendarContract.CalendarAlerts.TITLE,
-						cursor.getString(cursor.getColumnIndex(CalendarContract.CalendarAlerts.TITLE)));
-				contentValues.put(CalendarContract.CalendarAlerts.ALL_DAY,
-						cursor.getInt(cursor.getColumnIndex(CalendarContract.CalendarAlerts.ALL_DAY)));
-				contentValues.put(CalendarContract.CalendarAlerts.EVENT_LOCATION,
-						cursor.getString(cursor.getColumnIndex(CalendarContract.CalendarAlerts.EVENT_LOCATION)));
-				contentValues.put(CalendarContract.CalendarAlerts.EVENT_COLOR,
-						cursor.getInt(cursor.getColumnIndex(CalendarContract.CalendarAlerts.EVENT_COLOR)));
-				contentValues.put(CalendarContract.CalendarAlerts.BEGIN,
-						cursor.getLong(cursor.getColumnIndex(CalendarContract.CalendarAlerts.BEGIN)));
-				contentValues.put(CalendarContract.CalendarAlerts.END,
-						cursor.getLong(cursor.getColumnIndex(CalendarContract.CalendarAlerts.END)));
-				contentValues.put(CalendarContract.Instances._ID,
-						getInstanceId(context, contentValues.getAsLong(CalendarContract.CalendarAlerts.EVENT_ID),
-								cursor.getLong(cursor.getColumnIndex(CalendarContract.CalendarAlerts.BEGIN)),
-								cursor.getLong(cursor.getColumnIndex(CalendarContract.CalendarAlerts.END))));
+				String[] columnNames = cursor.getColumnNames();
+				for (String columnName : columnNames) {
+					if (!cursor.isNull(cursor.getColumnIndex(columnName))) {
+						calendarAlert.put(columnName, cursor.getString(cursor.getColumnIndex(columnName)));
+					}
+				}
+
+				calendarAlert.put(Instances._ID, getInstanceId(context, calendarAlert.getAsLong(CalendarAlerts.EVENT_ID),
+						cursor.getLong(cursor.getColumnIndex(CalendarAlerts.BEGIN)),
+						cursor.getLong(cursor.getColumnIndex(CalendarAlerts.END))));
 			}
 			cursor.close();
 		}
-		return contentValuesList;
+		return calendarAlertsList;
 	}
 
 	private long getInstanceId(Context context, long eventId, long begin, long end) {
 		if (ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
 		}
-		String[] projection = {CalendarContract.Instances._ID, CalendarContract.Instances.EVENT_ID, CalendarContract.Instances.BEGIN,
-				CalendarContract.Instances.END};
+		String[] projection = {Instances._ID, Instances.EVENT_ID, Instances.BEGIN, Instances.END};
 
 		Cursor cursor = CalendarContract.Instances.query(context.getContentResolver(), projection, begin, end);
 		long instanceId = 0L;

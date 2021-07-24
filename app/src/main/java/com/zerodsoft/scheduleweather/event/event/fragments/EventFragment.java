@@ -4,12 +4,14 @@ import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.provider.CalendarContract;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -72,6 +74,9 @@ public class EventFragment extends BottomSheetDialogFragment {
 	private long originalBegin;
 	private long originalEnd;
 
+	private Dialog dialog;
+	private boolean isHidden = false;
+
 	private EventFragmentBinding binding;
 	private ContentValues instanceValues;
 	private List<ContentValues> attendeeList;
@@ -79,22 +84,24 @@ public class EventFragment extends BottomSheetDialogFragment {
 	private LocationViewModel locationViewModel;
 
 	private AlertDialog attendeeDialog;
+	private BottomSheetBehavior<FrameLayout> bottomSheetBehavior;
 
 	private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
 	private FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel;
 
 	private FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks = new FragmentManager.FragmentLifecycleCallbacks() {
-
 		@Override
 		public void onFragmentAttached(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @NonNull @NotNull Context context) {
 			super.onFragmentAttached(fm, f, context);
-			if (getDialog() != null) {
+			if (dialog != null) {
 				if (f instanceof SelectionDetailLocationFragment) {
 					if (fm.findFragmentByTag(getString(R.string.tag_modify_instance_fragment)) == null) {
-						getDialog().hide();
+						isHidden = true;
+						dialog.hide();
 					}
 				} else if (f instanceof ModifyInstanceFragment) {
-					getDialog().hide();
+					isHidden = true;
+					dialog.hide();
 				}
 			}
 		}
@@ -102,16 +109,19 @@ public class EventFragment extends BottomSheetDialogFragment {
 		@Override
 		public void onFragmentDestroyed(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
 			super.onFragmentDestroyed(fm, f);
-			if (getDialog() != null) {
+			if (dialog != null) {
 				if (f instanceof SelectionDetailLocationFragment) {
 					if (fm.findFragmentByTag(getString(R.string.tag_modify_instance_fragment)) == null) {
-						getDialog().show();
+						isHidden = false;
+						dialog.show();
 					}
 				} else if (f instanceof ModifyInstanceFragment) {
-					getDialog().show();
+					isHidden = false;
+					dialog.show();
 				}
 			}
 		}
+
 	};
 
 	public void showSetLocationDialog() {
@@ -172,6 +182,7 @@ public class EventFragment extends BottomSheetDialogFragment {
 		this.VIEW_HEIGHT = VIEW_HEIGHT;
 	}
 
+
 	@Override
 	public void onDismiss(@NonNull @NotNull DialogInterface dialog) {
 		super.onDismiss(dialog);
@@ -183,6 +194,22 @@ public class EventFragment extends BottomSheetDialogFragment {
 	@Override
 	public void onAttach(@NonNull Context context) {
 		super.onAttach(context);
+	}
+
+	@Override
+	public void onViewStateRestored(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+		super.onViewStateRestored(savedInstanceState);
+	}
+
+	@Override
+	public void onStart() {
+		super.onStart();
+
+		if (isHidden) {
+			dialog.hide();
+		} else {
+			dialog.show();
+		}
 	}
 
 	@Override
@@ -204,8 +231,9 @@ public class EventFragment extends BottomSheetDialogFragment {
 	public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
 		Dialog dialog = super.onCreateDialog(savedInstanceState);
 
-		BottomSheetBehavior bottomSheetBehavior = ((BottomSheetDialog) dialog).getBehavior();
+		bottomSheetBehavior = ((BottomSheetDialog) dialog).getBehavior();
 		bottomSheetBehavior.setDraggable(false);
+		bottomSheetBehavior.setHideable(false);
 		bottomSheetBehavior.setPeekHeight(0);
 		bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
 
@@ -220,10 +248,16 @@ public class EventFragment extends BottomSheetDialogFragment {
 	}
 
 	@Override
+	public void onHiddenChanged(boolean hidden) {
+		super.onHiddenChanged(hidden);
+	}
+
+	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		View bottomSheet = getDialog().findViewById(R.id.design_bottom_sheet);
+		dialog = getDialog();
+		View bottomSheet = dialog.findViewById(R.id.design_bottom_sheet);
 		bottomSheet.getLayoutParams().height = VIEW_HEIGHT;
 
 		locationViewModel = new ViewModelProvider(getParentFragment()).get(LocationViewModel.class);
@@ -246,7 +280,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 					binding.eventFab.setImageDrawable(ContextCompat.getDrawable(requireContext(), R.drawable.close_icon));
 					binding.fabsContainer.setVisibility(View.VISIBLE);
 				}
-
 				isExpanded = !isExpanded;
 			}
 		});
@@ -289,7 +322,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 												selectionDetailLocationFragment.setArguments(bundle);
 												getParentFragmentManager().beginTransaction().add(R.id.fragment_container, selectionDetailLocationFragment,
 														getString(R.string.tag_detail_location_selection_fragment)).addToBackStack(getString(R.string.tag_detail_location_selection_fragment)).commit();
-
 											}
 										}
 
@@ -434,7 +466,7 @@ public class EventFragment extends BottomSheetDialogFragment {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		getChildFragmentManager().unregisterFragmentLifecycleCallbacks(fragmentLifecycleCallbacks);
+		getParentFragmentManager().unregisterFragmentLifecycleCallbacks(fragmentLifecycleCallbacks);
 	}
 
 	private void showDeleteEventDialog() {

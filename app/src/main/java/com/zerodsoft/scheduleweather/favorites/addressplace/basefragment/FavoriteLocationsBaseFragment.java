@@ -49,6 +49,7 @@ public abstract class FavoriteLocationsBaseFragment extends Fragment implements 
 	protected ArrayAdapter<CharSequence> spinnerAdapter;
 	protected Set<FavoriteLocationDTO> checkedFavoriteLocationSet = new HashSet<>();
 	protected FavoriteLocationAdapter favoriteLocationAdapter;
+	protected boolean initializing = true;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -57,8 +58,10 @@ public abstract class FavoriteLocationsBaseFragment extends Fragment implements 
 		favoriteLocationViewModel.getAddedFavoriteLocationMutableLiveData().observe(this, new Observer<FavoriteLocationDTO>() {
 			@Override
 			public void onChanged(FavoriteLocationDTO favoriteLocationDTO) {
-				if (favoriteLocationAdapter.getItemCount() > 0) {
-					onAddedFavoriteLocation(favoriteLocationDTO);
+				if (!initializing) {
+					if (favoriteLocationAdapter.getItemCount() > 0) {
+						onAddedFavoriteLocation(favoriteLocationDTO);
+					}
 				}
 			}
 		});
@@ -66,8 +69,10 @@ public abstract class FavoriteLocationsBaseFragment extends Fragment implements 
 		favoriteLocationViewModel.getRemovedFavoriteLocationMutableLiveData().observe(this, new Observer<FavoriteLocationDTO>() {
 			@Override
 			public void onChanged(FavoriteLocationDTO favoriteLocationDTO) {
-				if (favoriteLocationAdapter.getItemCount() > 0) {
-					onRemovedFavoriteLocation(favoriteLocationDTO);
+				if (!initializing) {
+					if (favoriteLocationAdapter.getItemCount() > 0) {
+						onRemovedFavoriteLocation(favoriteLocationDTO);
+					}
 				}
 			}
 		});
@@ -174,6 +179,7 @@ public abstract class FavoriteLocationsBaseFragment extends Fragment implements 
 						}
 					});
 				}
+				initializing = false;
 			}
 
 			@Override

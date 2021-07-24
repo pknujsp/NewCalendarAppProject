@@ -372,6 +372,13 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 
 	@Override
 	public void onClicked(long viewBegin, long viewEnd) {
+		// 이벤트 리스트 프래그먼트 다이얼로그 중복 호출 방지
+		FragmentManager fragmentManager = getParentFragmentManager();
+		if (fragmentManager.findFragmentByTag(InstanceListOnADayDialogFragment.TAG) != null ||
+				fragmentManager.findFragmentByTag(getString(R.string.tag_instance_list_week_dialog_fragment)) != null) {
+			return;
+		}
+
 		// 이벤트 리스트 프래그먼트 다이얼로그 표시
 		Bundle bundle = new Bundle();
 		bundle.putLong("begin", viewBegin);
@@ -383,13 +390,13 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 			fragment.setArguments(bundle);
 
 			//현재 표시중인 프래그먼트를 숨기고, 인스턴스 프래그먼트를 표시
-			fragment.show(getParentFragmentManager(), InstanceListOnADayDialogFragment.TAG);
+			fragment.show(fragmentManager, InstanceListOnADayDialogFragment.TAG);
 		} else {
 			InstanceListWeekDialogFragment fragment = new InstanceListWeekDialogFragment(instanceListDialogIConnectedCalendars, this);
 			fragment.setArguments(bundle);
 
 			//현재 표시중인 프래그먼트를 숨기고, 인스턴스 프래그먼트를 표시
-			fragment.show(getParentFragmentManager(), getString(R.string.tag_instance_list_week_dialog_fragment));
+			fragment.show(fragmentManager, getString(R.string.tag_instance_list_week_dialog_fragment));
 		}
 	}
 

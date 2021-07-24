@@ -40,7 +40,7 @@ public class DefaultMapFragment extends NaverMapFragment {
 	@Override
 	public void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		favoriteLocationViewModel = new ViewModelProvider(getParentFragment()).get(FavoriteLocationViewModel.class);
+		favoriteLocationViewModel = new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
 	}
 
 	@Override

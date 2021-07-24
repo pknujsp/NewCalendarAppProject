@@ -11,6 +11,9 @@ public interface ICalendarProvider {
 	// account
 	public List<ContentValues> getGoogleAccounts();
 
+	//update event state
+	public void updateEventStatus(Long eventId, Integer newStatus);
+
 	// event - crud
 	public ContentValues getEvent(Long eventId);
 

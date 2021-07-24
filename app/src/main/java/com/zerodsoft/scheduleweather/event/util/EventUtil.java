@@ -282,6 +282,18 @@ public class EventUtil {
 				: ClockUtil.HOURS_12.format(new Date(time));
 	}
 
+	public static String convertTitle(Context context, String title) {
+		if (title != null) {
+			if (title.isEmpty()) {
+				return context.getString(R.string.empty_title);
+			} else {
+				return title;
+			}
+		} else {
+			return context.getString(R.string.empty_title);
+		}
+	}
+
 	public static String convertAvailability(int availability, Context context) {
 		String result = null;
 

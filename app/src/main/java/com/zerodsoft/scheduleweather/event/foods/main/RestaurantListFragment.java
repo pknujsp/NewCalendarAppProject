@@ -69,7 +69,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 		}
 
 		favoriteRestaurantViewModel =
-				new ViewModelProvider(getParentFragment().getParentFragment().getParentFragment().getParentFragment()).get(FavoriteLocationViewModel.class);
+				new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
 		restaurantSharedViewModel = new ViewModelProvider(getParentFragment().getParentFragment().getParentFragment()).get(RestaurantSharedViewModel.class);
 
 		favoriteRestaurantViewModel.getAddedFavoriteLocationMutableLiveData().observe(this,

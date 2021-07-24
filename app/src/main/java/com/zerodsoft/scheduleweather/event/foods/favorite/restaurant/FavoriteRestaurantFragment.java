@@ -46,22 +46,20 @@ public class FavoriteRestaurantFragment extends FavoriteRestaurantBaseFragment i
 
 	@Override
 	protected void onAddedFavoriteRestaurant(FavoriteLocationDTO addedFavoriteRestaurant) {
-		addFavoriteRestaurant(addedFavoriteRestaurant);
 	}
 
 	@Override
 	protected void onRemovedFavoriteRestaurant(FavoriteLocationDTO removedFavoriteRestaurant) {
-		removeFavoriteRestaurant(removedFavoriteRestaurant);
 	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		getParentFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, true);
+		getParentFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false);
 
 		iOnSetView = (IOnSetView) getParentFragment();
 		iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.HEADER, View.GONE);
 		favoriteRestaurantViewModel =
-				new ViewModelProvider(getParentFragment().getParentFragment().getParentFragment()).get(FavoriteLocationViewModel.class);
+				new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
 
 		super.onCreate(savedInstanceState);
 	}

@@ -52,4 +52,7 @@
     <color name="primary_button_color">#2196f3</color>
     <color name="primary_button_text_color">#ffffff</color>
     <color name="primary_button_ripple_color">#088AFF</color>
+
+    <color name="alarm_activity_background_gradient_start">#00d2ff</color>
+    <color name="alarm_activity_background_gradient_end">#928DAB</color>
 </resources>

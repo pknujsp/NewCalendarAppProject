@@ -16,6 +16,7 @@ import android.os.Message;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.provider.CalendarContract;
+import android.provider.CalendarContract.Events;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -184,17 +185,21 @@ public class AsyncQueryServiceHelper extends IntentService {
 					try {
 						Integer insertNewEventIndex = null;
 						Integer updateOriginalEventIndex = null;
+						Integer exceptionOriginalEventIndex = null;
 
 						ArrayList<ContentProviderOperation> cpo = args.cpo;
 
 						int cpoIndex = 0;
 						for (ContentProviderOperation contentProviderOperation : cpo) {
 							if (contentProviderOperation.isUpdate()) {
-								if (contentProviderOperation.getUri().toString().contains(CalendarContract.Events.CONTENT_URI.toString())) {
+								if (contentProviderOperation.getUri().toString().contains(Events.CONTENT_URI.toString())) {
 									updateOriginalEventIndex = cpoIndex;
+								} else if (contentProviderOperation.getUri().toString().contains(Events.CONTENT_EXCEPTION_URI.toString())) {
+									exceptionOriginalEventIndex = cpoIndex;
 								}
-							} else if (contentProviderOperation.isInsert()) {
-								if (contentProviderOperation.getUri().toString().contains(CalendarContract.Events.CONTENT_URI.toString())) {
+							}
+							if (contentProviderOperation.isInsert()) {
+								if (contentProviderOperation.getUri().toString().contains(Events.CONTENT_URI.toString())) {
 									insertNewEventIndex = cpoIndex;
 								}
 							}
@@ -212,6 +217,10 @@ public class AsyncQueryServiceHelper extends IntentService {
 							originalEventId = ContentUris.parseId(cpo.get(updateOriginalEventIndex).getUri());
 							args.editEventPrimaryValues.setOriginalEventId(originalEventId);
 						}
+						if (exceptionOriginalEventIndex != null) {
+							originalEventId = ContentUris.parseId(cpo.get(exceptionOriginalEventIndex).getUri());
+							args.editEventPrimaryValues.setOriginalEventId(originalEventId);
+						}
 
 					} catch (RemoteException e) {
 						Log.e("", e.toString());
@@ -226,6 +235,9 @@ public class AsyncQueryServiceHelper extends IntentService {
 			final EventHelper.EventEditType eventEditType = args.editEventPrimaryValues.getEventEditType();
 			final LocationIntentCode locationIntentCode = args.editEventPrimaryValues.getLocationIntentCode();
 			final LocationDTO locationDTO = args.editEventPrimaryValues.getNewLocationDto();
+			if (locationDTO != null) {
+				locationDTO.setId(0);
+			}
 			locationRepository = new LocationRepository(getApplicationContext());
 
 			if (eventEditType == EventHelper.EventEditType.SAVE_NEW_EVENT) {
@@ -235,14 +247,14 @@ public class AsyncQueryServiceHelper extends IntentService {
 				}
 			} else if (eventEditType == EventHelper.EventEditType.UPDATE_ALL_EVENTS) {
 				if (locationIntentCode != null) {
-					locationDTO.setEventId(originalEventId);
-
 					if (locationIntentCode == LocationIntentCode.RESULT_CODE_CHANGED_LOCATION) {
+						locationDTO.setEventId(originalEventId);
 						locationRepository.removeLocation(originalEventId, null);
 						locationRepository.addLocation(locationDTO, null);
 					} else if (locationIntentCode == LocationIntentCode.RESULT_CODE_REMOVED_LOCATION) {
 						locationRepository.removeLocation(originalEventId, null);
 					} else if (locationIntentCode == LocationIntentCode.RESULT_CODE_SELECTED_LOCATION) {
+						locationDTO.setEventId(originalEventId);
 						locationRepository.addLocation(locationDTO, null);
 					}
 				} else if (locationDTO != null) {
@@ -250,13 +262,14 @@ public class AsyncQueryServiceHelper extends IntentService {
 				}
 			} else if (eventEditType == EventHelper.EventEditType.UPDATE_FOLLOWING_EVENTS) {
 				if (locationIntentCode != null) {
-					if (newEventId != null) {
-						locationDTO.setEventId(newEventId);
-					} else {
-						locationDTO.setEventId(originalEventId);
-					}
 
 					if (locationIntentCode == LocationIntentCode.RESULT_CODE_CHANGED_LOCATION) {
+						if (newEventId != null) {
+							locationDTO.setEventId(newEventId);
+						} else {
+							locationDTO.setEventId(originalEventId);
+						}
+
 						if (newEventId == null) {
 							locationRepository.removeLocation(originalEventId, null);
 						}
@@ -264,6 +277,12 @@ public class AsyncQueryServiceHelper extends IntentService {
 					} else if (locationIntentCode == LocationIntentCode.RESULT_CODE_REMOVED_LOCATION) {
 						locationRepository.removeLocation(originalEventId, null);
 					} else if (locationIntentCode == LocationIntentCode.RESULT_CODE_SELECTED_LOCATION) {
+
+						if (newEventId != null) {
+							locationDTO.setEventId(newEventId);
+						} else {
+							locationDTO.setEventId(originalEventId);
+						}
 						locationRepository.addLocation(locationDTO, null);
 					}
 				} else if (locationDTO != null) {
@@ -276,13 +295,13 @@ public class AsyncQueryServiceHelper extends IntentService {
 				}
 			} else if (eventEditType == EventHelper.EventEditType.UPDATE_ONLY_THIS_EVENT) {
 				if (locationIntentCode != null) {
-					locationDTO.setEventId(newEventId);
-
 					if (locationIntentCode == LocationIntentCode.RESULT_CODE_CHANGED_LOCATION) {
+						locationDTO.setEventId(newEventId);
 						locationRepository.addLocation(locationDTO, null);
 					} else if (locationIntentCode == LocationIntentCode.RESULT_CODE_REMOVED_LOCATION) {
 						locationRepository.removeLocation(originalEventId, null);
 					} else if (locationIntentCode == LocationIntentCode.RESULT_CODE_SELECTED_LOCATION) {
+						locationDTO.setEventId(newEventId);
 						locationRepository.addLocation(locationDTO, null);
 					}
 				} else if (locationDTO != null) {

@@ -458,13 +458,13 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 	}
 
 	private void firstModifiedDateTime() {
-		if (!eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.DTSTART)) {
+		if (!eventDataViewModel.getNEW_EVENT().containsKey(Events.DTSTART)) {
 			eventDataViewModel.setDtStart(new Date(originalInstanceBeginDate));
 		}
-		if (!eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.DTEND)) {
+		if (!eventDataViewModel.getNEW_EVENT().containsKey(Events.DTEND)) {
 			eventDataViewModel.setDtEnd(new Date(originalInstanceEndDate));
 		}
-		if (!eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.ALL_DAY)) {
+		if (!eventDataViewModel.getNEW_EVENT().containsKey(Events.ALL_DAY)) {
 			eventDataViewModel.setIsAllDay(binding.timeLayout.timeAlldaySwitch.isChecked());
 		}
 	}
@@ -480,7 +480,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		// 인스턴스, 알림을 가져온다
 		originalEvent = calendarViewModel.getInstance(instanceId, begin, end);
 		selectedCalendarValues =
-				calendarViewModel.getCalendar(originalEvent.getAsInteger(CalendarContract.Instances.CALENDAR_ID));
+				calendarViewModel.getCalendar(originalEvent.getAsInteger(Events.CALENDAR_ID));
 
 		eventDataViewModel.getNEW_REMINDERS().addAll(calendarViewModel.getReminders(eventId));
 		eventDataViewModel.getNEW_ATTENDEES().addAll(calendarViewModel.getAttendeeListForEdit(eventId));
@@ -508,35 +508,33 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		final boolean isAllDay = originalEvent.getAsInteger(CalendarContract.Instances.ALL_DAY) == 1;
 		binding.timeLayout.timeAlldaySwitch.setChecked(isAllDay);
 
+		originalInstanceBeginDate = originalEvent.getAsLong(Instances.BEGIN);
+
 		if (isAllDay) {
-			int startDay = originalEvent.getAsInteger(CalendarContract.Instances.START_DAY);
-			int endDay = originalEvent.getAsInteger(CalendarContract.Instances.END_DAY);
-			final int dayDifference = endDay - startDay;
+			setTimeZoneText(originalEvent.getAsString(Events.CALENDAR_TIME_ZONE));
+
+			setDateText(DateTimeType.START, originalInstanceBeginDate);
+			setTimeText(DateTimeType.START, originalInstanceBeginDate);
 
 			Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-			calendar.setTimeInMillis(originalEvent.getAsLong(CalendarContract.Instances.BEGIN));
+			calendar.setTimeInMillis(originalInstanceBeginDate);
 
-			setTimeZoneText(originalEvent.getAsString(CalendarContract.Events.CALENDAR_TIME_ZONE));
-
-			originalInstanceBeginDate = calendar.getTimeInMillis();
-			setDateText(DateTimeType.START, calendar.getTime().getTime());
-			setTimeText(DateTimeType.START, calendar.getTime().getTime());
-
-			calendar.add(Calendar.DAY_OF_YEAR, dayDifference);
-
+			int startDay = originalEvent.getAsInteger(Instances.START_DAY);
+			int endDay = originalEvent.getAsInteger(Instances.END_DAY);
+			int dayDifference = endDay - startDay;
+			calendar.add(Calendar.DATE, dayDifference + 1);
 			originalInstanceEndDate = calendar.getTimeInMillis();
-			setDateText(DateTimeType.END, calendar.getTime().getTime());
-			setTimeText(DateTimeType.END, calendar.getTime().getTime());
+
+			setDateText(DateTimeType.END, originalInstanceEndDate);
+			setTimeText(DateTimeType.END, originalInstanceEndDate);
 		} else {
-			setTimeZoneText(originalEvent.getAsString(CalendarContract.Events.EVENT_TIMEZONE));
+			originalInstanceEndDate = originalEvent.getAsLong(Instances.END);
+			setTimeZoneText(originalEvent.getAsString(Events.EVENT_TIMEZONE));
 
-			setDateText(DateTimeType.START, originalEvent.getAsLong(CalendarContract.Instances.BEGIN));
-			setDateText(DateTimeType.END, originalEvent.getAsLong(CalendarContract.Instances.END));
-			setTimeText(DateTimeType.START, originalEvent.getAsLong(CalendarContract.Instances.BEGIN));
-			setTimeText(DateTimeType.END, originalEvent.getAsLong(CalendarContract.Instances.END));
-
-			originalInstanceBeginDate = originalEvent.getAsLong(CalendarContract.Instances.BEGIN);
-			originalInstanceEndDate = originalEvent.getAsLong(CalendarContract.Instances.END);
+			setDateText(DateTimeType.START, originalInstanceBeginDate);
+			setDateText(DateTimeType.END, originalInstanceEndDate);
+			setTimeText(DateTimeType.START, originalInstanceBeginDate);
+			setTimeText(DateTimeType.END, originalInstanceEndDate);
 		}
 
 		//캘린더
@@ -595,8 +593,6 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		setNewEventValues(Events.EVENT_COLOR, newEventValues, modifiedEvent);
 		setNewEventValues(Events.CALENDAR_ID, newEventValues, modifiedEvent);
 		setNewEventValues(Events.ALL_DAY, newEventValues, modifiedEvent);
-		setNewEventValues(Events.DTSTART, newEventValues, modifiedEvent);
-		setNewEventValues(Events.DTEND, newEventValues, modifiedEvent);
 		setNewEventValues(Events.EVENT_TIMEZONE, newEventValues, modifiedEvent);
 		setNewEventValues(Events.DESCRIPTION, newEventValues, modifiedEvent);
 		setNewEventValues(Events.EVENT_LOCATION, newEventValues, modifiedEvent);
@@ -663,8 +659,8 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		newEventValues.put(CalendarContract.Events._ID, originalEvent.getAsLong(CalendarContract.Instances.EVENT_ID));
 
 		if (eventDataViewModel.isModified(Events.DTSTART) || eventDataViewModel.isModified(Events.DTEND)) {
-			newEventValues.put(Events.DTSTART, newEvent.getAsLong(CalendarContract.Events.DTSTART));
-			newEventValues.put(Events.DTEND, newEvent.getAsLong(CalendarContract.Events.DTEND));
+			newEventValues.put(Events.DTSTART, newEvent.getAsLong(Events.DTSTART));
+			newEventValues.put(Events.DTEND, newEvent.getAsLong(Events.DTEND));
 		} else {
 			newEventValues.put(CalendarContract.Events.DTSTART, originalEvent.getAsLong(Instances.BEGIN));
 			newEventValues.put(CalendarContract.Events.DTEND, originalEvent.getAsLong(Instances.END));

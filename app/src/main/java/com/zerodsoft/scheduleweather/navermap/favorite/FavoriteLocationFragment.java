@@ -103,7 +103,7 @@ public class FavoriteLocationFragment extends FavoriteLocationsBaseFragment impl
 		markerOnClickListener = mapSharedViewModel.getPoiItemOnClickListener();
 		iMapPoint = mapSharedViewModel.getiMapPoint();
 
-		favoriteLocationViewModel = new ViewModelProvider(getParentFragment()).get(FavoriteLocationViewModel.class);
+		favoriteLocationViewModel = new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
 		latLngOnCurrentLocation = iMapPoint.getMapCenterPoint();
 
 		super.onCreate(savedInstanceState);
