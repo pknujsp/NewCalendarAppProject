@@ -63,33 +63,7 @@ public class AlarmFragment extends Fragment {
 		ContentValues instance = alertInstanceList.get(0);
 		binding.eventTitle.setText(EventUtil.convertTitle(getContext(), instance.getAsString(Events.TITLE)));
 
-		StringBuilder dateTimeStringBuilder = new StringBuilder();
-		boolean isAllDay = instance.getAsInteger(Events.ALL_DAY) == 1;
-		if (isAllDay) {
-			int startDay = instance.getAsInteger(Instances.START_DAY);
-			int endDay = instance.getAsInteger(Instances.END_DAY);
-			int dayDifference = endDay - startDay;
-
-			if (startDay == endDay) {
-				dateTimeStringBuilder.append(EventUtil.convertDate(instance.getAsLong(Instances.BEGIN)));
-			} else {
-				Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-				calendar.setTimeInMillis(instance.getAsLong(Instances.BEGIN));
-				dateTimeStringBuilder.append(EventUtil.convertDate(calendar.getTime().getTime())).append("\n").append(" -> ");
-
-				calendar.add(Calendar.DAY_OF_YEAR, dayDifference);
-				dateTimeStringBuilder.append(EventUtil.convertDate(calendar.getTime().getTime()));
-			}
-		} else {
-			dateTimeStringBuilder.append(EventUtil.convertDateTime(instance.getAsLong(Instances.BEGIN), false,
-					App.isPreference_key_using_24_hour_system()))
-					.append("\n")
-					.append(" -> ")
-					.append(EventUtil.convertDateTime(instance.getAsLong(Instances.END), false,
-							App.isPreference_key_using_24_hour_system()));
-		}
-
-		binding.eventDatetime.setText(dateTimeStringBuilder.toString());
+		binding.eventDatetime.setText(EventUtil.getSimpleDateTime(getContext(), instance));
 
 		if (instance.containsKey(Events.DESCRIPTION)) {
 			binding.eventDescription.setText(instance.getAsString(Events.DESCRIPTION));

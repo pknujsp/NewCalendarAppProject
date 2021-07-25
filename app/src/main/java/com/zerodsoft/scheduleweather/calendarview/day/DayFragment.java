@@ -52,8 +52,7 @@ public class DayFragment extends Fragment implements IRefreshView, OnDateTimeCha
 	private OnPageChangeCallback onPageChangeCallback;
 	private int currentPosition = EventTransactionFragment.FIRST_VIEW_POSITION;
 	private boolean initializing = true;
-
-
+	
 	public DayFragment(Fragment fragment, IToolbar iToolbar) {
 		this.onEventItemClickListener = (OnEventItemClickListener) fragment;
 		this.onEventItemLongClickListener = (OnEventItemLongClickListener) fragment;

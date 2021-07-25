@@ -136,7 +136,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	public static final int BUILDING_RANGE_OVERLAY_TAG = 1500;
 
 	protected Integer DEFAULT_HEIGHT_OF_BOTTOMSHEET;
-
 	protected boolean initializingFavoriteLocations = true;
 
 	private FusedLocationSource fusedLocationSource;
@@ -167,7 +166,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	private Integer favoriteMarkerSize;
 
 	public ViewPager2 locationItemBottomSheetViewPager;
-
 	protected AlertDialog loadingDialog;
 
 	final public Map<BottomSheetType, BottomSheetBehavior> bottomSheetBehaviorMap = new HashMap<>();

@@ -331,9 +331,6 @@ public class DayView extends HourEventsView implements CalendarViewInitializer, 
 	@Override
 	public void receivedTimeTick(Date date) {
 		Date currentTime = date;
-		if (currentTime == null) {
-			currentTime = new Date(System.currentTimeMillis());
-		}
 
 		if (currentTimeLineView != null) {
 			removeView(currentTimeLineView);

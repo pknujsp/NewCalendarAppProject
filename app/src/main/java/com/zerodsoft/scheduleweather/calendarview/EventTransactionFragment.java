@@ -411,8 +411,6 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 	public void onClicked(int calendarId, long instanceId, long eventId, long viewBegin, long viewEnd) {
 		// 이벤트 정보 액티비티로 전환
 		if (networkStatus.networkAvailable()) {
-			NewInstanceMainFragment newInstanceMainFragment = new NewInstanceMainFragment();
-
 			Bundle bundle = new Bundle();
 			bundle.putLong(CalendarContract.Instances._ID, instanceId);
 			bundle.putLong(CalendarContract.Instances.EVENT_ID, eventId);
@@ -420,13 +418,7 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 			bundle.putLong(CalendarContract.Instances.BEGIN, viewBegin);
 			bundle.putLong(CalendarContract.Instances.END, viewEnd);
 
-			newInstanceMainFragment.setArguments(bundle);
-
-			newInstanceMainFragment.setPlaceBottomSheetSelectBtnVisibility(View.GONE);
-			newInstanceMainFragment.setPlaceBottomSheetUnSelectBtnVisibility(View.GONE);
-			getParentFragmentManager().beginTransaction().add(R.id.fragment_container, newInstanceMainFragment,
-					getString(R.string.tag_instance_main_fragment)).addToBackStack(getString(R.string.tag_instance_main_fragment))
-					.commit();
+			openEventInfoFragment(bundle);
 
 			DialogFragment instanceListOnADayDialogFragment = (DialogFragment) getParentFragmentManager().findFragmentByTag(InstanceListOnADayDialogFragment.TAG);
 			DialogFragment instanceListWeekDialogFragment =
@@ -438,6 +430,17 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 				instanceListWeekDialogFragment.dismiss();
 			}
 		}
+	}
+
+	public void openEventInfoFragment(Bundle bundle) {
+		NewInstanceMainFragment newInstanceMainFragment = new NewInstanceMainFragment();
+		newInstanceMainFragment.setArguments(bundle);
+
+		newInstanceMainFragment.setPlaceBottomSheetSelectBtnVisibility(View.GONE);
+		newInstanceMainFragment.setPlaceBottomSheetUnSelectBtnVisibility(View.GONE);
+		getParentFragmentManager().beginTransaction().add(R.id.fragment_container, newInstanceMainFragment,
+				getString(R.string.tag_instance_main_fragment)).addToBackStack(getString(R.string.tag_instance_main_fragment))
+				.commit();
 	}
 
 	@Override

@@ -34,7 +34,9 @@ import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.databinding.ActivityAppMainBinding;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.common.classes.AppPermission;
+import com.zerodsoft.scheduleweather.event.main.NewInstanceMainFragment;
 import com.zerodsoft.scheduleweather.favorites.AllFavoritesHostFragment;
+import com.zerodsoft.scheduleweather.notification.receiver.EventAlarmReceiver;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.room.dto.SelectedCalendarDTO;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.WeatherDataConverter;
@@ -43,10 +45,15 @@ import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.security.MessageDigest;
 import java.util.HashSet;
@@ -65,6 +72,26 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 
 	private EventTransactionFragment eventTransactionFragment;
 
+	private Bundle alarmArguments;
+
+	private final FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks = new FragmentManager.FragmentLifecycleCallbacks() {
+		@Override
+		public void onFragmentStarted(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
+			super.onFragmentStarted(fm, f);
+			if (f instanceof EventTransactionFragment) {
+				if (alarmArguments != null) {
+					((EventTransactionFragment) f).openEventInfoFragment(alarmArguments);
+					alarmArguments = null;
+				}
+			}
+		}
+
+		@Override
+		public void onFragmentDestroyed(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
+			super.onFragmentDestroyed(fm, f);
+		}
+	};
+
 	public static int getDisplayHeight() {
 		return DISPLAY_HEIGHT;
 	}
@@ -79,6 +106,9 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 		mainBinding = DataBindingUtil.setContentView(this, R.layout.activity_app_main);
 		calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
 		selectedCalendarViewModel = new ViewModelProvider(this).get(SelectedCalendarViewModel.class);
+
+		getSupportFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false);
+		alarmArguments = getIntent().getExtras();
 
 		Point point = new Point();
 		getWindowManager().getDefaultDisplay().getRealSize(point);
@@ -105,6 +135,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 			permissionsResultLauncher.launch(new String[]{Manifest.permission.READ_CALENDAR, Manifest.permission.WRITE_CALENDAR});
 		}
 		// getAppKeyHash();
+
 	}
 
 	private void getAppKeyHash() {

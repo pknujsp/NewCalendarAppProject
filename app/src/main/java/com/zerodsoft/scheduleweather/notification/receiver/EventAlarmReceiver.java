@@ -28,6 +28,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.main.AppMainActivity;
 import com.zerodsoft.scheduleweather.calendar.CalendarProvider;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.etc.LocationType;
@@ -54,6 +55,7 @@ import java.util.List;
 public class EventAlarmReceiver extends BroadcastReceiver {
 	public static final String CHANNEL_ID = "channel_id";
 	public static final int NOTIFICATION_ID = 500;
+	public static final String ALARM_NOTIFICATION_CLICK_ACTION = "ALARM_NOTIFICATION_CLICK_ACTION";
 
 	private boolean isScreenOn(Context context) {
 		PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
@@ -72,6 +74,7 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 			if (ActivityCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
 				return;
 			}
+
 			final Long alarmTime = intent.getExtras().getLong(CalendarAlerts.ALARM_TIME);
 
 			final String selection = CalendarAlerts.ALARM_TIME + " = ?";
@@ -122,30 +125,40 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 		int requestCode = (int) System.currentTimeMillis();
 
 		for (ContentValues instance : instanceList) {
-			/*
-			Intent activityIntent = new Intent(context, null);
+			Intent activityIntent = new Intent(context, AppMainActivity.class);
 			activityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
-			activityIntent.putExtra(CalendarContract.Instances.CALENDAR_ID, instance.getAsInteger(CalendarAlerts.CALENDAR_ID));
-			activityIntent.putExtra(CalendarContract.Instances._ID, instance.getAsLong(Instances._ID));
-			activityIntent.putExtra(CalendarContract.Instances.EVENT_ID, instance.getAsLong(CalendarAlerts.EVENT_ID));
-			activityIntent.putExtra(CalendarContract.Instances.BEGIN, instance.getAsLong(CalendarAlerts.BEGIN));
-			activityIntent.putExtra(CalendarContract.Instances.END, instance.getAsLong(CalendarAlerts.END));
+			activityIntent.putExtra(Instances.CALENDAR_ID, instance.getAsInteger(CalendarAlerts.CALENDAR_ID));
+			activityIntent.putExtra(Instances._ID, instance.getAsLong(Instances._ID));
+			activityIntent.putExtra(Instances.EVENT_ID, instance.getAsLong(CalendarAlerts.EVENT_ID));
+			activityIntent.putExtra(Instances.BEGIN, instance.getAsLong(CalendarAlerts.BEGIN));
+			activityIntent.putExtra(Instances.END, instance.getAsLong(CalendarAlerts.END));
+			activityIntent.setAction(ALARM_NOTIFICATION_CLICK_ACTION);
 
 			PendingIntent pendingIntent = PendingIntent.getActivity(context, requestCode++, activityIntent,
 					PendingIntent.FLAG_ONE_SHOT);
 
-			 */
+			StringBuilder contentStringBuilder = new StringBuilder();
+			String dateTime = EventUtil.getSimpleDateTime(context, instance);
+			String location = instance.get(CalendarAlerts.EVENT_LOCATION) != null
+					? instance.getAsString(CalendarAlerts.EVENT_LOCATION) : "위치 미설정";
 
-			NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID).setSmallIcon(
-					R.drawable.sunny_day_icon).setWhen(
-					alarmTime).setAutoCancel(true)
-					.setContentTitle(EventUtil.convertTitle(context, instance.getAsString(CalendarAlerts.TITLE))).setContentText(
-							instance.containsKey(CalendarAlerts.EVENT_LOCATION) ? instance.getAsString(
-									CalendarAlerts.EVENT_LOCATION) : "위치 미설정")
+			contentStringBuilder.append(dateTime).append("\n").append(location);
+			NotificationCompat.BigTextStyle bigTextStyle = new NotificationCompat.BigTextStyle();
+			bigTextStyle.bigText(contentStringBuilder);
+
+			NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
+					.setStyle(bigTextStyle)
+					.setContentIntent(pendingIntent)
+					.setSmallIcon(R.drawable.ic_launcher_background).setWhen(alarmTime).setAutoCancel(true)
+					.setContentTitle(EventUtil.convertTitle(context, instance.getAsString(CalendarAlerts.TITLE)))
+					.setContentText(contentStringBuilder.toString())
 					.setPriority(Notification.PRIORITY_MAX)
 					.setDefaults(NotificationCompat.DEFAULT_ALL);
 
+			notificationManager.notify(NOTIFICATION_ID, builder.build());
+
+			/*
 			if (instance.get(CalendarAlerts.EVENT_LOCATION) == null) {
 				notifyNotificationHasNotLocation(notificationManager, builder, context, instance);
 			} else {
@@ -169,6 +182,8 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 							}
 						});
 			}
+
+			 */
 		}
 	}
 
@@ -177,6 +192,8 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 		setInstanceData(instance, locationDTO, smallView, bigView, context);
 		builder.setStyle(new NotificationCompat.DecoratedCustomViewStyle());
 		builder.setCustomBigContentView(smallView);
+		builder.setCustomBigContentView(bigView);
+		notificationManager.notify(NOTIFICATION_ID, builder.build());
 
 		/*
 		AreaCodeRepository areaCodeRepository = new AreaCodeRepository(context);

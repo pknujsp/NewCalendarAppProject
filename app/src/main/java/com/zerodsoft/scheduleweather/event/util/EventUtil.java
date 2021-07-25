@@ -6,9 +6,11 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.provider.CalendarContract;
 import android.provider.CalendarContract.Events;
+import android.provider.CalendarContract.Instances;
 import android.text.TextPaint;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
@@ -18,6 +20,7 @@ import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 public class EventUtil {
@@ -53,6 +56,37 @@ public class EventUtil {
 		eventTextPaint.setColor(Color.WHITE);
 
 		return eventTextPaint;
+	}
+
+	public static String getSimpleDateTime(Context context, ContentValues instance) {
+		StringBuilder dateTimeStringBuilder = new StringBuilder();
+		boolean isAllDay = instance.getAsInteger(Events.ALL_DAY) == 1;
+
+		if (isAllDay) {
+			int startDay = instance.getAsInteger(Instances.START_DAY);
+			int endDay = instance.getAsInteger(Instances.END_DAY);
+			int dayDifference = endDay - startDay;
+
+			if (startDay == endDay) {
+				dateTimeStringBuilder.append(EventUtil.convertDate(instance.getAsLong(Instances.BEGIN)));
+			} else {
+				Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+				calendar.setTimeInMillis(instance.getAsLong(Instances.BEGIN));
+				dateTimeStringBuilder.append(EventUtil.convertDate(calendar.getTime().getTime())).append("\n").append(" -> ");
+
+				calendar.add(Calendar.DAY_OF_YEAR, dayDifference);
+				dateTimeStringBuilder.append(EventUtil.convertDate(calendar.getTime().getTime()));
+			}
+		} else {
+			dateTimeStringBuilder.append(EventUtil.convertDateTime(instance.getAsLong(Instances.BEGIN), false,
+					App.isPreference_key_using_24_hour_system()))
+					.append("\n")
+					.append(" -> ")
+					.append(EventUtil.convertDateTime(instance.getAsLong(Instances.END), false,
+							App.isPreference_key_using_24_hour_system()));
+		}
+
+		return dateTimeStringBuilder.toString();
 	}
 
 	public static int[] getViewSideMargin(long instanceBegin, long instanceEnd, long viewBegin, long viewEnd, int margin, boolean allDay) {
