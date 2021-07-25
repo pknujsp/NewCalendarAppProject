@@ -10,37 +10,27 @@ import android.os.RemoteException;
 import android.service.carrier.CarrierMessagingService;
 
 import com.zerodsoft.scheduleweather.activity.main.AppMainActivity;
+import com.zerodsoft.scheduleweather.common.interfaces.BroadcastReceiverCallback;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import lombok.SneakyThrows;
 
 public class DateTimeTickReceiver extends BroadcastReceiver {
-	private static DateTimeTickReceiver instance = null;
-	private CarrierMessagingService.ResultCallback<String> resultCallback;
+	private BroadcastReceiverCallback<String> broadcastReceiverCallback;
 
-	public static DateTimeTickReceiver newInstance(CarrierMessagingService.ResultCallback<String> resultCallback) {
-		instance = new DateTimeTickReceiver(resultCallback);
-		return instance;
+	public DateTimeTickReceiver(BroadcastReceiverCallback<String> broadcastReceiverCallback) {
+		this.broadcastReceiverCallback = broadcastReceiverCallback;
 	}
 
-	public static DateTimeTickReceiver getInstance() {
-		return instance;
-	}
-
-	public DateTimeTickReceiver(CarrierMessagingService.ResultCallback<String> resultCallback) {
-		this.resultCallback = resultCallback;
-	}
-
-	@SneakyThrows
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		if (intent.getAction() != null) {
 			switch (intent.getAction()) {
 				case Intent.ACTION_TIME_TICK:
-					resultCallback.onReceiveResult(Intent.ACTION_TIME_TICK);
+					broadcastReceiverCallback.onReceived(Intent.ACTION_TIME_TICK);
 					break;
 				case Intent.ACTION_DATE_CHANGED:
-					resultCallback.onReceiveResult(Intent.ACTION_DATE_CHANGED);
+					broadcastReceiverCallback.onReceived(Intent.ACTION_DATE_CHANGED);
 					break;
 			}
 		}

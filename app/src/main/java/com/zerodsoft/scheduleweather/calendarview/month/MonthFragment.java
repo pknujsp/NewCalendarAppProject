@@ -233,7 +233,6 @@ public class MonthFragment extends Fragment implements IRefreshView, OnDateTimeC
 	@Override
 	public void receivedTimeTick(Date date) {
 		//month에서는 불필요
-
 	}
 
 	@Override

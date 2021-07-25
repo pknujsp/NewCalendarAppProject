@@ -1,6 +1,7 @@
 package com.zerodsoft.scheduleweather.calendarview.week;
 
 import android.content.ContentValues;
+import android.util.ArraySet;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +15,7 @@ import com.zerodsoft.scheduleweather.calendarview.EventTransactionFragment;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnDateTimeChangedListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.DateGetter;
@@ -27,9 +29,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
-public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdapter.WeekViewPagerHolder> implements DateGetter {
+public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdapter.WeekViewPagerHolder> implements DateGetter, OnDateTimeChangedListener {
 	private SparseArray<WeekViewPagerHolder> holderSparseArray = new SparseArray<>();
 	private final Calendar CALENDAR;
 	private final Date currentDateTime;
@@ -38,6 +41,8 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
 	private final OnEventItemClickListener onEventItemClickListener;
 	private final IConnectedCalendars iConnectedCalendars;
 	private final OnEventItemLongClickListener onEventItemLongClickListener;
+	private Set<WeekViewPagerHolder> holderSet = new ArraySet<>();
+
 
 	public WeekViewPagerAdapter(IControlEvent iControlEvent, OnEventItemLongClickListener onEventItemLongClickListener, OnEventItemClickListener onEventItemClickListener, IToolbar iToolbar, IConnectedCalendars iConnectedCalendars) {
 		this.onEventItemLongClickListener = onEventItemLongClickListener;
@@ -81,12 +86,14 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
 	@Override
 	public void onBindViewHolder(@NonNull WeekViewPagerHolder holder, int position) {
 		holder.onBind();
-		holderSparseArray.put(holder.getAdapterPosition(), holder);
+		holderSparseArray.put(holder.getBindingAdapterPosition(), holder);
+		holderSet.add(holder);
 	}
 
 	@Override
 	public void onViewRecycled(@NonNull WeekViewPagerHolder holder) {
 		holderSparseArray.remove(holder.getOldPosition());
+		holderSet.remove(holder);
 		super.onViewRecycled(holder);
 	}
 
@@ -104,12 +111,25 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
 		holderSparseArray.get(position).weekCalendarView.refresh();
 	}
 
+	@Override
+	public void receivedTimeTick(Date date) {
+		for (WeekViewPagerHolder holder : holderSet) {
+			holder.weekView.receivedTimeTick(date);
+		}
+	}
+
+	@Override
+	public void receivedDateChanged(Date date) {
+		receivedTimeTick(date);
+	}
+
 	class WeekViewPagerHolder extends RecyclerView.ViewHolder {
 		private WeekCalendarView weekCalendarView;
+		private WeekView weekView;
 
 		public WeekViewPagerHolder(View view) {
 			super(view);
-			WeekView weekView = (WeekView) view.findViewById(R.id.week_view);
+			weekView = (WeekView) view.findViewById(R.id.week_view);
 			WeekHeaderView weekHeaderView = (WeekHeaderView) view.findViewById(R.id.week_header);
 			weekCalendarView = new WeekCalendarView(weekHeaderView, weekView);
 		}

@@ -207,12 +207,12 @@ public class WeekFragment extends Fragment implements IRefreshView, OnDateTimeCh
 
 	@Override
 	public void receivedTimeTick(Date date) {
-		refreshView();
+		weekViewPagerAdapter.receivedTimeTick(date);
 	}
 
 	@Override
 	public void receivedDateChanged(Date date) {
-		refreshView();
+		weekViewPagerAdapter.receivedTimeTick(date);
 	}
 
 

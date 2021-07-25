@@ -283,7 +283,7 @@ public class WeekView extends HourEventsView implements CalendarViewInitializer,
 				}
 			}
 		}
-		receivedTimeTick(null);
+		receivedTimeTick(new Date(System.currentTimeMillis()));
 		requestLayout();
 		invalidate();
 	}
@@ -433,17 +433,15 @@ public class WeekView extends HourEventsView implements CalendarViewInitializer,
 
 	@Override
 	public void receivedTimeTick(Date date) {
-		Date currentTime = date;
-
 		if (currentTimeLineView != null) {
 			removeView(currentTimeLineView);
 			currentTimeLineView = null;
 		}
 
-		if (currentTime.compareTo(daysOfWeek[0]) >= 0 && currentTime.compareTo(daysOfWeek[7]) < 0) {
+		if (date.compareTo(daysOfWeek[0]) >= 0 && date.compareTo(daysOfWeek[7]) < 0) {
 			currentTimeLineView = new CurrentTimeLineView(getContext());
-			currentTimeLineView.setTime(currentTime);
-			currentTimeLineView.setTag(currentTime);
+			currentTimeLineView.setTime(date);
+			currentTimeLineView.setTag(date);
 			addView(currentTimeLineView);
 		}
 	}

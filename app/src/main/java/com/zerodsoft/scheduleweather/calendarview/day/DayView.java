@@ -8,6 +8,8 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.provider.CalendarContract;
+import android.provider.CalendarContract.Events;
+import android.provider.CalendarContract.Instances;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -292,7 +294,7 @@ public class DayView extends HourEventsView implements CalendarViewInitializer, 
 
 			addView(childView);
 		}
-		receivedTimeTick(null);
+		receivedTimeTick(new Date(System.currentTimeMillis()));
 		requestLayout();
 		invalidate();
 	}
@@ -308,6 +310,7 @@ public class DayView extends HourEventsView implements CalendarViewInitializer, 
 		public boolean onLongClick(View view) {
 			ContentValues instance = ((DayItemView) view).itemCell.instance;
 			onEventItemLongClickListener.createInstancePopupMenu(instance, view, Gravity.CENTER);
+
 			return true;
 		}
 	};
@@ -317,9 +320,9 @@ public class DayView extends HourEventsView implements CalendarViewInitializer, 
 		public void onClick(View view) {
 			ContentValues instance = ((DayItemView) view).itemCell.instance;
 
-			onEventItemClickListener.onClicked(instance.getAsInteger(CalendarContract.Instances.CALENDAR_ID)
-					, instance.getAsLong(CalendarContract.Instances._ID), instance.getAsLong(CalendarContract.Instances.EVENT_ID),
-					instance.getAsLong(CalendarContract.Instances.BEGIN), instance.getAsLong(CalendarContract.Instances.END));
+			onEventItemClickListener.onClicked(instance.getAsInteger(Instances.CALENDAR_ID)
+					, instance.getAsLong(Instances._ID), instance.getAsLong(Instances.EVENT_ID),
+					instance.getAsLong(Instances.BEGIN), instance.getAsLong(Instances.END));
 		}
 	};
 
@@ -330,17 +333,15 @@ public class DayView extends HourEventsView implements CalendarViewInitializer, 
 
 	@Override
 	public void receivedTimeTick(Date date) {
-		Date currentTime = date;
-
 		if (currentTimeLineView != null) {
 			removeView(currentTimeLineView);
 			currentTimeLineView = null;
 		}
 
-		if (currentTime.compareTo(viewStartDate) >= 0 && currentTime.compareTo(viewEndDate) < 0) {
+		if (date.compareTo(viewStartDate) >= 0 && date.compareTo(viewEndDate) < 0) {
 			currentTimeLineView = new CurrentTimeLineView(getContext());
-			currentTimeLineView.setTime(currentTime);
-			currentTimeLineView.setTag(currentTime);
+			currentTimeLineView.setTime(date);
+			currentTimeLineView.setTag(date);
 			addView(currentTimeLineView);
 		}
 	}

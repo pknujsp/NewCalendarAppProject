@@ -26,6 +26,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnDateTimeChangedListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
+import com.zerodsoft.scheduleweather.common.broadcastreceivers.DateTimeTickReceiver;
 import com.zerodsoft.scheduleweather.room.dto.SelectedCalendarDTO;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
@@ -35,7 +36,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-public class DayFragment extends Fragment implements IRefreshView, OnDateTimeChangedListener, IMoveViewpager {
+public class DayFragment extends Fragment implements IRefreshView, IMoveViewpager, OnDateTimeChangedListener {
 	public static final String TAG = "DAY_FRAGMENT";
 
 	private final OnEventItemClickListener onEventItemClickListener;
@@ -52,7 +53,7 @@ public class DayFragment extends Fragment implements IRefreshView, OnDateTimeCha
 	private OnPageChangeCallback onPageChangeCallback;
 	private int currentPosition = EventTransactionFragment.FIRST_VIEW_POSITION;
 	private boolean initializing = true;
-	
+
 	public DayFragment(Fragment fragment, IToolbar iToolbar) {
 		this.onEventItemClickListener = (OnEventItemClickListener) fragment;
 		this.onEventItemLongClickListener = (OnEventItemLongClickListener) fragment;
@@ -217,13 +218,14 @@ public class DayFragment extends Fragment implements IRefreshView, OnDateTimeCha
 
 	@Override
 	public void receivedTimeTick(Date date) {
-		refreshView();
+		dayViewPagerAdapter.receivedTimeTick(date);
 	}
 
 	@Override
 	public void receivedDateChanged(Date date) {
-		refreshView();
+		dayViewPagerAdapter.receivedTimeTick(date);
 	}
+
 
 	class OnPageChangeCallback extends ViewPager2.OnPageChangeCallback {
 		private final Calendar calendar;

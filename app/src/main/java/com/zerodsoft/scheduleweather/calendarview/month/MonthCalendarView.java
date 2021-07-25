@@ -327,7 +327,7 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
 
 			}
 		}
-		drawTodayView(null);
+		drawTodayView(new Date(System.currentTimeMillis()));
 		requestLayout();
 		invalidate();
 	}
@@ -417,17 +417,12 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
 	}
 
 	private void drawTodayView(Date date) {
-		Date today = date;
-		if (today == null) {
-			today = new Date(System.currentTimeMillis());
-		}
-
 		if (todayView != null) {
 			removeView(todayView);
 		}
 
-		if (today.compareTo(viewFirstDateTime) >= 0 && today.before(viewLastDateTime)) {
-			final int index = ClockUtil.calcBeginDayDifference(today.getTime(), viewFirstDateTime.getTime());
+		if (date.compareTo(viewFirstDateTime) >= 0 && date.before(viewLastDateTime)) {
+			final int index = ClockUtil.calcBeginDayDifference(date.getTime(), viewFirstDateTime.getTime());
 
 			todayView = new TodayView(getContext());
 			todayView.setTag(new Integer(index));

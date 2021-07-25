@@ -55,6 +55,7 @@ import com.zerodsoft.scheduleweather.common.broadcastreceivers.DateTimeTickRecei
 import com.zerodsoft.scheduleweather.common.classes.CloseWindow;
 import com.zerodsoft.scheduleweather.common.enums.CalendarViewType;
 import com.zerodsoft.scheduleweather.common.enums.EventIntentCode;
+import com.zerodsoft.scheduleweather.common.interfaces.BroadcastReceiverCallback;
 import com.zerodsoft.scheduleweather.databinding.FragmentCalendarBinding;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
@@ -90,6 +91,7 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 	private CalendarSharedViewModel calendarSharedViewModel;
 
 	private List<SelectedCalendarDTO> selectedCalendarDTOList;
+	private DateTimeTickReceiver dateTimeTickReceiver;
 
 	private FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel;
 	private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
@@ -126,24 +128,23 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 		}
 	};
 
-	private final CarrierMessagingService.ResultCallback<String> dateTimeReceiverCallback =
-			new CarrierMessagingService.ResultCallback<String>() {
-				@Override
-				public void onReceiveResult(@NonNull String action) throws RemoteException {
-					Date date = new Date(System.currentTimeMillis());
+	private final BroadcastReceiverCallback<String> dateTimeReceiverCallback = new BroadcastReceiverCallback<String>() {
+		@Override
+		public void onReceived(String action) {
+			Date date = new Date(System.currentTimeMillis());
 
-					switch (action) {
-						case Intent.ACTION_TIME_TICK:
-							if (!ClockUtil.HHmm.format(date).equals(ClockUtil.HHmm.toPattern())) {
-								receivedTimeTick(date);
-							}
-							break;
-						case Intent.ACTION_DATE_CHANGED:
-							receivedDateChanged(date);
-							break;
+			switch (action) {
+				case Intent.ACTION_TIME_TICK:
+					if (!ClockUtil.HHmm.format(date).equals(ClockUtil.HHmm.toPattern())) {
+						receivedTimeTick(date);
 					}
-				}
-			};
+					break;
+				case Intent.ACTION_DATE_CHANGED:
+					receivedDateChanged(date);
+					break;
+			}
+		}
+	};
 
 	private final EditEventPopupMenu editEventPopupMenu = new EditEventPopupMenu() {
 
@@ -239,19 +240,19 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 		getChildFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false);
 		networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback());
 
+		dateTimeTickReceiver = new DateTimeTickReceiver(dateTimeReceiverCallback);
+		IntentFilter intentFilter = new IntentFilter();
+		intentFilter.addAction(Intent.ACTION_TIME_TICK);
+		intentFilter.addAction(Intent.ACTION_DATE_CHANGED);
+
+		requireActivity().registerReceiver(dateTimeTickReceiver, intentFilter);
+
 		selectedCalendarViewModel = new ViewModelProvider(requireActivity()).get(SelectedCalendarViewModel.class);
 		calendarViewModel = new ViewModelProvider(requireActivity()).get(CalendarViewModel.class);
 		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 		foodCriteriaLocationInfoViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationInfoViewModel.class);
 		foodCriteriaLocationHistoryViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationHistoryViewModel.class);
 		calendarSharedViewModel = new ViewModelProvider(requireActivity()).get(CalendarSharedViewModel.class);
-
-		DateTimeTickReceiver dateTimeTickReceiver = DateTimeTickReceiver.newInstance(dateTimeReceiverCallback);
-		IntentFilter intentFilter = new IntentFilter();
-		intentFilter.addAction(Intent.ACTION_TIME_TICK);
-		intentFilter.addAction(Intent.ACTION_DATE_CHANGED);
-
-		requireActivity().registerReceiver(dateTimeTickReceiver, intentFilter);
 	}
 
 	@Nullable
@@ -260,7 +261,6 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 		binding = FragmentCalendarBinding.inflate(inflater);
 		return binding.getRoot();
 	}
-
 
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -293,7 +293,7 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 	public void onDestroy() {
 		onBackPressedCallback.remove();
 		networkStatus.unregisterNetworkCallback();
-		requireActivity().unregisterReceiver(DateTimeTickReceiver.getInstance());
+		requireActivity().unregisterReceiver(dateTimeTickReceiver);
 		super.onDestroy();
 	}
 
@@ -498,6 +498,8 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 			((WeekFragment) fragment).receivedDateChanged(date);
 		} else if (fragment instanceof DayFragment) {
 			((DayFragment) fragment).receivedDateChanged(date);
+		} else if (fragment instanceof MonthFragment) {
+			((MonthFragment) fragment).receivedDateChanged(date);
 		}
 	}
 

@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.calendarview.day;
 
+import android.util.ArraySet;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,17 +15,19 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.DateGetter;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
+import com.zerodsoft.scheduleweather.calendarview.interfaces.OnDateTimeChangedListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Set;
 
 import lombok.SneakyThrows;
 
 
-public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapter.DayViewPagerHolder> implements DateGetter {
+public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapter.DayViewPagerHolder> implements DateGetter, OnDateTimeChangedListener {
 	private final OnEventItemClickListener onEventItemClickListener;
 	private final OnEventItemLongClickListener onEventItemLongClickListener;
 	private final IControlEvent iControlEvent;
@@ -33,6 +36,7 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
 	private final Date currentDateTime;
 
 	private SparseArray<DayViewPagerHolder> holderSparseArray = new SparseArray<>();
+	private Set<DayViewPagerHolder> holderSet = new ArraySet<>();
 	private final Calendar CALENDAR;
 
 	public static final int FIRST_DAY = -1;
@@ -69,11 +73,11 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
 		return new DayViewPagerHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.dayview_viewpager_item, parent, false));
 	}
 
-	@SneakyThrows
 	@Override
 	public void onBindViewHolder(@NonNull DayViewPagerHolder holder, int position) {
 		holder.onBind();
-		holderSparseArray.put(holder.getAdapterPosition(), holder);
+		holderSparseArray.put(holder.getBindingAdapterPosition(), holder);
+		holderSet.add(holder);
 	}
 
 	@Override
@@ -89,6 +93,7 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
 	@Override
 	public void onViewRecycled(@NonNull DayViewPagerHolder holder) {
 		holderSparseArray.remove(holder.getOldPosition());
+		holderSet.remove(holder);
 		super.onViewRecycled(holder);
 	}
 
@@ -106,13 +111,26 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
 		}
 	}
 
+	@Override
+	public void receivedTimeTick(Date date) {
+		for (DayViewPagerHolder holder : holderSet) {
+			holder.dayView.receivedTimeTick(date);
+		}
+	}
+
+	@Override
+	public void receivedDateChanged(Date date) {
+		receivedTimeTick(date);
+	}
+
 	class DayViewPagerHolder extends RecyclerView.ViewHolder {
 		private DayCalendarView dayCalendarView;
+		private DayView dayView;
 
 		public DayViewPagerHolder(View view) {
 			super(view);
 			DayHeaderView dayHeaderView = (DayHeaderView) view.findViewById(R.id.dayheaderview);
-			DayView dayView = (DayView) view.findViewById(R.id.dayview);
+			dayView = (DayView) view.findViewById(R.id.dayview);
 			dayCalendarView = new DayCalendarView(dayHeaderView, dayView);
 		}
 
