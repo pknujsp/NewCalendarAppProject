@@ -138,6 +138,17 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 			PendingIntent pendingIntent = PendingIntent.getActivity(context, requestCode++, activityIntent,
 					PendingIntent.FLAG_ONE_SHOT);
 
+			Intent confirmEventIntent = new Intent(context, EventAlarmProcessingReceiver.class);
+			confirmEventIntent.setAction(EventAlarmProcessingReceiver.ACTION_PROCESS_EVENT_STATUS);
+
+			Bundle bundle = new Bundle();
+			bundle.putLong(CalendarAlerts.EVENT_ID, instance.getAsLong(CalendarAlerts.EVENT_ID));
+			bundle.putInt(CalendarAlerts.STATUS, CalendarAlerts.STATUS_CONFIRMED);
+			confirmEventIntent.putExtras(bundle);
+
+			PendingIntent confirmEventPendingIntent =
+					PendingIntent.getBroadcast(context, 0, confirmEventIntent, 0);
+
 			StringBuilder contentStringBuilder = new StringBuilder();
 			String dateTime = EventUtil.getSimpleDateTime(context, instance);
 			String location = instance.get(CalendarAlerts.EVENT_LOCATION) != null
@@ -154,7 +165,8 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 					.setContentTitle(EventUtil.convertTitle(context, instance.getAsString(CalendarAlerts.TITLE)))
 					.setContentText(contentStringBuilder.toString())
 					.setPriority(Notification.PRIORITY_MAX)
-					.setDefaults(NotificationCompat.DEFAULT_ALL);
+					.setDefaults(NotificationCompat.DEFAULT_ALL)
+					.addAction(R.drawable.check_icon, context.getString(R.string.check), confirmEventPendingIntent);
 
 			notificationManager.notify(NOTIFICATION_ID, builder.build());
 

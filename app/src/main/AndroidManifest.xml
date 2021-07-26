@@ -82,6 +82,15 @@
             </intent-filter>
         </receiver>
 
+        <receiver
+            android:name=".notification.receiver.EventAlarmProcessingReceiver"
+            android:exported="true">
+
+            <intent-filter>
+                <action android:name="android.intent.action.PROCESS_EVENT_STATUS" />
+            </intent-filter>
+        </receiver>
+
         <service
             android:name=".calendar.AsyncQueryServiceHelper"
             android:enabled="true" />
