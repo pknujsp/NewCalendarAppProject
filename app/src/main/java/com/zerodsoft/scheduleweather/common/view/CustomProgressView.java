@@ -43,8 +43,6 @@ public class CustomProgressView extends LinearLayout implements OnProgressViewLi
 
 	private void init() {
 		setOrientation(VERTICAL);
-		final int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
-		setPadding(0, padding, 0, padding);
 
 		progressStatusTextView = new TextView(getContext());
 		progressStatusTextView.setGravity(Gravity.CENTER);
@@ -61,7 +59,7 @@ public class CustomProgressView extends LinearLayout implements OnProgressViewLi
 
 		LinearLayout.LayoutParams progressViewLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
 				ViewGroup.LayoutParams.WRAP_CONTENT);
-		progressViewLayoutParams.topMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f,
+		progressViewLayoutParams.topMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 6f,
 				getResources().getDisplayMetrics());
 		progressViewLayoutParams.gravity = Gravity.CENTER;
 

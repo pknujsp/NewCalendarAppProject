@@ -17,13 +17,11 @@ import android.os.Bundle;
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContract;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
@@ -108,7 +106,6 @@ import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddressDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoregioncoderesponse.CoordToRegionCode;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
@@ -136,6 +133,10 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	public static final int BUILDING_RANGE_OVERLAY_TAG = 1500;
 
 	protected Integer DEFAULT_HEIGHT_OF_BOTTOMSHEET;
+	protected Integer HIGH_HEIGHT_OF_BOTTOMSHEET;
+	protected Integer MAX_HEIGHT_OF_BOTTOMSHEET;
+	protected Integer MEDIUM_HEIGHT_OF_BOTTOMSHEET;
+	protected Integer SMALL_HEIGHT_OF_BOTTOMSHEET;
 	protected boolean initializingFavoriteLocations = true;
 
 	private FusedLocationSource fusedLocationSource;
@@ -350,8 +351,12 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 				final int headerBarHeight = (int) getResources().getDimension(R.dimen.map_header_search_bar_height);
 				final int headerBarTopMargin = (int) getResources().getDimension(R.dimen.map_header_bar_top_margin);
 				final int headerBarMargin = (int) (headerBarTopMargin * 1.5f);
+				final int fullHeight = binding.naverMapFragmentRootLayout.getHeight();
 
-				DEFAULT_HEIGHT_OF_BOTTOMSHEET = binding.naverMapFragmentRootLayout.getHeight() - (int) getResources().getDimension(R.dimen.map_header_bar_height) - headerBarMargin;
+				final int margin32 = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
+
+				DEFAULT_HEIGHT_OF_BOTTOMSHEET = fullHeight - (int) getResources().getDimension(R.dimen.map_header_bar_height) - headerBarMargin;
+				HIGH_HEIGHT_OF_BOTTOMSHEET = fullHeight - margin32;
 
 				final int searchBottomSheetHeight = binding.naverMapFragmentRootLayout.getHeight() - headerBarHeight - headerBarMargin;
 
@@ -1335,7 +1340,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			PlaceInfoWebDialogFragment placeInfoWebDialogFragment = new PlaceInfoWebDialogFragment();
 			Bundle bundle = new Bundle();
 			bundle.putString("placeId", ((PlaceDocuments) kakaoLocalDocument).getId());
-			bundle.putInt("bottomSheetHeight", DEFAULT_HEIGHT_OF_BOTTOMSHEET);
+			bundle.putInt("bottomSheetHeight", HIGH_HEIGHT_OF_BOTTOMSHEET);
 			placeInfoWebDialogFragment.setArguments(bundle);
 
 			placeInfoWebDialogFragment.show(getChildFragmentManager(), getString(R.string.tag_place_info_web_dialog_fragment));

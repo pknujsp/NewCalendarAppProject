@@ -151,10 +151,13 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 
 			StringBuilder contentStringBuilder = new StringBuilder();
 			String dateTime = EventUtil.getSimpleDateTime(context, instance);
+			String description = instance.containsKey(CalendarAlerts.DESCRIPTION) ? instance.getAsString(CalendarAlerts.DESCRIPTION) :
+					"";
+
 			String location = instance.get(CalendarAlerts.EVENT_LOCATION) != null
 					? instance.getAsString(CalendarAlerts.EVENT_LOCATION) : "위치 미설정";
 
-			contentStringBuilder.append(dateTime).append("\n").append(location);
+			contentStringBuilder.append(dateTime).append("\n").append(description).append("\n").append(location);
 			NotificationCompat.BigTextStyle bigTextStyle = new NotificationCompat.BigTextStyle();
 			bigTextStyle.bigText(contentStringBuilder);
 

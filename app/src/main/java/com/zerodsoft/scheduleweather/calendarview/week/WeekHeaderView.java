@@ -46,6 +46,10 @@ public class WeekHeaderView extends ViewGroup implements CalendarViewInitializer
 	private Calendar weekLastDay;
 
 	private Integer COLUMN_WIDTH;
+	private final int VIEW_TOP_BOTTOM_MARGIN;
+	private final int DAY_TEXT_HEIGHT;
+	private final int DATE_TEXT_HEIGHT;
+	private final int WEEK_OF_YEAR_TEXT_HEIGHT;
 
 	private final TextPaint DAY_TEXT_PAINT;
 	private final TextPaint DATE_TEXT_PAINT;
@@ -80,31 +84,43 @@ public class WeekHeaderView extends ViewGroup implements CalendarViewInitializer
 		setBackgroundColor(Color.WHITE);
 		setWillNotDraw(false);
 
-		SPACING_BETWEEN_TEXT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
+		SPACING_BETWEEN_TEXT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 6f, getResources().getDisplayMetrics());
 		TEXT_SIZE = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 13f, getResources().getDisplayMetrics());
-		DATE_DAY_SPACE_HEIGHT = TEXT_SIZE * 2 + SPACING_BETWEEN_TEXT * 3;
+		VIEW_TOP_BOTTOM_MARGIN = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
 
+		Rect rect = new Rect();
 		// 날짜 paint
 		DATE_TEXT_PAINT = new TextPaint();
 		DATE_TEXT_PAINT.setTextAlign(Paint.Align.CENTER);
 		DATE_TEXT_PAINT.setColor(Color.GRAY);
 		DATE_TEXT_PAINT.setTextSize(TEXT_SIZE);
+		DATE_TEXT_PAINT.getTextBounds("0", 0, 1, rect);
+
+		DATE_TEXT_HEIGHT = rect.height();
 
 		// 요일 paint
 		DAY_TEXT_PAINT = new TextPaint();
 		DAY_TEXT_PAINT.setTextAlign(Paint.Align.CENTER);
 		DAY_TEXT_PAINT.setColor(Color.GRAY);
 		DAY_TEXT_PAINT.setTextSize(TEXT_SIZE);
+		DAY_TEXT_PAINT.getTextBounds("0", 0, 1, rect);
+
+		DAY_TEXT_HEIGHT = rect.height();
 
 		// 주차 paint
 		WEEK_OF_YEAR_TEXT_PAINT = new TextPaint();
 		WEEK_OF_YEAR_TEXT_PAINT.setTextAlign(Paint.Align.CENTER);
 		WEEK_OF_YEAR_TEXT_PAINT.setColor(Color.WHITE);
 		WEEK_OF_YEAR_TEXT_PAINT.setTextSize(TEXT_SIZE);
+		WEEK_OF_YEAR_TEXT_PAINT.getTextBounds("0", 0, 1, rect);
+
+		WEEK_OF_YEAR_TEXT_HEIGHT = rect.height();
 
 		WEEK_OF_YEAR_RECT_PAINT = new Paint();
 		WEEK_OF_YEAR_RECT_PAINT.setColor(Color.GRAY);
 		WEEK_OF_YEAR_RECT_PAINT.setAntiAlias(true);
+
+		DATE_DAY_SPACE_HEIGHT = VIEW_TOP_BOTTOM_MARGIN * 2 + DATE_TEXT_HEIGHT + DAY_TEXT_HEIGHT + SPACING_BETWEEN_TEXT;
 	}
 
 
@@ -139,8 +155,8 @@ public class WeekHeaderView extends ViewGroup implements CalendarViewInitializer
 			RectF weekOfYearRect = new RectF();
 			weekOfYearRect.left = COLUMN_WIDTH * (1f / 4f);
 			weekOfYearRect.right = COLUMN_WIDTH * (3f / 4f);
-			weekOfYearRect.top = (DATE_DAY_SPACE_HEIGHT - TEXT_SIZE) / 2;
-			weekOfYearRect.bottom = weekOfYearRect.top + TEXT_SIZE;
+			weekOfYearRect.top = DATE_DAY_SPACE_HEIGHT / 2 - WEEK_OF_YEAR_TEXT_HEIGHT;
+			weekOfYearRect.bottom = DATE_DAY_SPACE_HEIGHT / 2 + WEEK_OF_YEAR_TEXT_HEIGHT;
 
 			Rect rect = new Rect();
 			WEEK_OF_YEAR_TEXT_PAINT.getTextBounds("0", 0, 1, rect);
@@ -150,8 +166,8 @@ public class WeekHeaderView extends ViewGroup implements CalendarViewInitializer
 					weekOfYearRect.centerX(), weekOfYearRect.centerY() + rect.height() / 2f, WEEK_OF_YEAR_TEXT_PAINT);
 		}
 
-		final float dayY = SPACING_BETWEEN_TEXT + TEXT_SIZE - DAY_TEXT_PAINT.descent();
-		final float dateY = dayY + DAY_TEXT_PAINT.descent() + SPACING_BETWEEN_TEXT + TEXT_SIZE - DATE_TEXT_PAINT.descent();
+		final float dayY = VIEW_TOP_BOTTOM_MARGIN + DAY_TEXT_HEIGHT;
+		final float dateY = dayY + SPACING_BETWEEN_TEXT + DATE_TEXT_HEIGHT;
 
 		// 요일, 날짜를 그림
 		for (int i = 0; i < 7; i++) {

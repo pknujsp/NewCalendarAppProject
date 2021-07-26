@@ -39,6 +39,7 @@ import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.naver.maps.geometry.LatLng;
+import com.naver.maps.map.CameraAnimation;
 import com.naver.maps.map.CameraUpdate;
 import com.naver.maps.map.NaverMap;
 import com.naver.maps.map.overlay.InfoWindow;
@@ -167,11 +168,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 							requireActivity().runOnUiThread(new Runnable() {
 								@Override
 								public void run() {
-									//place category list fragment 갱신
-									PlacesOfSelectedCategoriesFragment fragment =
-											(PlacesOfSelectedCategoriesFragment) getChildFragmentManager().findFragmentByTag(getString(R.string.tag_places_of_selected_categories_fragment));
-									fragment.refreshList();
-
 									//chips 재 생성
 									placeCategoryChipMap.clear();
 									placeCategoryChipGroup.removeViews(2, placeCategoryChipGroup.getChildCount() - 2);
@@ -232,6 +228,19 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		super.onViewCreated(view, savedInstanceState);
 		binding.headerLayout.setVisibility(View.GONE);
 		binding.naverMapButtonsLayout.getRoot().setVisibility(View.GONE);
+		gpsButton.setLongClickable(true);
+		gpsButton.setOnLongClickListener(new View.OnLongClickListener() {
+			@Override
+			public boolean onLongClick(View v) {
+				if (selectedLocationInEventMarker != null) {
+					CameraUpdate cameraUpdate = CameraUpdate.scrollTo(selectedLocationInEventMarker.getPosition());
+					cameraUpdate.animate(CameraAnimation.Easing, 200);
+					naverMap.moveCamera(cameraUpdate);
+				}
+				return true;
+			}
+		});
+
 		binding.naverMapFragmentRootLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
 			@Override
 			public void onGlobalLayout() {

@@ -62,35 +62,41 @@ public class PlaceCategorySettingsFragment extends Fragment implements PlaceCate
 	private List<PlaceCategoryDTO> defaultCategories;
 	private AlertDialog customCategoryDialog;
 
+	private boolean initializing = true;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		placeCategoryViewModel = new ViewModelProvider(this).get(PlaceCategoryViewModel.class);
+		placeCategoryViewModel = new ViewModelProvider(requireActivity()).get(PlaceCategoryViewModel.class);
 
 		placeCategoryViewModel.getOnSelectedCategoryLiveData().observe(this, new Observer<PlaceCategoryDTO>() {
 			@Override
 			public void onChanged(PlaceCategoryDTO selectedCategory) {
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						selectedPlaceCategoryAdapter.getPlaceCategoryList().add(selectedCategory);
-						selectedPlaceCategoryAdapter.notifyItemInserted(selectedPlaceCategoryAdapter.getItemCount() - 1);
-					}
-				});
+				if (!initializing) {
+					requireActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							selectedPlaceCategoryAdapter.getPlaceCategoryList().add(selectedCategory);
+							selectedPlaceCategoryAdapter.notifyItemInserted(selectedPlaceCategoryAdapter.getItemCount() - 1);
+						}
+					});
+				}
 			}
 		});
 
 		placeCategoryViewModel.getOnUnSelectedCategoryLiveData().observe(this, new Observer<String>() {
 			@Override
 			public void onChanged(String unselectedCategoryCode) {
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						final int position = selectedPlaceCategoryAdapter.getItemPosition(unselectedCategoryCode);
-						selectedPlaceCategoryAdapter.getPlaceCategoryList().remove(position);
-						selectedPlaceCategoryAdapter.notifyItemRemoved(position);
-					}
-				});
+				if (!initializing) {
+					requireActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							final int position = selectedPlaceCategoryAdapter.getItemPosition(unselectedCategoryCode);
+							selectedPlaceCategoryAdapter.getPlaceCategoryList().remove(position);
+							selectedPlaceCategoryAdapter.notifyItemRemoved(position);
+						}
+					});
+				}
 			}
 		});
 	}
@@ -232,6 +238,8 @@ public class PlaceCategorySettingsFragment extends Fragment implements PlaceCate
 
 						selectedPlaceCategoryAdapter.setPlaceCategoryList(selectedPlaceCategoryList);
 						selectedPlaceCategoryAdapter.notifyDataSetChanged();
+
+						initializing = false;
 					}
 				});
 			}
@@ -239,6 +247,7 @@ public class PlaceCategorySettingsFragment extends Fragment implements PlaceCate
 			@Override
 			public void onResultNoData() {
 				binding.customProgressView.onFailedProcessingData(getString(R.string.not_selected_place_category));
+				initializing = false;
 			}
 		});
 

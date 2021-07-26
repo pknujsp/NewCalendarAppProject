@@ -15,7 +15,9 @@ public interface OnKakaoLocalApiCallback {
 	void onResultNoData();
 
 	default void processResult(Response<? extends KakaoLocalResponse> result) {
-		if (result.body().isEmpty()) {
+		if (result.body() == null) {
+			onResultNoData();
+		} else if (result.body().isEmpty()) {
 			onResultNoData();
 		} else {
 			int type = 0;

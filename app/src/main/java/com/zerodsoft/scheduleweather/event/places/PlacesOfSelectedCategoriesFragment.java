@@ -67,6 +67,8 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 	private ArrayMap<String, PlaceItemsAdapters> adaptersMap = new ArrayMap<>();
 	private ArrayMap<String, RecyclerView> listMap = new ArrayMap<>();
 
+	private boolean initializing = true;
+
 
 	public PlacesOfSelectedCategoriesFragment(long EVENT_ID, OnClickedPlacesListListener onClickedPlacesListListener,
 	                                          OnHiddenFragmentListener onHiddenFragmentListener) {
@@ -84,7 +86,26 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 		bottomSheetController = mapSharedViewModel.getBottomSheetController();
 
 		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
-		placeCategoryViewModel = new ViewModelProvider(getParentFragment()).get(PlaceCategoryViewModel.class);
+		placeCategoryViewModel = new ViewModelProvider(requireActivity()).get(PlaceCategoryViewModel.class);
+
+		placeCategoryViewModel.getOnSelectedCategoryLiveData().observe(this, new Observer<PlaceCategoryDTO>() {
+			@Override
+			public void onChanged(PlaceCategoryDTO placeCategoryDTO) {
+				if (!initializing) {
+					refreshList();
+				}
+			}
+		});
+
+		placeCategoryViewModel.getOnUnSelectedCategoryLiveData().observe(this, new Observer<String>() {
+			@Override
+			public void onChanged(String s) {
+				if (!initializing) {
+					refreshList();
+				}
+			}
+		});
+
 	}
 
 	@Nullable
@@ -153,7 +174,7 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 
 			@Override
 			public void onResultNoData() {
-
+				initializing = false;
 			}
 		});
 	}
@@ -190,7 +211,11 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 						for (PlaceCategoryDTO placeCategory : newPlaceCategoriesList) {
 							addCategoryView(placeCategory, rangeRadius);
 						}
+
+						initializing = false;
 					}
+
+
 				});
 			}
 
