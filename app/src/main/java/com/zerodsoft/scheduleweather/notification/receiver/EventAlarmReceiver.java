@@ -54,7 +54,6 @@ import java.util.List;
 
 public class EventAlarmReceiver extends BroadcastReceiver {
 	public static final String CHANNEL_ID = "channel_id";
-	public static final int NOTIFICATION_ID = 500;
 	public static final String ALARM_NOTIFICATION_CLICK_ACTION = "ALARM_NOTIFICATION_CLICK_ACTION";
 
 	private boolean isScreenOn(Context context) {
@@ -101,6 +100,15 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 			setNotifications(context, instanceList);
 
 			//화면이 켜져있으면 notification, 잠겨있으면 : activity, notification
+			if (!isScreenOn(context)) {
+				final String WAKELOCK_TAG = "myapp:wakelock";
+				PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+				PowerManager.WakeLock wakeLock = powerManager.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK
+								| PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.ON_AFTER_RELEASE
+						, WAKELOCK_TAG);
+				wakeLock.acquire(10000L);
+			}
+
 			if (checkDeviceLock(context)) {
 				try {
 					intent = new Intent(context, AlarmActivity.class);
@@ -123,6 +131,7 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 		final long alarmTime = instanceList.get(0).getAsLong(CalendarAlerts.ALARM_TIME);
 		int requestCode = (int) System.currentTimeMillis();
+		int notificationId = 10000;
 
 		for (ContentValues instance : instanceList) {
 			Intent activityIntent = new Intent(context, AppMainActivity.class);
@@ -144,10 +153,11 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 			Bundle bundle = new Bundle();
 			bundle.putLong(CalendarAlerts.EVENT_ID, instance.getAsLong(CalendarAlerts.EVENT_ID));
 			bundle.putInt(CalendarAlerts.STATUS, CalendarAlerts.STATUS_CONFIRMED);
+			bundle.putInt("notificationId", notificationId);
 			confirmEventIntent.putExtras(bundle);
 
 			PendingIntent confirmEventPendingIntent =
-					PendingIntent.getBroadcast(context, 0, confirmEventIntent, 0);
+					PendingIntent.getBroadcast(context, notificationId, confirmEventIntent, 0);
 
 			StringBuilder contentStringBuilder = new StringBuilder();
 			String dateTime = EventUtil.getSimpleDateTime(context, instance);
@@ -171,7 +181,7 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 					.setDefaults(NotificationCompat.DEFAULT_ALL)
 					.addAction(R.drawable.check_icon, context.getString(R.string.check), confirmEventPendingIntent);
 
-			notificationManager.notify(NOTIFICATION_ID, builder.build());
+			notificationManager.notify(notificationId++, builder.build());
 
 			/*
 			if (instance.get(CalendarAlerts.EVENT_LOCATION) == null) {
@@ -208,7 +218,7 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 		builder.setStyle(new NotificationCompat.DecoratedCustomViewStyle());
 		builder.setCustomBigContentView(smallView);
 		builder.setCustomBigContentView(bigView);
-		notificationManager.notify(NOTIFICATION_ID, builder.build());
+		notificationManager.notify(0, builder.build());
 
 		/*
 		AreaCodeRepository areaCodeRepository = new AreaCodeRepository(context);
@@ -260,7 +270,7 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 				setAirconditionData(e, bigView, context);
 
 				builder.setCustomBigContentView(bigView);
-				notificationManager.notify(NOTIFICATION_ID, builder.build());
+				notificationManager.notify(0, builder.build());
 			}
 
 			@Override
@@ -269,7 +279,7 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 				setAirconditionData(null, bigView, context);
 
 				builder.setCustomBigContentView(bigView);
-				notificationManager.notify(NOTIFICATION_ID, builder.build());
+				notificationManager.notify(0, builder.build());
 			}
 		});
 	}
@@ -360,7 +370,7 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 
 	private void notifyNotificationHasNotLocation(NotificationManager notificationManager, NotificationCompat.Builder builder,
 	                                              Context context, ContentValues instance) {
-		notificationManager.notify(NOTIFICATION_ID, builder.build());
+		notificationManager.notify(0, builder.build());
 	}
 
 

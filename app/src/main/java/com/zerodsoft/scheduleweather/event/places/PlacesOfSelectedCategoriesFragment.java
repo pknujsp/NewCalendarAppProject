@@ -196,6 +196,7 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 						binding.addressName.setText(selectedLocationDto.getAddressName());
 
 						if (newPlaceCategoriesList.isEmpty()) {
+							initializing = false;
 							binding.customProgressView.onFailedProcessingData(getString(R.string.not_selected_place_category));
 							return;
 						} else {
@@ -221,7 +222,7 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 
 			@Override
 			public void onResultNoData() {
-
+				initializing = false;
 			}
 		});
 	}

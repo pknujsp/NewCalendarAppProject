@@ -48,6 +48,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.DataBindingUtil;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Observer;
@@ -104,6 +105,8 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mainBinding = DataBindingUtil.setContentView(this, R.layout.activity_app_main);
+		mainBinding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+
 		calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
 		selectedCalendarViewModel = new ViewModelProvider(this).get(SelectedCalendarViewModel.class);
 

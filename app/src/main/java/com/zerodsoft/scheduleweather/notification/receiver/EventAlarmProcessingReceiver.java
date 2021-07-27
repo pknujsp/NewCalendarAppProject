@@ -1,6 +1,8 @@
 package com.zerodsoft.scheduleweather.notification.receiver;
 
 import android.Manifest;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -19,18 +21,30 @@ public class EventAlarmProcessingReceiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		String action = intent.getAction();
+		Bundle bundle = intent.getExtras();
+
 
 		if (action.equals(ACTION_PROCESS_EVENT_STATUS)) {
+
 			if (ActivityCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
 				return;
 			}
 
-			Bundle bundle = intent.getExtras();
 			final Long eventId = bundle.getLong(CalendarAlerts.EVENT_ID);
 			final Integer status = bundle.getInt(CalendarAlerts.STATUS);
 
 			CalendarProvider calendarProvider = new CalendarProvider(context);
 			calendarProvider.updateEventStatus(eventId, status);
 		}
+
+		final int notificationId = bundle.getInt("notificationId");
+		if (notificationId > 0) {
+			NotificationManager notificationManager = (NotificationManager) context
+					.getSystemService(Context.NOTIFICATION_SERVICE);
+
+			notificationManager.cancel(notificationId);
+		}
 	}
+
+
 }
