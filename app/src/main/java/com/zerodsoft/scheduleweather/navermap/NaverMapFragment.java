@@ -183,7 +183,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			if (f instanceof BuildingFragment) {
 				BuildingBottomSheetHeightViewHolder buildingBottomSheetHeightViewHolder
 						= (BuildingBottomSheetHeightViewHolder) bottomSheetViewMap.get(BottomSheetType.BUILDING).getTag();
-				setHeightOfBottomSheetForSpecificFragment(getString(R.string.tag_building_info_fragment), BottomSheetType.BUILDING,
+				setHeightOfBottomSheetForSpecificFragment(BottomSheetType.BUILDING,
 						buildingBottomSheetHeightViewHolder.infoHeight);
 			}
 		}
@@ -224,7 +224,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			} else if (f instanceof BuildingFragment) {
 				BuildingBottomSheetHeightViewHolder buildingBottomSheetHeightViewHolder
 						= (BuildingBottomSheetHeightViewHolder) bottomSheetViewMap.get(BottomSheetType.BUILDING).getTag();
-				setHeightOfBottomSheetForSpecificFragment(getString(R.string.tag_building_list_fragment), BottomSheetType.BUILDING,
+				setHeightOfBottomSheetForSpecificFragment(BottomSheetType.BUILDING,
 						buildingBottomSheetHeightViewHolder.listHeight);
 			}
 		}
@@ -387,14 +387,9 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 				buildingBottomSheetBehavior.onLayoutChild(binding.naverMapFragmentRootLayout, buildingBottomSheet, ViewCompat.LAYOUT_DIRECTION_LTR);
 
 				//favorite locations bottom sheet 크기 조정 ---------------------------------------------------------------
-				final int favoriteLocationsHeight = buildingListHeight;
-				LinearLayout favoriteLocationsBottomSheet = bottomSheetViewMap.get(BottomSheetType.FAVORITE_LOCATIONS);
+				final int favoriteLocationsHeight = HIGH_HEIGHT_OF_BOTTOMSHEET;
 
-				favoriteLocationsBottomSheet.getLayoutParams().height = favoriteLocationsHeight;
-				favoriteLocationsBottomSheet.requestLayout();
-
-				BottomSheetBehavior favoriteLocationsBottomSheetBehavior = bottomSheetBehaviorMap.get(BottomSheetType.FAVORITE_LOCATIONS);
-				favoriteLocationsBottomSheetBehavior.onLayoutChild(binding.naverMapFragmentRootLayout, favoriteLocationsBottomSheet, ViewCompat.LAYOUT_DIRECTION_LTR);
+				setHeightOfBottomSheetForSpecificFragment(BottomSheetType.FAVORITE_LOCATIONS, favoriteLocationsHeight);
 
 				binding.naverMapFragmentRootLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
 			}
@@ -1417,7 +1412,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	}
 
 
-	public void setHeightOfBottomSheetForSpecificFragment(String fragmentTag, BottomSheetType bottomSheetType, int height) {
+	public void setHeightOfBottomSheetForSpecificFragment(BottomSheetType bottomSheetType, int height) {
 		bottomSheetViewMap.get(bottomSheetType).getLayoutParams().height = height;
 		bottomSheetViewMap.get(bottomSheetType).requestLayout();
 

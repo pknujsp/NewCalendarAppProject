@@ -137,7 +137,7 @@ public class EventHelper implements Serializable {
 					if (isFirstInstance(originalEvent)) {
 						contentProviderOperationList.add(ContentProviderOperation.newDelete(uri).build());
 					} else {
-						updatePastEvents(contentProviderOperationList, originalEvent, newEvent);
+						updatePastEvents(contentProviderOperationList, originalEvent, newEvent.getAsLong(Events.DTSTART));
 					}
 					eventIdIndex = contentProviderOperationList.size();
 					newEvent.put(Events.STATUS, originalEvent.getAsInteger(Events.STATUS));
@@ -154,7 +154,7 @@ public class EventHelper implements Serializable {
 								.withValues(newEvent);
 						contentProviderOperationList.add(b.build());
 					} else {
-						String newRRule = updatePastEvents(contentProviderOperationList, originalEvent, newEvent);
+						String newRRule = updatePastEvents(contentProviderOperationList, originalEvent, newEvent.getAsLong(Events.DTSTART));
 						EventRecurrence newEventRecurrence = new EventRecurrence();
 						EventRecurrence originalEventRecurrence = new EventRecurrence();
 
@@ -327,17 +327,19 @@ public class EventHelper implements Serializable {
 				}
 			}
 
-			if (!hasRRuleInNewEvent) {
-				Uri uri = ContentUris.withAppendedId(Events.CONTENT_URI, eventId);
-				contentProviderOperationList.add(ContentProviderOperation.newDelete(uri).build());
-			} else {
+			if (hasRRuleInNewEvent) {
 				if (isFirstInstance(originalEvent)) {
 					Uri uri = ContentUris.withAppendedId(Events.CONTENT_URI, eventId);
 					contentProviderOperationList.add(ContentProviderOperation.newDelete(uri).build());
 				} else {
-					String newRRule = updatePastEvents(contentProviderOperationList, originalEvent, originalEvent);
+					String newRRule = updatePastEvents(contentProviderOperationList, originalEvent, originalEvent.getAsLong(Instances.BEGIN));
 
-					if (!newRRule.equals(originalEvent.getAsString(Events.RRULE))) {
+					EventRecurrence originalRecur = new EventRecurrence();
+					originalRecur.parse(originalEvent.getAsString(Events.RRULE));
+					EventRecurrence modifiedRecur = new EventRecurrence();
+					modifiedRecur.parse(newRRule);
+
+					if (!originalRecur.equals(modifiedRecur)) {
 						Uri updateUri = ContentUris.withAppendedId(Events.CONTENT_URI, eventId);
 						ContentValues updateValues = new ContentValues();
 						updateValues.put(Events.RRULE, newRRule);
@@ -345,6 +347,9 @@ public class EventHelper implements Serializable {
 								.build());
 					}
 				}
+			} else {
+				Uri uri = ContentUris.withAppendedId(Events.CONTENT_URI, eventId);
+				contentProviderOperationList.add(ContentProviderOperation.newDelete(uri).build());
 			}
 		}
 
@@ -423,33 +428,29 @@ public class EventHelper implements Serializable {
 	}
 
 	private String updatePastEvents(ArrayList<ContentProviderOperation> contentProviderOperationList, ContentValues originalEvent,
-	                                ContentValues newEvent) {
-		boolean originalAllDay = originalEvent.getAsInteger(Events.ALL_DAY) == 1;
-		String originalRRule = originalEvent.getAsString(Events.RRULE);
+	                                long rangeEndMillis) {
+		final boolean originalAllDay = originalEvent.getAsInteger(Events.ALL_DAY) == 1;
+		final String originalRRule = originalEvent.getAsString(Events.RRULE);
 		String newRRule = originalRRule;
+
+		final long originalStartTimeMillis = originalEvent.getAsLong(Events.DTSTART);
+		Time originalDtStart = new Time();
+		originalDtStart.timezone = originalEvent.getAsString(Events.EVENT_TIMEZONE);
+		originalDtStart.set(originalStartTimeMillis);
+
+		ContentValues updateValues = new ContentValues();
 
 		EventRecurrence originalEventRecurrence = new EventRecurrence();
 		originalEventRecurrence.parse(originalEvent.getAsString(Events.RRULE));
-
-		long startTimeMillis = originalEvent.getAsLong(Events.DTSTART);
-		Time dtstart = new Time();
-		dtstart.timezone = originalEvent.getAsString(Events.EVENT_TIMEZONE);
-		dtstart.set(startTimeMillis);
-
-		ContentValues updateValues = new ContentValues();
 
 		if (originalEventRecurrence.count > 0) {
 			RecurrenceSet recurSet = new RecurrenceSet(originalRRule, null, null, null);
 			RecurrenceProcessor recurProc = new RecurrenceProcessor();
 			long[] recurrences;
 			try {
-				recurrences = recurProc.expand(dtstart, recurSet, startTimeMillis, newEvent.getAsLong(Events.DTSTART));
+				recurrences = recurProc.expand(originalDtStart, recurSet, originalStartTimeMillis, rangeEndMillis);
 			} catch (DateException de) {
 				throw new RuntimeException(de);
-			}
-
-			if (recurrences.length == 0) {
-				throw new RuntimeException("can't use this method on first instance");
 			}
 
 			EventRecurrence exceptRecurrence = new EventRecurrence();
@@ -462,7 +463,7 @@ public class EventHelper implements Serializable {
 			Time untilTime = new Time();
 			untilTime.timezone = Time.TIMEZONE_UTC;
 
-			untilTime.set(newEvent.getAsLong(Events.DTSTART) - 1000);
+			untilTime.set(rangeEndMillis - 1000);
 			if (originalAllDay) {
 				untilTime.hour = 0;
 				untilTime.minute = 0;
@@ -472,17 +473,17 @@ public class EventHelper implements Serializable {
 
 				// This should no longer be necessary -- DTSTART should already be in the correct
 				// format for an all-day event.
-				dtstart.hour = 0;
-				dtstart.minute = 0;
-				dtstart.second = 0;
-				dtstart.allDay = true;
-				dtstart.timezone = Time.TIMEZONE_UTC;
+				originalDtStart.hour = 0;
+				originalDtStart.minute = 0;
+				originalDtStart.second = 0;
+				originalDtStart.allDay = true;
+				originalDtStart.timezone = Time.TIMEZONE_UTC;
 			}
 			originalEventRecurrence.until = untilTime.format2445();
 		}
 
 		updateValues.put(Events.RRULE, originalEventRecurrence.toString());
-		updateValues.put(Events.DTSTART, dtstart.normalize(true));
+		updateValues.put(Events.DTSTART, originalDtStart.normalize(true));
 
 		Uri uri = ContentUris.withAppendedId(Events.CONTENT_URI
 				, originalEvent.getAsLong(Instances.EVENT_ID));

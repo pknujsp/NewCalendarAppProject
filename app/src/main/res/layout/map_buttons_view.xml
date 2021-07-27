@@ -20,7 +20,7 @@
         android:scaleType="centerInside"
         app:layout_constraintBottom_toTopOf="@+id/building_button"
         app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@drawable/more_icon" />
+        app:srcCompat="@drawable/favorite_disabled" />
 
     <ImageButton
         android:id="@+id/building_button"
