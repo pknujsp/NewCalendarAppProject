@@ -1,18 +1,24 @@
 package com.zerodsoft.scheduleweather.event.event.fragments;
 
 import android.app.Dialog;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.provider.CalendarContract;
+import android.provider.CalendarContract.Events;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.SpinnerAdapter;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -76,12 +82,15 @@ public class EventFragment extends BottomSheetDialogFragment {
 
 	private Dialog dialog;
 	private boolean isHidden = false;
+	private Boolean isOrganizer = null;
+	private Long attendeeIdForThisAccount = null;
 
 	private EventFragmentBinding binding;
 	private ContentValues instanceValues;
 	private List<ContentValues> attendeeList;
 	private CalendarViewModel calendarViewModel;
 	private LocationViewModel locationViewModel;
+	private ArrayAdapter<CharSequence> answerForInviteSpinnerAdapter;
 
 	private AlertDialog attendeeDialog;
 	private BottomSheetBehavior<FrameLayout> bottomSheetBehavior;
@@ -517,65 +526,163 @@ public class EventFragment extends BottomSheetDialogFragment {
 
 	private void setAttendeesText(List<ContentValues> attendees) {
 		// 참석자 수, 참석 여부
-		LayoutInflater layoutInflater = getLayoutInflater();
 		if (binding.eventAttendeesView.eventAttendeesTable.getChildCount() > 0) {
 			binding.eventAttendeesView.eventAttendeesTable.removeAllViews();
 		}
 
+		//조직자 행 추가
+		addAttendeeRow(attendees.get(0).getAsString(CalendarContract.Attendees.ORGANIZER)
+				, EventUtil.convertAttendeeRelationship(CalendarContract.Attendees.RELATIONSHIP_ORGANIZER, getContext())
+				, "");
+
 		for (ContentValues attendee : attendees) {
-			TableRow tableRow = new TableRow(getContext());
-			View row = layoutInflater.inflate(R.layout.event_attendee_item, null);
 			// add row to table
 			// 이름, 메일 주소, 상태
 			// 조직자 - attendeeName, 그 외 - email
-			final String attendeeName = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL);
+			final String attendeeEmail = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL);
 			final int attendeeStatus = attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_STATUS);
 			final int attendeeRelationship = attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP);
 
 			final String attendeeStatusStr = EventUtil.convertAttendeeStatus(attendeeStatus, getContext());
 			final String attendeeRelationshipStr = EventUtil.convertAttendeeRelationship(attendeeRelationship, getContext());
 
-			LinearLayout attendeeInfoLayout = (LinearLayout) row.findViewById(R.id.attendee_info_layout);
-
-			TextView attendeeEmailView = (TextView) row.findViewById(R.id.attendee_name);
-			TextView attendeeRelationshipView = (TextView) row.findViewById(R.id.attendee_relationship);
-			TextView attendeeStatusView = (TextView) row.findViewById(R.id.attendee_status);
-			// 삭제버튼 숨기기
-			row.findViewById(R.id.remove_attendee_button).setVisibility(View.GONE);
-
-			attendeeInfoLayout.setClickable(true);
-			attendeeInfoLayout.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View view) {
-					// logic for communications with attendee
-					if (attendeeDialog == null) {
-						final String[] itemList = {"기능 구성중"};
-						MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getContext())
-								.setTitle(attendeeName + "(" + attendeeRelationshipStr + ", " + attendeeStatusStr + ")")
-								.setItems(itemList, new DialogInterface.OnClickListener() {
-									@Override
-									public void onClick(DialogInterface dialogInterface, int i) {
-
-									}
-								});
-						attendeeDialog = builder.create();
-					}
-					attendeeDialog.setTitle(attendeeName + "(" + attendeeRelationshipStr + ", " + attendeeStatusStr + ")");
-					attendeeDialog.show();
-					// 기능목록 파악중
-				}
-			});
-
-			attendeeEmailView.setText(attendeeName);
-			attendeeRelationshipView.setText(attendeeRelationshipStr);
-			attendeeStatusView.setText(attendeeStatusStr);
-
-			tableRow.addView(row);
-			binding.eventAttendeesView.eventAttendeesTable.addView(tableRow,
-					new TableLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+			addAttendeeRow(attendeeEmail, attendeeRelationshipStr, attendeeStatusStr);
 		}
 
 	}
+
+	private void addAttendeeRow(String attendeeEmail, String attendeeRelationshipStr, String attendeeStatusStr) {
+		TableRow tableRow = new TableRow(getContext());
+		View row = getLayoutInflater().inflate(R.layout.event_attendee_item, null);
+		LinearLayout attendeeInfoLayout = (LinearLayout) row.findViewById(R.id.attendee_info_layout);
+
+		TextView attendeeEmailView = (TextView) row.findViewById(R.id.attendee_name);
+		TextView attendeeRelationshipView = (TextView) row.findViewById(R.id.attendee_relationship);
+		TextView attendeeStatusView = (TextView) row.findViewById(R.id.attendee_status);
+		// 삭제버튼 숨기기
+		row.findViewById(R.id.remove_attendee_button).setVisibility(View.GONE);
+
+		attendeeInfoLayout.setClickable(true);
+		attendeeInfoLayout.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				// logics for communications with attendee
+				if (attendeeDialog == null) {
+					final String[] itemList = {"기능 구성중"};
+					MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getContext())
+							.setTitle(attendeeEmail + "(" + attendeeRelationshipStr + ", " + attendeeStatusStr + ")")
+							.setItems(itemList, new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialogInterface, int i) {
+
+								}
+							});
+					attendeeDialog = builder.create();
+				}
+				attendeeDialog.setTitle(attendeeEmail + "(" + attendeeRelationshipStr + ", " + attendeeStatusStr + ")");
+				attendeeDialog.show();
+				// 기능목록 파악중
+			}
+		});
+
+		attendeeEmailView.setText(attendeeEmail);
+		attendeeRelationshipView.setText(attendeeRelationshipStr);
+		attendeeStatusView.setText(attendeeStatusStr);
+
+		tableRow.addView(row);
+		binding.eventAttendeesView.eventAttendeesTable.addView(tableRow,
+				new TableLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+	}
+
+	private void setAnswerForInviteSpinner() {
+		if (attendeeList.isEmpty()) {
+			return;
+		}
+
+		//이벤트 캘린더 계정의 응답값 확인
+		int attendeeStatus = -1;
+		int selectionIndex = -1;
+		final String accountOfEvent = instanceValues.getAsString(Events.ACCOUNT_NAME);
+
+		if (isOrganizer) {
+			attendeeStatus = instanceValues.getAsInteger(Events.SELF_ATTENDEE_STATUS);
+		} else {
+			for (ContentValues attendee : attendeeList) {
+				if (attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL).equals(accountOfEvent)) {
+					attendeeIdForThisAccount = attendee.getAsLong(CalendarContract.Attendees._ID);
+					attendeeStatus = attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_STATUS);
+					break;
+				}
+			}
+		}
+
+		switch (attendeeStatus) {
+			case CalendarContract.Attendees.ATTENDEE_STATUS_ACCEPTED:
+				selectionIndex = 0;
+				break;
+			case CalendarContract.Attendees.ATTENDEE_STATUS_DECLINED:
+				selectionIndex = 1;
+				break;
+			case CalendarContract.Attendees.ATTENDEE_STATUS_INVITED:
+				selectionIndex = 2;
+				break;
+			case CalendarContract.Attendees.ATTENDEE_STATUS_NONE:
+				selectionIndex = 3;
+				break;
+		}
+
+		answerForInviteSpinnerAdapter = ArrayAdapter.createFromResource(getContext(),
+				isOrganizer ? R.array.answer_for_invite_organizer_spinner :
+						R.array.answer_for_invite_attendee_spinner, android.R.layout.simple_spinner_item);
+		answerForInviteSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		binding.eventAttendeesView.answerSpinner.setAdapter(answerForInviteSpinnerAdapter);
+		binding.eventAttendeesView.answerSpinner.setSelection(selectionIndex);
+		binding.eventAttendeesView.answerSpinner.setOnItemSelectedListener(answerSpinnerOnItemSelectedListener);
+	}
+
+	private final AdapterView.OnItemSelectedListener answerSpinnerOnItemSelectedListener = new AdapterView.OnItemSelectedListener() {
+		boolean initializing = true;
+
+		@Override
+		public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+			if (initializing) {
+				initializing = false;
+				return;
+			}
+			ContentValues updateContentValues = new ContentValues();
+			Uri uri = null;
+			String where = CalendarContract.Attendees._ID + "=?";
+			String[] selectionArgs = {attendeeIdForThisAccount.toString()};
+
+			if (isOrganizer) {
+				uri = ContentUris.withAppendedId(Events.CONTENT_URI, instanceValues.getAsLong(CalendarContract.Instances.EVENT_ID));
+			} else {
+				uri = CalendarContract.Attendees.CONTENT_URI;
+			}
+
+			switch (position) {
+				case 0:
+					updateContentValues.put(CalendarContract.Attendees.ATTENDEE_STATUS, CalendarContract.Attendees.ATTENDEE_STATUS_ACCEPTED);
+					break;
+				case 1:
+					updateContentValues.put(CalendarContract.Attendees.ATTENDEE_STATUS, CalendarContract.Attendees.ATTENDEE_STATUS_DECLINED);
+					break;
+				case 2:
+					updateContentValues.put(CalendarContract.Attendees.ATTENDEE_STATUS, CalendarContract.Attendees.ATTENDEE_STATUS_INVITED);
+					break;
+				case 3:
+					updateContentValues.put(CalendarContract.Attendees.ATTENDEE_STATUS, CalendarContract.Attendees.ATTENDEE_STATUS_NONE);
+					break;
+			}
+
+			getContext().getContentResolver().update(uri, updateContentValues, where, selectionArgs);
+		}
+
+		@Override
+		public void onNothingSelected(AdapterView<?> parent) {
+
+		}
+	};
 
 
 	private void setInstanceData() {
@@ -695,16 +802,27 @@ public class EventFragment extends BottomSheetDialogFragment {
 		// 참석자
 		attendeeList = calendarViewModel.getAttendees(eventId);
 
+		isOrganizer = instanceValues.containsKey(Events.IS_ORGANIZER) ?
+				(instanceValues.getAsString(Events.IS_ORGANIZER).equals("1") ? true : false) : false;
+
 		// 참석자가 없는 경우 - 테이블 숨김, 참석자 없음 텍스트 표시
 		if (attendeeList.isEmpty()) {
 			binding.eventAttendeesView.notAttendees.setVisibility(View.VISIBLE);
 			binding.eventAttendeesView.eventAttendeesTable.setVisibility(View.GONE);
+			binding.eventAttendeesView.answerLayout.setVisibility(View.GONE);
 			binding.eventAttendeesView.getRoot().setVisibility(View.GONE);
 		} else {
 			binding.eventAttendeesView.notAttendees.setVisibility(View.GONE);
 			binding.eventAttendeesView.eventAttendeesTable.setVisibility(View.VISIBLE);
 			binding.eventAttendeesView.getRoot().setVisibility(View.VISIBLE);
 			setAttendeesText(attendeeList);
+
+			if (!isOrganizer) {
+				binding.eventAttendeesView.answerLayout.setVisibility(View.VISIBLE);
+				setAnswerForInviteSpinner();
+			} else {
+				binding.eventAttendeesView.answerLayout.setVisibility(View.GONE);
+			}
 		}
 
 		// 공개 범위 표시
