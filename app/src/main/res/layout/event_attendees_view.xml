@@ -14,7 +14,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp">
 
         <TableLayout
             android:id="@+id/event_attendees_table"
@@ -30,30 +32,6 @@
             android:layout_height="wrap_content"
             android:text="@string/show_attendees" />
 
-        <LinearLayout
-            android:id="@+id/organizer_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/RELATIONSHIP_ORGANIZER"
-                android:textColor="@color/colorPrimary"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/organizer_email"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="8dp"
-                android:text="organizerEmail"
-                android:textColor="@color/black"
-                android:textSize="16sp" />
-
-        </LinearLayout>
 
         <TextView
             android:id="@+id/not_attendees"

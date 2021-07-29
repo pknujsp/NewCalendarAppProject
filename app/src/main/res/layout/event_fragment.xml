@@ -66,7 +66,6 @@
                     android:id="@+id/event_availability_view"
                     layout="@layout/event_availability_view" />
 
-
             </LinearLayout>
 
         </ScrollView>

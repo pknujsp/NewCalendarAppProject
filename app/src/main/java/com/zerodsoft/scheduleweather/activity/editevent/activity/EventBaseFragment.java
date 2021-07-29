@@ -241,6 +241,8 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		binding.timeLayout.startTime.setOnClickListener(dateTimeOnClickListener);
 		binding.timeLayout.endDate.setOnClickListener(dateTimeOnClickListener);
 		binding.timeLayout.endTime.setOnClickListener(dateTimeOnClickListener);
+
+		binding.attendeeLayout.answerLayout.setVisibility(View.GONE);
 	}
 
 	protected final View.OnClickListener dateTimeOnClickListener = view ->
@@ -483,8 +485,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 	}
 
 	protected final void addAttendeeItemView(ContentValues attendee) {
-		if (attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP) ==
-				CalendarContract.Attendees.RELATIONSHIP_ORGANIZER) {
+		if (attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL).equals(selectedCalendarValues.getAsString(CalendarContract.Calendars.ACCOUNT_NAME))) {
 			return;
 		}
 
@@ -553,6 +554,16 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 				break;
 			}
 		}
+		if (eventDataViewModel.getNEW_ATTENDEES().size() == 1) {
+			ContentValues attendee = eventDataViewModel.getNEW_ATTENDEES().get(0);
+			if (attendee.containsKey(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP)) {
+				if (attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP) ==
+						CalendarContract.Attendees.RELATIONSHIP_ORGANIZER) {
+					eventDataViewModel.clearAttendees();
+				}
+			}
+		}
+
 		if (eventDataViewModel.getNEW_ATTENDEES().isEmpty()) {
 			binding.attendeeLayout.showAttendeesDetail.setText(getString(R.string.add_attendee));
 		}
@@ -1012,14 +1023,13 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 	}
 
 	protected final void onClickedAttendeeList(Bundle bundle) {
-		ContentValues organizer = new ContentValues();
-
-		organizer.put(CalendarContract.Attendees.ATTENDEE_NAME, selectedCalendarValues.getAsString(CalendarContract.Calendars.ACCOUNT_NAME));
-		organizer.put(CalendarContract.Attendees.ATTENDEE_EMAIL, selectedCalendarValues.getAsString(CalendarContract.Calendars.ACCOUNT_NAME));
-		organizer.put(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP, CalendarContract.Attendees.RELATIONSHIP_ORGANIZER);
+		ContentValues selectedAccount = new ContentValues();
+		selectedAccount.put(CalendarContract.Attendees.ATTENDEE_NAME, selectedCalendarValues.getAsString(CalendarContract.Calendars.ACCOUNT_NAME));
+		selectedAccount.put(CalendarContract.Attendees.ATTENDEE_EMAIL, selectedCalendarValues.getAsString(CalendarContract.Calendars.ACCOUNT_NAME));
+		selectedAccount.put(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP, CalendarContract.Attendees.RELATIONSHIP_ORGANIZER);
 
 		bundle.putParcelableArrayList("attendeeList", (ArrayList<? extends Parcelable>) eventDataViewModel.getNEW_ATTENDEES());
-		bundle.putParcelable("organizer", organizer);
+		bundle.putParcelable("selectedAccount", selectedAccount);
 
 		AttendeesFragment attendeesFragment = new AttendeesFragment(new AttendeesFragment.OnAttendeesResultListener() {
 			@Override

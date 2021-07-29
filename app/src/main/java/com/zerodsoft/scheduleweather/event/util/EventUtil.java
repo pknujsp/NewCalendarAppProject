@@ -229,15 +229,15 @@ public class EventUtil {
 		@Override
 		public int compare(ContentValues t1, ContentValues t2) {
 			// 양수이면 변경된다
-			long t1Begin = t1.getAsLong(CalendarContract.Instances.BEGIN);
-			long t1End = t1.getAsLong(CalendarContract.Instances.END);
-			long t2Begin = t2.getAsLong(CalendarContract.Instances.BEGIN);
-			long t2End = t2.getAsLong(CalendarContract.Instances.END);
+			long t1Begin = t1.getAsLong(Instances.BEGIN);
+			long t1End = t1.getAsLong(Instances.END);
+			long t2Begin = t2.getAsLong(Instances.BEGIN);
+			long t2End = t2.getAsLong(Instances.END);
 
-			if ((t1End - t1Begin) < (t2End - t2Begin)) {
+			if ((t1End - t1Begin) <= (t2End - t2Begin)) {
 				return 1;
 			} else {
-				return 0;
+				return -1;
 			}
 		}
 	};

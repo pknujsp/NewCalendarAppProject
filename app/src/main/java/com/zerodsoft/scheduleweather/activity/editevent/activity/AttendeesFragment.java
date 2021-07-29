@@ -10,19 +10,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.ContentValues;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.provider.CalendarContract;
-import android.text.InputType;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.Toast;
 
-import com.google.android.material.chip.ChipGroup;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.editevent.adapter.AttendeeListAdapter;
 import com.zerodsoft.scheduleweather.databinding.FragmentAttendeesBinding;
@@ -37,7 +31,7 @@ public class AttendeesFragment extends Fragment {
 
 	private FragmentAttendeesBinding binding;
 	private AttendeeListAdapter adapter;
-	private ContentValues organizer;
+	private ContentValues selectedAccount;
 	private OnAttendeesResultListener onAttendeesResultListener;
 
 	public AttendeesFragment(OnAttendeesResultListener onAttendeesResultListener) {
@@ -77,9 +71,9 @@ public class AttendeesFragment extends Fragment {
 
 		Bundle arguments = getArguments();
 		List<ContentValues> attendeeList = arguments.getParcelableArrayList("attendeeList");
-		organizer = arguments.getParcelable("organizer");
+		selectedAccount = arguments.getParcelable("selectedAccount");
 
-		adapter = new AttendeeListAdapter(organizer);
+		adapter = new AttendeeListAdapter(selectedAccount);
 
 		binding.attendeeList.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
 		binding.attendeeList.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
@@ -89,8 +83,7 @@ public class AttendeesFragment extends Fragment {
 
 		List<ContentValues> finalAttendeeList = new ArrayList<>();
 		for (ContentValues attendee : attendeeList) {
-			if (attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP) ==
-					CalendarContract.Attendees.RELATIONSHIP_ORGANIZER) {
+			if (attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL).equals(selectedAccount.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL))) {
 				continue;
 			} else {
 				finalAttendeeList.add(attendee);
@@ -122,8 +115,8 @@ public class AttendeesFragment extends Fragment {
                     이메일이 아니면 검색 완료클릭시 이메일 주소가 아닙니다라는 내용의 메시지를 표시
                     */
 					if (query.matches(EMAIL_REGRESSION)) {
-						final String selectedCalendarOwnerAccount = organizer.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL);
-						final String selectedCalendarCalendarName = organizer.getAsString(CalendarContract.Attendees.ATTENDEE_NAME);
+						final String selectedCalendarOwnerAccount = selectedAccount.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL);
+						final String selectedCalendarCalendarName = selectedAccount.getAsString(CalendarContract.Attendees.ATTENDEE_NAME);
 						// 중복 여부 확인
 						// 리스트내에 이미 존재하는지 확인
 						List<ContentValues> attendeeList = adapter.getAttendeeList();

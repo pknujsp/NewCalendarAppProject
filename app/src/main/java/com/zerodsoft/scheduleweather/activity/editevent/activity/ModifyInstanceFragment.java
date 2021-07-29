@@ -580,8 +580,6 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 			final boolean guestsCanSeeGuests = originalEvent.getAsInteger(Events.GUESTS_CAN_SEE_GUESTS) == 1;
 			final boolean guestsCanInviteOthers = originalEvent.getAsInteger(Events.GUESTS_CAN_INVITE_OTHERS) == 1;
 
-			binding.attendeeLayout.organizerEmail.setText(attendeeList.get(0).getAsString(CalendarContract.Attendees.ORGANIZER));
-
 			if (guestsCanModify) {
 				createAttendeeListView();
 			} else {

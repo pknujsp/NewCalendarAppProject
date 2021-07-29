@@ -791,13 +791,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 			final boolean guestsCanSeeGuests = instanceValues.getAsInteger(Events.GUESTS_CAN_SEE_GUESTS) == 1;
 			final boolean guestsCanInviteOthers = instanceValues.getAsInteger(Events.GUESTS_CAN_INVITE_OTHERS) == 1;
 
-			if (guestsCanSeeGuests) {
-				binding.eventAttendeesView.showAttendeesDetail.setVisibility(View.VISIBLE);
-			} else {
-				//초대받은 경우 : 참석자 명단을 볼수 없고, 자기자신만 볼수 있다
-				binding.eventAttendeesView.showAttendeesDetail.setVisibility(View.GONE);
-			}
-
 			if (guestsCanInviteOthers) {
 
 			} else {
@@ -819,26 +812,19 @@ public class EventFragment extends BottomSheetDialogFragment {
 				binding.eventAttendeesView.eventAttendeesTable.removeAllViews();
 			}
 
-			//조직자 정보 추가
-			binding.eventAttendeesView.organizerEmail.setText(attendeeList.get(0).getAsString(CalendarContract.Attendees.ORGANIZER));
-
 			final String accountNameOfEvent = instanceValues.getAsString(Events.ACCOUNT_NAME);
+			final String organizerEmail = attendeeList.get(0).getAsString(CalendarContract.Attendees.ORGANIZER);
 			List<ContentValues> finalAttendeeList = new ArrayList<>();
+
+			addAttendeeRow(organizerEmail, EventUtil.convertAttendeeRelationship(CalendarContract.Attendees.RELATIONSHIP_ORGANIZER, getContext()),
+					"");
 
 			for (ContentValues attendee : attendeeList) {
 				if (attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP) ==
 						CalendarContract.Attendees.RELATIONSHIP_ORGANIZER) {
 					continue;
 				}
-
-				if (!isOrganizer && !guestsCanSeeGuests) {
-					if (attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL).equals(accountNameOfEvent)) {
-						finalAttendeeList.add(attendee);
-						break;
-					}
-				} else {
-					finalAttendeeList.add(attendee);
-				}
+				finalAttendeeList.add(attendee);
 			}
 
 			for (ContentValues attendee : finalAttendeeList) {

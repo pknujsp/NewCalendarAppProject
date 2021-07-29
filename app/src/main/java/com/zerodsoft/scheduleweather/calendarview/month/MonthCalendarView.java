@@ -33,6 +33,7 @@ import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -221,7 +222,7 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
 		}
 
 		// 데이터를 일정 길이의 내림차순으로 정렬
-		instances.sort(EventUtil.INSTANCE_COMPARATOR);
+		Collections.sort(instances, EventUtil.INSTANCE_COMPARATOR);
 
 		start = Integer.MAX_VALUE;
 		end = Integer.MIN_VALUE;
