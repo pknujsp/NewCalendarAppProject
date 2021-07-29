@@ -59,6 +59,7 @@ import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -524,33 +525,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 				}).create().show();
 	}
 
-	private void setAttendeesText(List<ContentValues> attendees) {
-		// 참석자 수, 참석 여부
-		if (binding.eventAttendeesView.eventAttendeesTable.getChildCount() > 0) {
-			binding.eventAttendeesView.eventAttendeesTable.removeAllViews();
-		}
-
-		//조직자 행 추가
-		addAttendeeRow(attendees.get(0).getAsString(CalendarContract.Attendees.ORGANIZER)
-				, EventUtil.convertAttendeeRelationship(CalendarContract.Attendees.RELATIONSHIP_ORGANIZER, getContext())
-				, "");
-
-		for (ContentValues attendee : attendees) {
-			// add row to table
-			// 이름, 메일 주소, 상태
-			// 조직자 - attendeeName, 그 외 - email
-			final String attendeeEmail = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL);
-			final int attendeeStatus = attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_STATUS);
-			final int attendeeRelationship = attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP);
-
-			final String attendeeStatusStr = EventUtil.convertAttendeeStatus(attendeeStatus, getContext());
-			final String attendeeRelationshipStr = EventUtil.convertAttendeeRelationship(attendeeRelationship, getContext());
-
-			addAttendeeRow(attendeeEmail, attendeeRelationshipStr, attendeeStatusStr);
-		}
-
-	}
-
 	private void addAttendeeRow(String attendeeEmail, String attendeeRelationshipStr, String attendeeStatusStr) {
 		TableRow tableRow = new TableRow(getContext());
 		View row = getLayoutInflater().inflate(R.layout.event_attendee_item, null);
@@ -807,21 +781,76 @@ public class EventFragment extends BottomSheetDialogFragment {
 
 		// 참석자가 없는 경우 - 테이블 숨김, 참석자 없음 텍스트 표시
 		if (attendeeList.isEmpty()) {
+			binding.modifyEventFab.setVisibility(View.VISIBLE);
 			binding.eventAttendeesView.notAttendees.setVisibility(View.VISIBLE);
 			binding.eventAttendeesView.eventAttendeesTable.setVisibility(View.GONE);
 			binding.eventAttendeesView.answerLayout.setVisibility(View.GONE);
 			binding.eventAttendeesView.getRoot().setVisibility(View.GONE);
 		} else {
+			final boolean guestsCanModify = instanceValues.getAsInteger(Events.GUESTS_CAN_MODIFY) == 1;
+			final boolean guestsCanSeeGuests = instanceValues.getAsInteger(Events.GUESTS_CAN_SEE_GUESTS) == 1;
+			final boolean guestsCanInviteOthers = instanceValues.getAsInteger(Events.GUESTS_CAN_INVITE_OTHERS) == 1;
+
+			if (guestsCanSeeGuests) {
+				binding.eventAttendeesView.showAttendeesDetail.setVisibility(View.VISIBLE);
+			} else {
+				//초대받은 경우 : 참석자 명단을 볼수 없고, 자기자신만 볼수 있다
+				binding.eventAttendeesView.showAttendeesDetail.setVisibility(View.GONE);
+			}
+
+			if (guestsCanInviteOthers) {
+
+			} else {
+
+			}
+
 			binding.eventAttendeesView.notAttendees.setVisibility(View.GONE);
 			binding.eventAttendeesView.eventAttendeesTable.setVisibility(View.VISIBLE);
 			binding.eventAttendeesView.getRoot().setVisibility(View.VISIBLE);
-			setAttendeesText(attendeeList);
 
-			if (!isOrganizer) {
+			if (isOrganizer) {
+				binding.eventAttendeesView.answerLayout.setVisibility(View.GONE);
+			} else {
 				binding.eventAttendeesView.answerLayout.setVisibility(View.VISIBLE);
 				setAnswerForInviteSpinner();
-			} else {
-				binding.eventAttendeesView.answerLayout.setVisibility(View.GONE);
+			}
+
+			if (binding.eventAttendeesView.eventAttendeesTable.getChildCount() > 0) {
+				binding.eventAttendeesView.eventAttendeesTable.removeAllViews();
+			}
+
+			//조직자 정보 추가
+			binding.eventAttendeesView.organizerEmail.setText(attendeeList.get(0).getAsString(CalendarContract.Attendees.ORGANIZER));
+
+			final String accountNameOfEvent = instanceValues.getAsString(Events.ACCOUNT_NAME);
+			List<ContentValues> finalAttendeeList = new ArrayList<>();
+
+			for (ContentValues attendee : attendeeList) {
+				if (attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP) ==
+						CalendarContract.Attendees.RELATIONSHIP_ORGANIZER) {
+					continue;
+				}
+
+				if (!isOrganizer && !guestsCanSeeGuests) {
+					if (attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL).equals(accountNameOfEvent)) {
+						finalAttendeeList.add(attendee);
+						break;
+					}
+				} else {
+					finalAttendeeList.add(attendee);
+				}
+			}
+
+			for (ContentValues attendee : finalAttendeeList) {
+				// 이름, 메일 주소, 상태
+				final String attendeeEmail = attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL);
+				final int attendeeStatus = attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_STATUS);
+				final int attendeeRelationship = attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP);
+
+				final String attendeeStatusStr = EventUtil.convertAttendeeStatus(attendeeStatus, getContext());
+				final String attendeeRelationshipStr = EventUtil.convertAttendeeRelationship(attendeeRelationship, getContext());
+
+				addAttendeeRow(attendeeEmail, attendeeRelationshipStr, attendeeStatusStr);
 			}
 		}
 

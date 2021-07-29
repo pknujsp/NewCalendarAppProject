@@ -86,7 +86,17 @@ public class AttendeesFragment extends Fragment {
 		binding.attendeeList.setAdapter(adapter);
 
 		adapter.registerAdapterDataObserver(adapterDataObserver);
-		adapter.setAttendeeList(attendeeList);
+
+		List<ContentValues> finalAttendeeList = new ArrayList<>();
+		for (ContentValues attendee : attendeeList) {
+			if (attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP) ==
+					CalendarContract.Attendees.RELATIONSHIP_ORGANIZER) {
+				continue;
+			} else {
+				finalAttendeeList.add(attendee);
+			}
+		}
+		adapter.setAttendeeList(finalAttendeeList);
 		adapter.notifyDataSetChanged();
 
 		if (attendeeList.isEmpty()) {

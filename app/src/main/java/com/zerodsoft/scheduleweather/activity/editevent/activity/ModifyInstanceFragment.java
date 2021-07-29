@@ -482,18 +482,13 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		selectedCalendarValues =
 				calendarViewModel.getCalendar(originalEvent.getAsInteger(Events.CALENDAR_ID));
 
+		final List<ContentValues> attendeeList = calendarViewModel.getAttendeeListForEdit(eventId);
+
 		eventDataViewModel.getNEW_REMINDERS().addAll(calendarViewModel.getReminders(eventId));
-		eventDataViewModel.getNEW_ATTENDEES().addAll(calendarViewModel.getAttendeeListForEdit(eventId));
+		eventDataViewModel.getNEW_ATTENDEES().addAll(attendeeList);
 
-		originalAttendeeList.addAll(eventDataViewModel.getNEW_ATTENDEES());
+		originalAttendeeList.addAll(attendeeList);
 		originalReminderList.addAll(eventDataViewModel.getNEW_REMINDERS());
-
-		if (!eventDataViewModel.getNEW_ATTENDEES().isEmpty()) {
-			createAttendeeListView();
-		} else {
-			// 참석자 버튼 텍스트 수정
-			binding.attendeeLayout.showAttendeesDetail.setText(getString(R.string.add_attendee));
-		}
 
 		//제목, 캘린더, 시간, 시간대, 반복, 알림, 설명, 위치, 공개범위, 유효성, 참석자
 		//알림, 참석자 정보는 따로 불러온다.
@@ -578,6 +573,33 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 		// 유효성
 		setAvailabilityText(originalEvent.getAsInteger(CalendarContract.Instances.AVAILABILITY));
+
+		// 참석자
+		if (attendeeList.size() > 0) {
+			final boolean guestsCanModify = originalEvent.getAsInteger(Events.GUESTS_CAN_MODIFY) == 1;
+			final boolean guestsCanSeeGuests = originalEvent.getAsInteger(Events.GUESTS_CAN_SEE_GUESTS) == 1;
+			final boolean guestsCanInviteOthers = originalEvent.getAsInteger(Events.GUESTS_CAN_INVITE_OTHERS) == 1;
+
+			binding.attendeeLayout.organizerEmail.setText(attendeeList.get(0).getAsString(CalendarContract.Attendees.ORGANIZER));
+
+			if (guestsCanModify) {
+				createAttendeeListView();
+			} else {
+				//알림외에는 수정불가
+				binding.titleLayout.getRoot().setVisibility(View.GONE);
+				binding.calendarLayout.getRoot().setVisibility(View.GONE);
+				binding.timeLayout.getRoot().setVisibility(View.GONE);
+				binding.recurrenceLayout.getRoot().setVisibility(View.GONE);
+				binding.descriptionLayout.getRoot().setVisibility(View.GONE);
+				binding.locationLayout.getRoot().setVisibility(View.GONE);
+				binding.attendeeLayout.getRoot().setVisibility(View.GONE);
+				binding.accesslevelLayout.getRoot().setVisibility(View.GONE);
+				binding.availabilityLayout.getRoot().setVisibility(View.GONE);
+			}
+
+		} else {
+			binding.attendeeLayout.showAttendeesDetail.setText(getString(R.string.add_attendee));
+		}
 	}
 
 	//이번 일정만 변경

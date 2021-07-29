@@ -483,6 +483,11 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 	}
 
 	protected final void addAttendeeItemView(ContentValues attendee) {
+		if (attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP) ==
+				CalendarContract.Attendees.RELATIONSHIP_ORGANIZER) {
+			return;
+		}
+
 		TableRow tableRow = new TableRow(getContext());
 		LinearLayout row = (LinearLayout) getLayoutInflater().inflate(R.layout.event_attendee_item, null);
 
