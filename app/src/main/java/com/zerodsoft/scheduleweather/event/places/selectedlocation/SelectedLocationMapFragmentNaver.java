@@ -46,13 +46,7 @@ public class SelectedLocationMapFragmentNaver extends NaverMapFragment {
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-
-		mapFragment.getMapView().setOnTouchListener(new View.OnTouchListener() {
-			@Override
-			public boolean onTouch(View view, MotionEvent motionEvent) {
-				return true;
-			}
-		});
+		loadMap();
 
 		binding.headerLayout.setVisibility(View.GONE);
 		binding.naverMapButtonsLayout.gpsButton.setVisibility(View.GONE);
@@ -64,6 +58,14 @@ public class SelectedLocationMapFragmentNaver extends NaverMapFragment {
 	@Override
 	public void onMapReady(@NonNull NaverMap naverMap) {
 		super.onMapReady(naverMap);
+
+		mapFragment.getMapView().setOnTouchListener(new View.OnTouchListener() {
+			@Override
+			public boolean onTouch(View view, MotionEvent motionEvent) {
+				return true;
+			}
+		});
+
 
 		Marker marker = new Marker(new LatLng(Double.parseDouble(selectedLocation.getLatitude()),
 				Double.parseDouble(selectedLocation.getLongitude())));

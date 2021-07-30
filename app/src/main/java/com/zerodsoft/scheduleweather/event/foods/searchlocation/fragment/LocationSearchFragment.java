@@ -4,7 +4,6 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -31,8 +30,8 @@ import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LocationSearchDialogFragment extends DialogFragment implements IndicatorCreater, OnClickedLocationItem, OnSelectedNewLocation {
-	public static final String TAG = "LocationSearchDialogFragment";
+public class LocationSearchFragment extends Fragment implements IndicatorCreater, OnClickedLocationItem, OnSelectedNewLocation {
+	public static final String TAG = "LocationSearchFragment";
 
 	private final OnSelectedNewLocation onSelectedNewLocation;
 
@@ -41,14 +40,13 @@ public class LocationSearchDialogFragment extends DialogFragment implements Indi
 	private OnPageCallback onPageCallback;
 	private String query;
 
-	public LocationSearchDialogFragment(OnSelectedNewLocation onSelectedNewLocation) {
+	public LocationSearchFragment(OnSelectedNewLocation onSelectedNewLocation) {
 		this.onSelectedNewLocation = onSelectedNewLocation;
 	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setStyle(STYLE_NO_TITLE, R.style.AppTheme_FullScreenDialog);
 
 		Bundle bundle = getArguments();
 		query = bundle.getString("searchWord");
@@ -65,7 +63,6 @@ public class LocationSearchDialogFragment extends DialogFragment implements Indi
 	public void setIndicator(int fragmentSize) {
 		binding.viewpagerIndicator.createDot(0, fragmentSize);
 	}
-
 
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -88,13 +85,15 @@ public class LocationSearchDialogFragment extends DialogFragment implements Indi
 				return false;
 			}
 		});
+
+		searchResultListAdapter = new SearchResultListAdapter(this);
+		binding.listViewpager.setAdapter(searchResultListAdapter);
 		binding.searchView.setQuery(query, true);
 	}
 
 
 	private void search(String query) {
 		// 주소, 주소 & 장소, 장소, 검색 결과없음 인 경우
-
 		final LocalApiPlaceParameter addressParameter = LocalParameterUtil.getAddressParameter(query, "1"
 				, LocalApiPlaceParameter.DEFAULT_PAGE);
 		final LocalApiPlaceParameter placeParameter = LocalParameterUtil.getPlaceParameter(query, null, null,
@@ -103,11 +102,9 @@ public class LocationSearchDialogFragment extends DialogFragment implements Indi
 		SearchResultChecker.checkExisting(addressParameter, placeParameter, new JsonDownloader<List<KakaoLocalResponse>>() {
 			@Override
 			public void onResponseSuccessful(List<KakaoLocalResponse> resultList) {
-
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						binding.customProgressView.onSuccessfulProcessingData();
 						List<Fragment> fragments = new ArrayList<>();
 
 						for (KakaoLocalResponse kakaoLocalResponse : resultList) {
@@ -116,9 +113,9 @@ public class LocationSearchDialogFragment extends DialogFragment implements Indi
 							}
 
 							if (kakaoLocalResponse instanceof PlaceKakaoLocalResponse) {
-								fragments.add(new PlacesListFragment(LocationSearchDialogFragment.this, LocationSearchDialogFragment.this.query));
+								fragments.add(new PlacesListFragment(LocationSearchFragment.this, LocationSearchFragment.this.query));
 							} else if (kakaoLocalResponse instanceof AddressKakaoLocalResponse) {
-								fragments.add(new AddressesListFragment(LocationSearchDialogFragment.this, query));
+								fragments.add(new AddressesListFragment(LocationSearchFragment.this, query));
 							}
 						}
 						onPageCallback = new OnPageCallback();
@@ -145,68 +142,6 @@ public class LocationSearchDialogFragment extends DialogFragment implements Indi
 				});
 			}
 		});
-
-		/*
-		SearchResultChecker.checkExisting(addressParameter, placeParameter, new CheckerCallback<DataWrapper<KakaoLocalResponse>>() {
-			@Override
-			public void onResult() {
-				// 오류 여부 확인
-				for (DataWrapper<KakaoLocalResponse> response : list) {
-					if (response.getException() != null) {
-						// error, exception
-						binding.errorText.setText(getContext().getString(R.string.error) + ", (" + response.getException().getMessage() + ")");
-						binding.errorText.setVisibility(View.VISIBLE);
-						return;
-					}
-				}
-
-				// 오류 없으면 진행
-				int totalResultCount = 0;
-
-				for (DataWrapper<KakaoLocalResponse> response : list) {
-					if (response.getData() instanceof AddressKakaoLocalResponse) {
-						totalResultCount += response.getData().size();
-					} else if (response.getData() instanceof PlaceKakaoLocalResponse) {
-						totalResultCount += response.getData().size();
-					}
-				}
-
-				if (totalResultCount == 0) {
-					// 검색 결과 없음
-					binding.errorText.setText(getContext().getString(R.string.not_founded_search_result));
-					binding.errorText.setVisibility(View.VISIBLE);
-					// searchview클릭 후 재검색 시 search fragment로 이동
-				} else {
-					List<Fragment> fragments = new ArrayList<>();
-
-					for (DataWrapper<KakaoLocalResponse> response : list) {
-						if (response.getData() instanceof PlaceKakaoLocalResponse) {
-							PlaceKakaoLocalResponse placeKakaoLocalResponse = (PlaceKakaoLocalResponse) response.getData();
-
-							if (!placeKakaoLocalResponse.getPlaceDocuments().isEmpty()) {
-								fragments.add(new PlacesListFragment(LocationSearchDialogFragment.this, searchWord));
-							}
-						} else if (response.getData() instanceof AddressKakaoLocalResponse) {
-							AddressKakaoLocalResponse addressKakaoLocalResponse = (AddressKakaoLocalResponse) response.getData();
-
-							if (!addressKakaoLocalResponse.getAddressResponseDocumentsList().isEmpty()) {
-								fragments.add(new AddressesListFragment(LocationSearchDialogFragment.this, searchWord));
-							}
-						}
-					}
-
-					searchResultListAdapter = new SearchResultListAdapter(LocationSearchDialogFragment.this);
-					searchResultListAdapter.setFragments(fragments);
-					binding.listViewpager.setAdapter(searchResultListAdapter);
-
-					onPageCallback = new OnPageCallback();
-					binding.listViewpager.registerOnPageChangeCallback(onPageCallback);
-					binding.viewpagerIndicator.createDot(0, fragments.size());
-				}
-			}
-		});
-
-		 */
 	}
 
 	@Override
@@ -218,7 +153,6 @@ public class LocationSearchDialogFragment extends DialogFragment implements Indi
 
 	@Override
 	public void onSelectedNewLocation(LocationDTO locationDTO) {
-		dismiss();
 		onSelectedNewLocation.onSelectedNewLocation(locationDTO);
 	}
 

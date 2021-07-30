@@ -25,7 +25,7 @@ import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCriteriaLocationHis
 import com.zerodsoft.scheduleweather.event.foods.enums.CriteriaLocationType;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.LocationHistoryController;
-import com.zerodsoft.scheduleweather.event.foods.searchlocation.fragment.LocationSearchDialogFragment;
+import com.zerodsoft.scheduleweather.event.foods.searchlocation.fragment.LocationSearchFragment;
 import com.zerodsoft.scheduleweather.event.foods.searchlocation.interfaces.OnSelectedNewLocation;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
@@ -94,12 +94,15 @@ public class RestaurantCriteriaLocationSettingsFragment extends Fragment impleme
 			public boolean onQueryTextSubmit(String query) {
 				//검색 결과 목록 표시
 				if (!query.isEmpty()) {
-					LocationSearchDialogFragment searchDialogFragment = new LocationSearchDialogFragment(RestaurantCriteriaLocationSettingsFragment.this);
+					LocationSearchFragment locationSearchFragment = new LocationSearchFragment(RestaurantCriteriaLocationSettingsFragment.this);
 					Bundle bundle = new Bundle();
 					bundle.putString("searchWord", query);
 
-					searchDialogFragment.setArguments(bundle);
-					searchDialogFragment.show(getParentFragmentManager(), LocationSearchDialogFragment.TAG);
+					locationSearchFragment.setArguments(bundle);
+					getParentFragmentManager().beginTransaction()
+							.hide(RestaurantCriteriaLocationSettingsFragment.this)
+							.add(R.id.content_fragment_container, locationSearchFragment, LocationSearchFragment.TAG)
+							.addToBackStack(LocationSearchFragment.TAG).commit();
 					return true;
 				} else {
 					return false;
