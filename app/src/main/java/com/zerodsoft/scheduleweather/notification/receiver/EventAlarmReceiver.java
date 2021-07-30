@@ -18,9 +18,7 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.os.PowerManager;
 import android.provider.CalendarContract;
-import android.provider.CalendarContract.Events;
 import android.provider.CalendarContract.Instances;
-import android.provider.CalendarContract.Reminders;
 import android.provider.CalendarContract.CalendarAlerts;
 import android.widget.RemoteViews;
 
@@ -29,14 +27,10 @@ import androidx.core.app.NotificationCompat;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.main.AppMainActivity;
-import com.zerodsoft.scheduleweather.calendar.CalendarProvider;
-import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.etc.LocationType;
-import com.zerodsoft.scheduleweather.event.common.repository.LocationRepository;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyItem;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
-import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.WeatherDataConverter;
 import com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.AirConditionResult;
@@ -44,7 +38,6 @@ import com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.BarIni
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.AirConditionProcessing;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.UltraSrtNcstProcessing;
-import com.zerodsoft.scheduleweather.weather.repository.AreaCodeRepository;
 import com.zerodsoft.scheduleweather.weather.ultrasrtncst.UltraSrtNcstFinalData;
 import com.zerodsoft.scheduleweather.weather.ultrasrtncst.UltraSrtNcstResult;
 
@@ -426,11 +419,11 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 	public static void createNotificationChannel(Context context) {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID,
-					context.getString(R.string.notification_channel_name), NotificationManager.IMPORTANCE_HIGH);
+					context.getString(R.string.event_alarm_notification_channel_name), NotificationManager.IMPORTANCE_HIGH);
 			notificationChannel.enableLights(true);
 			notificationChannel.setLightColor(Color.RED);
 			notificationChannel.enableVibration(true);
-			notificationChannel.setDescription(context.getString(R.string.notification_channel_description));
+			notificationChannel.setDescription(context.getString(R.string.event_alarm_notification_channel_description));
 
 			NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 			notificationManager.createNotificationChannel(notificationChannel);

@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 
 public class MonthAssistantCalendarFragment extends Fragment implements IRefreshView, IConnectedCalendars, IMoveViewpager {
-	public static final String TAG = "MonthAssistantCalendarFragment";
 	private final CalendarDateOnClickListener calendarDateOnClickListener;
 
 	private FragmentMonthAssistantBinding binding;

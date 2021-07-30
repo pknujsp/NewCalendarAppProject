@@ -49,6 +49,7 @@ public class AssistantForMonthFragment extends Fragment {
 		binding.monthPicker.setMinValue(1);
 		binding.monthPicker.setMaxValue(12);
 
+
 		binding.moveToDateBtn.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {

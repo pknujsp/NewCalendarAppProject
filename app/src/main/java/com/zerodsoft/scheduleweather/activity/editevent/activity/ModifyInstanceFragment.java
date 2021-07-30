@@ -593,7 +593,15 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 				binding.attendeeLayout.getRoot().setVisibility(View.GONE);
 				binding.accesslevelLayout.getRoot().setVisibility(View.GONE);
 				binding.availabilityLayout.getRoot().setVisibility(View.GONE);
+
+				if (guestsCanInviteOthers) {
+					createAttendeeListView();
+					binding.attendeeLayout.getRoot().setVisibility(View.VISIBLE);
+				} else {
+					binding.attendeeLayout.getRoot().setVisibility(View.GONE);
+				}
 			}
+
 
 		} else {
 			binding.attendeeLayout.showAttendeesDetail.setText(getString(R.string.add_attendee));

@@ -248,12 +248,13 @@ public class AsyncQueryServiceHelper extends IntentService {
 			} else if (eventEditType == EventHelper.EventEditType.UPDATE_ALL_EVENTS) {
 				if (locationIntentCode != null) {
 					if (locationIntentCode == LocationIntentCode.RESULT_CODE_CHANGED_LOCATION) {
-						locationDTO.setEventId(originalEventId);
 						locationRepository.removeLocation(originalEventId, null);
+						locationDTO.setEventId(originalEventId);
 						locationRepository.addLocation(locationDTO, null);
 					} else if (locationIntentCode == LocationIntentCode.RESULT_CODE_REMOVED_LOCATION) {
 						locationRepository.removeLocation(originalEventId, null);
 					} else if (locationIntentCode == LocationIntentCode.RESULT_CODE_SELECTED_LOCATION) {
+						locationRepository.removeLocation(originalEventId, null);
 						locationDTO.setEventId(originalEventId);
 						locationRepository.addLocation(locationDTO, null);
 					}

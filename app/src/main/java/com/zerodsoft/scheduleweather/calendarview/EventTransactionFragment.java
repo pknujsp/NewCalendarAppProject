@@ -2,6 +2,8 @@ package com.zerodsoft.scheduleweather.calendarview;
 
 import android.accounts.Account;
 import android.annotation.SuppressLint;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -9,20 +11,20 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SyncStatusObserver;
 import android.net.ConnectivityManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcel;
-import android.os.RemoteException;
 import android.provider.CalendarContract;
-import android.service.carrier.CarrierMessagingService;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
-import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
@@ -86,6 +88,9 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 	private final View.OnClickListener drawerLayoutOnClickListener;
 	private final SyncCalendar syncCalendar = new SyncCalendar();
 
+	private final String SYNC_NOTIFICATION_CHANNEL_ID = "2000";
+	private final int SYNC_NOTIFICATION_ID = 2500;
+
 	private CalendarViewModel calendarViewModel;
 	private LocationViewModel locationViewModel;
 	private SelectedCalendarViewModel selectedCalendarViewModel;
@@ -109,6 +114,9 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 	private Date currentCalendarDate;
 
 	private FragmentCalendarBinding binding;
+
+	private NotificationCompat.Builder notificationBuilder;
+	private NotificationManager notificationManager;
 
 	private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
 		@Override
@@ -163,46 +171,43 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 		@Override
 		public void onClick(View view) {
 			FragmentManager fragmentManager = getChildFragmentManager();
+			Fragment currentCalendarFragment = fragmentManager.getPrimaryNavigationFragment();
 
-			MonthAssistantCalendarFragment monthAssistantCalendarFragment =
+			MonthAssistantCalendarFragment assistantForDayWeekFragment =
 					(MonthAssistantCalendarFragment) fragmentManager.findFragmentByTag(getString(R.string.tag_assistant_calendar_for_day_week_fragment));
 			AssistantForMonthFragment assistantForMonthFragment =
 					(AssistantForMonthFragment) fragmentManager.findFragmentByTag(getString(R.string.tag_assistant_for_month_fragment));
 
 			FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 
-			if (fragmentManager.findFragmentByTag(WeekFragment.TAG) != null ||
-					fragmentManager.findFragmentByTag(DayFragment.TAG) != null) {
-
-				monthAssistantCalendarFragment.setCurrentMonth(currentCalendarDate);
-
-				if (assistantForMonthFragment.isVisible()) {
+			if (!(currentCalendarFragment instanceof MonthFragment)) {
+				if (!assistantForMonthFragment.isHidden()) {
 					fragmentTransaction.hide(assistantForMonthFragment);
 				}
 
-				if (monthAssistantCalendarFragment.isHidden()) {
-					binding.assistantCalendarContainer.setVisibility(View.VISIBLE);
+				if (assistantForDayWeekFragment.isHidden()) {
+					assistantForDayWeekFragment.setCurrentMonth(currentCalendarDate);
 					binding.mainToolbar.assistantCalendarControlImg.setImageDrawable(ContextCompat.getDrawable(getContext(),
 							R.drawable.expand_less_icon));
-					fragmentTransaction.show(monthAssistantCalendarFragment).commitNow();
+					fragmentTransaction.show(assistantForDayWeekFragment).commitNow();
+					binding.assistantCalendarContainer.setVisibility(View.VISIBLE);
 				} else {
 					binding.assistantCalendarContainer.setVisibility(View.GONE);
 					binding.mainToolbar.assistantCalendarControlImg.setImageDrawable(ContextCompat.getDrawable(getContext(),
 							R.drawable.expand_more_icon));
-					fragmentTransaction.hide(monthAssistantCalendarFragment).commitNow();
+					fragmentTransaction.hide(assistantForDayWeekFragment).commitNow();
 				}
-			} else if (fragmentManager.findFragmentByTag(MonthFragment.TAG) != null) {
-				assistantForMonthFragment.setCurrentDate(currentCalendarDate);
-
-				if (monthAssistantCalendarFragment.isVisible()) {
-					fragmentTransaction.hide(monthAssistantCalendarFragment);
+			} else {
+				if (!assistantForDayWeekFragment.isHidden()) {
+					fragmentTransaction.hide(assistantForDayWeekFragment);
 				}
 
 				if (assistantForMonthFragment.isHidden()) {
-					binding.assistantCalendarContainer.setVisibility(View.VISIBLE);
+					assistantForMonthFragment.setCurrentDate(currentCalendarDate);
 					binding.mainToolbar.assistantCalendarControlImg.setImageDrawable(ContextCompat.getDrawable(getContext(),
 							R.drawable.expand_less_icon));
 					fragmentTransaction.show(assistantForMonthFragment).commitNow();
+					binding.assistantCalendarContainer.setVisibility(View.VISIBLE);
 				} else {
 					binding.assistantCalendarContainer.setVisibility(View.GONE);
 					binding.mainToolbar.assistantCalendarControlImg.setImageDrawable(ContextCompat.getDrawable(getContext(),
@@ -285,6 +290,8 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+
+		binding.assistantCalendarContainer.setVisibility(View.GONE);
 
 		selectedCalendarViewModel.getOnListSelectedCalendarLiveData().observe(getViewLifecycleOwner(), new Observer<List<SelectedCalendarDTO>>() {
 			@Override
@@ -508,7 +515,7 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 		}
 
 		MonthAssistantCalendarFragment monthAssistantCalendarFragment =
-				(MonthAssistantCalendarFragment) getChildFragmentManager().findFragmentByTag(MonthAssistantCalendarFragment.TAG);
+				(MonthAssistantCalendarFragment) getChildFragmentManager().findFragmentByTag(getString(R.string.tag_assistant_calendar_for_day_week_fragment));
 		monthAssistantCalendarFragment.refreshView();
 	}
 
@@ -628,24 +635,51 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 			case R.id.refresh_calendar:
 				syncCalendar.syncCalendars(new SyncCallback() {
 					@Override
-					public void onSyncStarted() {
+					public void onSyncStarted(int totalCount) {
+						notificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+						notificationBuilder = new NotificationCompat.Builder(getContext(), SYNC_NOTIFICATION_CHANNEL_ID);
+
+						if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+							String name = getString(R.string.sync_calendar_notification_channel_name);
+							String description = getString(R.string.sync_calendar_notification_channel_description);
+							NotificationChannel notificationChannel = new NotificationChannel(SYNC_NOTIFICATION_CHANNEL_ID, name,
+									NotificationManager.IMPORTANCE_DEFAULT);
+							notificationChannel.setDescription(description);
+
+							notificationManager.createNotificationChannel(notificationChannel);
+						}
+
+						notificationBuilder.setContentTitle("캘린더 동기화")
+								.setContentText(totalCount + "개의 캘린더 동기화 중입니다")
+								.setSmallIcon(R.drawable.refresh_icon)
+								.setPriority(NotificationManagerCompat.IMPORTANCE_DEFAULT);
+						notificationBuilder.setProgress(100, 0, false);
+						notificationManager.notify(SYNC_NOTIFICATION_ID, notificationBuilder.build());
+
 						requireActivity().runOnUiThread(new Runnable() {
 							@Override
 							public void run() {
 								binding.mainToolbar.refreshCalendar.startAnimation(AnimationUtils.loadAnimation(getContext(), R.anim.rotate));
-								Toast.makeText(requireActivity(), R.string.sync_started, Toast.LENGTH_SHORT).show();
 							}
 						});
 					}
 
 					@Override
+					public void onSyncing(int totalCount, int syncedCount) {
+						notificationBuilder.setProgress(100, (syncedCount / totalCount) * 100, false);
+					}
+
+					@Override
 					public void onSyncFinished() {
+						notificationBuilder.setContentText("동기화 완료")
+								.setProgress(0, 0, false);
+						notificationManager.notify(SYNC_NOTIFICATION_ID, notificationBuilder.build());
+
 						requireActivity().runOnUiThread(new Runnable() {
 							@Override
 							public void run() {
 								refreshView();
 								binding.mainToolbar.refreshCalendar.clearAnimation();
-								Toast.makeText(requireActivity(), R.string.sync_finished, Toast.LENGTH_SHORT).show();
 							}
 						});
 
@@ -707,6 +741,14 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 						} else {
 							// There is no longer an active sync.
 							mAccountSyncState.put(account, FINISHED);
+							int syncedCount = 0;
+							for (Integer syncState : mAccountSyncState.values()) {
+								if (syncState == FINISHED) {
+									syncedCount++;
+								}
+							}
+
+							syncCallback.onSyncing(accountList.size(), syncedCount);
 						}
 					}
 				}
@@ -759,7 +801,6 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 			}
 */
 			//-------------------------------------------------------------------------------------------
-			syncCallback.onSyncStarted();
 
 			accountList.clear();
 			List<ContentValues> allGoogleAccountList = calendarViewModel.getGoogleAccounts();
@@ -776,10 +817,13 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 					}
 				}
 			}
+			syncCallback.onSyncStarted(accountList.size());
+
 			CalendarSyncStatusObserver calendarSyncStatusObserver = new CalendarSyncStatusObserver();
 			calendarSyncStatusObserver.setProviderHandle(ContentResolver.addStatusChangeListener(ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE |
 					ContentResolver.SYNC_OBSERVER_TYPE_PENDING, calendarSyncStatusObserver));
 			calendarSyncStatusObserver.setSyncCallback(syncCallback);
+
 
 			for (Account account : accountList) {
 				Bundle extras = new Bundle();
@@ -794,7 +838,9 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 	}
 
 	interface SyncCallback {
-		void onSyncStarted();
+		void onSyncStarted(int totalCount);
+
+		void onSyncing(int totalCount, int syncedCount);
 
 		void onSyncFinished();
 	}

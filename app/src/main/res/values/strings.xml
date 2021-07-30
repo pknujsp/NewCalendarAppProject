@@ -544,8 +544,8 @@
     <string name="deleted_all_weather_data">날씨 데이터 초기화됨</string>
 
 
-    <string name="notification_channel_name">test_calendar_event_channel_name</string>
-    <string name="notification_channel_description">test_calendar_event_channel_description</string>
+    <string name="event_alarm_notification_channel_name">이벤트 알림</string>
+    <string name="event_alarm_notification_channel_description">이벤트 알람 설정시 발생하는 알림</string>
     <string name="event_notification_title">이벤트 알림</string>
     <string name="event_notification_text">이벤트가 곧 있습니다</string>
     <string name="celcius">ºC</string>
@@ -645,4 +645,6 @@
     <string name="move">이동</string>
     <string name="tag_assistant_calendar_for_day_week_fragment">tag_assistant_calendar_for_day_week_fragment</string>
     <string name="tag_assistant_for_month_fragment">tag_assistant_for_month_fragment</string>
+    <string name="sync_calendar_notification_channel_name">캘린더 동기화</string>
+    <string name="sync_calendar_notification_channel_description">캘린더 동기화 작업 수행시 발생하는 알림</string>
 </resources>
