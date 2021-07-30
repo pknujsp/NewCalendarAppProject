@@ -199,6 +199,17 @@ public class MonthFragment extends Fragment implements IRefreshView, OnDateTimeC
 		viewPager.registerOnPageChangeCallback(onPageChangeCallback);
 	}
 
+	public long[] getCurrentDate() {
+		Calendar calendar = onPageChangeCallback.getCurrentDate();
+
+		long[] times = new long[2];
+		times[0] = calendar.getTimeInMillis();
+		calendar.add(Calendar.DATE, 7);
+		times[1] = calendar.getTimeInMillis();
+
+		return times;
+	}
+
 
 	@Override
 	public void refreshView() {
@@ -219,6 +230,11 @@ public class MonthFragment extends Fragment implements IRefreshView, OnDateTimeC
 				viewPager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, true);
 			}
 		}
+	}
+
+	public void goToDate(Date date) {
+		int monthDifference = ClockUtil.calcMonthDifference(date, onPageChangeCallback.copiedCalendar.getTime());
+		viewPager.setCurrentItem(viewPager.getCurrentItem() + monthDifference, true);
 	}
 
 	@Override
@@ -247,6 +263,11 @@ public class MonthFragment extends Fragment implements IRefreshView, OnDateTimeC
 
 		public OnPageChangeCallback(Calendar calendar) {
 			this.calendar = calendar;
+			this.copiedCalendar = (Calendar) calendar.clone();
+		}
+
+		public Calendar getCurrentDate() {
+			return (Calendar) copiedCalendar.clone();
 		}
 
 		@Override

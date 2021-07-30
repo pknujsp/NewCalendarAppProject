@@ -37,6 +37,7 @@ import com.zerodsoft.scheduleweather.activity.editevent.interfaces.OnEditEventRe
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.EditEventPopupMenu;
 import com.zerodsoft.scheduleweather.calendar.selectedcalendar.SelectedCalendarViewModel;
+import com.zerodsoft.scheduleweather.calendarview.assistantcalendar.assistantcalendar.AssistantForMonthFragment;
 import com.zerodsoft.scheduleweather.calendarview.assistantcalendar.assistantcalendar.MonthAssistantCalendarFragment;
 import com.zerodsoft.scheduleweather.calendarview.common.CalendarSharedViewModel;
 import com.zerodsoft.scheduleweather.calendarview.day.DayFragment;
@@ -162,13 +163,22 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 		@Override
 		public void onClick(View view) {
 			FragmentManager fragmentManager = getChildFragmentManager();
+
+			MonthAssistantCalendarFragment monthAssistantCalendarFragment =
+					(MonthAssistantCalendarFragment) fragmentManager.findFragmentByTag(getString(R.string.tag_assistant_calendar_for_day_week_fragment));
+			AssistantForMonthFragment assistantForMonthFragment =
+					(AssistantForMonthFragment) fragmentManager.findFragmentByTag(getString(R.string.tag_assistant_for_month_fragment));
+
+			FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
 			if (fragmentManager.findFragmentByTag(WeekFragment.TAG) != null ||
 					fragmentManager.findFragmentByTag(DayFragment.TAG) != null) {
-				MonthAssistantCalendarFragment monthAssistantCalendarFragment =
-						(MonthAssistantCalendarFragment) fragmentManager.findFragmentByTag(MonthAssistantCalendarFragment.TAG);
 
 				monthAssistantCalendarFragment.setCurrentMonth(currentCalendarDate);
-				FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+				if (assistantForMonthFragment.isVisible()) {
+					fragmentTransaction.hide(assistantForMonthFragment);
+				}
 
 				if (monthAssistantCalendarFragment.isHidden()) {
 					binding.assistantCalendarContainer.setVisibility(View.VISIBLE);
@@ -180,6 +190,24 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 					binding.mainToolbar.assistantCalendarControlImg.setImageDrawable(ContextCompat.getDrawable(getContext(),
 							R.drawable.expand_more_icon));
 					fragmentTransaction.hide(monthAssistantCalendarFragment).commitNow();
+				}
+			} else if (fragmentManager.findFragmentByTag(MonthFragment.TAG) != null) {
+				assistantForMonthFragment.setCurrentDate(currentCalendarDate);
+
+				if (monthAssistantCalendarFragment.isVisible()) {
+					fragmentTransaction.hide(monthAssistantCalendarFragment);
+				}
+
+				if (assistantForMonthFragment.isHidden()) {
+					binding.assistantCalendarContainer.setVisibility(View.VISIBLE);
+					binding.mainToolbar.assistantCalendarControlImg.setImageDrawable(ContextCompat.getDrawable(getContext(),
+							R.drawable.expand_less_icon));
+					fragmentTransaction.show(assistantForMonthFragment).commitNow();
+				} else {
+					binding.assistantCalendarContainer.setVisibility(View.GONE);
+					binding.mainToolbar.assistantCalendarControlImg.setImageDrawable(ContextCompat.getDrawable(getContext(),
+							R.drawable.expand_more_icon));
+					fragmentTransaction.hide(assistantForMonthFragment).commitNow();
 				}
 			}
 		}
@@ -197,16 +225,8 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 				binding.mainToolbar.assistantCalendarControlImg.setVisibility(View.VISIBLE);
 				binding.mainToolbar.openList.setVisibility(View.VISIBLE);
 			} else if (f instanceof MonthFragment) {
-				binding.mainToolbar.assistantCalendarControlImg.setVisibility(View.GONE);
+				binding.mainToolbar.assistantCalendarControlImg.setVisibility(View.VISIBLE);
 				binding.mainToolbar.openList.setVisibility(View.GONE);
-				binding.assistantCalendarContainer.setVisibility(View.GONE);
-
-				binding.mainToolbar.assistantCalendarControlImg.setImageDrawable(ContextCompat.getDrawable(getContext(),
-						R.drawable.expand_more_icon));
-
-				if (fm.findFragmentByTag(MonthAssistantCalendarFragment.TAG).isVisible()) {
-					fm.beginTransaction().hide(fm.findFragmentByTag(MonthAssistantCalendarFragment.TAG)).commit();
-				}
 			}
 		}
 
@@ -323,10 +343,20 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 		binding.mainToolbar.calendarMonth.setOnClickListener(currMonthOnClickListener);
 		binding.mainToolbar.monthLayout.setOnClickListener(currMonthOnClickListener);
 
-		//보조 캘린더 프래그먼트 생성
-		Fragment monthAssistantCalendarFragment = new MonthAssistantCalendarFragment(this);
-		getChildFragmentManager().beginTransaction().add(binding.assistantCalendarContainer.getId(), monthAssistantCalendarFragment,
-				MonthAssistantCalendarFragment.TAG).hide(monthAssistantCalendarFragment).commit();
+		//보조 캘린더(day, week) 프래그먼트 생성
+		//보조 캘린더(month) 프래그먼트 생성
+
+		MonthAssistantCalendarFragment monthAssistantCalendarFragment = new MonthAssistantCalendarFragment(this);
+		AssistantForMonthFragment assistantForMonthFragment = new AssistantForMonthFragment(this);
+
+		getChildFragmentManager().beginTransaction()
+				.add(binding.assistantCalendarContainer.getId(), monthAssistantCalendarFragment,
+						getString(R.string.tag_assistant_calendar_for_day_week_fragment))
+				.add(binding.assistantCalendarContainer.getId(), assistantForMonthFragment,
+						getString(R.string.tag_assistant_for_month_fragment))
+				.hide(monthAssistantCalendarFragment)
+				.hide(assistantForMonthFragment).commit();
+
 
 		switch (calendarViewType) {
 			case DAY:
@@ -355,6 +385,11 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 				currentFragment = new DayFragment(this, this);
 				break;
 		}
+
+		if (binding.assistantCalendarContainer.getVisibility() == View.VISIBLE) {
+			binding.mainToolbar.monthLayout.callOnClick();
+		}
+
 		childFragmentManager.beginTransaction().replace(R.id.calendar_container_view, currentFragment,
 				fragmentTag).setPrimaryNavigationFragment(currentFragment).commit();
 	}
@@ -456,6 +491,8 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 			//선택된 날짜에 해당 하는 주로 이동 (parameter : 2020년 2주차 -> 2020년 2주차로 이동)
 		} else if (currentFragment instanceof DayFragment) {
 			((DayFragment) currentFragment).goToToday(date);
+		} else if (currentFragment instanceof MonthFragment) {
+			((MonthFragment) currentFragment).goToDate(date);
 		}
 	}
 
@@ -511,7 +548,6 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 
 	@Override
 	public void onClickedDate(Date date) {
-		Toast.makeText(getContext(), ClockUtil.YYYY_M_D_E.format(date), Toast.LENGTH_SHORT).show();
 		changeDate(date);
 	}
 

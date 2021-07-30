@@ -642,4 +642,7 @@
     <string name="hourly_fcst">시간별 예보</string>
     <string name="windpower">바람세기</string>
     <string name="answer_for_invite">참석여부 응답</string>
+    <string name="move">이동</string>
+    <string name="tag_assistant_calendar_for_day_week_fragment">tag_assistant_calendar_for_day_week_fragment</string>
+    <string name="tag_assistant_for_month_fragment">tag_assistant_for_month_fragment</string>
 </resources>
