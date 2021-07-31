@@ -167,6 +167,8 @@ public class FoodRestaurantSearchHistoryFragment extends Fragment implements OnC
 	@Override
 	public void deleteListItem(SearchHistoryDTO e, int position) {
 		searchHistoryViewModel.delete(e.getId());
+		adapter.getHistoryList().remove(position);
+		adapter.notifyItemRemoved(position);
 	}
 
 }

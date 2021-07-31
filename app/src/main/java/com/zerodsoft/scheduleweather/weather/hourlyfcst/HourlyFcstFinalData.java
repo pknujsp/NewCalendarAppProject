@@ -41,6 +41,9 @@ public class HourlyFcstFinalData {
 	//풍속 WSD
 	private String windSpeed;
 
+	private static final String notRain = "강수없음";
+	private static final String rainLessThan1MM = "1mm 미만";
+	private static final String zero = "0";
 
 	public HourlyFcstFinalData(List<HourlyFcstItem> hourlyFcstItems) {
 		nx = hourlyFcstItems.get(0).getNx();
@@ -90,11 +93,13 @@ public class HourlyFcstFinalData {
 
 		if (chanceOfShower == null) {
 			chanceOfShower = "-";
-		} else if (chanceOfShower.equals("0")) {
+		} else if (chanceOfShower.equals(zero)) {
 			chanceOfShower = "-";
 		}
-		if (rainPrecipitation1Hour.equals("1mm 미만")) {
-			rainPrecipitation1Hour = "0";
+		if (rainPrecipitation1Hour.equals(rainLessThan1MM)) {
+			rainPrecipitation1Hour = "-";
+		} else if (rainPrecipitation1Hour.equals(notRain)) {
+			rainPrecipitation1Hour = "-";
 		}
 	}
 

@@ -71,7 +71,6 @@ public class DayView extends HourEventsView implements CalendarViewInitializer, 
 
 		Calendar calendar = Calendar.getInstance();
 		if (!itemCells.isEmpty()) {
-
 			float left = 0f;
 			float top = 0f;
 			float right = 0f;
@@ -185,14 +184,14 @@ public class DayView extends HourEventsView implements CalendarViewInitializer, 
 	}
 
 	private boolean isOverlapping(ContentValues i1, ContentValues i2) {
-		long start1 = i1.getAsLong(CalendarContract.Instances.BEGIN);
-		long end1 = i1.getAsLong(CalendarContract.Instances.END);
+		long start1 = i1.getAsLong(Instances.BEGIN);
+		long end1 = i1.getAsLong(Instances.END);
 
-		long start2 = i2.getAsLong(CalendarContract.Instances.BEGIN);
-		long end2 = i2.getAsLong(CalendarContract.Instances.END);
+		long start2 = i2.getAsLong(Instances.BEGIN);
+		long end2 = i2.getAsLong(Instances.END);
 
-		if ((start1 > start2 && start1 < end2) || (end1 > start2 && end1 < end2)
-				|| (start1 < start2 && end1 > end2)) {
+		if ((start1 >= start2 && start1 <= end2) || (end1 >= start2 && end1 <= end2)
+				|| (start1 <= start2 && end1 >= end2)) {
 			return true;
 		} else {
 			return false;
@@ -231,15 +230,15 @@ public class DayView extends HourEventsView implements CalendarViewInitializer, 
 		// 저장된 데이터가 표시될 위치를 설정
 		for (ContentValues instance : instances) {
 			if (!showCanceledInstance) {
-				if (instance.getAsInteger(CalendarContract.Instances.STATUS) ==
-						CalendarContract.Instances.STATUS_CANCELED) {
+				if (instance.getAsInteger(Instances.STATUS) ==
+						Instances.STATUS_CANCELED) {
 					// 취소(초대 거부)된 인스턴스인 경우..
 					continue;
 				}
 			}
 
-			if (instance.getAsInteger(CalendarContract.Instances.ALL_DAY) != 1 &&
-					instance.getAsInteger(CalendarContract.Instances.START_DAY).equals(instance.getAsInteger(CalendarContract.Instances.END_DAY))) {
+			if (instance.getAsInteger(Instances.ALL_DAY) != 1 &&
+					instance.getAsInteger(Instances.START_DAY).equals(instance.getAsInteger(Instances.END_DAY))) {
 				ItemCell itemCell = new ItemCell(instance);
 				itemCells.add(itemCell);
 			}
@@ -285,7 +284,7 @@ public class DayView extends HourEventsView implements CalendarViewInitializer, 
 			childView.setLongClickable(true);
 			childView.setClickable(true);
 
-			if (childView.itemCell.instance.getAsInteger(CalendarContract.Instances.CALENDAR_ACCESS_LEVEL) == CalendarContract.Instances.CAL_ACCESS_READ) {
+			if (childView.itemCell.instance.getAsInteger(Instances.CALENDAR_ACCESS_LEVEL) == Instances.CAL_ACCESS_READ) {
 				childView.setLongClickable(false);
 			} else {
 				childView.setOnLongClickListener(itemOnLongClickListener);

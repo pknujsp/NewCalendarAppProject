@@ -641,8 +641,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 			@Override
 			public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-				float translationValue = -favoriteLocationsBottomSheet.getHeight() * slideOffset;
-				binding.naverMapButtonsLayout.getRoot().animate().translationY(translationValue);
+				//float translationValue = -favoriteLocationsBottomSheet.getHeight() * slideOffset;
+				//binding.naverMapButtonsLayout.getRoot().animate().translationY(translationValue);
 			}
 		});
 

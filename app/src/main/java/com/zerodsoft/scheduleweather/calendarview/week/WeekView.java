@@ -65,14 +65,13 @@ public class WeekView extends HourEventsView implements CalendarViewInitializer,
 	@Override
 	protected void onLayout(boolean changed, int l, int t, int r, int b) {
 		super.onLayout(changed, l, t, r, b);
+		Calendar calendar = Calendar.getInstance();
+		float left = 0f;
+		float top = 0f;
+		float right = 0f;
+		float bottom = 0f;
 
 		if (eventSparseArr.size() >= 1) {
-			Calendar calendar = Calendar.getInstance();
-
-			float left = 0f;
-			float top = 0f;
-			float right = 0f;
-			float bottom = 0f;
 			float cellWidth = 0f;
 			int childCount = getChildCount();
 			if (currentTimeLineView != null) {
@@ -110,21 +109,21 @@ public class WeekView extends HourEventsView implements CalendarViewInitializer,
 				childView.layout((int) left, (int) top, (int) right, (int) bottom);
 			}
 
-			if (currentTimeLineView != null) {
-				calendar.setTime((Date) currentTimeLineView.getTag());
-				int index = ClockUtil.calcBeginDayDifference(((Date) currentTimeLineView.getTag()).getTime(), daysOfWeek[0].getTime());
-				PointF startPoint = getPoint(calendar, index);
+		}
+		if (currentTimeLineView != null) {
+			calendar.setTime((Date) currentTimeLineView.getTag());
+			int index = ClockUtil.calcBeginDayDifference(((Date) currentTimeLineView.getTag()).getTime(), daysOfWeek[0].getTime());
+			PointF startPoint = getPoint(calendar, index);
 
-				final int lineViewHeight = context.getResources().getDimensionPixelSize(R.dimen.current_time_line_view_text_height);
+			final int lineViewHeight = context.getResources().getDimensionPixelSize(R.dimen.current_time_line_view_text_height);
 
-				top = startPoint.y - lineViewHeight / 2f;
-				left = startPoint.x - WeekFragment.getColumnWidth();
-				right = startPoint.x + WeekFragment.getColumnWidth();
-				bottom = startPoint.y + lineViewHeight / 2f;
+			top = startPoint.y - lineViewHeight / 2f;
+			left = startPoint.x - WeekFragment.getColumnWidth();
+			right = startPoint.x + WeekFragment.getColumnWidth();
+			bottom = startPoint.y + lineViewHeight / 2f;
 
-				currentTimeLineView.measure((int) (right - left), lineViewHeight);
-				currentTimeLineView.layout((int) left, (int) top, (int) right, (int) bottom);
-			}
+			currentTimeLineView.measure((int) (right - left), lineViewHeight);
+			currentTimeLineView.layout((int) left, (int) top, (int) right, (int) bottom);
 		}
 	}
 
@@ -300,136 +299,14 @@ public class WeekView extends HourEventsView implements CalendarViewInitializer,
 		long start2 = event2.getAsLong(CalendarContract.Instances.BEGIN);
 		long end2 = event2.getAsLong(CalendarContract.Instances.END);
 
-		if ((start1 > start2 && start1 < end2) || (end1 > start2 && end1 < end2)
-				|| (start1 < start2 && end1 > end2)) {
+		if ((start1 >= start2 && start1 <= end2) || (end1 >= start2 && end1 <= end2)
+				|| (start1 <= start2 && end1 >= end2)) {
 			return true;
 		} else {
 			return false;
 		}
 	}
 
-	@Override
-	public boolean onTouchEvent(MotionEvent event) {
-        /*
-        currentTouchedPoint.x = event.getX();
-        currentTouchedPoint.y = event.getY();
-
-        if (event.getAction() == MotionEvent.ACTION_UP)
-        {
-            if (currentScrollDirection == SCROLL_DIRECTION.VERTICAL)
-            {
-                currentScrollDirection = SCROLL_DIRECTION.FINISHED;
-                onSwipeListener.onSwiped(false);
-            } else if (changingStartTime || changingEndTime)
-            {
-                if (changingStartTime)
-                {
-                    changingStartTime = false;
-                } else
-                {
-                    changingEndTime = false;
-                }
-                invalidate();
-                Toast.makeText(context, "start : " + startTime.get(Calendar.HOUR_OF_DAY) + " : " + startTime.get(Calendar.MINUTE) + "\n"
-                        + "end : " + endTime.get(Calendar.HOUR_OF_DAY) + " : " + endTime.get(Calendar.MINUTE), Toast.LENGTH_SHORT).show();
-                return true;
-            }
-        }
-        gestureDetector.onTouchEvent(event);
-
-         */
-		return true;
-	}
-
-	@Override
-	public void computeScroll() {
-		super.computeScroll();
-        /*
-        if (overScroller.computeScrollOffset())
-        {
-            startY = overScroller.getCurrY();
-            ViewCompat.postInvalidateOnAnimation(WeekView.this);
-        }
-
-         */
-	}
-
-
-	private final GestureDetector.OnGestureListener onGestureListener = new GestureDetector.SimpleOnGestureListener() {
-		@Override
-		public boolean onSingleTapUp(MotionEvent e) {
-			if (createdAddScheduleRect) {
-				createdAddScheduleRect = false;
-				invalidate();
-			}
-			return true;
-		}
-
-		@Override
-		public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-			// e1 firstDown, e2 move
-			if (createdAddScheduleRect) {
-				// 시작, 종료 날짜를 조절하는 코드
-				if (!changingStartTime && !changingEndTime) {
-					if ((e1.getX() >= rectStartPoint.x && e1.getX() < rectStartPoint.x + WeekFragment.getColumnWidth()) &&
-							(e1.getY() >= rectStartPoint.y - 30f && e1.getY() < rectStartPoint.y + 30f)) {
-						changingStartTime = true;
-						return true;
-					} else if ((e1.getX() >= rectEndPoint.x && e1.getX() < rectEndPoint.x + WeekFragment.getColumnWidth()) &&
-							(e1.getY() >= rectEndPoint.y - 30f && e1.getY() < rectEndPoint.y + 30f)) {
-						changingEndTime = true;
-						return true;
-					}
-				} else {
-					// start or endtime을 수정중인 경우
-					if (changingStartTime) {
-						changeTime(e2.getY(), TIME_CATEGORY.START);
-					} else if (changingEndTime) {
-						changeTime(e2.getY(), TIME_CATEGORY.END);
-					}
-					ViewCompat.postInvalidateOnAnimation(WeekView.this);
-					return true;
-				}
-			}
-
-			if (currentScrollDirection == SCROLL_DIRECTION.FINISHED) {
-				currentScrollDirection = SCROLL_DIRECTION.NONE;
-			} else if (currentScrollDirection == SCROLL_DIRECTION.NONE) {
-				currentScrollDirection = SCROLL_DIRECTION.VERTICAL;
-			}
-
-			ViewCompat.postInvalidateOnAnimation(WeekView.this);
-			return true;
-		}
-
-		@Override
-		public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-			fling(0f, velocityY);
-			Log.e("velocity : ", String.valueOf(velocityY));
-			return true;
-		}
-
-		private void fling(float velocityX, float velocityY) {
-			// overScroller.fling(0, (int) startY, 0, (int) velocityY, 0, 0, (int) minStartY, (int) maxStartY, 0, 0);
-			// ViewCompat.postInvalidateOnAnimation(WeekView.this);
-		}
-
-		@Override
-		public boolean onDown(MotionEvent e) {
-			return true;
-		}
-
-		@Override
-		public boolean onSingleTapConfirmed(MotionEvent e) {
-			return super.onSingleTapConfirmed(e);
-		}
-
-		@Override
-		public void onLongPress(MotionEvent e) {
-
-
-		}
-	};
 
 	@Override
 	public void receivedTimeTick(Date date) {

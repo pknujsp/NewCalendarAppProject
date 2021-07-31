@@ -16,6 +16,7 @@ import android.os.Parcelable;
 import android.provider.CalendarContract;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.text.format.Time;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -41,10 +42,8 @@ import com.zerodsoft.scheduleweather.activity.editevent.adapter.CalendarListAdap
 import com.zerodsoft.scheduleweather.activity.editevent.fragments.RecurrenceFragment;
 import com.zerodsoft.scheduleweather.activity.editevent.fragments.TimeZoneFragment;
 import com.zerodsoft.scheduleweather.activity.editevent.interfaces.IEventRepeat;
-import com.zerodsoft.scheduleweather.activity.editevent.interfaces.OnEditEventResultListener;
 import com.zerodsoft.scheduleweather.activity.preferences.ColorListAdapter;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.calendar.AsyncQueryService;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.calendarcommon2.EventRecurrence;
 import com.zerodsoft.scheduleweather.common.enums.EventIntentCode;
@@ -62,6 +61,9 @@ import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.sql.Date;
+import java.time.ZoneId;
+import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -716,13 +718,20 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		}
 	};
 
-	protected final void showDatePicker(long finalDtStart, long finalDtEnd,
+	protected final void showDatePicker(long finalBegin, long finalEnd,
 	                                    @Nullable ModifyInstanceFragment.OnModifiedDateTimeCallback onModifiedDateTimeCallback) {
-		MaterialDatePicker.Builder<Pair<Long, Long>> builder = MaterialDatePicker.Builder.dateRangePicker();
-		datePicker = builder.setTitleText(R.string.datepicker)
-				.setSelection(new Pair<>(finalDtStart, finalDtEnd))
+		TimeZone timeZone = TimeZone.getDefault();
+		final int offset = timeZone.getOffset(finalBegin);
+
+		long convertedToUtcBegin = finalBegin + offset;
+		long convertedToUtcEnd = finalEnd + offset;
+
+		datePicker = MaterialDatePicker.Builder.dateRangePicker()
+				.setTitleText(R.string.datepicker)
 				.setInputMode(MaterialDatePicker.INPUT_MODE_CALENDAR)
+				.setSelection(new Pair<>(convertedToUtcBegin, convertedToUtcEnd))
 				.build();
+
 		datePicker.addOnPositiveButtonClickListener(new MaterialPickerOnPositiveButtonClickListener<Pair<Long, Long>>() {
 			@Override
 			public void onPositiveButtonClick(Pair<Long, Long> selection) {
@@ -734,7 +743,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 				Calendar endDate = Calendar.getInstance();
 
 				if (selection.first != null) {
-					calendar.setTimeInMillis(finalDtStart);
+					calendar.setTimeInMillis(finalBegin);
 					previousHour = calendar.get(Calendar.HOUR_OF_DAY);
 					previousMinute = calendar.get(Calendar.MINUTE);
 
@@ -748,7 +757,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 					startDate.setTime(calendar.getTime());
 				}
 				if (selection.second != null) {
-					calendar.setTimeInMillis(finalDtEnd);
+					calendar.setTimeInMillis(finalEnd);
 					previousHour = calendar.get(Calendar.HOUR_OF_DAY);
 					previousMinute = calendar.get(Calendar.MINUTE);
 
