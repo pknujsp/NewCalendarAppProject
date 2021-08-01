@@ -215,7 +215,7 @@ public class RestaurantCriteriaLocationSettingsFragment extends Fragment impleme
 		}
 	}
 
-	private RadioGroup.OnCheckedChangeListener radioOnCheckedChangeListener = new RadioGroup.OnCheckedChangeListener() {
+	private final RadioGroup.OnCheckedChangeListener radioOnCheckedChangeListener = new RadioGroup.OnCheckedChangeListener() {
 		boolean initializing = true;
 
 		@Override

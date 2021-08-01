@@ -232,11 +232,9 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 								@Override
 								public void run() {
 									setCriteria(CriteriaLocationType.enumOf(savedFoodCriteriaLocationInfoDTO.getUsingType()));
-
 								}
 							});
 						}
-
 					}
 
 					@Override
@@ -454,7 +452,23 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 
 			@Override
 			public void onResultNoData() {
-				binding.criteriaLocation.callOnClick();
+				foodCriteriaLocationInfoViewModel.updateByEventId(eventId, CriteriaLocationType.TYPE_MAP_CENTER_POINT.value(), null, new DbQueryCallback<FoodCriteriaLocationInfoDTO>() {
+					@Override
+					public void onResultSuccessful(FoodCriteriaLocationInfoDTO newFoodCriteriaLocationInfoDTO) {
+						requireActivity().runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								savedFoodCriteriaLocationInfoDTO = newFoodCriteriaLocationInfoDTO;
+								setCriteria(CriteriaLocationType.enumOf(newFoodCriteriaLocationInfoDTO.getUsingType()));
+							}
+						});
+					}
+
+					@Override
+					public void onResultNoData() {
+
+					}
+				});
 			}
 		}, requestOnGpsLauncher, requestLocationPermissionLauncher);
 
