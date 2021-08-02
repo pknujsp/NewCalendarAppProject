@@ -182,6 +182,11 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 					public void onResultNoData() {
 					}
 				});
+			} else if (f instanceof RestaurantFragment) {
+				binding.headerLayout.setVisibility(View.VISIBLE);
+				binding.naverMapButtonsLayout.buildingButton.setVisibility(View.VISIBLE);
+				binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.VISIBLE);
+				functionButton.setVisibility(View.VISIBLE);
 			}
 		}
 
@@ -395,49 +400,28 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 			public void onClick(View view) {
 				//음식점
 				functionDialog.dismiss();
-
 				FragmentManager fragmentManager = getChildFragmentManager();
+				//restaurant
+				Object[] results2 = createBottomSheet(R.id.restaurant_fragment_container);
+				LinearLayout restaurantsBottomSheet = (LinearLayout) results2[0];
+				BottomSheetBehavior restaurantsBottomSheetBehavior = (BottomSheetBehavior) results2[1];
 
-				if (bottomSheetFragmentMap.containsKey(BottomSheetType.RESTAURANT)) {
-					Fragment restaurantFragment = bottomSheetFragmentMap.get(BottomSheetType.RESTAURANT);
+				bottomSheetViewMap.put(BottomSheetType.RESTAURANT, restaurantsBottomSheet);
+				bottomSheetBehaviorMap.put(BottomSheetType.RESTAURANT, restaurantsBottomSheetBehavior);
 
-					if (restaurantFragment.isVisible()) {
-						fragmentManager.popBackStackImmediate();
-					} else {
-						fragmentManager.beginTransaction().show(restaurantFragment).addToBackStack(getString(R.string.tag_restaurant_fragment)).commit();
-					}
-				} else {
-					//restaurant
-					Object[] results2 = createBottomSheet(R.id.restaurant_fragment_container);
-					LinearLayout restaurantsBottomSheet = (LinearLayout) results2[0];
-					BottomSheetBehavior restaurantsBottomSheetBehavior = (BottomSheetBehavior) results2[1];
+				RestaurantFragment restaurantFragment =
+						new RestaurantFragment(NewInstanceMainFragment.this, NewInstanceMainFragment.this
+								, new OnHiddenFragmentListener() {
+							@Override
+							public void onHiddenChangedFragment(boolean hidden) {
 
-					bottomSheetViewMap.put(BottomSheetType.RESTAURANT, restaurantsBottomSheet);
-					bottomSheetBehaviorMap.put(BottomSheetType.RESTAURANT, restaurantsBottomSheetBehavior);
+							}
+						}, calendarId, instanceId, eventId);
 
-					RestaurantFragment restaurantFragment =
-							new RestaurantFragment(NewInstanceMainFragment.this, NewInstanceMainFragment.this
-									, new OnHiddenFragmentListener() {
-								@Override
-								public void onHiddenChangedFragment(boolean hidden) {
-									if (hidden) {
-										binding.headerLayout.setVisibility(View.VISIBLE);
-										binding.naverMapButtonsLayout.buildingButton.setVisibility(View.VISIBLE);
-										binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.VISIBLE);
-										functionButton.setVisibility(View.VISIBLE);
-									} else {
-										binding.headerLayout.setVisibility(View.GONE);
-										binding.naverMapButtonsLayout.buildingButton.setVisibility(View.GONE);
-										binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.GONE);
-										functionButton.setVisibility(View.GONE);
-									}
-								}
-							}, calendarId, instanceId, eventId);
-					bottomSheetFragmentMap.put(BottomSheetType.RESTAURANT, restaurantFragment);
-					fragmentManager.beginTransaction().add(binding.fragmentContainer.getId(), restaurantFragment
-							, getString(R.string.tag_restaurant_fragment)).commitNow();
-					fragmentManager.beginTransaction().show(restaurantFragment).addToBackStack(getString(R.string.tag_restaurant_fragment)).commit();
-				}
+				bottomSheetFragmentMap.put(BottomSheetType.RESTAURANT, restaurantFragment);
+				fragmentManager.beginTransaction().add(binding.fragmentContainer.getId(), restaurantFragment
+						, getString(R.string.tag_restaurant_fragment)).addToBackStack(getString(R.string.tag_restaurant_fragment)).commit();
+
 
 			}
 		});

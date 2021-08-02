@@ -67,10 +67,6 @@
             layout="@layout/place_list_bottom_sheet_view" />
 
         <include
-            android:id="@+id/building_bottom_sheet"
-            layout="@layout/bottom_sheet_building" />
-
-        <include
             android:id="@+id/favorite_locations_bottom_sheet"
             layout="@layout/persistent_bottom_sheet_layout" />
 

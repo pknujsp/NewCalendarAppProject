@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.navermap.building.fragment;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -16,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.naver.maps.geometry.LatLng;
 import com.naver.maps.geometry.Utmk;
 import com.zerodsoft.scheduleweather.R;
@@ -43,12 +45,7 @@ import org.jetbrains.annotations.NotNull;
 public class BuildingListFragment extends Fragment implements OnClickedListItem<BuildingAreaItem> {
 	private final IDrawCircleOnMap iDrawCircleOnMap;
 	private FragmentBuildingListBinding binding;
-	private BottomSheetController bottomSheetController;
 	private MapSharedViewModel mapSharedViewModel;
-
-
-	private TransCoordResponse minTransCoordResponse;
-	private TransCoordResponse maxTransCoordResponse;
 
 	private Double centerLatitude;
 	private Double centerLongitude;
@@ -117,8 +114,7 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		mapSharedViewModel = new ViewModelProvider(getParentFragment()).get(MapSharedViewModel.class);
-		bottomSheetController = mapSharedViewModel.getBottomSheetController();
+		mapSharedViewModel = new ViewModelProvider(getParentFragment().getParentFragment()).get(MapSharedViewModel.class);
 
 		Bundle bundle = getArguments();
 		centerLatitude = bundle.getDouble("centerLatitude");
@@ -235,7 +231,6 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
 			return new String[]{String.valueOf(Double.parseDouble(latitude) + METER_1_DECIMAL_LAT * meter),
 					String.valueOf(Double.parseDouble(longitude) + METER_1_DECIMAL_LON * meter)};
 		}
-
 		 */
 
 		LatLng latLng = new LatLng(latitude, longitude);
@@ -260,7 +255,7 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
 		buildingFragment.setArguments(bundle);
 
 		getParentFragmentManager().beginTransaction().hide(this)
-				.add(R.id.building_fragment_container, buildingFragment, getString(R.string.tag_building_info_fragment))
+				.add(R.id.fragment_container, buildingFragment, getString(R.string.tag_building_info_fragment))
 				.addToBackStack(getString(R.string.tag_building_info_fragment)).commit();
 	}
 
