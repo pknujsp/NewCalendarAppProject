@@ -647,4 +647,5 @@
     <string name="tag_assistant_for_month_fragment">tag_assistant_for_month_fragment</string>
     <string name="sync_calendar_notification_channel_name">캘린더 동기화</string>
     <string name="sync_calendar_notification_channel_description">캘린더 동기화 작업 수행시 발생하는 알림</string>
+    <string name="message_request_input_address_or_place">검색어를 입력해주세요</string>
 </resources>

@@ -6,6 +6,7 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -185,6 +186,8 @@ public class MapHeaderSearchFragment extends Fragment {
 					}
 					search(query);
 					return true;
+				} else {
+					Toast.makeText(getContext(), R.string.message_request_input_address_or_place, Toast.LENGTH_SHORT).show();
 				}
 				return false;
 			}

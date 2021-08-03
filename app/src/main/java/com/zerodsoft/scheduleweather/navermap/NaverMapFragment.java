@@ -118,6 +118,7 @@ import org.jetbrains.annotations.NotNull;
 import org.xmlpull.v1.XmlPullParser;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -558,68 +559,11 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		BottomSheetBehavior buildingBottomSheetBehavior = BottomSheetBehavior.from(buildingBottomSheet);
 		buildingBottomSheetBehavior.setDraggable(false);
 		buildingBottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-		buildingBottomSheetBehavior.addBottomSheetCallback(BUILDING_BOTTOMSHEET_FRAGMENT_CALLBACK);
+		//buildingBottomSheetBehavior.addBottomSheetCallback(BUILDING_BOTTOMSHEET_FRAGMENT_CALLBACK);
 
 		bottomSheetViewMap.put(BottomSheetType.BUILDING, buildingBottomSheet);
 		bottomSheetBehaviorMap.put(BottomSheetType.BUILDING, buildingBottomSheetBehavior);
 	}
-
-	private final BottomSheetBehavior.BottomSheetCallback BUILDING_BOTTOMSHEET_FRAGMENT_CALLBACK = new BottomSheetBehavior.BottomSheetCallback() {
-		boolean initializing = true;
-		boolean firstInitializing = true;
-		float mapTranslationYByBuildingBottomSheet;
-
-		@Override
-		public void onStateChanged(@NonNull View bottomSheet, int newState) {
-			//바텀 시트의 상태에 따라서 카메라를 이동시킬 Y값
-			if (firstInitializing) {
-				firstInitializing = false;
-
-				Projection projection = naverMap.getProjection();
-				PointF point = projection.toScreenLocation(naverMap.getCameraPosition().target);
-
-				final int bottomSheetTopY = binding.naverMapViewLayout.getHeight() - DEFAULT_HEIGHT_OF_BOTTOMSHEET;
-				int margin16dp = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, getResources().getDisplayMetrics());
-				mapTranslationYByBuildingBottomSheet = (float) (point.y - (bottomSheetTopY / 2.0) - margin16dp);
-			}
-
-			switch (newState) {
-				case BottomSheetBehavior.STATE_EXPANDED: {
-                       /*
-                       <지도 카메라 위치 이동 방법>
-                       MapView.getMapCenterPoint() 메소드로 지도 중심 좌표(MapPoint center)를 얻습니다.
-                        중심 좌표 객체의 center.getMapPointScreenLocation() 메소드를 통해 pixel 좌표값(MapPoint.PlainCoordinate pixel)을 얻어냅니다.
-                        그 pixel 좌표값으로부터 얼마나 이동시키면 될 지 계산합니다. 앞서 구한 pixel에 이동하고자 하는 offset을 더하여 tx, ty 값을 확보합니다.
-                        (double tx = pixel.x + offsetX, double ty = pixel.y + offsetY)
-                        MapPoint newCenter = MapPoint.mapPointWithScreenLocation(tx, ty) 정적 메소드로 입력한 스크린 좌표를 역변환 하여 지도상 좌표(newCenter)를 구합니다.
-                        MapView.setMapCenterPoint(newCenter, true) 메소드로 지도 중심을 이동시킵니다.
-                        */
-					if (initializing) {
-						PointF movePoint = new PointF(0f, -mapTranslationYByBuildingBottomSheet);
-						CameraUpdate cameraUpdate = CameraUpdate.scrollBy(movePoint);
-						naverMap.moveCamera(cameraUpdate);
-						initializing = false;
-					}
-					break;
-				}
-				case BottomSheetBehavior.STATE_COLLAPSED: {
-					PointF movePoint = new PointF(0f, mapTranslationYByBuildingBottomSheet);
-					CameraUpdate cameraUpdate = CameraUpdate.scrollBy(movePoint);
-					naverMap.moveCamera(cameraUpdate);
-					initializing = true;
-					break;
-				}
-			}
-		}
-
-		@Override
-		public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-			//expanded일때 offset == 1.0, collapsed일때 offset == 0.0
-			//offset에 따라서 버튼들이 이동하고, 지도의 좌표가 변경되어야 한다.
-			//float translationValue = -buildingBottomSheet.getHeight() * slideOffset;
-			//binding.naverMapButtonsLayout.getRoot().animate().translationY(translationValue);
-		}
-	};
 
 
 	private void setFavoriteLocationsBottomSheet() {
@@ -1368,7 +1312,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 					@Override
 					public void drawSearchRadiusCircle() {
-						LatLng latLng = naverMap.getCameraPosition().target;
+						LatLng latLng = naverMap.getContentBounds().getCenter();
+
 						if (buildingRangeCircleOverlay != null) {
 							latLng = buildingRangeCircleOverlay.getCenter();
 							buildingRangeCircleOverlay.setMap(null);
@@ -1386,11 +1331,77 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 					public void removeSearchRadiusCircle() {
 						buildingRangeCircleOverlay.setMap(null);
 					}
-				}, BUILDING_BOTTOMSHEET_FRAGMENT_CALLBACK);
+				}, new BottomSheetBehavior.BottomSheetCallback() {
+					boolean initializing = true;
+					boolean firstInitializing = true;
+					float mapTranslationYByBuildingBottomSheet;
+
+					@Override
+					public void onStateChanged(@NonNull View bottomSheet, int newState) {
+						//바텀 시트의 상태에 따라서 카메라를 이동시킬 Y값
+						if (firstInitializing) {
+							firstInitializing = false;
+
+							Projection projection = naverMap.getProjection();
+							LatLng latLng = naverMap.getContentBounds().getCenter();
+							LatLng northEast = latLng.offset(500, 500);
+							LatLng southWest = latLng.offset(-500, -500);
+							LatLngBounds latLngBounds = new LatLngBounds(southWest, northEast);
+
+							int padding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 35f, getResources().getDisplayMetrics());
+							double fittableZoom = CameraUtils.getFittableZoom(naverMap, latLngBounds, padding);
+							CameraUpdate cameraUpdateZoom = CameraUpdate.zoomTo(fittableZoom);
+							naverMap.moveCamera(cameraUpdateZoom);
+
+							PointF point = projection.toScreenLocation(latLng);
+
+							final int bottomSheetTopY = binding.naverMapViewLayout.getHeight() - DEFAULT_HEIGHT_OF_BOTTOMSHEET;
+							int margin16dp = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16f, getResources().getDisplayMetrics());
+							mapTranslationYByBuildingBottomSheet = (float) (point.y - (bottomSheetTopY / 2.0) - margin16dp);
+						}
+
+						switch (newState) {
+							case BottomSheetBehavior.STATE_EXPANDED: {
+                       /*
+                       <지도 카메라 위치 이동 방법>
+                       MapView.getMapCenterPoint() 메소드로 지도 중심 좌표(MapPoint center)를 얻습니다.
+                        중심 좌표 객체의 center.getMapPointScreenLocation() 메소드를 통해 pixel 좌표값(MapPoint.PlainCoordinate pixel)을 얻어냅니다.
+                        그 pixel 좌표값으로부터 얼마나 이동시키면 될 지 계산합니다. 앞서 구한 pixel에 이동하고자 하는 offset을 더하여 tx, ty 값을 확보합니다.
+                        (double tx = pixel.x + offsetX, double ty = pixel.y + offsetY)
+                        MapPoint newCenter = MapPoint.mapPointWithScreenLocation(tx, ty) 정적 메소드로 입력한 스크린 좌표를 역변환 하여 지도상 좌표(newCenter)를 구합니다.
+                        MapView.setMapCenterPoint(newCenter, true) 메소드로 지도 중심을 이동시킵니다.
+                        */
+								if (initializing) {
+									PointF movePoint = new PointF(0f, -mapTranslationYByBuildingBottomSheet);
+									CameraUpdate cameraUpdate = CameraUpdate.scrollBy(movePoint);
+									naverMap.moveCamera(cameraUpdate);
+									initializing = false;
+								}
+								break;
+							}
+							case BottomSheetBehavior.STATE_COLLAPSED: {
+								PointF movePoint = new PointF(0f, mapTranslationYByBuildingBottomSheet);
+								CameraUpdate cameraUpdate = CameraUpdate.scrollBy(movePoint);
+								naverMap.moveCamera(cameraUpdate);
+								initializing = true;
+								break;
+							}
+						}
+					}
+
+					@Override
+					public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+						//expanded일때 offset == 1.0, collapsed일때 offset == 0.0
+						//offset에 따라서 버튼들이 이동하고, 지도의 좌표가 변경되어야 한다.
+						//float translationValue = -buildingBottomSheet.getHeight() * slideOffset;
+						//binding.naverMapButtonsLayout.getRoot().animate().translationY(translationValue);
+					}
+				});
 
 				Bundle bundle = new Bundle();
 
 				LatLng latLng = naverMap.getContentBounds().getCenter();
+
 				bundle.putDouble("centerLatitude", latLng.latitude);
 				bundle.putDouble("centerLongitude", latLng.longitude);
 				bundle.putInt("bottomSheetHeight", DEFAULT_HEIGHT_OF_BOTTOMSHEET);
