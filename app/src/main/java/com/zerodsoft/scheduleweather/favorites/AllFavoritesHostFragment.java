@@ -70,7 +70,7 @@ public class AllFavoritesHostFragment extends Fragment {
 			}
 		});
 
-		onNavigationItemSelectedListener.onNavigationItemSelected(binding.bottomNavigation.getMenu().getItem(1));
+		onNavigationItemSelectedListener.onNavigationItemSelected(binding.bottomNavigation.getMenu().getItem(0));
 	}
 
 	private final BottomNavigationView.OnNavigationItemSelectedListener onNavigationItemSelectedListener = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -89,9 +89,6 @@ public class AllFavoritesHostFragment extends Fragment {
 
 			if (destinationFragment == null) {
 				switch (item.getItemId()) {
-					case R.id.addresses_places:
-						destinationFragment = new AllFavoriteAddressPlaceHostFragment();
-						break;
 					case R.id.map:
 						destinationFragment = new DefaultMapFragment();
 						break;

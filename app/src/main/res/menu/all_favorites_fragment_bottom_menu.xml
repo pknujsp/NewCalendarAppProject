@@ -2,15 +2,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/addresses_places"
-        android:contentDescription="@string/tag_all_favorite_locations_host_fragment"
-        android:enabled="false"
-        android:visible="false"
-        android:icon="@drawable/place_svg"
-        android:title="@string/address_place"
-        app:showAsAction="always" />
-
-    <item
         android:id="@+id/map"
         android:contentDescription="@string/tag_default_map"
         android:enabled="true"

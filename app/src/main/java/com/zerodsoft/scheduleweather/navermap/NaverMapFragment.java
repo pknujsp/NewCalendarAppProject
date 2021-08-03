@@ -189,6 +189,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		public void onFragmentCreated(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 			super.onFragmentCreated(fm, f, savedInstanceState);
 			if (f instanceof MapHeaderSearchFragment) {
+				binding.headerFragmentContainer.setClickable(false);
 				binding.headerFragmentContainer.getLayoutParams().height =
 						(int) getResources().getDimension(R.dimen.map_header_search_bar_height);
 				binding.headerFragmentContainer.requestLayout();
@@ -210,6 +211,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 				binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.VISIBLE);
 				binding.naverMapButtonsLayout.buildingButton.setVisibility(View.VISIBLE);
+
+				binding.headerFragmentContainer.setClickable(true);
 			} else if (f instanceof BuildingHostFragment) {
 				buildingButton.setImageDrawable(ContextCompat.getDrawable(getContext(),
 						R.drawable.building_black));

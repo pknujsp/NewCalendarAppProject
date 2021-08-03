@@ -316,17 +316,16 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 
 	private void createFunctionList() {
 		//이벤트 정보, 날씨, 음식점
-
-
 		functionButton = new TextView(getContext());
 		functionButton.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.map_button_rect));
 		functionButton.setElevation(4f);
 		functionButton.setClickable(true);
 		functionButton.setText(R.string.show_functions);
+		functionButton.setTextColor(Color.BLACK);
 		functionButton.setId(R.id.function_btn_in_instance_main_fragment);
 
-		final int btnPaddingLR = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
-		final int btnPaddingTB = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 6f, getResources().getDisplayMetrics());
+		final int btnPaddingLR = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12f, getResources().getDisplayMetrics());
+		final int btnPaddingTB = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
 		functionButton.setPadding(btnPaddingLR, btnPaddingTB, btnPaddingLR, btnPaddingTB);
 
 		ConstraintLayout.LayoutParams functionBtnLayoutParams = new ConstraintLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
