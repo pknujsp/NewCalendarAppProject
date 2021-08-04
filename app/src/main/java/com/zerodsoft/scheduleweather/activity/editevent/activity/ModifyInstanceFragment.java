@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -94,9 +95,13 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		binding.saveBtn.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
+				if (eventDataViewModel.getModifiedValueSet().isEmpty()) {
+					Toast.makeText(getContext(), R.string.not_edited, Toast.LENGTH_SHORT).show();
+					return;
+				}
 				/*
 				반복값을 수정하지 않았을 경우 : update this/following events/all events
-				반복값을 수정한 경우 : update this/following events
+				반복값을 수정한 경우 : update all/following events
 				반복값을 삭제한 경우 : remove all events and save new event
 				 */
 				if (originalEvent.get(Events.RRULE) != null) {
@@ -151,12 +156,12 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 							onEditEventResultListener.onSavedNewEvent(newEventValues.getAsLong(Events.DTSTART));
 							return;
 						} else {
-							//	반복값을 수정한 경우 : update this/following events
+							//	반복값을 수정한 경우 : update all/following events
 							dialogMenus = new String[]{
 									getString(R.string.save_all_future_events_including_current_event),
 									getString(R.string.save_all_events)};
 
-							dialogMenusIndexArr = new int[]{UPDATE_FOLLOWING_EVENTS, UPDATE_THIS_EVENT};
+							dialogMenusIndexArr = new int[]{UPDATE_FOLLOWING_EVENTS, UPDATE_ALL_EVENTS};
 						}
 					} else {
 						//반복값을 수정하지 않았을 경우 : update this/following events/all events
@@ -165,7 +170,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 								getString(R.string.save_all_future_events_including_current_event),
 								getString(R.string.save_all_events)};
 
-						dialogMenusIndexArr = new int[]{UPDATE_ALL_EVENTS, UPDATE_FOLLOWING_EVENTS, UPDATE_THIS_EVENT};
+						dialogMenusIndexArr = new int[]{UPDATE_THIS_EVENT, UPDATE_FOLLOWING_EVENTS, UPDATE_ALL_EVENTS};
 					}
 
 					int[] finalDialogMenusIndexArr = dialogMenusIndexArr;
@@ -517,20 +522,18 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 			int startDay = originalEvent.getAsInteger(Instances.START_DAY);
 			int endDay = originalEvent.getAsInteger(Instances.END_DAY);
 			int dayDifference = endDay - startDay;
-			calendar.add(Calendar.DATE, dayDifference + 1);
+			calendar.add(Calendar.DATE, dayDifference);
 			originalInstanceEndDate = calendar.getTimeInMillis();
-
-			setDateText(DateTimeType.END, originalInstanceEndDate);
-			setTimeText(DateTimeType.END, originalInstanceEndDate);
 		} else {
 			originalInstanceEndDate = originalEvent.getAsLong(Instances.END);
 			setTimeZoneText(originalEvent.getAsString(Events.EVENT_TIMEZONE));
 
 			setDateText(DateTimeType.START, originalInstanceBeginDate);
-			setDateText(DateTimeType.END, originalInstanceEndDate);
 			setTimeText(DateTimeType.START, originalInstanceBeginDate);
-			setTimeText(DateTimeType.END, originalInstanceEndDate);
 		}
+
+		setDateText(DateTimeType.END, originalInstanceEndDate);
+		setTimeText(DateTimeType.END, originalInstanceEndDate);
 
 		//캘린더
 		setCalendarText(originalEvent.getAsInteger(CalendarContract.Instances.CALENDAR_COLOR),

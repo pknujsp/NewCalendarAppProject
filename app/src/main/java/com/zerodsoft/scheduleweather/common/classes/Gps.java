@@ -26,6 +26,7 @@ import static androidx.core.content.ContextCompat.checkSelfPermission;
 
 public class Gps {
 	private LocationManager locationManager;
+	private LocationListener locationListener;
 
 	public void runGps(Activity activity, DataProcessingCallback<Location> callback, ActivityResultLauncher<Intent> requestOnGpsLauncher
 			, ActivityResultLauncher<String> requestLocationPermissionLauncher) {
@@ -41,7 +42,7 @@ public class Gps {
 
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 			if (isGpsEnabled) {
-				LocationListener locationListener = new LocationListener() {
+				locationListener = new LocationListener() {
 					boolean isCompleted = false;
 
 					@Override
@@ -104,5 +105,10 @@ public class Gps {
 				.show();
 	}
 
+	public void removeUpdate() {
+		if (locationListener != null) {
+			locationManager.removeUpdates(locationListener);
+		}
+	}
 
 }

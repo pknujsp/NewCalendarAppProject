@@ -182,14 +182,15 @@ public class EventHelper implements Serializable {
 					}
 				}
 
-				if (!hasRRuleInNewEvent) {
+				setDuration(newEvent);
+
+				if (hasRRuleInNewEvent) {
+					checkTimeDependentFields(originalEvent, newEvent, eventEditType);
+					contentProviderOperationList.add(ContentProviderOperation.newUpdate(uri).withValues(newEvent).build());
+				} else {
 					contentProviderOperationList.add(ContentProviderOperation.newUpdate(uri).withValues(newEvent)
 							.build());
 					forceSaveReminders = true;
-				} else {
-					checkTimeDependentFields(originalEvent, newEvent, eventEditType);
-					setDuration(newEvent);
-					contentProviderOperationList.add(ContentProviderOperation.newUpdate(uri).withValues(newEvent).build());
 				}
 			}
 		}
@@ -571,6 +572,8 @@ public class EventHelper implements Serializable {
 			return;
 		}
 
+		newEvent.putNull(Events.DURATION);
+
 		if (newEvent.get(Events.RRULE) != null) {
 			final long start = newEvent.getAsLong(Events.DTSTART);
 			final long end = newEvent.getAsLong(Events.DTEND);
@@ -591,8 +594,6 @@ public class EventHelper implements Serializable {
 			// recurring events should have a duration and dtend set to null
 			newEvent.put(Events.DURATION, duration);
 			newEvent.put(Events.DTEND, (String) null);
-		} else {
-			newEvent.remove(Events.DURATION);
 		}
 
 	}

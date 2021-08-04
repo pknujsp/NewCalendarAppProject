@@ -130,6 +130,7 @@ public class SearchResultPlaceListFragment extends Fragment implements OnExtraLi
 		super.onDestroy();
 		requestLocationPermissionLauncher.unregister();
 		requestOnGpsLauncher.unregister();
+		gps.removeUpdate();
 	}
 
 	private void replaceButtonStyle() {

@@ -182,6 +182,7 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 		getParentFragmentManager().unregisterFragmentLifecycleCallbacks(fragmentLifecycleCallbacks);
 		requestOnGpsLauncher.unregister();
 		requestLocationPermissionLauncher.unregister();
+		gps.removeUpdate();
 	}
 
 	private void loadCriteriaLocation() {
