@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -146,6 +147,17 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
 				} else {
 					Toast.makeText(getContext(), R.string.hint_request_input_custom_food_menu, Toast.LENGTH_SHORT).show();
 				}
+			}
+		});
+
+		binding.edittextCustomFoodmenu.setOnKeyListener(new View.OnKeyListener() {
+			@Override
+			public boolean onKey(View v, int keyCode, KeyEvent event) {
+				if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_DOWN) {
+					binding.addButton.callOnClick();
+					return true;
+				}
+				return false;
 			}
 		});
 	}

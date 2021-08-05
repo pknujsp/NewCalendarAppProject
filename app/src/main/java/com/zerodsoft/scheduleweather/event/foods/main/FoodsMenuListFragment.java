@@ -27,6 +27,7 @@ import com.zerodsoft.scheduleweather.databinding.FragmentFoodMenusBinding;
 import com.zerodsoft.scheduleweather.event.foods.adapter.FoodCategoryAdapter;
 import com.zerodsoft.scheduleweather.event.foods.dto.FoodCategoryItem;
 import com.zerodsoft.scheduleweather.event.foods.header.HeaderCriteriaLocationFragment;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.CriteriaLocationListener;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.OnClickedCategoryItem;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
@@ -41,7 +42,7 @@ import java.util.List;
 
 public class FoodsMenuListFragment extends Fragment implements OnClickedCategoryItem, OnClickedListItem<FoodCategoryItem>,
 		IRefreshView {
-	private final int COLUMN_COUNT = 5;
+	private final int COLUMN_COUNT = 4;
 
 	private FragmentFoodMenusBinding binding;
 
@@ -51,6 +52,8 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 
 	private FoodCategoryAdapter foodCategoryAdapter;
 	private IOnSetView iOnSetView;
+
+	private boolean initializing = true;
 
 	private FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks = new FragmentManager.FragmentLifecycleCallbacks() {
 		@Override
@@ -86,32 +89,24 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 		iOnSetView = (IOnSetView) getParentFragment();
 		iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.HEADER, View.VISIBLE);
 
-		headerCriteriaLocationFragment = new HeaderCriteriaLocationFragment();
-		headerCriteriaLocationFragment.setFoodCriteriaLocationCallback(new DataProcessingCallback<LocationDTO>() {
-			@Override
-			public void onResultSuccessful(LocationDTO result) {
-				setCategories();
-			}
-
-			@Override
-			public void onResultNoData() {
-
-			}
-		});
-
 		customFoodCategoryViewModel.getOnAddedCustomFoodMenuLiveData().observe(this, new Observer<CustomFoodMenuDTO>() {
 			@Override
 			public void onChanged(CustomFoodMenuDTO customFoodMenuDTO) {
-				setCategories();
+				if (!initializing) {
+					setCategories();
+				}
 			}
 		});
 
 		customFoodCategoryViewModel.getOnRemovedCustomFoodMenuLiveData().observe(this, new Observer<Integer>() {
 			@Override
 			public void onChanged(Integer integer) {
-				setCategories();
+				if (!initializing) {
+					setCategories();
+				}
 			}
 		});
+
 	}
 
 	@Override
@@ -126,15 +121,31 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 		super.onViewCreated(view, savedInstanceState);
 		binding.customProgressView.setContentView(binding.categoryGridview);
 
+		headerCriteriaLocationFragment = new HeaderCriteriaLocationFragment();
+		headerCriteriaLocationFragment.setCriteriaLocationListener(new CriteriaLocationListener() {
+			@Override
+			public void onStartedGettingCriteriaLocation() {
+				binding.categoryGridview.setVisibility(View.GONE);
+			}
+
+			@Override
+			public void onFinishedGettingCriteriaLocation(LocationDTO criteriaLocation) {
+				binding.categoryGridview.setVisibility(View.VISIBLE);
+			}
+		});
+
 		FragmentManager parentFragmentManager = getParentFragmentManager();
 		if (parentFragmentManager.findFragmentByTag(getString(R.string.tag_restaurant_header_criteria_location_fragment)) == null) {
 			parentFragmentManager.beginTransaction()
 					.replace(R.id.header_fragment_container, headerCriteriaLocationFragment, getString(R.string.tag_restaurant_header_criteria_location_fragment)).commit();
 		}
+
 		GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), COLUMN_COUNT);
 		binding.categoryGridview.setLayoutManager(gridLayoutManager);
 		foodCategoryAdapter = new FoodCategoryAdapter(FoodsMenuListFragment.this, COLUMN_COUNT);
 		binding.categoryGridview.setAdapter(foodCategoryAdapter);
+
+		setCategories();
 	}
 
 	@Override

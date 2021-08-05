@@ -15,6 +15,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcel;
 import android.provider.CalendarContract;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -653,7 +654,7 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 								.setContentText(totalCount + "개의 캘린더 동기화 중입니다")
 								.setSmallIcon(R.drawable.refresh_icon)
 								.setPriority(NotificationManagerCompat.IMPORTANCE_DEFAULT);
-						notificationBuilder.setProgress(100, 0, false);
+						notificationBuilder.setProgress(0, 0, true);
 						notificationManager.notify(SYNC_NOTIFICATION_ID, notificationBuilder.build());
 
 						requireActivity().runOnUiThread(new Runnable() {
@@ -666,7 +667,7 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 
 					@Override
 					public void onSyncing(int totalCount, int syncedCount) {
-						notificationBuilder.setProgress(100, (syncedCount / totalCount) * 100, false);
+
 					}
 
 					@Override
@@ -730,49 +731,50 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 						if (ContentResolver.isSyncPending(account, mCalendarAuthority)) {
 							// There is now a pending sync.
 							mAccountSyncState.put(account, PENDING);
+							Log.e("SYNC STATE : ", "pending");
 						} else {
 							// There is no longer a pending sync.
 							mAccountSyncState.put(account, PENDING_ACTIVE);
+							Log.e("SYNC STATE : ", "pending_active");
 						}
 					} else if (which == ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE) {
 						if (ContentResolver.isSyncActive(account, mCalendarAuthority)) {
 							// There is now an active sync.
 							mAccountSyncState.put(account, ACTIVE);
+							Log.e("SYNC STATE : ", "active");
 						} else {
 							// There is no longer an active sync.
 							mAccountSyncState.put(account, FINISHED);
-							int syncedCount = 0;
-							for (Integer syncState : mAccountSyncState.values()) {
-								if (syncState == FINISHED) {
-									syncedCount++;
-								}
-							}
-
-							syncCallback.onSyncing(accountList.size(), syncedCount);
+							Log.e("SYNC STATE : ", "finished");
 						}
 					}
 				}
 
 				// We haven't finished processing sync states for all accountList yet
-				if (accountList.size() != mAccountSyncState.size())
+				if (accountList.size() != mAccountSyncState.size()) {
 					return;
-
+				}
 				// Check if any accountList are not finished syncing yet. If so bail
+				int finishedCount = 0;
+
 				for (Integer syncState : mAccountSyncState.values()) {
-					if (syncState != FINISHED)
-						return;
+					if (syncState == FINISHED) {
+						finishedCount++;
+					}
 				}
 
-				//finished
-				if (mProviderHandle != null) {
-					ContentResolver.removeStatusChangeListener(mProviderHandle);
-					mProviderHandle = null;
+				if (finishedCount == accountList.size()) {
+					//finished
+					if (mProviderHandle != null) {
+						ContentResolver.removeStatusChangeListener(mProviderHandle);
+						mProviderHandle = null;
+					}
+					if (syncCallback != null) {
+						syncCallback.onSyncFinished();
+						syncCallback = null;
+					}
+					mAccountSyncState.clear();
 				}
-				if (syncCallback != null) {
-					syncCallback.onSyncFinished();
-					syncCallback = null;
-				}
-				mAccountSyncState.clear();
 			}
 
 		}

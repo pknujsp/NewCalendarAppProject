@@ -1,6 +1,5 @@
 package com.zerodsoft.scheduleweather.navermap.building.fragment;
 
-import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -17,7 +16,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.naver.maps.geometry.LatLng;
 import com.naver.maps.geometry.Utmk;
 import com.zerodsoft.scheduleweather.R;
@@ -25,19 +23,18 @@ import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.FragmentBuildingListBinding;
+import com.zerodsoft.scheduleweather.kakaoplace.LocalParameterUtil;
+import com.zerodsoft.scheduleweather.kakaoplace.retrofit.KakaoLocalDownloader;
+import com.zerodsoft.scheduleweather.navermap.interfaces.OnKakaoLocalApiCallback;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.MapSharedViewModel;
-import com.zerodsoft.scheduleweather.weather.repository.SgisTranscoord;
+import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalResponse;
 import com.zerodsoft.scheduleweather.navermap.building.SgisBuildingDownloader;
 import com.zerodsoft.scheduleweather.navermap.building.adapter.BuildingListAdapter;
-import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
-import com.zerodsoft.scheduleweather.navermap.model.CoordToAddressUtilByKakao;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.TransCoordParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.sgis.building.BuildingAreaParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.building.buildingarea.BuildingAreaItem;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.building.buildingarea.BuildingAreaResponse;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.sgis.transcoord.TransCoordResponse;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -172,23 +169,21 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
 		binding.buildingSearchList.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
 
 		//중심 좌표 기준으로 최소/최대 좌표값 계산
-		LocalApiPlaceParameter coordToAddressParameter = new LocalApiPlaceParameter();
-		coordToAddressParameter.setX(String.valueOf(centerLongitude));
-		coordToAddressParameter.setY(String.valueOf(centerLatitude));
-
-		CoordToAddressUtilByKakao.coordToAddress(coordToAddressParameter, new JsonDownloader<CoordToAddress>() {
+		LocalApiPlaceParameter coordToAddressParameter = LocalParameterUtil.getCoordToAddressParameter(centerLatitude, centerLongitude);
+		KakaoLocalDownloader.coordToAddress(coordToAddressParameter, new OnKakaoLocalApiCallback() {
 			@Override
-			public void onResponseSuccessful(CoordToAddress result) {
+			public void onResultSuccessful(int type, KakaoLocalResponse result) {
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						binding.criteriaAddress.setText(result.getCoordToAddressDocuments().get(0).getCoordToAddressAddress().getAddressName());
+						CoordToAddress coordToAddress = (CoordToAddress) result;
+						binding.criteriaAddress.setText(coordToAddress.getCoordToAddressDocuments().get(0).getCoordToAddressAddress().getAddressName());
 					}
 				});
 			}
 
 			@Override
-			public void onResponseFailed(Exception e) {
+			public void onResultNoData() {
 
 			}
 		});

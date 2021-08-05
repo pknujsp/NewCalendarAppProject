@@ -32,6 +32,7 @@ import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.criterialocation.RestaurantCriteriaLocationSettingsFragment;
 import com.zerodsoft.scheduleweather.event.foods.enums.CriteriaLocationType;
+import com.zerodsoft.scheduleweather.event.foods.interfaces.CriteriaLocationListener;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
 import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationCloud;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
@@ -67,7 +68,7 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 	private Long eventId;
 	private IMapPoint iMapPoint;
 
-	private DataProcessingCallback<LocationDTO> foodCriteriaLocationCallback;
+	private CriteriaLocationListener criteriaLocationListener;
 	private IOnSetView iOnSetView;
 
 	private final Gps gps = new Gps();
@@ -173,8 +174,8 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 		loadCriteriaLocation();
 	}
 
-	public void setFoodCriteriaLocationCallback(DataProcessingCallback<LocationDTO> foodCriteriaLocationCallback) {
-		this.foodCriteriaLocationCallback = foodCriteriaLocationCallback;
+	public void setCriteriaLocationListener(CriteriaLocationListener criteriaLocationListener) {
+		this.criteriaLocationListener = criteriaLocationListener;
 	}
 
 	@Override
@@ -188,6 +189,9 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 
 	private void loadCriteriaLocation() {
 		binding.customProgressView.onStartedProcessingData(getString(R.string.loading_criteria_location));
+		if (criteriaLocationListener != null) {
+			criteriaLocationListener.onStartedGettingCriteriaLocation();
+		}
 
 		if (!CriteriaLocationCloud.isEmpty()) {
 			setCriteria(CriteriaLocationCloud.getCriteriaLocationType());
@@ -320,8 +324,8 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 						}
 
 						binding.customProgressView.onSuccessfulProcessingData();
-						if (foodCriteriaLocationCallback != null) {
-							foodCriteriaLocationCallback.processResult(criteriaLocationDTO);
+						if (criteriaLocationListener != null) {
+							criteriaLocationListener.onFinishedGettingCriteriaLocation(criteriaLocationDTO);
 						}
 					}
 				});
@@ -354,8 +358,8 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 								binding.criteriaLocation.setText(criteriaLocationDTO.getAddressName());
 								binding.customProgressView.onSuccessfulProcessingData();
 
-								if (foodCriteriaLocationCallback != null) {
-									foodCriteriaLocationCallback.processResult(criteriaLocationDTO);
+								if (criteriaLocationListener != null) {
+									criteriaLocationListener.onFinishedGettingCriteriaLocation(criteriaLocationDTO);
 								}
 							}
 						});
@@ -401,8 +405,9 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 												binding.criteriaLocation.setText(criteriaLocationDTO.getAddressName());
 											}
 											binding.customProgressView.onSuccessfulProcessingData();
-											if (foodCriteriaLocationCallback != null) {
-												foodCriteriaLocationCallback.processResult(criteriaLocationDTO);
+
+											if (criteriaLocationListener != null) {
+												criteriaLocationListener.onFinishedGettingCriteriaLocation(criteriaLocationDTO);
 											}
 										}
 									});
@@ -530,8 +535,8 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 						binding.criteriaLocation.setText(criteriaLocationDTO.getAddressName());
 						binding.customProgressView.onSuccessfulProcessingData();
 
-						if (foodCriteriaLocationCallback != null) {
-							foodCriteriaLocationCallback.processResult(criteriaLocationDTO);
+						if (criteriaLocationListener != null) {
+							criteriaLocationListener.onFinishedGettingCriteriaLocation(criteriaLocationDTO);
 						}
 					}
 				});
