@@ -63,8 +63,6 @@ public class InstanceListWeekDialogFragment extends DialogFragment implements On
 
 	private CalendarViewModel calendarViewModel;
 	private LocationViewModel locationViewModel;
-	private FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel;
-	private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
 	private instanceListWeekViewPagerAdapter adapter;
 	private CompositePageTransformer compositePageTransformer;
 
@@ -178,8 +176,6 @@ public class InstanceListWeekDialogFragment extends DialogFragment implements On
 		super.onViewCreated(view, savedInstanceState);
 
 		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
-		foodCriteriaLocationHistoryViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationHistoryViewModel.class);
-		foodCriteriaLocationInfoViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationInfoViewModel.class);
 
 		binding.goToThisWeekButton.setOnClickListener(new View.OnClickListener() {
 			@Override

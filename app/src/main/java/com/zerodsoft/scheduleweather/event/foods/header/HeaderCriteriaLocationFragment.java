@@ -24,7 +24,6 @@ import android.widget.Toast;
 import com.naver.maps.geometry.LatLng;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.classes.Gps;
-import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.common.interfaces.DataProcessingCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.databinding.FragmentHeaderCriteriaLocationBinding;
@@ -41,7 +40,6 @@ import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewM
 import com.zerodsoft.scheduleweather.kakaoplace.retrofit.KakaoLocalDownloader;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnKakaoLocalApiCallback;
-import com.zerodsoft.scheduleweather.navermap.model.CoordToAddressUtilByKakao;
 import com.zerodsoft.scheduleweather.kakaoplace.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.MapSharedViewModel;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
@@ -72,7 +70,9 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 	private DataProcessingCallback<LocationDTO> foodCriteriaLocationCallback;
 	private IOnSetView iOnSetView;
 
-	private Gps gps = new Gps();
+	private final Gps gps = new Gps();
+
+	private boolean initializing = true;
 
 	private FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks = new FragmentManager.FragmentLifecycleCallbacks() {
 		@Override
@@ -106,9 +106,10 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 				new ViewModelProvider(getParentFragment().getParentFragment().getParentFragment()).get(MapSharedViewModel.class);
 		iMapPoint = mapSharedViewModel.getiMapPoint();
 
-		foodCriteriaLocationInfoViewModel = new ViewModelProvider(getParentFragment().getParentFragment()).get(FoodCriteriaLocationInfoViewModel.class);
+		foodCriteriaLocationInfoViewModel =
+				new ViewModelProvider(getParentFragment().getParentFragment().getParentFragment()).get(FoodCriteriaLocationInfoViewModel.class);
 		foodCriteriaLocationSearchHistoryViewModel =
-				new ViewModelProvider(getParentFragment().getParentFragment()).get(FoodCriteriaLocationHistoryViewModel.class);
+				new ViewModelProvider(getParentFragment().getParentFragment().getParentFragment()).get(FoodCriteriaLocationHistoryViewModel.class);
 
 		eventId = restaurantSharedViewModel.getEventId();
 
@@ -116,7 +117,7 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 				new Observer<FoodCriteriaLocationInfoDTO>() {
 					@Override
 					public void onChanged(FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) {
-						if (getActivity() != null) {
+						if (!initializing) {
 							requireActivity().runOnUiThread(new Runnable() {
 								@Override
 								public void run() {
@@ -131,7 +132,7 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 				new Observer<FoodCriteriaLocationInfoDTO>() {
 					@Override
 					public void onChanged(FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO) {
-						if (getActivity() != null) {
+						if (!initializing) {
 							requireActivity().runOnUiThread(new Runnable() {
 								@Override
 								public void run() {
@@ -187,6 +188,11 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 
 	private void loadCriteriaLocation() {
 		binding.customProgressView.onStartedProcessingData(getString(R.string.loading_criteria_location));
+
+		if (!CriteriaLocationCloud.isEmpty()) {
+			setCriteria(CriteriaLocationCloud.getCriteriaLocationType());
+			return;
+		}
 
 		foodCriteriaLocationInfoViewModel.selectByEventId(eventId
 				, new DbQueryCallback<FoodCriteriaLocationInfoDTO>() {
@@ -297,11 +303,12 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 
 
 	private void setCriteria(CriteriaLocationType criteriaLocationType) {
+		initializing = false;
+
 		switch (criteriaLocationType) {
 			case TYPE_SELECTED_LOCATION: {
-				CriteriaLocationCloud.setCoordinate(
-						criteriaLocationDTO.getLatitude(),
-						criteriaLocationDTO.getLongitude(), criteriaLocationDTO.getLocTitleName());
+				CriteriaLocationCloud.setCoordinate(criteriaLocationType,
+						criteriaLocationDTO.getLatitude(), criteriaLocationDTO.getLongitude(), criteriaLocationDTO.getLocTitleName());
 
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
@@ -327,18 +334,19 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 				LocalApiPlaceParameter localApiPlaceParameter = LocalParameterUtil.getCoordToAddressParameter(mapCenterPoint.latitude,
 						mapCenterPoint.longitude);
 
-				CoordToAddressUtilByKakao.coordToAddress(localApiPlaceParameter, new JsonDownloader<CoordToAddress>() {
+				KakaoLocalDownloader.coordToAddress(localApiPlaceParameter, new OnKakaoLocalApiCallback() {
 					@Override
-					public void onResponseSuccessful(CoordToAddress result) {
+					public void onResultSuccessful(int type, KakaoLocalResponse result) {
 						LocationDTO locationDTO = new LocationDTO();
-						CoordToAddressDocuments coordToAddressDocument = result.getCoordToAddressDocuments().get(0);
+						CoordToAddressDocuments coordToAddressDocument = ((CoordToAddress) result).getCoordToAddressDocuments().get(0);
 
 						locationDTO.setAddress(coordToAddressDocument.getCoordToAddressAddress().getAddressName(), null,
 								String.valueOf(mapCenterPoint.latitude),
 								String.valueOf(mapCenterPoint.longitude));
 
 						criteriaLocationDTO = locationDTO;
-						CriteriaLocationCloud.setCoordinate(criteriaLocationDTO.getLatitude(), criteriaLocationDTO.getLongitude(), criteriaLocationDTO.getLocTitleName());
+						CriteriaLocationCloud.setCoordinate(criteriaLocationType, criteriaLocationDTO.getLatitude(), criteriaLocationDTO.getLongitude(),
+								criteriaLocationDTO.getLocTitleName());
 
 						requireActivity().runOnUiThread(new Runnable() {
 							@Override
@@ -354,7 +362,7 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 					}
 
 					@Override
-					public void onResponseFailed(Exception e) {
+					public void onResultNoData() {
 
 					}
 				});
@@ -363,8 +371,8 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 
 			case TYPE_CURRENT_LOCATION_GPS: {
 				gps();
+				break;
 			}
-			break;
 
 			case TYPE_CUSTOM_SELECTED_LOCATION: {
 				//지정 위치 파악
@@ -381,7 +389,8 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 											foodCriteriaLocationSearchHistoryResultDto.getLatitude(), foodCriteriaLocationSearchHistoryResultDto.getLongitude());
 
 									criteriaLocationDTO = locationDTO;
-									CriteriaLocationCloud.setCoordinate(criteriaLocationDTO.getLatitude(), criteriaLocationDTO.getLongitude(), criteriaLocationDTO.getLocTitleName());
+									CriteriaLocationCloud.setCoordinate(criteriaLocationType, criteriaLocationDTO.getLatitude(),
+											criteriaLocationDTO.getLongitude(), criteriaLocationDTO.getLocTitleName());
 
 									requireActivity().runOnUiThread(new Runnable() {
 										@Override
@@ -511,7 +520,9 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 						locationDtoByGps.getLongitude());
 
 				criteriaLocationDTO = locationDTO;
-				CriteriaLocationCloud.setCoordinate(criteriaLocationDTO.getLatitude(), criteriaLocationDTO.getLongitude(), criteriaLocationDTO.getLocTitleName());
+				CriteriaLocationCloud.setCoordinate(CriteriaLocationType.TYPE_CURRENT_LOCATION_GPS, criteriaLocationDTO.getLatitude(),
+						criteriaLocationDTO.getLongitude(),
+						criteriaLocationDTO.getLocTitleName());
 
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override

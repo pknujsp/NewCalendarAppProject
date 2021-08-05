@@ -96,9 +96,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 	private AlertDialog attendeeDialog;
 	private BottomSheetBehavior<FrameLayout> bottomSheetBehavior;
 
-	private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
-	private FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel;
-
 	private FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks = new FragmentManager.FragmentLifecycleCallbacks() {
 		@Override
 		public void onFragmentAttached(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @NonNull @NotNull Context context) {
@@ -271,8 +268,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 		bottomSheet.getLayoutParams().height = VIEW_HEIGHT;
 
 		locationViewModel = new ViewModelProvider(getParentFragment()).get(LocationViewModel.class);
-		foodCriteriaLocationHistoryViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationHistoryViewModel.class);
-		foodCriteriaLocationInfoViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationInfoViewModel.class);
 
 		binding.eventRemindersView.addReminderButton.setVisibility(View.GONE);
 		binding.eventAttendeesView.showAttendeesDetail.setVisibility(View.GONE);

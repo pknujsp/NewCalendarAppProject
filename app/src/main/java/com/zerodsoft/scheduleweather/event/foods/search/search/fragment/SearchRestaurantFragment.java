@@ -37,24 +37,16 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
 	private SearchHistoryViewModel searchHistoryViewModel;
 	private IOnSetView iOnSetView;
 
-	private HeaderCriteriaLocationFragment headerCriteriaLocationFragment;
-
 	private final FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks =
 			new FragmentManager.FragmentLifecycleCallbacks() {
 				@Override
 				public void onFragmentCreated(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 					super.onFragmentCreated(fm, f, savedInstanceState);
-					if (f instanceof SearchResultRestaurantFragment) {
-						iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.HEADER, View.GONE);
-					}
 				}
 
 				@Override
 				public void onFragmentDestroyed(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
 					super.onFragmentDestroyed(fm, f);
-					if (f instanceof SearchResultRestaurantFragment) {
-						iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.HEADER, View.VISIBLE);
-					}
 				}
 			};
 
@@ -66,7 +58,6 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
 		searchHistoryViewModel = new ViewModelProvider(getParentFragment()).get(SearchHistoryViewModel.class);
 
 		iOnSetView = (IOnSetView) getParentFragment();
-		iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.HEADER, View.VISIBLE);
 	}
 
 	@Override
@@ -80,9 +71,6 @@ public class SearchRestaurantFragment extends Fragment implements OnClickedListI
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		headerCriteriaLocationFragment = new HeaderCriteriaLocationFragment();
-		getParentFragmentManager().beginTransaction()
-				.add(R.id.header_fragment_container, headerCriteriaLocationFragment).commit();
 		//검색 기록 프래그먼트 표시
 
 		foodRestaurantSearchHistoryFragment = new FoodRestaurantSearchHistoryFragment(this);

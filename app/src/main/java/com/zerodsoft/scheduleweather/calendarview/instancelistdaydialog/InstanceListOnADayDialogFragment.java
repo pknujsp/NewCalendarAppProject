@@ -62,8 +62,6 @@ public class InstanceListOnADayDialogFragment extends DialogFragment implements 
 
 	private CalendarViewModel calendarViewModel;
 	private LocationViewModel locationViewModel;
-	private FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel;
-	private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
 	private FragmentInstanceListOnADayBinding binding;
 	private InstancesOfDayAdapter adapter;
 	private CompositePageTransformer compositePageTransformer;
@@ -183,8 +181,6 @@ public class InstanceListOnADayDialogFragment extends DialogFragment implements 
 		super.onViewCreated(view, savedInstanceState);
 
 		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
-		foodCriteriaLocationHistoryViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationHistoryViewModel.class);
-		foodCriteriaLocationInfoViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationInfoViewModel.class);
 
 		binding.goToTodayButton.setOnClickListener(new View.OnClickListener() {
 			@Override
