@@ -36,26 +36,18 @@ import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
 import org.jetbrains.annotations.NotNull;
 
 public class RestaurantFragment extends Fragment implements IOnSetView {
-	private final int CALENDAR_ID;
-	private final long INSTANCE_ID;
 	private final long EVENT_ID;
-
 	private final ISetFoodMenuPoiItems ISetFoodMenuPoiItems;
-	private final IMapPoint iMapPoint;
 	private OnHiddenFragmentListener onHiddenFragmentListener;
 
 	private FragmentRestaurantMainTransactionBinding binding;
 	private RestaurantSharedViewModel restaurantSharedViewModel;
 
 
-	public RestaurantFragment(IMapPoint iMapPoint
-			, ISetFoodMenuPoiItems ISetFoodMenuPoiItems
-			, OnHiddenFragmentListener onHiddenFragmentListener, int CALENDAR_ID, long INSTANCE_ID, long EVENT_ID) {
-		this.iMapPoint = iMapPoint;
+	public RestaurantFragment(ISetFoodMenuPoiItems ISetFoodMenuPoiItems
+			, OnHiddenFragmentListener onHiddenFragmentListener, long EVENT_ID) {
 		this.ISetFoodMenuPoiItems = ISetFoodMenuPoiItems;
 		this.onHiddenFragmentListener = onHiddenFragmentListener;
-		this.CALENDAR_ID = CALENDAR_ID;
-		this.INSTANCE_ID = INSTANCE_ID;
 		this.EVENT_ID = EVENT_ID;
 	}
 

@@ -964,12 +964,9 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			final int LAST_INDEX = adapter.getItemsCount() - 1;
 			List<KakaoLocalDocument> currentList = adapter.getLocalDocumentsList();
 			List<? extends KakaoLocalDocument> subList = (List<? extends KakaoLocalDocument>) kakaoLocalDocuments.subList(LAST_INDEX + 1, kakaoLocalDocuments.size());
+			currentList.addAll(subList);
 
-			int currentIndex = currentList.size();
-			for (KakaoLocalDocument ob : subList) {
-				currentList.add(currentIndex++, ob);
-			}
-			viewPagerAdapterMap.get(markerType).notifyDataSetChanged();
+			adapter.notifyDataSetChanged();
 
 			if (kakaoLocalDocuments.get(0) instanceof PlaceDocuments) {
 				List<PlaceDocuments> placeDocuments = (List<PlaceDocuments>) subList;
@@ -978,13 +975,13 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 					createPlaceMarker(markerType, document);
 				}
 			} else if (kakaoLocalDocuments.get(0) instanceof AddressResponseDocuments) {
-				List<AddressResponseDocuments> addressDocuments = (List<AddressResponseDocuments>) kakaoLocalDocuments;
+				List<AddressResponseDocuments> addressDocuments = (List<AddressResponseDocuments>) subList;
 
 				for (AddressResponseDocuments document : addressDocuments) {
 					createAddressMarker(markerType, document);
 				}
 			} else if (kakaoLocalDocuments.get(0) instanceof CoordToAddressDocuments) {
-				List<CoordToAddressDocuments> coordToAddressDocuments = (List<CoordToAddressDocuments>) kakaoLocalDocuments;
+				List<CoordToAddressDocuments> coordToAddressDocuments = (List<CoordToAddressDocuments>) subList;
 
 				for (CoordToAddressDocuments document : coordToAddressDocuments) {
 					createCoordToAddressMarker(markerType, document);

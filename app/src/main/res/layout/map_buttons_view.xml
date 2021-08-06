@@ -7,13 +7,16 @@
     android:layout_height="match_parent"
     android:background="@color/transparent"
     android:clickable="false"
-    android:gravity="bottom">
+    android:clipToPadding="false"
+    android:gravity="bottom"
+    android:paddingLeft="28dp"
+    android:paddingRight="28dp"
+    android:paddingBottom="32dp">
 
     <ImageButton
         android:id="@+id/favorite_locations_button"
         android:layout_width="@dimen/map_button_size"
         android:layout_height="@dimen/map_button_size"
-
         android:layout_marginBottom="8dp"
         android:background="@drawable/map_button_rect"
         android:elevation="3dp"

@@ -409,13 +409,13 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 				bottomSheetBehaviorMap.put(BottomSheetType.RESTAURANT, restaurantsBottomSheetBehavior);
 
 				RestaurantFragment restaurantFragment =
-						new RestaurantFragment(NewInstanceMainFragment.this, NewInstanceMainFragment.this
+						new RestaurantFragment(NewInstanceMainFragment.this
 								, new OnHiddenFragmentListener() {
 							@Override
 							public void onHiddenChangedFragment(boolean hidden) {
 
 							}
-						}, calendarId, instanceId, eventId);
+						}, eventId);
 
 				bottomSheetFragmentMap.put(BottomSheetType.RESTAURANT, restaurantFragment);
 				fragmentManager.beginTransaction().add(binding.fragmentContainer.getId(), restaurantFragment

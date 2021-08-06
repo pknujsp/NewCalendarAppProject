@@ -61,6 +61,7 @@
 
     <dimen name="map_header_bar_height">48dp</dimen>
     <dimen name="map_header_bar_top_margin">32dp</dimen>
+    <dimen name="map_header_bar_top_padding">32dp</dimen>
 
     <dimen name="building_selector_small_circle_size">4dp</dimen>
     <dimen name="building_selector_big_circle_size">20dp</dimen>

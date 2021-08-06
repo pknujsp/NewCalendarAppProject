@@ -13,7 +13,7 @@
             android:id="@+id/naver_map_view_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
-            
+
             <androidx.fragment.app.FragmentContainerView
                 android:id="@+id/naver_map_fragment"
                 android:layout_width="match_parent"
@@ -24,8 +24,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top"
-                android:layout_marginTop="@dimen/map_header_bar_top_margin"
-                android:orientation="vertical">
+                android:clipToPadding="false"
+                android:orientation="vertical"
+                android:paddingTop="@dimen/map_header_bar_top_padding">
 
                 <androidx.fragment.app.FragmentContainerView
                     android:id="@+id/header_fragment_container"
@@ -36,6 +37,7 @@
                     android:layout_marginRight="28dp"
                     android:background="@drawable/map_view_background"
                     android:clickable="true"
+                    android:clipToPadding="false"
                     android:elevation="4dp"
                     android:focusable="true"
                     android:minHeight="@dimen/map_header_bar_height" />
@@ -46,10 +48,7 @@
                 android:id="@+id/naver_map_buttons_layout"
                 layout="@layout/map_buttons_view"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginLeft="28dp"
-                android:layout_marginRight="28dp"
-                android:layout_marginBottom="32dp" />
+                android:layout_height="match_parent" />
 
             <androidx.fragment.app.FragmentContainerView
                 android:id="@+id/fragment_container"

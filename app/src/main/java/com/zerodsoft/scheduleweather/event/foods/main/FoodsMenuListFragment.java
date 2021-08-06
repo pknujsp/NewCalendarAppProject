@@ -250,7 +250,7 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 		if (hidden) {
 
 		} else {
-			setCategories();
+
 		}
 	}
 }
