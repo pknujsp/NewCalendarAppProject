@@ -108,9 +108,9 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 		iMapPoint = mapSharedViewModel.getiMapPoint();
 
 		foodCriteriaLocationInfoViewModel =
-				new ViewModelProvider(getParentFragment().getParentFragment().getParentFragment()).get(FoodCriteriaLocationInfoViewModel.class);
+				new ViewModelProvider(requireActivity()).get(FoodCriteriaLocationInfoViewModel.class);
 		foodCriteriaLocationSearchHistoryViewModel =
-				new ViewModelProvider(getParentFragment().getParentFragment().getParentFragment()).get(FoodCriteriaLocationHistoryViewModel.class);
+				new ViewModelProvider(requireActivity()).get(FoodCriteriaLocationHistoryViewModel.class);
 
 		eventId = restaurantSharedViewModel.getEventId();
 
@@ -122,6 +122,7 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 							requireActivity().runOnUiThread(new Runnable() {
 								@Override
 								public void run() {
+									CriteriaLocationCloud.clear();
 									loadCriteriaLocation();
 								}
 							});
@@ -137,6 +138,7 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 							requireActivity().runOnUiThread(new Runnable() {
 								@Override
 								public void run() {
+									CriteriaLocationCloud.clear();
 									loadCriteriaLocation();
 								}
 							});

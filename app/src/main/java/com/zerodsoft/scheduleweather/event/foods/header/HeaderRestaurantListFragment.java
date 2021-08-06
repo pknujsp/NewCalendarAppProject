@@ -73,7 +73,7 @@ public class HeaderRestaurantListFragment extends Fragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		customFoodCategoryViewModel = new ViewModelProvider(this).get(CustomFoodMenuViewModel.class);
+		customFoodCategoryViewModel = new ViewModelProvider(requireActivity()).get(CustomFoodMenuViewModel.class);
 		restaurantSharedViewModel = new ViewModelProvider(getParentFragment().getParentFragment()).get(RestaurantSharedViewModel.class);
 		mapSharedViewModel = new ViewModelProvider(getParentFragment().getParentFragment().getParentFragment()).get(MapSharedViewModel.class);
 

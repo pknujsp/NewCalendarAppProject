@@ -84,7 +84,7 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 		getParentFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false);
 
 		restaurantSharedViewModel = new ViewModelProvider(getParentFragment().getParentFragment()).get(RestaurantSharedViewModel.class);
-		customFoodCategoryViewModel = new ViewModelProvider(this).get(CustomFoodMenuViewModel.class);
+		customFoodCategoryViewModel = new ViewModelProvider(requireActivity()).get(CustomFoodMenuViewModel.class);
 
 		iOnSetView = (IOnSetView) getParentFragment();
 		iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.HEADER, View.VISIBLE);
@@ -164,7 +164,6 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 		customFoodCategoryViewModel.select(new DbQueryCallback<List<CustomFoodMenuDTO>>() {
 			@Override
 			public void onResultSuccessful(List<CustomFoodMenuDTO> resultList) {
-
 				final String[] DEFAULT_FOOD_MENU_NAME_ARR = getResources().getStringArray(R.array.food_menu_list);
 				List<FoodCategoryItem> itemsList = new ArrayList<>();
 
@@ -190,6 +189,8 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 						binding.customProgressView.onSuccessfulProcessingData();
 					}
 				});
+
+				initializing = false;
 			}
 
 			@Override

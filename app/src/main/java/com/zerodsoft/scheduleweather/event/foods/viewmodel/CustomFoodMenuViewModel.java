@@ -17,8 +17,8 @@ import java.util.List;
 
 public class CustomFoodMenuViewModel extends AndroidViewModel implements CustomFoodMenuQuery {
 	private CustomFoodMenuRepository repository;
-	private MutableLiveData<CustomFoodMenuDTO> onAddedCustomFoodMenuLiveData = new MutableLiveData<>();
-	private MutableLiveData<Integer> onRemovedCustomFoodMenuLiveData = new MutableLiveData<>();
+	private MutableLiveData<CustomFoodMenuDTO> onAddedCustomFoodMenuLiveData;
+	private MutableLiveData<Integer> onRemovedCustomFoodMenuLiveData;
 
 	public CustomFoodMenuViewModel(@NonNull Application application) {
 		super(application);

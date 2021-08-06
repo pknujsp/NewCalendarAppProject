@@ -11,7 +11,8 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/category_gridview"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:overScrollMode="never" />
 
         <com.zerodsoft.scheduleweather.common.view.CustomProgressView
             android:id="@+id/custom_progress_view"

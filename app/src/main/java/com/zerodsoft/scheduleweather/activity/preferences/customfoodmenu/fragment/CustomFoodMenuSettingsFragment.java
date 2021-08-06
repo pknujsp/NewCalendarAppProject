@@ -21,9 +21,7 @@ import com.zerodsoft.scheduleweather.activity.preferences.customfoodmenu.adapter
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.FragmentCustomFoodMenuSettingsBinding;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewModel;
-import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 import com.zerodsoft.scheduleweather.room.dto.CustomFoodMenuDTO;
 
 import java.util.List;
@@ -31,12 +29,12 @@ import java.util.List;
 public class CustomFoodMenuSettingsFragment extends Fragment implements OnClickedListItem<CustomFoodMenuDTO> {
 	private FragmentCustomFoodMenuSettingsBinding binding;
 	private CustomFoodMenuAdapter adapter;
-	private CustomFoodMenuViewModel viewModel;
+	private CustomFoodMenuViewModel customFoodMenuViewModel;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		viewModel = new ViewModelProvider(this).get(CustomFoodMenuViewModel.class);
+		customFoodMenuViewModel = new ViewModelProvider(requireActivity()).get(CustomFoodMenuViewModel.class);
 	}
 
 	@Override
@@ -86,7 +84,7 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
 		});
 		binding.customFoodMenuRecyclerview.setAdapter(adapter);
 
-		viewModel.select(new DbQueryCallback<List<CustomFoodMenuDTO>>() {
+		customFoodMenuViewModel.select(new DbQueryCallback<List<CustomFoodMenuDTO>>() {
 			@Override
 			public void onResultSuccessful(List<CustomFoodMenuDTO> customFoodMenuResultDto) {
 				requireActivity().runOnUiThread(new Runnable() {
@@ -110,13 +108,13 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
 				if (binding.edittextCustomFoodmenu.getText().length() > 0) {
 					String value = binding.edittextCustomFoodmenu.getText().toString();
 					//중복검사
-					viewModel.containsMenu(value, new DbQueryCallback<Boolean>() {
+					customFoodMenuViewModel.containsMenu(value, new DbQueryCallback<Boolean>() {
 						@Override
 						public void onResultSuccessful(Boolean isDuplicate) {
 							if (isDuplicate) {
 								Toast.makeText(getContext(), R.string.duplicate_value, Toast.LENGTH_SHORT).show();
 							} else {
-								viewModel.insert(value, new DbQueryCallback<CustomFoodMenuDTO>() {
+								customFoodMenuViewModel.insert(value, new DbQueryCallback<CustomFoodMenuDTO>() {
 									@Override
 									public void onResultSuccessful(CustomFoodMenuDTO customFoodMenuResultDto) {
 										requireActivity().runOnUiThread(new Runnable() {
@@ -169,7 +167,7 @@ public class CustomFoodMenuSettingsFragment extends Fragment implements OnClicke
 
 	@Override
 	public void deleteListItem(CustomFoodMenuDTO e, int position) {
-		viewModel.delete(e.getId(), new DbQueryCallback<Boolean>() {
+		customFoodMenuViewModel.delete(e.getId(), new DbQueryCallback<Boolean>() {
 			@Override
 			public void onResultSuccessful(Boolean result) {
 				requireActivity().runOnUiThread(new Runnable() {

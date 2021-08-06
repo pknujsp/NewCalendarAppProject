@@ -102,7 +102,6 @@ public class FoodCriteriaLocationInfoRepository implements FoodCriteriaLocationI
 	@Override
 	public void updateByEventId(Long eventId, Integer usingType, Integer historyLocationId, DbQueryCallback<FoodCriteriaLocationInfoDTO> callback) {
 		App.executorService.execute(new Runnable() {
-			@SneakyThrows
 			@Override
 			public void run() {
 				dao.updateByEventId(eventId, usingType, historyLocationId);
@@ -163,7 +162,6 @@ public class FoodCriteriaLocationInfoRepository implements FoodCriteriaLocationI
 	@Override
 	public void refresh(Long eventId) {
 		App.executorService.execute(new Runnable() {
-			@SneakyThrows
 			@Override
 			public void run() {
 				FoodCriteriaLocationInfoDTO foodCriteriaLocationInfoDTO = dao.selectByEventId(eventId);

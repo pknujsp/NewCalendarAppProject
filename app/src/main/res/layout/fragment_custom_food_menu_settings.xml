@@ -22,7 +22,10 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_weight="1"
-                android:hint="@string/hint_request_input_custom_food_menu" />
+                android:hint="@string/hint_request_input_custom_food_menu"
+                android:imeOptions="actionGo"
+                android:inputType="text"
+                android:singleLine="true" />
 
             <ImageView
                 android:id="@+id/add_button"

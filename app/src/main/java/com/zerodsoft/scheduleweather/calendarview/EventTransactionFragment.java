@@ -276,8 +276,8 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 		selectedCalendarViewModel = new ViewModelProvider(requireActivity()).get(SelectedCalendarViewModel.class);
 		calendarViewModel = new ViewModelProvider(requireActivity()).get(CalendarViewModel.class);
 		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
-		foodCriteriaLocationInfoViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationInfoViewModel.class);
-		foodCriteriaLocationHistoryViewModel = new ViewModelProvider(this).get(FoodCriteriaLocationHistoryViewModel.class);
+		foodCriteriaLocationInfoViewModel = new ViewModelProvider(requireActivity()).get(FoodCriteriaLocationInfoViewModel.class);
+		foodCriteriaLocationHistoryViewModel = new ViewModelProvider(requireActivity()).get(FoodCriteriaLocationHistoryViewModel.class);
 		calendarSharedViewModel = new ViewModelProvider(requireActivity()).get(CalendarSharedViewModel.class);
 	}
 
@@ -644,7 +644,7 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 							String name = getString(R.string.sync_calendar_notification_channel_name);
 							String description = getString(R.string.sync_calendar_notification_channel_description);
 							NotificationChannel notificationChannel = new NotificationChannel(SYNC_NOTIFICATION_CHANNEL_ID, name,
-									NotificationManager.IMPORTANCE_DEFAULT);
+									NotificationManager.IMPORTANCE_HIGH);
 							notificationChannel.setDescription(description);
 
 							notificationManager.createNotificationChannel(notificationChannel);
@@ -653,7 +653,7 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 						notificationBuilder.setContentTitle("캘린더 동기화")
 								.setContentText(totalCount + "개의 캘린더 동기화 중입니다")
 								.setSmallIcon(R.drawable.refresh_icon)
-								.setPriority(NotificationManagerCompat.IMPORTANCE_DEFAULT);
+								.setPriority(NotificationCompat.PRIORITY_HIGH);
 						notificationBuilder.setProgress(0, 0, true);
 						notificationManager.notify(SYNC_NOTIFICATION_ID, notificationBuilder.build());
 
@@ -672,18 +672,19 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 
 					@Override
 					public void onSyncFinished() {
-						notificationBuilder.setContentText("동기화 완료")
-								.setProgress(0, 0, false);
-						notificationManager.notify(SYNC_NOTIFICATION_ID, notificationBuilder.build());
+						if (getActivity() != null) {
+							notificationBuilder.setContentText("동기화 완료")
+									.setProgress(0, 0, false);
+							notificationManager.notify(SYNC_NOTIFICATION_ID, notificationBuilder.build());
 
-						requireActivity().runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								refreshView();
-								binding.mainToolbar.refreshCalendar.clearAnimation();
-							}
-						});
-
+							requireActivity().runOnUiThread(new Runnable() {
+								@Override
+								public void run() {
+									refreshView();
+									binding.mainToolbar.refreshCalendar.clearAnimation();
+								}
+							});
+						}
 					}
 				});
 				break;
@@ -825,7 +826,6 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 			calendarSyncStatusObserver.setProviderHandle(ContentResolver.addStatusChangeListener(ContentResolver.SYNC_OBSERVER_TYPE_ACTIVE |
 					ContentResolver.SYNC_OBSERVER_TYPE_PENDING, calendarSyncStatusObserver));
 			calendarSyncStatusObserver.setSyncCallback(syncCallback);
-
 
 			for (Account account : accountList) {
 				Bundle extras = new Bundle();

@@ -94,7 +94,7 @@ public class RestaurantListTabFragment extends Fragment implements NewInstanceMa
 
 		favoriteRestaurantViewModel =
 				new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
-		customFoodCategoryViewModel = new ViewModelProvider(this).get(CustomFoodMenuViewModel.class);
+		customFoodCategoryViewModel = new ViewModelProvider(requireActivity()).get(CustomFoodMenuViewModel.class);
 
 		iOnSetView.setFragmentContainerVisibility(IOnSetView.ViewType.HEADER, View.VISIBLE);
 	}

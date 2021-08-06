@@ -14,6 +14,7 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -21,6 +22,7 @@ import android.widget.LinearLayout;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.inputmethod.EditorInfoCompat;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.BarInitDataCreater;
@@ -104,6 +106,7 @@ public class CustomSearchView extends LinearLayout {
 		searchEditText.setEnabled(enabled);
 		searchEditText.setFocusable(focusable);
 		searchEditText.setBackground(null);
+		searchEditText.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
 		searchEditText.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f);
 
 		final int btnSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());

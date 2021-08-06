@@ -42,6 +42,8 @@ public class RestaurantFragment extends Fragment implements IOnSetView {
 
 	private FragmentRestaurantMainTransactionBinding binding;
 	private RestaurantSharedViewModel restaurantSharedViewModel;
+	private FoodCriteriaLocationInfoViewModel foodCriteriaLocationInfoViewModel;
+	private FoodCriteriaLocationHistoryViewModel foodCriteriaLocationHistoryViewModel;
 
 
 	public RestaurantFragment(ISetFoodMenuPoiItems ISetFoodMenuPoiItems
@@ -66,8 +68,11 @@ public class RestaurantFragment extends Fragment implements IOnSetView {
 		restaurantSharedViewModel.setISetFoodMenuPoiItems(ISetFoodMenuPoiItems);
 		restaurantSharedViewModel.setEventId(EVENT_ID);
 
-		new ViewModelProvider(this).get(FoodCriteriaLocationInfoViewModel.class);
-		new ViewModelProvider(this).get(FoodCriteriaLocationHistoryViewModel.class);
+		foodCriteriaLocationInfoViewModel = new ViewModelProvider(requireActivity()).get(FoodCriteriaLocationInfoViewModel.KEY,
+				FoodCriteriaLocationInfoViewModel.class);
+		foodCriteriaLocationHistoryViewModel =
+				new ViewModelProvider(requireActivity()).get(FoodCriteriaLocationHistoryViewModel.KEY,
+						FoodCriteriaLocationHistoryViewModel.class);
 	}
 
 	@Override

@@ -14,10 +14,11 @@ import com.zerodsoft.scheduleweather.event.foods.repository.FoodCriteriaLocation
 import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationInfoDTO;
 
 public class FoodCriteriaLocationInfoViewModel extends AndroidViewModel implements FoodCriteriaLocationInfoQuery {
+	public static final String KEY = "FoodCriteriaLocationInfoViewModel";
 	private FoodCriteriaLocationInfoRepository repository;
 	private MutableLiveData<FoodCriteriaLocationInfoDTO> foodCriteriaLocationInfo;
 	private MutableLiveData<FoodCriteriaLocationInfoDTO> onChangedCriteriaLocationLiveData;
-	private MutableLiveData<FoodCriteriaLocationInfoDTO> onRefreshCriteriaLocationLiveData = new MutableLiveData<>();
+	private MutableLiveData<FoodCriteriaLocationInfoDTO> onRefreshCriteriaLocationLiveData;
 
 
 	public FoodCriteriaLocationInfoViewModel(@NonNull Application application) {

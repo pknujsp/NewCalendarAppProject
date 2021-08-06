@@ -170,7 +170,7 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 					.setSmallIcon(R.drawable.ic_launcher_background).setWhen(alarmTime).setAutoCancel(true)
 					.setContentTitle(EventUtil.convertTitle(context, instance.getAsString(CalendarAlerts.TITLE)))
 					.setContentText(contentStringBuilder.toString())
-					.setPriority(Notification.PRIORITY_MAX)
+					.setPriority(NotificationCompat.PRIORITY_MAX)
 					.setDefaults(NotificationCompat.DEFAULT_ALL)
 					.addAction(R.drawable.check_icon, context.getString(R.string.check), confirmEventPendingIntent);
 

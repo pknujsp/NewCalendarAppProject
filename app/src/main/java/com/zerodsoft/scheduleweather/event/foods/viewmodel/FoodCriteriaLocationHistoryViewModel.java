@@ -13,6 +13,7 @@ import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationSearchHistoryD
 import java.util.List;
 
 public class FoodCriteriaLocationHistoryViewModel extends AndroidViewModel implements FoodCriteriaLocationHistoryQuery {
+	public static final String KEY = "FoodCriteriaLocationHistoryViewModel";
 	private FoodCriteriaLocationHistoryRepository repository;
 
 	public FoodCriteriaLocationHistoryViewModel(@NonNull Application application) {
