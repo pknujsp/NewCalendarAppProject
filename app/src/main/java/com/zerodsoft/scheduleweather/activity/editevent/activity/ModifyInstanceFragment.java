@@ -497,12 +497,11 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 		//제목, 캘린더, 시간, 시간대, 반복, 알림, 설명, 위치, 공개범위, 유효성, 참석자
 		//알림, 참석자 정보는 따로 불러온다.
-
-		if (originalEvent.containsKey(CalendarContract.Events.EVENT_COLOR)) {
-			binding.titleLayout.eventColor.setBackgroundColor(EventUtil.getColor(originalEvent.getAsInteger(CalendarContract.Instances.EVENT_COLOR)));
+		if (originalEvent.containsKey(Events.EVENT_COLOR)) {
+			binding.titleLayout.eventColor.setBackgroundColor(EventUtil.getColor(originalEvent.getAsInteger(Instances.EVENT_COLOR)));
 		}
 		//제목
-		binding.titleLayout.title.setText(originalEvent.getAsString(CalendarContract.Instances.TITLE));
+		binding.titleLayout.title.setText(originalEvent.getAsString(Instances.TITLE));
 
 		// allday switch
 		final boolean isAllDay = originalEvent.getAsInteger(CalendarContract.Instances.ALL_DAY) == 1;
@@ -582,26 +581,31 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 			final boolean guestsCanModify = originalEvent.getAsInteger(Events.GUESTS_CAN_MODIFY) == 1;
 			final boolean guestsCanSeeGuests = originalEvent.getAsInteger(Events.GUESTS_CAN_SEE_GUESTS) == 1;
 			final boolean guestsCanInviteOthers = originalEvent.getAsInteger(Events.GUESTS_CAN_INVITE_OTHERS) == 1;
+			final boolean isOrganizer = originalEvent.getAsString(Events.IS_ORGANIZER).equals("1");
 
-			if (guestsCanModify) {
+			if (isOrganizer) {
 				createAttendeeListView();
 			} else {
-				//알림외에는 수정불가
-				binding.titleLayout.getRoot().setVisibility(View.GONE);
-				binding.calendarLayout.getRoot().setVisibility(View.GONE);
-				binding.timeLayout.getRoot().setVisibility(View.GONE);
-				binding.recurrenceLayout.getRoot().setVisibility(View.GONE);
-				binding.descriptionLayout.getRoot().setVisibility(View.GONE);
-				binding.locationLayout.getRoot().setVisibility(View.GONE);
-				binding.attendeeLayout.getRoot().setVisibility(View.GONE);
-				binding.accesslevelLayout.getRoot().setVisibility(View.GONE);
-				binding.availabilityLayout.getRoot().setVisibility(View.GONE);
-
-				if (guestsCanInviteOthers) {
+				if (guestsCanModify) {
 					createAttendeeListView();
-					binding.attendeeLayout.getRoot().setVisibility(View.VISIBLE);
 				} else {
+					//알림외에는 수정불가
+					binding.titleLayout.getRoot().setVisibility(View.GONE);
+					binding.calendarLayout.getRoot().setVisibility(View.GONE);
+					binding.timeLayout.getRoot().setVisibility(View.GONE);
+					binding.recurrenceLayout.getRoot().setVisibility(View.GONE);
+					binding.descriptionLayout.getRoot().setVisibility(View.GONE);
+					binding.locationLayout.getRoot().setVisibility(View.GONE);
 					binding.attendeeLayout.getRoot().setVisibility(View.GONE);
+					binding.accesslevelLayout.getRoot().setVisibility(View.GONE);
+					binding.availabilityLayout.getRoot().setVisibility(View.GONE);
+
+					if (guestsCanInviteOthers) {
+						createAttendeeListView();
+						binding.attendeeLayout.getRoot().setVisibility(View.VISIBLE);
+					} else {
+						binding.attendeeLayout.getRoot().setVisibility(View.GONE);
+					}
 				}
 			}
 
