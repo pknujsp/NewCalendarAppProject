@@ -318,17 +318,27 @@ public class RestaurantCriteriaLocationSettingsFragment extends Fragment impleme
 	@Override
 	public void onSelectedNewLocation(LocationDTO newLocationDto) {
 		foodCriteriaLocationSearchHistoryViewModel.insertByEventId(eventId, newLocationDto.getPlaceName(), newLocationDto.getAddressName(),
-				newLocationDto.getRoadAddressName()
-				, String.valueOf(newLocationDto.getLatitude()), String.valueOf(newLocationDto.getLongitude()), newLocationDto.getLocationType(),
+				String.valueOf(newLocationDto.getLatitude()), String.valueOf(newLocationDto.getLongitude()), newLocationDto.getLocationType(),
 				new DbQueryCallback<List<FoodCriteriaLocationSearchHistoryDTO>>() {
 					@Override
-					public void onResultSuccessful(List<FoodCriteriaLocationSearchHistoryDTO> foodCriteriaLocationSearchHistoryResultDtos) {
+					public void onResultSuccessful(List<FoodCriteriaLocationSearchHistoryDTO> newHistoryList) {
 						//변경 타입 업데이트
-						int id = foodCriteriaLocationSearchHistoryResultDtos.get(foodCriteriaLocationSearchHistoryResultDtos.size() - 1).getId();
+						foodCriteriaLocationHistoryAdapter.setFoodCriteriaLocationHistoryList(newHistoryList);
+						foodCriteriaLocationHistoryAdapter.notifyDataSetChanged();
 
-						foodCriteriaLocationInfoViewModel.updateByEventId(eventId,
-								CriteriaLocationType.TYPE_CUSTOM_SELECTED_LOCATION.value(),
-								id, finishCallback);
+						int id = newHistoryList.get(newHistoryList.size() - 1).getId();
+
+						requireActivity().runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								requireActivity().getOnBackPressedDispatcher().onBackPressed();
+								foodCriteriaLocationInfoViewModel.updateByEventId(eventId,
+										CriteriaLocationType.TYPE_CUSTOM_SELECTED_LOCATION.value(),
+										id, finishCallback);
+							}
+						});
+
+
 					}
 
 					@Override
@@ -336,7 +346,6 @@ public class RestaurantCriteriaLocationSettingsFragment extends Fragment impleme
 
 					}
 				});
-
 	}
 
 	public void checkChangedData() {

@@ -24,9 +24,6 @@ public class FoodCriteriaLocationSearchHistoryDTO {
 	@ColumnInfo(name = "address_name")
 	private String addressName;
 
-	@ColumnInfo(name = "road_address_name")
-	private String roadAddressName;
-
 	@ColumnInfo(name = "latitude")
 	private String latitude;
 
@@ -77,14 +74,6 @@ public class FoodCriteriaLocationSearchHistoryDTO {
 		this.addressName = addressName;
 	}
 
-	public String getRoadAddressName() {
-		return roadAddressName;
-	}
-
-	public void setRoadAddressName(String roadAddressName) {
-		this.roadAddressName = roadAddressName;
-	}
-
 	public String getLatitude() {
 		return latitude;
 	}
@@ -109,9 +98,8 @@ public class FoodCriteriaLocationSearchHistoryDTO {
 		return locationType;
 	}
 
-	public void setAddress(String addressName, String roadAddressName, String latitude, String longitude) {
+	public void setAddress(String addressName, String latitude, String longitude) {
 		this.addressName = addressName;
-		this.roadAddressName = roadAddressName;
 		this.latitude = latitude;
 		this.longitude = longitude;
 		this.locationType = LocationType.ADDRESS;

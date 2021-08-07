@@ -28,11 +28,6 @@ public class FoodCriteriaLocationHistoryViewModel extends AndroidViewModel imple
 	}
 
 	@Override
-	public void selectByInstanceId(long instanceId, DbQueryCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback) {
-		repository.selectByInstanceId(instanceId, callback);
-	}
-
-	@Override
 	public void select(int id, DbQueryCallback<FoodCriteriaLocationSearchHistoryDTO> callback) {
 		repository.select(id, callback);
 	}
@@ -43,38 +38,24 @@ public class FoodCriteriaLocationHistoryViewModel extends AndroidViewModel imple
 	}
 
 	@Override
-	public void insertByEventId(long eventId, String placeName, String addressName, String roadAddressName, String latitude, String longitude, Integer locationType, DbQueryCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback) {
-		repository.insertByEventId(eventId, placeName, addressName, roadAddressName, latitude, longitude, locationType, callback);
+	public void insertByEventId(long eventId, String placeName, String addressName, String latitude, String longitude, Integer locationType, DbQueryCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback) {
+		repository.insertByEventId(eventId, placeName, addressName, latitude, longitude, locationType, callback);
 	}
 
 	@Override
-	public void insertByInstanceId(long instanceId, String placeName, String addressName, String roadAddressName, String latitude, String longitude, Integer locationType, DbQueryCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback) {
-		repository.insertByInstanceId(instanceId, placeName, addressName, roadAddressName, latitude, longitude, locationType, callback);
+	public void updateByEventId(long eventId, String placeName, String addressName, String latitude, String longitude, Integer locationType, DbQueryCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback) {
+		repository.updateByEventId(eventId, placeName, addressName, latitude, longitude, locationType, callback);
 	}
 
-	@Override
-	public void updateByEventId(long eventId, String placeName, String addressName, String roadAddressName, String latitude, String longitude, Integer locationType, DbQueryCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback) {
-		repository.updateByEventId(eventId, placeName, addressName, roadAddressName, latitude, longitude, locationType, callback);
-	}
 
 	@Override
-	public void updateByInstanceId(long instanceId, String placeName, String addressName, String roadAddressName, String latitude, String longitude, Integer locationType, DbQueryCallback<List<FoodCriteriaLocationSearchHistoryDTO>> callback) {
-		repository.updateByInstanceId(instanceId, placeName, addressName, roadAddressName, latitude, longitude, locationType, callback);
-	}
-
-	@Override
-	public void update(int id, String placeName, String addressName, String roadAddressName, String latitude, String longitude, Integer locationType, DbQueryCallback<FoodCriteriaLocationSearchHistoryDTO> callback) {
-		repository.update(id, placeName, addressName, roadAddressName, latitude, longitude, locationType, callback);
+	public void update(int id, String placeName, String addressName, String latitude, String longitude, Integer locationType, DbQueryCallback<FoodCriteriaLocationSearchHistoryDTO> callback) {
+		repository.update(id, placeName, addressName, latitude, longitude, locationType, callback);
 	}
 
 	@Override
 	public void deleteByEventId(long eventId, DbQueryCallback<Boolean> callback) {
 		repository.deleteByEventId(eventId, callback);
-	}
-
-	@Override
-	public void deleteByInstanceId(long instanceId, DbQueryCallback<Boolean> callback) {
-		repository.deleteByInstanceId(instanceId, callback);
 	}
 
 	@Override

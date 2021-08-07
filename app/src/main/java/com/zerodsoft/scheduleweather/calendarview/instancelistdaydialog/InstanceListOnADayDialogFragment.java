@@ -70,6 +70,8 @@ public class InstanceListOnADayDialogFragment extends DialogFragment implements 
 	private Long end;
 	private boolean initializing = true;
 
+	private PopupMenu eventPopupMenu;
+
 	private final EditEventPopupMenu editEventPopupMenu = new EditEventPopupMenu() {
 
 		@Override
@@ -220,12 +222,29 @@ public class InstanceListOnADayDialogFragment extends DialogFragment implements 
 		adapter = new InstancesOfDayAdapter(begin, end, onEventItemClickListener, iConnectedCalendars, this);
 		binding.instancesDialogViewpager.setAdapter(adapter);
 		binding.instancesDialogViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
+		binding.instancesDialogViewpager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+			int lastPosition = EventTransactionFragment.FIRST_VIEW_POSITION;
+
+			@Override
+			public void onPageSelected(int position) {
+				super.onPageSelected(position);
+
+				if (eventPopupMenu != null) {
+					eventPopupMenu.dismiss();
+					eventPopupMenu = null;
+				}
+
+				adapter.notifyItemChanged(lastPosition);
+				lastPosition = position;
+			}
+		});
+
 		initializing = false;
 	}
 
 	@Override
 	public void createInstancePopupMenu(ContentValues instance, View anchorView, int gravity) {
-		editEventPopupMenu.createEditEventPopupMenu(instance, requireActivity(), anchorView, Gravity.CENTER
+		eventPopupMenu = editEventPopupMenu.createEditEventPopupMenu(instance, requireActivity(), anchorView, Gravity.CENTER
 				, calendarViewModel);
 	}
 

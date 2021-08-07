@@ -69,6 +69,7 @@ import com.naver.maps.map.overlay.Overlay;
 import com.naver.maps.map.overlay.OverlayImage;
 import com.naver.maps.map.util.CameraUtils;
 import com.naver.maps.map.util.FusedLocationSource;
+import com.naver.maps.map.util.MarkerIcons;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.common.classes.AppPermission;
@@ -912,6 +913,9 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		marker.setMap(naverMap);
 		marker.setCaptionText(placeDocument.getPlaceName());
 		marker.setOnClickListener(markerOnClickListener);
+		if (markerType == MarkerType.RESTAURANT) {
+			marker.setIcon(MarkerIcons.LIGHTBLUE);
+		}
 
 		MarkerHolder markerHolder = new MarkerHolder(placeDocument, markerType);
 		marker.setTag(markerHolder);

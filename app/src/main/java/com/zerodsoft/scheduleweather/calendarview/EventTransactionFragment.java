@@ -653,7 +653,7 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 						notificationBuilder.setContentTitle("캘린더 동기화")
 								.setContentText(totalCount + "개의 캘린더 동기화 중입니다")
 								.setSmallIcon(R.drawable.refresh_icon)
-								.setPriority(NotificationCompat.PRIORITY_HIGH);
+								.setPriority(NotificationCompat.PRIORITY_MAX);
 						notificationBuilder.setProgress(0, 0, true);
 						notificationManager.notify(SYNC_NOTIFICATION_ID, notificationBuilder.build());
 

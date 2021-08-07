@@ -6,12 +6,14 @@
     android:background="?attr/selectableItemBackground"
     android:clickable="true"
     android:descendantFocusability="blocksDescendants"
+    android:gravity="center_vertical"
     android:orientation="horizontal"
     android:padding="8dp">
 
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:layout_weight="1"
         android:orientation="vertical">
 
@@ -19,8 +21,6 @@
             android:id="@+id/place_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginBottom="4dp"
             android:text="place"
             android:textColor="@android:color/black"
             android:textSize="15sp" />
@@ -30,41 +30,10 @@
             android:id="@+id/address_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginBottom="4dp"
+            android:layout_marginTop="4dp"
             android:text="address"
-
             android:textColor="@android:color/black"
             android:textSize="15sp" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/another_address_type"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_marginRight="6dp"
-                android:background="@color/gray_400"
-                android:gravity="center_vertical"
-                android:padding="2dp"
-                android:text="type"
-                android:textColor="@android:color/white" />
-
-            <TextView
-                android:id="@+id/another_address_name"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:gravity="center_vertical"
-                android:text="address2"
-                android:textColor="@color/gray_600"
-                android:textSize="14sp" />
-        </LinearLayout>
 
     </LinearLayout>
 

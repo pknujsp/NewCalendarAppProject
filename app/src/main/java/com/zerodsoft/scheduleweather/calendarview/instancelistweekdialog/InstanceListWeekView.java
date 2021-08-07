@@ -34,6 +34,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
+import com.zerodsoft.scheduleweather.common.interfaces.OnViewPagerPageListener;
 import com.zerodsoft.scheduleweather.common.view.CustomProgressView;
 import com.zerodsoft.scheduleweather.common.view.RecyclerViewItemDecoration;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
@@ -52,7 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class InstanceListWeekView extends LinearLayout implements CalendarViewInitializer {
+public class InstanceListWeekView extends LinearLayout implements CalendarViewInitializer, OnViewPagerPageListener {
 	private TextView monthTextView;
 	private RecyclerView instanceRecyclerView;
 
@@ -211,6 +212,16 @@ public class InstanceListWeekView extends LinearLayout implements CalendarViewIn
 
 	@Override
 	public void refresh() {
+
+	}
+
+	@Override
+	public void onPageChanged() {
+
+	}
+
+	@Override
+	public void onPageChanged(int position) {
 
 	}
 

@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager.widget.ViewPager;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.dto.CalendarInstance;
@@ -22,6 +23,7 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
+import com.zerodsoft.scheduleweather.common.interfaces.OnViewPagerPageListener;
 import com.zerodsoft.scheduleweather.common.view.CustomProgressView;
 import com.zerodsoft.scheduleweather.common.view.RecyclerViewItemDecoration;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
@@ -36,7 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class InstancesOfDayView implements CalendarViewInitializer {
+public class InstancesOfDayView implements CalendarViewInitializer, OnViewPagerPageListener {
 	private EventsInfoRecyclerViewAdapter adapter;
 	private TextView dayTextView;
 	private RecyclerView recyclerView;
@@ -59,6 +61,18 @@ public class InstancesOfDayView implements CalendarViewInitializer {
 	private Long end;
 
 	private Set<ContentValues> checkedInstanceSet = new HashSet<>();
+
+	@Override
+	public void onPageChanged() {
+		if (moreBtnChecked) {
+			moreButton.callOnClick();
+		}
+	}
+
+	@Override
+	public void onPageChanged(int position) {
+
+	}
 
 	public InstancesOfDayView(View view) {
 		context = view.getContext();

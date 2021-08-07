@@ -67,6 +67,7 @@ import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.NaverMapFragment;
 import com.zerodsoft.scheduleweather.navermap.MarkerType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener;
+import com.zerodsoft.scheduleweather.navermap.searchheader.MapHeaderSearchFragment;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
@@ -141,7 +142,11 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 				binding.naverMapButtonsLayout.buildingButton.setVisibility(View.GONE);
 				binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.GONE);
 				functionButton.setVisibility(View.GONE);
+			} else if (f instanceof MapHeaderSearchFragment) {
+				functionButton.setVisibility(View.GONE);
+				chipsLayout.setVisibility(View.GONE);
 			}
+
 		}
 
 
@@ -187,6 +192,9 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 				binding.naverMapButtonsLayout.buildingButton.setVisibility(View.VISIBLE);
 				binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.VISIBLE);
 				functionButton.setVisibility(View.VISIBLE);
+			} else if (f instanceof MapHeaderSearchFragment) {
+				functionButton.setVisibility(View.VISIBLE);
+				chipsLayout.setVisibility(View.VISIBLE);
 			}
 		}
 
@@ -865,39 +873,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	@Override
 	public void onChangeFoodMenu() {
 		setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
-
-		/*
-		restaurantItemGetter.getRestaurants(new DbQueryCallback<List<PlaceDocuments>>() {
-			@Override
-			public void onResultSuccessful(List<PlaceDocuments> placeDocuments) {
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						if (placeDocuments.size() == 0) {
-							Toast.makeText(getActivity(), getString(R.string.not_founded_search_result), Toast.LENGTH_SHORT).show();
-							removeMarkers(MarkerType.RESTAURANT);
-						} else {
-							createMarkers(placeDocuments, MarkerType.RESTAURANT);
-							showMarkers(MarkerType.RESTAURANT);
-						}
-					}
-				});
-
-			}
-
-			@Override
-			public void onResultNoData() {
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						Toast.makeText(getActivity(), getString(R.string.not_founded_search_result), Toast.LENGTH_SHORT).show();
-						removeMarkers(MarkerType.RESTAURANT);
-					}
-				});
-			}
-		});
-
-		 */
 	}
 
 

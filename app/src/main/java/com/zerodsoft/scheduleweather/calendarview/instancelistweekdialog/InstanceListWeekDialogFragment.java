@@ -25,6 +25,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.PopupMenu;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.AsyncQueryService;
@@ -68,6 +69,8 @@ public class InstanceListWeekDialogFragment extends DialogFragment implements On
 
 	private Long weekBegin;
 	private boolean initializing = true;
+
+	private PopupMenu eventPopupMenu;
 
 	private final EditEventPopupMenu editEventPopupMenu = new EditEventPopupMenu() {
 
@@ -215,13 +218,29 @@ public class InstanceListWeekDialogFragment extends DialogFragment implements On
 		adapter = new instanceListWeekViewPagerAdapter(weekBegin, onEventItemClickListener, iConnectedCalendars, this);
 		binding.instancesDialogViewpager.setAdapter(adapter);
 		binding.instancesDialogViewpager.setCurrentItem(EventTransactionFragment.FIRST_VIEW_POSITION, false);
+		binding.instancesDialogViewpager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+			int lastPosition = EventTransactionFragment.FIRST_VIEW_POSITION;
+
+			@Override
+			public void onPageSelected(int position) {
+				super.onPageSelected(position);
+				if (eventPopupMenu != null) {
+					eventPopupMenu.dismiss();
+					eventPopupMenu = null;
+				}
+
+				adapter.notifyItemChanged(lastPosition);
+				lastPosition = position;
+			}
+		});
 
 		initializing = false;
 	}
 
 	@Override
 	public void createInstancePopupMenu(ContentValues instance, View anchorView, int gravity) {
-		editEventPopupMenu.createEditEventPopupMenu(instance, requireActivity(), anchorView, Gravity.CENTER, calendarViewModel);
+		eventPopupMenu = editEventPopupMenu.createEditEventPopupMenu(instance, requireActivity(), anchorView, Gravity.CENTER,
+				calendarViewModel);
 	}
 
 	@Override

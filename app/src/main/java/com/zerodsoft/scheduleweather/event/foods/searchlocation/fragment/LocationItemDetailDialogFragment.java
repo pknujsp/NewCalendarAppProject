@@ -61,16 +61,6 @@ public class LocationItemDetailDialogFragment extends DialogFragment {
 
 			binding.locationInfo.placeName.setText(placeDocuments.getPlaceName());
 			binding.locationInfo.addressName.setText(placeDocuments.getAddressName());
-
-			if (placeDocuments.getRoadAddressName() != null) {
-				binding.locationInfo.anotherAddressType.setText(getContext().getString(R.string.road));
-				binding.locationInfo.anotherAddressName.setText(placeDocuments.getRoadAddressName());
-				selectedLocationDto.setRoadAddressName(placeDocuments.getRoadAddressName());
-			} else {
-				binding.locationInfo.anotherAddressType.setVisibility(View.GONE);
-				binding.locationInfo.anotherAddressName.setVisibility(View.GONE);
-			}
-
 		} else {
 			AddressResponseDocuments addressResponseDocuments = (AddressResponseDocuments) kakaoLocalDocument;
 
@@ -81,15 +71,6 @@ public class LocationItemDetailDialogFragment extends DialogFragment {
 
 			binding.locationInfo.placeName.setVisibility(View.GONE);
 			binding.locationInfo.addressName.setText(addressResponseDocuments.getAddressName());
-
-			if (addressResponseDocuments.getAddressResponseRoadAddress() != null) {
-				binding.locationInfo.anotherAddressType.setText(getContext().getString(R.string.road));
-				binding.locationInfo.anotherAddressName.setText(addressResponseDocuments.getAddressResponseRoadAddress().getAddressName());
-				selectedLocationDto.setRoadAddressName(addressResponseDocuments.getAddressResponseRoadAddress().getAddressName());
-			} else {
-				binding.locationInfo.anotherAddressType.setVisibility(View.GONE);
-				binding.locationInfo.anotherAddressName.setVisibility(View.GONE);
-			}
 		}
 
 		SelectedLocationMapFragmentNaver selectedLocationMapFragmentNaver = new SelectedLocationMapFragmentNaver(selectedLocationDto, null);

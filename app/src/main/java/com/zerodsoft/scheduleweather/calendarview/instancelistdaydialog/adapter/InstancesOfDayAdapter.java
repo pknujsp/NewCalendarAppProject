@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.calendarview.instancelistdaydialog.adapter;
 
+import android.util.ArraySet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,10 +17,12 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
+import com.zerodsoft.scheduleweather.common.interfaces.OnViewPagerPageListener;
 
 import java.util.Calendar;
+import java.util.Set;
 
-public class InstancesOfDayAdapter extends RecyclerView.Adapter<InstancesOfDayAdapter.InstancesViewHolder> {
+public class InstancesOfDayAdapter extends RecyclerView.Adapter<InstancesOfDayAdapter.InstancesViewHolder> implements OnViewPagerPageListener {
 	private final OnEventItemClickListener onEventItemClickListener;
 	private final OnEventItemLongClickListener onEventItemLongClickListener;
 	private final IConnectedCalendars iConnectedCalendars;
@@ -62,13 +65,24 @@ public class InstancesOfDayAdapter extends RecyclerView.Adapter<InstancesOfDayAd
 		super.onViewRecycled(holder);
 	}
 
+
 	@Override
 	public int getItemCount() {
 		return Integer.MAX_VALUE;
 	}
 
+	@Override
+	public void onPageChanged() {
+
+	}
+
+	@Override
+	public void onPageChanged(int position) {
+
+	}
+
 	class InstancesViewHolder extends RecyclerView.ViewHolder {
-		private InstancesOfDayView instancesOfDayView;
+		InstancesOfDayView instancesOfDayView;
 
 		public InstancesViewHolder(@NonNull View itemView) {
 			super(itemView);
@@ -82,5 +96,7 @@ public class InstancesOfDayAdapter extends RecyclerView.Adapter<InstancesOfDayAd
 			copiedCalendar.add(Calendar.DATE, getBindingAdapterPosition() - EventTransactionFragment.FIRST_VIEW_POSITION);
 			instancesOfDayView.init(copiedCalendar);
 		}
+
+
 	}
 }

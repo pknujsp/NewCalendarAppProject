@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.LocationHistoryController;
 import com.zerodsoft.scheduleweather.room.dto.FoodCriteriaLocationSearchHistoryDTO;
 
@@ -53,8 +54,6 @@ public class FoodCriteriaLocationHistoryAdapter extends RecyclerView.Adapter<Foo
 		private LinearLayout rootLayout;
 		private TextView placeNameTextView;
 		private TextView addressNameTextView;
-		private TextView anotherAddressTypeTextView;
-		private TextView anotherAddressNameTextView;
 		private ImageButton deleteButton;
 
 		public HistoryViewHolder(@NonNull View itemView) {
@@ -63,30 +62,23 @@ public class FoodCriteriaLocationHistoryAdapter extends RecyclerView.Adapter<Foo
 			rootLayout = (LinearLayout) itemView.findViewById(R.id.root_layout);
 			placeNameTextView = (TextView) itemView.findViewById(R.id.place_name);
 			addressNameTextView = (TextView) itemView.findViewById(R.id.address_name);
-			anotherAddressTypeTextView = (TextView) itemView.findViewById(R.id.another_address_type);
-			anotherAddressNameTextView = (TextView) itemView.findViewById(R.id.another_address_name);
 			deleteButton = (ImageButton) itemView.findViewById(R.id.delete_button);
 		}
 
 		public void onBind() {
-			FoodCriteriaLocationSearchHistoryDTO history = foodCriteriaLocationHistoryList.get(getAdapterPosition());
+			FoodCriteriaLocationSearchHistoryDTO history = foodCriteriaLocationHistoryList.get(getBindingAdapterPosition());
 
-			if (history.getPlaceName() != null) {
+			if (history.getLocationType() == LocationType.PLACE) {
 				placeNameTextView.setText(history.getPlaceName());
 				addressNameTextView.setText(history.getAddressName());
 
 				placeNameTextView.setVisibility(View.VISIBLE);
 				addressNameTextView.setVisibility(View.VISIBLE);
-				anotherAddressTypeTextView.setVisibility(View.GONE);
-				anotherAddressNameTextView.setVisibility(View.GONE);
 			} else {
 				addressNameTextView.setText(history.getAddressName());
-				anotherAddressNameTextView.setText(history.getRoadAddressName());
 
 				placeNameTextView.setVisibility(View.GONE);
 				addressNameTextView.setVisibility(View.VISIBLE);
-				anotherAddressTypeTextView.setVisibility(View.GONE);
-				anotherAddressNameTextView.setVisibility(View.GONE);
 			}
 
 			rootLayout.setOnClickListener(new View.OnClickListener() {

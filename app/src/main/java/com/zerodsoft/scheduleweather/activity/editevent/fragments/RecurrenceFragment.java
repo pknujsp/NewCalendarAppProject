@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
 
 public class RecurrenceFragment extends Fragment {
@@ -157,11 +158,14 @@ public class RecurrenceFragment extends Fragment {
 		binding.repeatUntilTextview.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				final long dateMillisec = untilDate.getTime();
+				TimeZone timeZone = TimeZone.getDefault();
+				final int offset = timeZone.getOffset(untilDate.getTime());
+
+				long convertedToUtcDate = untilDate.getTime() + offset;
 
 				MaterialDatePicker.Builder<Long> builder = MaterialDatePicker.Builder.datePicker();
 				builder.setTitleText(R.string.datepicker)
-						.setSelection(dateMillisec);
+						.setSelection(convertedToUtcDate);
 				MaterialDatePicker<Long> picker = builder.build();
 				picker.addOnPositiveButtonClickListener(new MaterialPickerOnPositiveButtonClickListener<Long>() {
 					@Override

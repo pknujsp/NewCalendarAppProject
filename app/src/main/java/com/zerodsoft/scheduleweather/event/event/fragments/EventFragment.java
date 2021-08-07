@@ -5,7 +5,6 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcel;
@@ -18,11 +17,9 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.SpinnerAdapter;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -50,8 +47,6 @@ import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.databinding.EventFragmentBinding;
 import com.zerodsoft.scheduleweather.event.common.DetailLocationSelectorKey;
 import com.zerodsoft.scheduleweather.event.common.SelectionDetailLocationFragment;
-import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
-import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
@@ -441,22 +436,22 @@ public class EventFragment extends BottomSheetDialogFragment {
 										case 0:
 											// 이번 일정만 삭제
 											// 완성
-											showExceptThisInstanceDialog();
+											showRemoveOnlyThisEventDialog();
 											break;
 										case 1:
 											// 향후 모든 일정만 삭제
-											deleteSubsequentIncludingThis();
+											removeFollowingEvents();
 											break;
 										case 2:
 											// 모든 일정 삭제
-											showDeleteEventDialog();
+											showRemoveAllEventsDialog();
 											break;
 									}
 								} else {
 									switch (index) {
 										case 0:
 											// 모든 일정 삭제
-											showDeleteEventDialog();
+											showRemoveAllEventsDialog();
 											break;
 									}
 								}
@@ -474,7 +469,7 @@ public class EventFragment extends BottomSheetDialogFragment {
 		getParentFragmentManager().unregisterFragmentLifecycleCallbacks(fragmentLifecycleCallbacks);
 	}
 
-	private void showDeleteEventDialog() {
+	private void showRemoveAllEventsDialog() {
 		new MaterialAlertDialogBuilder(requireActivity())
 				.setTitle(R.string.remove_event)
 				.setPositiveButton(R.string.check, new DialogInterface.OnClickListener() {
@@ -495,12 +490,13 @@ public class EventFragment extends BottomSheetDialogFragment {
 	}
 
 
-	private void deleteSubsequentIncludingThis() {
+	private void removeFollowingEvents() {
 		EventHelper eventHelper = new EventHelper(new AsyncQueryService(getContext(), calendarViewModel));
 		eventHelper.removeEvent(EventHelper.EventEditType.REMOVE_FOLLOWING_EVENTS, instanceValues);
+		dismiss();
 	}
 
-	private void showExceptThisInstanceDialog() {
+	private void showRemoveOnlyThisEventDialog() {
 		new MaterialAlertDialogBuilder(requireActivity())
 				.setTitle(R.string.remove_this_instance)
 				.setPositiveButton(R.string.check, new DialogInterface.OnClickListener() {

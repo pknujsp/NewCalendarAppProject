@@ -23,8 +23,8 @@ import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationH
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 
 public abstract class EditEventPopupMenu {
-	public void createEditEventPopupMenu(ContentValues instance, Activity activity, View anchorView, int gravity,
-	                                     CalendarViewModel calendarViewModel) {
+	public PopupMenu createEditEventPopupMenu(ContentValues instance, Activity activity, View anchorView, int gravity,
+	                                          CalendarViewModel calendarViewModel) {
 		Context context = activity.getApplicationContext();
 		PopupMenu popupMenu = new PopupMenu(context, anchorView, gravity);
 
@@ -154,6 +154,7 @@ public abstract class EditEventPopupMenu {
 		});
 
 		popupMenu.show();
+		return popupMenu;
 	}
 
 	public abstract void onClickedEditEvent(Fragment modificationFragment);
