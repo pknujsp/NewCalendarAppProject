@@ -143,8 +143,10 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 				binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.GONE);
 				functionButton.setVisibility(View.GONE);
 			} else if (f instanceof MapHeaderSearchFragment) {
-				functionButton.setVisibility(View.GONE);
-				chipsLayout.setVisibility(View.GONE);
+				if (selectedLocationDtoInEvent != null) {
+					functionButton.setVisibility(View.GONE);
+					chipsLayout.setVisibility(View.GONE);
+				}
 			}
 
 		}
@@ -193,8 +195,10 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 				binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.VISIBLE);
 				functionButton.setVisibility(View.VISIBLE);
 			} else if (f instanceof MapHeaderSearchFragment) {
-				functionButton.setVisibility(View.VISIBLE);
-				chipsLayout.setVisibility(View.VISIBLE);
+				if (selectedLocationDtoInEvent != null) {
+					functionButton.setVisibility(View.VISIBLE);
+					chipsLayout.setVisibility(View.VISIBLE);
+				}
 			}
 		}
 
@@ -429,7 +433,11 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 				fragmentManager.beginTransaction().add(binding.fragmentContainer.getId(), restaurantFragment
 						, getString(R.string.tag_restaurant_fragment)).addToBackStack(getString(R.string.tag_restaurant_fragment)).commit();
 
-
+				if (placeCategoryChipGroup != null) {
+					if (placeCategoryChipGroup.getCheckedChipIds().size() > 0) {
+						placeCategoryChipGroup.check(placeCategoryChipGroup.getCheckedChipId());
+					}
+				}
 			}
 		});
 	}
@@ -579,7 +587,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 
 		LinearLayout.LayoutParams chipLayoutsParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
 				ViewGroup.LayoutParams.WRAP_CONTENT);
-		chipLayoutsParams.topMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
 		binding.headerLayout.addView(chipsLayout, chipLayoutsParams);
 
 		//chip title
