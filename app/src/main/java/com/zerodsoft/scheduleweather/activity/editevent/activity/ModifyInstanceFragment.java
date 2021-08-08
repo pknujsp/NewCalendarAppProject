@@ -95,7 +95,8 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		binding.saveBtn.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				if (eventDataViewModel.getModifiedValueSet().isEmpty()) {
+				if (eventDataViewModel.getModifiedValueSet().isEmpty() && !eventDataViewModel.isModifiedAttendees()
+						&& !eventDataViewModel.isModifiedReminders()) {
 					Toast.makeText(getContext(), R.string.not_edited, Toast.LENGTH_SHORT).show();
 					return;
 				}

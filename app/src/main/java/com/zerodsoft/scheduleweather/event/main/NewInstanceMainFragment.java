@@ -149,6 +149,15 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 				}
 			}
 
+			if (f instanceof RestaurantFragment || f instanceof MapHeaderSearchFragment) {
+				if (placeCategoryChipGroup != null) {
+					if (placeCategoryChipGroup.getCheckedChipIds().size() > 0) {
+						//placeCategoryChipGroup.check(placeCategoryChipGroup.getCheckedChipId());
+						placeCategoryChipGroup.clearCheck();
+					}
+				}
+			}
+
 		}
 
 
@@ -432,12 +441,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 				bottomSheetFragmentMap.put(BottomSheetType.RESTAURANT, restaurantFragment);
 				fragmentManager.beginTransaction().add(binding.fragmentContainer.getId(), restaurantFragment
 						, getString(R.string.tag_restaurant_fragment)).addToBackStack(getString(R.string.tag_restaurant_fragment)).commit();
-
-				if (placeCategoryChipGroup != null) {
-					if (placeCategoryChipGroup.getCheckedChipIds().size() > 0) {
-						placeCategoryChipGroup.check(placeCategoryChipGroup.getCheckedChipId());
-					}
-				}
 			}
 		});
 	}
@@ -589,21 +592,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 				ViewGroup.LayoutParams.WRAP_CONTENT);
 		binding.headerLayout.addView(chipsLayout, chipLayoutsParams);
 
-		//chip title
-		TextView titleTextView = new TextView(getContext());
-		titleTextView.setText(R.string.place);
-		titleTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f);
-		titleTextView.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.transparent));
-
-		LinearLayout.LayoutParams titleTextViewLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-				ViewGroup.LayoutParams.WRAP_CONTENT);
-		titleTextViewLayoutParams.gravity = Gravity.CENTER_VERTICAL;
-		int titleMargin = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
-		titleTextViewLayoutParams.leftMargin = titleMargin;
-		titleTextViewLayoutParams.rightMargin = titleMargin;
-
-		chipsLayout.addView(titleTextView, titleTextViewLayoutParams);
-
 		//scrollview
 		HorizontalScrollView chipScrollView = new HorizontalScrollView(getContext());
 		chipScrollView.setHorizontalScrollBarEnabled(false);
@@ -660,7 +648,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 				if (newState == BottomSheetBehavior.STATE_EXPANDED) {
 					placeCategoryListChip.setText(R.string.close_list);
 				} else if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
-					placeCategoryListChip.setText(R.string.open_list);
+					placeCategoryListChip.setText(R.string.open_place_category_list);
 				}
 			}
 
@@ -731,7 +719,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		//바텀시트를 확장/축소 하는 chip
 		placeCategoryListChip = new Chip(getContext());
 		placeCategoryListChip.setChecked(false);
-		placeCategoryListChip.setText(R.string.open_list);
+		placeCategoryListChip.setText(R.string.open_place_category_list);
 		placeCategoryListChip.setClickable(true);
 		placeCategoryListChip.setCheckable(false);
 		placeCategoryListChip.setTextColor(Color.BLUE);

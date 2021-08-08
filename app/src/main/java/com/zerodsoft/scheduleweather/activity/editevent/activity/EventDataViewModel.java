@@ -21,6 +21,8 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 	private final List<ContentValues> NEW_REMINDERS = new ArrayList<>();
 	private final List<ContentValues> NEW_ATTENDEES = new ArrayList<>();
 	private final Set<String> modifiedValueSet = new HashSet<>();
+	private boolean isModifiedAttendees = false;
+	private boolean isModifiedReminders = false;
 
 	public EventDataViewModel(@NonNull @NotNull Application application) {
 		super(application);
@@ -36,6 +38,14 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 
 	public List<ContentValues> getNEW_REMINDERS() {
 		return NEW_REMINDERS;
+	}
+
+	public boolean isModifiedAttendees() {
+		return isModifiedAttendees;
+	}
+
+	public boolean isModifiedReminders() {
+		return isModifiedReminders;
 	}
 
 	public boolean isModified(String key) {
@@ -118,6 +128,7 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 		reminderValues.put(CalendarContract.Reminders.METHOD, method);
 
 		NEW_REMINDERS.add(reminderValues);
+		isModifiedReminders = true;
 		return true;
 	}
 
@@ -131,6 +142,7 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 				break;
 			}
 		}
+		isModifiedReminders = true;
 	}
 
 	@Override
@@ -141,6 +153,7 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 				break;
 			}
 		}
+		isModifiedReminders = true;
 	}
 
 	@Override
@@ -184,6 +197,8 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 		modifiedValueSet.add(Events.GUESTS_CAN_MODIFY);
 		modifiedValueSet.add(Events.GUESTS_CAN_INVITE_OTHERS);
 		modifiedValueSet.add(Events.GUESTS_CAN_SEE_GUESTS);
+
+		isModifiedAttendees = true;
 	}
 
 	@Override
@@ -203,7 +218,7 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 			modifiedValueSet.add(Events.GUESTS_CAN_INVITE_OTHERS);
 			modifiedValueSet.add(Events.GUESTS_CAN_SEE_GUESTS);
 		}
-
+		isModifiedAttendees = true;
 	}
 
 	public void clearAttendees() {
@@ -216,6 +231,8 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 		NEW_EVENT.put(CalendarContract.Events.GUESTS_CAN_MODIFY, 0);
 		NEW_EVENT.put(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS, 0);
 		NEW_EVENT.put(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS, 0);
+
+		isModifiedAttendees = true;
 	}
 
 	@Override

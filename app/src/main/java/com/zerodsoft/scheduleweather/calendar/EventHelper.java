@@ -60,7 +60,7 @@ public class EventHelper implements Serializable {
 
 		if (!newReminderList.isEmpty()) {
 			saveRemindersWithBackRef(contentProviderOperationList, eventIdIndex, null,
-					newReminderList, true);
+					newReminderList);
 		}
 
 		if (!newAttendeeList.isEmpty()) {
@@ -200,7 +200,7 @@ public class EventHelper implements Serializable {
 		//reminders
 		if (isNewEvent) {
 			saveRemindersWithBackRef(contentProviderOperationList, eventIdIndex, originalReminderList,
-					newReminderList, forceSaveReminders);
+					newReminderList);
 		} else {
 			long eventId = ContentUris.parseId(uri);
 			saveReminders(contentProviderOperationList, eventId, newReminderList
@@ -407,9 +407,9 @@ public class EventHelper implements Serializable {
 	}
 
 	private boolean saveRemindersWithBackRef(ArrayList<ContentProviderOperation> contentProviderOperationList, Integer eventIdIndex,
-	                                         List<ContentValues> originalReminderList, List<ContentValues> newReminderList, boolean forceSave) {
+	                                         List<ContentValues> originalReminderList, List<ContentValues> newReminderList) {
 		if (originalReminderList != null) {
-			if (originalReminderList.equals(newReminderList) && !forceSave) {
+			if (originalReminderList.equals(newReminderList)) {
 				return false;
 			}
 		}
