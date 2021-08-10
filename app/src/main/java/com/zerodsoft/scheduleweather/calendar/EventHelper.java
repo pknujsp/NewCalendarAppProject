@@ -181,7 +181,6 @@ public class EventHelper implements Serializable {
 						hasRRuleInNewEvent = true;
 					}
 				}
-
 				setDuration(newEvent);
 
 				if (hasRRuleInNewEvent) {
@@ -571,7 +570,6 @@ public class EventHelper implements Serializable {
 		if (!newEvent.containsKey(Events.DTSTART)) {
 			return;
 		}
-
 		newEvent.putNull(Events.DURATION);
 
 		if (newEvent.get(Events.RRULE) != null) {

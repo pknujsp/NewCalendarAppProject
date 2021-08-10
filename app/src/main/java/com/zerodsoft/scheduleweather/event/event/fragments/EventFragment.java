@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Parcel;
 import android.provider.CalendarContract;
 import android.provider.CalendarContract.Events;
+import android.provider.CalendarContract.Instances;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -656,9 +657,6 @@ public class EventFragment extends BottomSheetDialogFragment {
 		// 제목
 		instanceValues = calendarViewModel.getInstance(instanceId, originalBegin, originalEnd);
 
-		Date begin = new Date(instanceValues.getAsLong(CalendarContract.Instances.BEGIN));
-		Date end = new Date(instanceValues.getAsLong(CalendarContract.Instances.END));
-
 		if (instanceValues.getAsInteger(CalendarContract.Instances.CALENDAR_ACCESS_LEVEL) == CalendarContract.Instances.CAL_ACCESS_READ) {
 			binding.fabsLayout.setVisibility(View.GONE);
 		}
@@ -676,28 +674,28 @@ public class EventFragment extends BottomSheetDialogFragment {
 		setCalendarText();
 
 		// 시간대
-		boolean isAllDay = instanceValues.getAsInteger(CalendarContract.Instances.ALL_DAY) == 1;
+		final boolean isAllDay = instanceValues.getAsInteger(Instances.ALL_DAY) == 1;
 		if (isAllDay) {
 			// allday이면 시간대 뷰를 숨긴다
 			binding.eventDatetimeView.eventTimezoneLayout.setVisibility(View.GONE);
 			binding.eventDatetimeView.startTime.setVisibility(View.GONE);
 			binding.eventDatetimeView.endTime.setVisibility(View.GONE);
-
 			binding.eventDatetimeView.eventTimezoneLayout.setVisibility(View.GONE);
-			int startDay = instanceValues.getAsInteger(CalendarContract.Instances.START_DAY);
-			int endDay = instanceValues.getAsInteger(CalendarContract.Instances.END_DAY);
-			int dayDifference = endDay - startDay;
 
-			if (startDay == endDay) {
+			final int startDay = instanceValues.getAsInteger(Instances.START_DAY);
+			final int endDay = instanceValues.getAsInteger(Instances.END_DAY);
+			final int dayDifference = endDay - startDay;
+
+			if (dayDifference == 0) {
 				binding.eventDatetimeView.eventStartdatetimeLabel.setText(R.string.date);
 				binding.eventDatetimeView.enddatetimeLayout.setVisibility(View.GONE);
-
-				binding.eventDatetimeView.startDate.setText(EventUtil.convertDate(instanceValues.getAsLong(CalendarContract.Instances.BEGIN)));
+				binding.eventDatetimeView.startDate.setText(EventUtil.convertDate(instanceValues.getAsLong(Instances.BEGIN)));
 			} else {
 				Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-				calendar.setTimeInMillis(instanceValues.getAsLong(CalendarContract.Instances.BEGIN));
+				calendar.setTimeInMillis(instanceValues.getAsLong(Instances.BEGIN));
 				binding.eventDatetimeView.startDate.setText(EventUtil.convertDate(calendar.getTime().getTime()));
-				calendar.add(Calendar.DAY_OF_YEAR, dayDifference);
+
+				calendar.add(Calendar.DATE, dayDifference);
 				binding.eventDatetimeView.endDate.setText(EventUtil.convertDate(calendar.getTime().getTime()));
 			}
 		} else {
@@ -705,8 +703,8 @@ public class EventFragment extends BottomSheetDialogFragment {
 			TimeZone timeZone = TimeZone.getTimeZone(timeZoneStr);
 			setTimeZoneText(timeZone);
 
-			Date beginDate = new Date(instanceValues.getAsLong(CalendarContract.Instances.BEGIN));
-			Date endDate = new Date(instanceValues.getAsLong(CalendarContract.Instances.END));
+			Date beginDate = new Date(instanceValues.getAsLong(Instances.BEGIN));
+			Date endDate = new Date(instanceValues.getAsLong(Instances.END));
 
 			binding.eventDatetimeView.startDate.setText(EventUtil.convertDate(beginDate.getTime()));
 			binding.eventDatetimeView.startTime.setText(EventUtil.convertTime(beginDate.getTime(), App.isPreference_key_using_24_hour_system()));
@@ -715,8 +713,8 @@ public class EventFragment extends BottomSheetDialogFragment {
 		}
 
 		// 반복
-		if (instanceValues.getAsString(CalendarContract.Instances.RRULE) != null) {
-			setRecurrenceText(instanceValues.getAsString(CalendarContract.Instances.RRULE));
+		if (instanceValues.getAsString(Instances.RRULE) != null) {
+			setRecurrenceText(instanceValues.getAsString(Instances.RRULE));
 			binding.eventRecurrenceView.getRoot().setVisibility(View.VISIBLE);
 		} else {
 			binding.eventRecurrenceView.getRoot().setVisibility(View.GONE);

@@ -720,8 +720,8 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 
 	protected final void showDatePicker(long finalBegin, long finalEnd,
 	                                    @Nullable ModifyInstanceFragment.OnModifiedDateTimeCallback onModifiedDateTimeCallback) {
-		TimeZone timeZone = TimeZone.getDefault();
-		final int offset = timeZone.getOffset(finalBegin);
+		TimeZone utcTimeZone = TimeZone.getDefault();
+		final int offset = utcTimeZone.getOffset(finalBegin);
 
 		long convertedToUtcBegin = finalBegin + offset;
 		long convertedToUtcEnd = finalEnd + offset;

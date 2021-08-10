@@ -6,6 +6,9 @@ import android.os.Bundle;
 import android.provider.CalendarContract;
 import android.provider.CalendarContract.Events;
 import android.provider.CalendarContract.Instances;
+import android.provider.CalendarContract.Calendars;
+import android.provider.CalendarContract.Reminders;
+import android.provider.CalendarContract.Attendees;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,7 +25,6 @@ import com.zerodsoft.scheduleweather.activity.editevent.interfaces.OnEditEventRe
 import com.zerodsoft.scheduleweather.calendar.AsyncQueryService;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.EventHelper;
-import com.zerodsoft.scheduleweather.calendar.calendarcommon2.EventRecurrence;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
@@ -40,8 +42,8 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 	private ContentValues originalEvent;
 	private OnEditEventResultListener onEditEventResultListener;
 
-	private long originalInstanceBeginDate;
-	private long originalInstanceEndDate;
+	private long originalBegin;
+	private long originalEnd;
 	private boolean firstModifiedDateTime = true;
 
 	private List<ContentValues> originalReminderList = new ArrayList<>();
@@ -147,8 +149,8 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 								newEventValues.put(Events.DTSTART, modifiedEvent.getAsLong(CalendarContract.Events.DTSTART));
 								newEventValues.put(Events.DTEND, modifiedEvent.getAsLong(CalendarContract.Events.DTEND));
 							} else {
-								newEventValues.put(CalendarContract.Events.DTSTART, originalInstanceBeginDate);
-								newEventValues.put(CalendarContract.Events.DTEND, originalInstanceEndDate);
+								newEventValues.put(CalendarContract.Events.DTSTART, originalBegin);
+								newEventValues.put(CalendarContract.Events.DTEND, originalEnd);
 							}
 
 							EventHelper eventHelper = new EventHelper(new AsyncQueryService(getActivity(), (OnEditEventResultListener) calendarViewModel));
@@ -283,7 +285,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 			if (eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.DTSTART)) {
 				dtStart = eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTSTART);
 			} else {
-				dtStart = originalInstanceBeginDate;
+				dtStart = originalBegin;
 			}
 
 			onClickedRecurrence(rRule, dtStart);
@@ -397,16 +399,16 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		long dtStart = 0L;
 		long dtEnd = 0L;
 
-		if (eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.DTSTART)) {
-			dtStart = eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTSTART);
+		if (eventDataViewModel.getNEW_EVENT().containsKey(Events.DTSTART)) {
+			dtStart = eventDataViewModel.getNEW_EVENT().getAsLong(Events.DTSTART);
 		} else {
-			dtStart = originalInstanceBeginDate;
+			dtStart = originalBegin;
 		}
 
-		if (eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.DTEND)) {
-			dtEnd = eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTEND);
+		if (eventDataViewModel.getNEW_EVENT().containsKey(Events.DTEND)) {
+			dtEnd = eventDataViewModel.getNEW_EVENT().getAsLong(Events.DTEND);
 		} else {
-			dtEnd = originalInstanceEndDate;
+			dtEnd = originalEnd;
 		}
 
 		showDatePicker(dtStart, dtEnd, new OnModifiedDateTimeCallback() {
@@ -426,30 +428,30 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		Calendar compareCalendar = Calendar.getInstance();
 
 		if (dateType == DateTimeType.START) {
-			if (eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.DTSTART)) {
-				calendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTSTART));
+			if (eventDataViewModel.getNEW_EVENT().containsKey(Events.DTSTART)) {
+				calendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(Events.DTSTART));
 			} else {
-				calendar.setTimeInMillis(originalInstanceBeginDate);
+				calendar.setTimeInMillis(originalBegin);
 			}
 		} else if (dateType == DateTimeType.END) {
-			if (eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.DTEND)) {
-				calendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTEND));
+			if (eventDataViewModel.getNEW_EVENT().containsKey(Events.DTEND)) {
+				calendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(Events.DTEND));
 			} else {
-				calendar.setTimeInMillis(originalInstanceEndDate);
+				calendar.setTimeInMillis(originalEnd);
 			}
 		}
 
 		if (dateType == DateTimeType.START) {
-			if (eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.DTEND)) {
-				compareCalendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTEND));
+			if (eventDataViewModel.getNEW_EVENT().containsKey(Events.DTEND)) {
+				compareCalendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(Events.DTEND));
 			} else {
-				compareCalendar.setTimeInMillis(originalInstanceEndDate);
+				compareCalendar.setTimeInMillis(originalEnd);
 			}
 		} else if (dateType == DateTimeType.END) {
-			if (eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.DTSTART)) {
-				compareCalendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTSTART));
+			if (eventDataViewModel.getNEW_EVENT().containsKey(Events.DTSTART)) {
+				compareCalendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(Events.DTSTART));
 			} else {
-				compareCalendar.setTimeInMillis(originalInstanceBeginDate);
+				compareCalendar.setTimeInMillis(originalBegin);
 			}
 		}
 		showTimePicker(dateType, calendar, compareCalendar, new OnModifiedDateTimeCallback() {
@@ -465,10 +467,10 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 	private void firstModifiedDateTime() {
 		if (!eventDataViewModel.getNEW_EVENT().containsKey(Events.DTSTART)) {
-			eventDataViewModel.setDtStart(new Date(originalInstanceBeginDate));
+			eventDataViewModel.setDtStart(new Date(originalBegin));
 		}
 		if (!eventDataViewModel.getNEW_EVENT().containsKey(Events.DTEND)) {
-			eventDataViewModel.setDtEnd(new Date(originalInstanceEndDate));
+			eventDataViewModel.setDtEnd(new Date(originalEnd));
 		}
 		if (!eventDataViewModel.getNEW_EVENT().containsKey(Events.ALL_DAY)) {
 			eventDataViewModel.setIsAllDay(binding.timeLayout.timeAlldaySwitch.isChecked());
@@ -508,36 +510,35 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		final boolean isAllDay = originalEvent.getAsInteger(CalendarContract.Instances.ALL_DAY) == 1;
 		binding.timeLayout.timeAlldaySwitch.setChecked(isAllDay);
 
-		originalInstanceBeginDate = originalEvent.getAsLong(Instances.BEGIN);
 
 		if (isAllDay) {
 			setTimeZoneText(originalEvent.getAsString(Events.CALENDAR_TIME_ZONE));
 
-			setDateText(DateTimeType.START, originalInstanceBeginDate);
-			setTimeText(DateTimeType.START, originalInstanceBeginDate);
-
 			Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-			calendar.setTimeInMillis(originalInstanceBeginDate);
+			calendar.setTimeInMillis(originalEvent.getAsLong(Instances.BEGIN));
+			originalBegin = calendar.getTimeInMillis();
 
-			int startDay = originalEvent.getAsInteger(Instances.START_DAY);
-			int endDay = originalEvent.getAsInteger(Instances.END_DAY);
-			int dayDifference = endDay - startDay;
-			calendar.add(Calendar.DATE, dayDifference);
-			originalInstanceEndDate = calendar.getTimeInMillis();
+			calendar.setTimeInMillis(originalEvent.getAsLong(Instances.END));
+			originalEnd = calendar.getTimeInMillis();
+			calendar.add(Calendar.DATE, -1);
+			long endForShow = calendar.getTimeInMillis();
+
+			setDateText(DateTimeType.END, endForShow);
+			setTimeText(DateTimeType.END, endForShow);
 		} else {
-			originalInstanceEndDate = originalEvent.getAsLong(Instances.END);
+			originalBegin = originalEvent.getAsLong(Instances.BEGIN);
+			originalEnd = originalEvent.getAsLong(Instances.END);
 			setTimeZoneText(originalEvent.getAsString(Events.EVENT_TIMEZONE));
 
-			setDateText(DateTimeType.START, originalInstanceBeginDate);
-			setTimeText(DateTimeType.START, originalInstanceBeginDate);
+			setDateText(DateTimeType.END, originalEnd);
+			setTimeText(DateTimeType.END, originalEnd);
 		}
-
-		setDateText(DateTimeType.END, originalInstanceEndDate);
-		setTimeText(DateTimeType.END, originalInstanceEndDate);
+		setDateText(DateTimeType.START, originalBegin);
+		setTimeText(DateTimeType.START, originalBegin);
 
 		//캘린더
-		setCalendarText(originalEvent.getAsInteger(CalendarContract.Instances.CALENDAR_COLOR),
-				originalEvent.getAsString(CalendarContract.Instances.CALENDAR_DISPLAY_NAME),
+		setCalendarText(originalEvent.getAsInteger(Instances.CALENDAR_COLOR),
+				originalEvent.getAsString(Instances.CALENDAR_DISPLAY_NAME),
 				selectedCalendarValues.getAsString(CalendarContract.Calendars.ACCOUNT_NAME));
 
 		// 반복
@@ -645,11 +646,11 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		}
 
 		if (eventDataViewModel.isModified(Events.DTSTART) || eventDataViewModel.isModified(Events.DTEND)) {
-			newEventValues.put(Events.DTSTART, modifiedEvent.getAsLong(CalendarContract.Events.DTSTART));
-			newEventValues.put(Events.DTEND, modifiedEvent.getAsLong(CalendarContract.Events.DTEND));
+			newEventValues.put(Events.DTSTART, modifiedEvent.getAsLong(Events.DTSTART));
+			newEventValues.put(Events.DTEND, modifiedEvent.getAsLong(Events.DTEND));
 		} else {
-			newEventValues.put(CalendarContract.Events.DTSTART, originalInstanceBeginDate);
-			newEventValues.put(CalendarContract.Events.DTEND, originalInstanceEndDate);
+			newEventValues.put(Events.DTSTART, originalBegin);
+			newEventValues.put(Events.DTEND, originalEnd);
 		}
 
 		EventHelper eventHelper = new EventHelper(getAsyncQueryService());
@@ -698,8 +699,8 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 			newEventValues.put(Events.DTSTART, newEvent.getAsLong(Events.DTSTART));
 			newEventValues.put(Events.DTEND, newEvent.getAsLong(Events.DTEND));
 		} else {
-			newEventValues.put(CalendarContract.Events.DTSTART, originalEvent.getAsLong(Instances.BEGIN));
-			newEventValues.put(CalendarContract.Events.DTEND, originalEvent.getAsLong(Instances.END));
+			newEventValues.put(CalendarContract.Events.DTSTART, originalBegin);
+			newEventValues.put(CalendarContract.Events.DTEND, originalEnd);
 		}
 
 		EventHelper eventHelper = new EventHelper(getAsyncQueryService());
@@ -712,12 +713,6 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 	//모든 일정 변경
 	protected void updateAllEvents() {
-		/*
-		수정가능한 column :
-		title, calendarId, allDay, dtStart, dtEnd, eventTimeZone,
-		rrule, reminders, description, eventLocation, attendees,
-		guestCan~~ 3개, availability, accessLevel
-		 */
 		ContentValues modifiedEvent = eventDataViewModel.getNEW_EVENT();
 		List<ContentValues> newReminderList = eventDataViewModel.getNEW_REMINDERS();
 		List<ContentValues> newAttendeeList = eventDataViewModel.getNEW_ATTENDEES();
@@ -727,7 +722,6 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 				, originalAttendeeList, newReminderList, newAttendeeList, selectedCalendarValues, locationDTO, locationIntentCode);
 
 		onEditEventResultListener.onUpdatedAllEvents(0L);
-
 	}
 
 	private void setNewEventValues(String key, ContentValues newEventValues, ContentValues modifiedInstance) {
