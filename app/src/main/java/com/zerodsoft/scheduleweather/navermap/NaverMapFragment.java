@@ -629,29 +629,27 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			public void onPageSelected(int position) {
 				super.onPageSelected(position);
 				markerType = (MarkerType) locationItemBottomSheetViewPager.getTag();
-
-				if (bottomSheetBehaviorMap.get(BottomSheetType.LOCATION_ITEM).getState() == BottomSheetBehavior.STATE_EXPANDED) {
-					onPOIItemSelectedByBottomSheet(position, markerType);
-				}
+				onPOIItemSelectedByBottomSheet(position, markerType);
 
 				if (markerType == MarkerType.FAVORITE) {
 					if (position == ((FavoriteLocationItemViewPagerAdapter) viewPagerAdapterMap.get(markerType)).getItemCount() - 1) {
 						onPageSelectedLocationItemBottomSheetViewPager(position, markerType);
+					} else {
 					}
 				} else {
 					if (position == viewPagerAdapterMap.get(markerType).getItemCount() - 1) {
 						onPageSelectedLocationItemBottomSheetViewPager(position, markerType);
+					} else {
 					}
 				}
 
 			}
 		});
 
-
-		locationItemBottomSheetViewPager.setOffscreenPageLimit(3);
+		locationItemBottomSheetViewPager.setOffscreenPageLimit(2);
 
 		BottomSheetBehavior locationItemBottomSheetBehavior = BottomSheetBehavior.from(locationItemBottomSheet);
-		locationItemBottomSheetBehavior.setDraggable(true);
+		locationItemBottomSheetBehavior.setDraggable(false);
 		locationItemBottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
 			@Override
 			public void onStateChanged(@NonNull View bottomSheet, int newState) {
@@ -809,7 +807,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 	private void onClickedMarkerByTouch(Marker marker) {
 		//poiitem을 직접 선택한 경우 호출
-
 		CameraUpdate cameraUpdate = CameraUpdate.scrollTo(marker.getPosition());
 		cameraUpdate.animate(CameraAnimation.Easing, 160);
 		naverMap.moveCamera(cameraUpdate);
@@ -964,13 +961,11 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	public void addExtraMarkers(@NotNull List<? extends KakaoLocalDocument> kakaoLocalDocuments, @NotNull MarkerType markerType) {
 		if (!kakaoLocalDocuments.isEmpty()) {
 			LocationItemViewPagerAdapter adapter = (LocationItemViewPagerAdapter) viewPagerAdapterMap.get(markerType);
-
 			final int LAST_INDEX = adapter.getItemsCount() - 1;
+
 			List<KakaoLocalDocument> currentList = adapter.getLocalDocumentsList();
 			List<? extends KakaoLocalDocument> subList = (List<? extends KakaoLocalDocument>) kakaoLocalDocuments.subList(LAST_INDEX + 1, kakaoLocalDocuments.size());
 			currentList.addAll(subList);
-
-			adapter.notifyDataSetChanged();
 
 			if (kakaoLocalDocuments.get(0) instanceof PlaceDocuments) {
 				List<PlaceDocuments> placeDocuments = (List<PlaceDocuments>) subList;
@@ -991,7 +986,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 					createCoordToAddressMarker(markerType, document);
 				}
 			}
-
+			adapter.notifyDataSetChanged();
 		}
 	}
 
@@ -1217,17 +1212,19 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		onClickedMarkerByTouch(selectedMarker);
 	}
 
+	LatLng lastTarget = new LatLng(0, 0);
+
 	@Override
 	public void onPOIItemSelectedByBottomSheet(int position, MarkerType markerType) {
 		//bottomsheet에서 스크롤 하는 경우 호출
 		LatLng target = null;
-		List<Marker> markerList = markersMap.get(markerType);
 
 		if (markerType == MarkerType.FAVORITE) {
 			FavoriteLocationItemViewPagerAdapter adapter = (FavoriteLocationItemViewPagerAdapter) locationItemBottomSheetViewPager.getAdapter();
 			FavoriteLocationDTO favoriteLocationDTO = adapter.getKey(position);
 			MarkerHolder markerHolder = null;
 
+			List<Marker> markerList = markersMap.get(markerType);
 			for (Marker marker : markerList) {
 				markerHolder = (MarkerHolder) marker.getTag();
 				if (((FavoriteMarkerHolder) markerHolder).favoriteLocationDTO.getId().equals(favoriteLocationDTO.getId())) {
@@ -1247,9 +1244,13 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 				target = new LatLng(Double.parseDouble(((CoordToAddressDocuments) kakaoLocalDocument).getCoordToAddressAddress().getLatitude()), Double.parseDouble(((CoordToAddressDocuments) kakaoLocalDocument).getCoordToAddressAddress().getLongitude()));
 			}
 		}
-		CameraUpdate cameraUpdate = CameraUpdate.scrollTo(target);
-		cameraUpdate.animate(CameraAnimation.Easing, 150);
-		naverMap.moveCamera(cameraUpdate);
+
+		if (!lastTarget.equals(target)) {
+			CameraUpdate cameraUpdate = CameraUpdate.scrollTo(target);
+			cameraUpdate.animate(CameraAnimation.Easing, 150);
+			naverMap.moveCamera(cameraUpdate);
+		}
+		lastTarget = target;
 	}
 
 	@Override

@@ -729,12 +729,14 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 			@Override
 			public void onClick(View view) {
 				FragmentManager fragmentManager = getChildFragmentManager();
+				Fragment placesOfSelectedCategoriesFragment =
+						bottomSheetFragmentMap.get(BottomSheetType.SELECTED_PLACE_CATEGORY);
 
 				if (bottomSheetFragmentMap.get(BottomSheetType.SELECTED_PLACE_CATEGORY).isVisible()) {
 					if (initializing) {
 						initializing = false;
 						fragmentManager.beginTransaction()
-								.show(bottomSheetFragmentMap.get(BottomSheetType.SELECTED_PLACE_CATEGORY))
+								.show(placesOfSelectedCategoriesFragment)
 								.addToBackStack(getString(R.string.tag_places_of_selected_categories_fragment))
 								.commit();
 
@@ -743,9 +745,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 						fragmentManager.popBackStackImmediate();
 					}
 				} else {
-					Fragment placesOfSelectedCategoriesFragment =
-							bottomSheetFragmentMap.get(BottomSheetType.SELECTED_PLACE_CATEGORY);
-
 					fragmentManager.beginTransaction()
 							.show(placesOfSelectedCategoriesFragment)
 							.addToBackStack(getString(R.string.tag_places_of_selected_categories_fragment))
@@ -903,12 +902,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 						restaurantItemGetter.getRestaurants(new DbQueryCallback<List<PlaceDocuments>>() {
 							@Override
 							public void onResultSuccessful(List<PlaceDocuments> placeDocuments) {
-								requireActivity().runOnUiThread(new Runnable() {
-									@Override
-									public void run() {
-										addExtraMarkers(placeDocuments, markerType);
-									}
-								});
+								addExtraMarkers(placeDocuments, markerType);
 							}
 
 							@Override

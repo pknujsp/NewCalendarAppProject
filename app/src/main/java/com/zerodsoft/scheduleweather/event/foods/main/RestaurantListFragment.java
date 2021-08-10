@@ -167,7 +167,7 @@ public class RestaurantListFragment extends Fragment implements OnClickedListIte
 				super.onItemRangeInserted(positionStart, itemCount);
 				binding.customProgressView.onSuccessfulProcessingData();
 
-				if (restaurantListListenerInTab != null && itemCount > 0) {
+				if (restaurantListListenerInTab != null && itemCount > 0 && positionStart == 0) {
 					restaurantListListenerInTab.onLoadedInitialRestaurantList(query, null);
 				}
 			}
