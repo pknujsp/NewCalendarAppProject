@@ -8,6 +8,8 @@ import android.provider.CalendarContract.Events;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 
+import com.zerodsoft.scheduleweather.calendar.dto.DateTimeObj;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -23,6 +25,9 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 	private final Set<String> modifiedValueSet = new HashSet<>();
 	private boolean isModifiedAttendees = false;
 	private boolean isModifiedReminders = false;
+
+	private DateTimeObj beginDateTimeObj = new DateTimeObj();
+	private DateTimeObj endDateTimeObj = new DateTimeObj();
 
 	public EventDataViewModel(@NonNull @NotNull Application application) {
 		super(application);
@@ -50,6 +55,14 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 
 	public boolean isModified(String key) {
 		return modifiedValueSet.contains(key);
+	}
+
+	public DateTimeObj getBeginDateTimeObj() {
+		return beginDateTimeObj;
+	}
+
+	public DateTimeObj getEndDateTimeObj() {
+		return endDateTimeObj;
 	}
 
 	@Override
@@ -251,5 +264,13 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 
 	public Set<String> getModifiedValueSet() {
 		return modifiedValueSet;
+	}
+
+	public void setBeginDateTimeObj(DateTimeObj beginDateTimeObj) {
+		this.beginDateTimeObj = beginDateTimeObj;
+	}
+
+	public void setEndDateTimeObj(DateTimeObj endDateTimeObj) {
+		this.endDateTimeObj = endDateTimeObj;
 	}
 }

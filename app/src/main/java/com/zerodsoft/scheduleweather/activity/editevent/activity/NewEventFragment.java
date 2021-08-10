@@ -18,6 +18,7 @@ import com.zerodsoft.scheduleweather.activity.editevent.interfaces.OnEditEventRe
 import com.zerodsoft.scheduleweather.calendar.AsyncQueryService;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.EventHelper;
+import com.zerodsoft.scheduleweather.calendar.dto.DateTimeObj;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 
@@ -191,25 +192,12 @@ public class NewEventFragment extends EventBaseFragment {
 
 	@Override
 	protected void initDatePicker() {
-		final long finalDtStart = eventDataViewModel.getNEW_EVENT().getAsLong(Events.DTSTART);
-		final long finalDtEnd = eventDataViewModel.getNEW_EVENT().getAsLong(Events.DTEND);
-		showDatePicker(finalDtStart, finalDtEnd, null);
+		showDatePicker(null);
 	}
 
 	@Override
 	protected void initTimePicker(DateTimeType dateType) {
-		Calendar calendar = Calendar.getInstance();
-		Calendar compareCalendar = Calendar.getInstance();
-
-		if (dateType == DateTimeType.START) {
-			calendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTSTART));
-			compareCalendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTEND));
-		} else if (dateType == DateTimeType.END) {
-			calendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTEND));
-			compareCalendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(CalendarContract.Events.DTSTART));
-		}
-
-		showTimePicker(dateType, calendar, compareCalendar, null);
+		showTimePicker(dateType, null);
 	}
 
 
@@ -242,18 +230,22 @@ public class NewEventFragment extends EventBaseFragment {
 
 		final int defaultHourRange = 60;
 
-		Date[] defaultDateTimes = new Date[2];
-		defaultDateTimes[0] = calendar.getTime();
+		DateTimeObj beginDateTimeObj = new DateTimeObj();
+		DateTimeObj endDateTimeObj = new DateTimeObj();
+		beginDateTimeObj.setTimeMillis(calendar.getTime().getTime());
 		calendar.add(Calendar.MINUTE, defaultHourRange);
-		defaultDateTimes[1] = calendar.getTime();
+		endDateTimeObj.setTimeMillis(calendar.getTime().getTime());
 
-		eventDataViewModel.setDtStart(defaultDateTimes[0]);
-		eventDataViewModel.setDtEnd(defaultDateTimes[1]);
+		eventDataViewModel.setDtStart(beginDateTimeObj.getDate());
+		eventDataViewModel.setDtEnd(endDateTimeObj.getDate());
 
-		setDateText(DateTimeType.START, defaultDateTimes[0].getTime());
-		setDateText(DateTimeType.END, defaultDateTimes[1].getTime());
-		setTimeText(DateTimeType.START, defaultDateTimes[0].getTime());
-		setTimeText(DateTimeType.END, defaultDateTimes[1].getTime());
+		eventDataViewModel.setBeginDateTimeObj(beginDateTimeObj);
+		eventDataViewModel.setEndDateTimeObj(endDateTimeObj);
+
+		setDateText(DateTimeType.BEGIN, beginDateTimeObj);
+		setDateText(DateTimeType.END, endDateTimeObj);
+		setTimeText(DateTimeType.BEGIN, beginDateTimeObj);
+		setTimeText(DateTimeType.END, endDateTimeObj);
 
 		eventDataViewModel.setIsAllDay(false);
 		binding.timeLayout.timeAlldaySwitch.setChecked(false);

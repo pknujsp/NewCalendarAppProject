@@ -6,9 +6,6 @@ import android.os.Bundle;
 import android.provider.CalendarContract;
 import android.provider.CalendarContract.Events;
 import android.provider.CalendarContract.Instances;
-import android.provider.CalendarContract.Calendars;
-import android.provider.CalendarContract.Reminders;
-import android.provider.CalendarContract.Attendees;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,6 +22,7 @@ import com.zerodsoft.scheduleweather.activity.editevent.interfaces.OnEditEventRe
 import com.zerodsoft.scheduleweather.calendar.AsyncQueryService;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.EventHelper;
+import com.zerodsoft.scheduleweather.calendar.dto.DateTimeObj;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
@@ -396,22 +394,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 	@Override
 	protected final void initDatePicker() {
-		long dtStart = 0L;
-		long dtEnd = 0L;
-
-		if (eventDataViewModel.getNEW_EVENT().containsKey(Events.DTSTART)) {
-			dtStart = eventDataViewModel.getNEW_EVENT().getAsLong(Events.DTSTART);
-		} else {
-			dtStart = originalBegin;
-		}
-
-		if (eventDataViewModel.getNEW_EVENT().containsKey(Events.DTEND)) {
-			dtEnd = eventDataViewModel.getNEW_EVENT().getAsLong(Events.DTEND);
-		} else {
-			dtEnd = originalEnd;
-		}
-
-		showDatePicker(dtStart, dtEnd, new OnModifiedDateTimeCallback() {
+		showDatePicker(new OnModifiedDateTimeCallback() {
 			@Override
 			public void onModified() {
 				if (firstModifiedDateTime) {
@@ -424,37 +407,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 	@Override
 	protected void initTimePicker(DateTimeType dateType) {
-		Calendar calendar = Calendar.getInstance();
-		Calendar compareCalendar = Calendar.getInstance();
-
-		if (dateType == DateTimeType.START) {
-			if (eventDataViewModel.getNEW_EVENT().containsKey(Events.DTSTART)) {
-				calendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(Events.DTSTART));
-			} else {
-				calendar.setTimeInMillis(originalBegin);
-			}
-		} else if (dateType == DateTimeType.END) {
-			if (eventDataViewModel.getNEW_EVENT().containsKey(Events.DTEND)) {
-				calendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(Events.DTEND));
-			} else {
-				calendar.setTimeInMillis(originalEnd);
-			}
-		}
-
-		if (dateType == DateTimeType.START) {
-			if (eventDataViewModel.getNEW_EVENT().containsKey(Events.DTEND)) {
-				compareCalendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(Events.DTEND));
-			} else {
-				compareCalendar.setTimeInMillis(originalEnd);
-			}
-		} else if (dateType == DateTimeType.END) {
-			if (eventDataViewModel.getNEW_EVENT().containsKey(Events.DTSTART)) {
-				compareCalendar.setTimeInMillis(eventDataViewModel.getNEW_EVENT().getAsLong(Events.DTSTART));
-			} else {
-				compareCalendar.setTimeInMillis(originalBegin);
-			}
-		}
-		showTimePicker(dateType, calendar, compareCalendar, new OnModifiedDateTimeCallback() {
+		showTimePicker(dateType, new OnModifiedDateTimeCallback() {
 			@Override
 			public void onModified() {
 				if (firstModifiedDateTime) {
@@ -510,31 +463,32 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		final boolean isAllDay = originalEvent.getAsInteger(CalendarContract.Instances.ALL_DAY) == 1;
 		binding.timeLayout.timeAlldaySwitch.setChecked(isAllDay);
 
+		DateTimeObj beginDateTimeObj = eventDataViewModel.getBeginDateTimeObj();
+		DateTimeObj endDateTimeObj = eventDataViewModel.getEndDateTimeObj();
+		Calendar calendar = null;
 
 		if (isAllDay) {
+			calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 			setTimeZoneText(originalEvent.getAsString(Events.CALENDAR_TIME_ZONE));
-
-			Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-			calendar.setTimeInMillis(originalEvent.getAsLong(Instances.BEGIN));
-			originalBegin = calendar.getTimeInMillis();
-
-			calendar.setTimeInMillis(originalEvent.getAsLong(Instances.END));
-			originalEnd = calendar.getTimeInMillis();
-			calendar.add(Calendar.DATE, -1);
-			long endForShow = calendar.getTimeInMillis();
-
-			setDateText(DateTimeType.END, endForShow);
-			setTimeText(DateTimeType.END, endForShow);
 		} else {
-			originalBegin = originalEvent.getAsLong(Instances.BEGIN);
-			originalEnd = originalEvent.getAsLong(Instances.END);
+			calendar = Calendar.getInstance(TimeZone.getTimeZone(originalEvent.getAsString(Events.EVENT_TIMEZONE)));
 			setTimeZoneText(originalEvent.getAsString(Events.EVENT_TIMEZONE));
-
-			setDateText(DateTimeType.END, originalEnd);
-			setTimeText(DateTimeType.END, originalEnd);
 		}
-		setDateText(DateTimeType.START, originalBegin);
-		setTimeText(DateTimeType.START, originalBegin);
+
+		calendar.setTimeInMillis(originalEvent.getAsLong(Instances.BEGIN));
+		beginDateTimeObj.setYear(calendar.get(Calendar.YEAR)).setMonth(calendar.get(Calendar.MONTH) + 1)
+				.setDay(calendar.get(Calendar.DAY_OF_MONTH)).setHour(calendar.get(Calendar.HOUR_OF_DAY))
+				.setMinute(calendar.get(Calendar.MINUTE));
+
+		calendar.setTimeInMillis(originalEvent.getAsLong(Instances.END));
+		endDateTimeObj.setYear(calendar.get(Calendar.YEAR)).setMonth(calendar.get(Calendar.MONTH) + 1)
+				.setDay(calendar.get(Calendar.DAY_OF_MONTH)).setHour(calendar.get(Calendar.HOUR_OF_DAY))
+				.setMinute(calendar.get(Calendar.MINUTE));
+
+		setDateText(DateTimeType.BEGIN, beginDateTimeObj);
+		setTimeText(DateTimeType.BEGIN, beginDateTimeObj);
+		setDateText(DateTimeType.END, endDateTimeObj);
+		setTimeText(DateTimeType.END, endDateTimeObj);
 
 		//캘린더
 		setCalendarText(originalEvent.getAsInteger(Instances.CALENDAR_COLOR),

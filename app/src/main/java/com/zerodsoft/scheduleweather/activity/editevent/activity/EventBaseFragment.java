@@ -16,7 +16,6 @@ import android.os.Parcelable;
 import android.provider.CalendarContract;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.text.format.Time;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -46,6 +45,7 @@ import com.zerodsoft.scheduleweather.activity.preferences.ColorListAdapter;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.calendarcommon2.EventRecurrence;
+import com.zerodsoft.scheduleweather.calendar.dto.DateTimeObj;
 import com.zerodsoft.scheduleweather.common.enums.EventIntentCode;
 import com.zerodsoft.scheduleweather.common.enums.LocationIntentCode;
 import com.zerodsoft.scheduleweather.common.interfaces.IFragmentTitle;
@@ -56,14 +56,12 @@ import com.zerodsoft.scheduleweather.event.common.SelectionDetailLocationFragmen
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.sql.Date;
-import java.time.ZoneId;
-import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -91,7 +89,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 	protected LocationIntentCode locationIntentCode;
 
 	protected enum DateTimeType {
-		START,
+		BEGIN,
 		END
 	}
 
@@ -255,7 +253,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 				initDatePicker();
 				break;
 			case R.id.start_time:
-				initTimePicker(DateTimeType.START);
+				initTimePicker(DateTimeType.BEGIN);
 				break;
 			case R.id.end_time:
 				initTimePicker(DateTimeType.END);
@@ -304,6 +302,8 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 			binding.timeLayout.endTime.setVisibility(View.VISIBLE);
 			binding.timeLayout.eventTimezoneLayout.setVisibility(View.VISIBLE);
 		}
+
+		setDateText(DateTimeType.END, eventDataViewModel.getEndDateTimeObj());
 
 		if (!initializing) {
 			eventDataViewModel.setIsAllDay(isChecked);
@@ -718,83 +718,69 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		}
 	};
 
-	protected final void showDatePicker(long finalBegin, long finalEnd,
-	                                    @Nullable ModifyInstanceFragment.OnModifiedDateTimeCallback onModifiedDateTimeCallback) {
-		TimeZone utcTimeZone = TimeZone.getDefault();
-		final int offset = utcTimeZone.getOffset(finalBegin);
-
-		long convertedToUtcBegin = finalBegin + offset;
-		long convertedToUtcEnd = finalEnd + offset;
+	protected final void showDatePicker(@Nullable ModifyInstanceFragment.OnModifiedDateTimeCallback onModifiedDateTimeCallback) {
+		final DateTimeObj beginDateTimeObj = eventDataViewModel.getBeginDateTimeObj();
+		final DateTimeObj endDateTimeObj = eventDataViewModel.getEndDateTimeObj();
+		final long beginUtcMillis = beginDateTimeObj.getUtcTimeMillis();
+		final long endUtcMillis = endDateTimeObj.getUtcTimeMillis();
 
 		datePicker = MaterialDatePicker.Builder.dateRangePicker()
 				.setTitleText(R.string.datepicker)
 				.setInputMode(MaterialDatePicker.INPUT_MODE_CALENDAR)
-				.setSelection(new Pair<>(convertedToUtcBegin, convertedToUtcEnd))
+				.setSelection(new Pair<>(beginUtcMillis, endUtcMillis))
 				.build();
 
 		datePicker.addOnPositiveButtonClickListener(new MaterialPickerOnPositiveButtonClickListener<Pair<Long, Long>>() {
 			@Override
 			public void onPositiveButtonClick(Pair<Long, Long> selection) {
-				Calendar calendar = Calendar.getInstance();
-				int previousHour = 0;
-				int previousMinute = 0;
-
-				Calendar startDate = Calendar.getInstance();
-				Calendar endDate = Calendar.getInstance();
+				Calendar utcCalendar = Calendar.getInstance(ClockUtil.UTC_TIME_ZONE);
+				int newYear = 0;
+				int newMonth = 0;
+				int newDay = 0;
 
 				if (selection.first != null) {
-					calendar.setTimeInMillis(finalBegin);
-					previousHour = calendar.get(Calendar.HOUR_OF_DAY);
-					previousMinute = calendar.get(Calendar.MINUTE);
+					utcCalendar.setTimeInMillis(selection.first);
+					newYear = utcCalendar.get(Calendar.YEAR);
+					newMonth = utcCalendar.get(Calendar.MONTH) + 1;
+					newDay = utcCalendar.get(Calendar.DAY_OF_MONTH);
 
-					calendar.setTimeInMillis(selection.first);
-					calendar.set(Calendar.HOUR_OF_DAY, previousHour);
-					calendar.set(Calendar.MINUTE, previousMinute);
-
-					eventDataViewModel.setDtStart(calendar.getTime());
-					setDateText(DateTimeType.START, calendar.getTimeInMillis());
-
-					startDate.setTime(calendar.getTime());
+					beginDateTimeObj.setYear(newYear).setMonth(newMonth).setDay(newDay);
 				}
 				if (selection.second != null) {
-					calendar.setTimeInMillis(finalEnd);
-					previousHour = calendar.get(Calendar.HOUR_OF_DAY);
-					previousMinute = calendar.get(Calendar.MINUTE);
+					utcCalendar.setTimeInMillis(selection.second);
+					newYear = utcCalendar.get(Calendar.YEAR);
+					newMonth = utcCalendar.get(Calendar.MONTH) + 1;
+					newDay = utcCalendar.get(Calendar.DAY_OF_MONTH);
 
-					calendar.setTimeInMillis(selection.second);
-					calendar.set(Calendar.HOUR_OF_DAY, previousHour);
-					calendar.set(Calendar.MINUTE, previousMinute);
-
-					eventDataViewModel.setDtEnd(calendar.getTime());
-					setDateText(DateTimeType.END, calendar.getTimeInMillis());
-
-					endDate.setTime(calendar.getTime());
+					endDateTimeObj.setYear(newYear).setMonth(newMonth).setDay(newDay);
 				}
 
-				if (startDate.get(Calendar.HOUR_OF_DAY) >= endDate.get(Calendar.HOUR_OF_DAY)) {
+				if (beginDateTimeObj.getHour() >= endDateTimeObj.getHour()) {
 					//시작 날짜가 종료 날짜보다 이후이면 시각을 조정한다
-					if (startDate.get(Calendar.HOUR_OF_DAY) > endDate.get(Calendar.HOUR_OF_DAY)) {
-						startDate.set(Calendar.HOUR_OF_DAY, 9);
-						startDate.set(Calendar.MINUTE, 0);
-
-						endDate.set(Calendar.HOUR_OF_DAY, 10);
-						endDate.set(Calendar.MINUTE, 0);
-					} else if (startDate.get(Calendar.MINUTE) > endDate.get(Calendar.MINUTE)) {
-						startDate.set(Calendar.MINUTE, 0);
-						endDate.set(Calendar.MINUTE, 30);
+					if (beginDateTimeObj.getHour() > endDateTimeObj.getHour()) {
+						beginDateTimeObj.setHour(9).setMinute(0);
+						endDateTimeObj.setHour(10).setMinute(0);
+					} else if (beginDateTimeObj.getMinute() > endDateTimeObj.getMinute()) {
+						beginDateTimeObj.setMinute(0);
+						endDateTimeObj.setMinute(30);
 					}
-					eventDataViewModel.setDtStart(startDate.getTime());
-					eventDataViewModel.setDtEnd(endDate.getTime());
-					setTimeText(DateTimeType.START, startDate.getTime().getTime());
-					setTimeText(DateTimeType.END, endDate.getTime().getTime());
 				}
+
+				eventDataViewModel.setDtStart(beginDateTimeObj.getDate());
+				eventDataViewModel.setDtEnd(endDateTimeObj.getDate());
+				setDateText(DateTimeType.BEGIN, beginDateTimeObj);
+				setDateText(DateTimeType.END, endDateTimeObj);
+				setTimeText(DateTimeType.BEGIN, beginDateTimeObj);
+				setTimeText(DateTimeType.END, endDateTimeObj);
 
 				if (onModifiedDateTimeCallback != null) {
 					onModifiedDateTimeCallback.onModified();
 				}
 
-				modifyRruleIfFreqMonthly(startDate.getTimeInMillis());
-				modifyRruleIfFreqWeekly(startDate.getTimeInMillis());
+				long beginUtcMillis = beginDateTimeObj.getTimeMillis();
+				modifyRruleIfFreqMonthly(beginUtcMillis);
+				modifyRruleIfFreqWeekly(beginUtcMillis);
+
 				datePicker.dismiss();
 			}
 		});
@@ -864,46 +850,63 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		}
 	}
 
-	protected final void setDateText(DateTimeType dateType, long date) {
-		if (dateType == DateTimeType.START) {
-			binding.timeLayout.startDate.setText(EventUtil.convertDate(date));
-		} else {
-			binding.timeLayout.endDate.setText(EventUtil.convertDate(date));
+	protected final void setDateText(DateTimeType dateType, DateTimeObj dateTimeObj) {
+		if (dateType == DateTimeType.BEGIN) {
+			binding.timeLayout.startDate.setText(EventUtil.convertDate(dateTimeObj.getTimeMillis()));
+		} else if (dateType == DateTimeType.END) {
+			long timeMillis = dateTimeObj.getTimeMillis();
+
+			if (binding.timeLayout.timeAlldaySwitch.isChecked()) {
+				Calendar calendar = Calendar.getInstance();
+				calendar.setTimeInMillis(dateTimeObj.getTimeMillis());
+				calendar.add(Calendar.DATE, -1);
+
+				timeMillis = calendar.getTimeInMillis();
+			}
+			binding.timeLayout.endDate.setText(EventUtil.convertDate(timeMillis));
 		}
 	}
 
-	protected final void showTimePicker(DateTimeType dateType, Calendar calendar, Calendar compareCalendar,
+	protected final void showTimePicker(DateTimeType dateType,
 	                                    @Nullable ModifyInstanceFragment.OnModifiedDateTimeCallback onModifiedDateTimeCallback) {
+		final DateTimeObj beginDateTimeObj = eventDataViewModel.getBeginDateTimeObj();
+		final DateTimeObj endDateTimeObj = eventDataViewModel.getEndDateTimeObj();
+
 		MaterialTimePicker.Builder builder = new MaterialTimePicker.Builder();
 		timePicker =
-				builder.setTitleText((dateType == DateTimeType.START ? getString(R.string.start) : getString(R.string.end)) + getString(R.string.timepicker))
+				builder.setTitleText((dateType == DateTimeType.BEGIN ? getString(R.string.start) : getString(R.string.end)) + getString(R.string.timepicker))
 						.setTimeFormat(App.isPreference_key_using_24_hour_system() ? TimeFormat.CLOCK_24H : TimeFormat.CLOCK_12H)
-						.setHour(calendar.get(Calendar.HOUR_OF_DAY))
-						.setMinute(calendar.get(Calendar.MINUTE))
+						.setHour(dateType == DateTimeType.BEGIN ? beginDateTimeObj.getHour() : endDateTimeObj.getHour())
+						.setMinute(dateType == DateTimeType.BEGIN ? beginDateTimeObj.getMinute() : endDateTimeObj.getMinute())
 						.setInputMode(MaterialTimePicker.INPUT_MODE_CLOCK).build();
 
 		timePicker.addOnPositiveButtonClickListener(view ->
 		{
-			calendar.set(Calendar.HOUR_OF_DAY, timePicker.getHour());
-			calendar.set(Calendar.MINUTE, timePicker.getMinute());
+			final int newHour = timePicker.getHour();
+			final int newMinute = timePicker.getMinute();
 
-			if (dateType == DateTimeType.START) {
-				if (calendar.getTimeInMillis() <= compareCalendar.getTimeInMillis()) {
-					eventDataViewModel.setDtStart(calendar.getTime());
-					setTimeText(dateType, calendar.getTimeInMillis());
-				} else {
-					String msg =
-							EventUtil.convertTime(calendar.getTimeInMillis(), App.isPreference_key_using_24_hour_system()) + " " + getString(R.string.plz_set_time_before_specific_time);
-					Toast.makeText(getContext(), msg, Toast.LENGTH_LONG).show();
-				}
+			if (dateType == DateTimeType.BEGIN) {
+				beginDateTimeObj.setHour(newHour).setMinute(newMinute);
+				eventDataViewModel.setDtStart(beginDateTimeObj.getDate());
+				setTimeText(dateType, beginDateTimeObj);
 			} else if (dateType == DateTimeType.END) {
-				if (calendar.getTimeInMillis() >= compareCalendar.getTimeInMillis()) {
-					eventDataViewModel.setDtEnd(calendar.getTime());
-					setTimeText(dateType, calendar.getTimeInMillis());
-				} else {
-					String msg =
-							EventUtil.convertTime(calendar.getTimeInMillis(), App.isPreference_key_using_24_hour_system()) + " " + getString(R.string.plz_set_time_after_specific_time);
-					Toast.makeText(getContext(), msg, Toast.LENGTH_LONG).show();
+				endDateTimeObj.setHour(newHour).setMinute(newMinute);
+				eventDataViewModel.setDtEnd(endDateTimeObj.getDate());
+				setTimeText(dateType, endDateTimeObj);
+			}
+
+			if (dateType == DateTimeType.BEGIN) {
+				if (ClockUtil.areSameDate(beginDateTimeObj.getTimeMillis(), endDateTimeObj.getTimeMillis())) {
+					if (beginDateTimeObj.getHour() > endDateTimeObj.getHour()) {
+						endDateTimeObj.setHour(newHour).setMinute(0);
+						endDateTimeObj.add(Calendar.HOUR_OF_DAY, 1);
+					} else if (beginDateTimeObj.getHour() == endDateTimeObj.getHour()
+							&& beginDateTimeObj.getMinute() > endDateTimeObj.getMinute()) {
+						endDateTimeObj.setMinute(newMinute);
+					}
+
+					eventDataViewModel.setDtEnd(endDateTimeObj.getDate());
+					setTimeText(DateTimeType.END, endDateTimeObj);
 				}
 			}
 
@@ -918,12 +921,12 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		timePicker.show(getChildFragmentManager(), timePicker.toString());
 	}
 
-	protected final void setTimeText(DateTimeType dateType, long time) {
+	protected final void setTimeText(DateTimeType dateType, DateTimeObj dateTimeObj) {
 		// 설정에 12시간, 24시간 단위 변경 가능
-		if (dateType == DateTimeType.START) {
-			binding.timeLayout.startTime.setText(EventUtil.convertTime(time, App.isPreference_key_using_24_hour_system()));
+		if (dateType == DateTimeType.BEGIN) {
+			binding.timeLayout.startTime.setText(EventUtil.convertTime(dateTimeObj.getTimeMillis(), App.isPreference_key_using_24_hour_system()));
 		} else {
-			binding.timeLayout.endTime.setText(EventUtil.convertTime(time, App.isPreference_key_using_24_hour_system()));
+			binding.timeLayout.endTime.setText(EventUtil.convertTime(dateTimeObj.getTimeMillis(), App.isPreference_key_using_24_hour_system()));
 		}
 	}
 
