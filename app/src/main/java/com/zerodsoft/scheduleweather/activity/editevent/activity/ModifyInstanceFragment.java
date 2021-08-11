@@ -493,7 +493,9 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		eventDataViewModel.setEventTimeZone(isAllDay ?
 				TimeZone.getTimeZone(originalEvent.getAsString(Events.CALENDAR_TIME_ZONE))
 				: TimeZone.getTimeZone(originalEvent.getAsString(Events.EVENT_TIMEZONE)));
-		eventDataViewModel.setCalendarTimeZone(TimeZone.getTimeZone(originalEvent.getAsString(Events.CALENDAR_TIME_ZONE)));
+		eventDataViewModel.setCalendarTimeZone(selectedCalendarValues.containsKey(CalendarContract.Calendars.CALENDAR_TIME_ZONE) ?
+				TimeZone.getTimeZone(selectedCalendarValues.getAsString(CalendarContract.Calendars.CALENDAR_TIME_ZONE))
+				: TimeZone.getDefault());
 		setTimeZoneText();
 
 		//캘린더

@@ -254,7 +254,10 @@ public class NewEventFragment extends EventBaseFragment {
 			eventTimeZone = App.getPreference_key_custom_timezone();
 		}
 		eventDataViewModel.setEventTimeZone(eventTimeZone);
-		eventDataViewModel.setCalendarTimeZone(TimeZone.getTimeZone(selectedCalendarValues.getAsString(CalendarContract.Calendars.CALENDAR_TIME_ZONE)));
+		eventDataViewModel.setCalendarTimeZone(
+				selectedCalendarValues.containsKey(CalendarContract.Calendars.CALENDAR_TIME_ZONE) ?
+						TimeZone.getTimeZone(selectedCalendarValues.getAsString(CalendarContract.Calendars.CALENDAR_TIME_ZONE))
+						: TimeZone.getDefault());
 		eventDataViewModel.setTimezone(eventTimeZone.getID());
 		setTimeZoneText();
 

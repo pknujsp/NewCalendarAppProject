@@ -342,46 +342,26 @@ public class CalendarProvider implements ICalendarProvider {
 	@Override
 	public List<ContentValues> getCalendars() {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
-			final String[] PROJECTION = {CalendarContract.Calendars._ID, CalendarContract.Calendars.NAME,
-					CalendarContract.Calendars.ACCOUNT_NAME, CalendarContract.Calendars.CALENDAR_DISPLAY_NAME, CalendarContract.Calendars.OWNER_ACCOUNT,
-					CalendarContract.Calendars.CALENDAR_COLOR, CalendarContract.Calendars.IS_PRIMARY, CalendarContract.Calendars.ACCOUNT_TYPE
-					, CalendarContract.Calendars.CALENDAR_COLOR_KEY, CalendarContract.Calendars.CALENDAR_TIME_ZONE};
-			ContentResolver contentResolver = context.getContentResolver();
-			Cursor cursor = contentResolver.query(CalendarContract.Calendars.CONTENT_URI, PROJECTION, null, null, null);
+			Cursor cursor = context.getContentResolver().query(CalendarContract.Calendars.CONTENT_URI, null, null, null, null);
 
 			final String GOOGLE_SECONDARY_CALENDAR = "@group.calendar.google.com";
 			List<ContentValues> calendarList = new ArrayList<>();
 
 			if (cursor != null) {
 				while (cursor.moveToNext()) {
-					if (cursor.getInt(6) == 1) {
+					ContentValues calendar = new ContentValues();
+					String[] keys = cursor.getColumnNames();
+
+					for (String key : keys) {
+						if (!cursor.isNull(cursor.getColumnIndex(key))) {
+							calendar.put(key, cursor.getString(cursor.getColumnIndex(key)));
+						}
+					}
+					if (calendar.getAsInteger(CalendarContract.Calendars.IS_PRIMARY) == 1) {
 						// another || google primary calendar
-						ContentValues calendar = new ContentValues();
-
-						calendar.put(CalendarContract.Calendars._ID, cursor.getLong(0));
-						calendar.put(CalendarContract.Calendars.NAME, cursor.getString(1));
-						calendar.put(CalendarContract.Calendars.ACCOUNT_NAME, cursor.getString(2));
-						calendar.put(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME, cursor.getString(3));
-						calendar.put(CalendarContract.Calendars.OWNER_ACCOUNT, cursor.getString(4));
-						calendar.put(CalendarContract.Calendars.CALENDAR_COLOR, cursor.getInt(5));
-						calendar.put(CalendarContract.Calendars.ACCOUNT_TYPE, cursor.getString(7));
-						calendar.put(CalendarContract.Calendars.CALENDAR_COLOR_KEY, cursor.getString(8));
-						calendar.put(CalendarContract.Calendars.CALENDAR_TIME_ZONE, cursor.getString(9));
-
 						calendarList.add(calendar);
-					} else if (cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.OWNER_ACCOUNT)).contains(GOOGLE_SECONDARY_CALENDAR)) {
-						ContentValues calendar = new ContentValues();
-
-						calendar.put(CalendarContract.Calendars._ID, cursor.getLong(0));
-						calendar.put(CalendarContract.Calendars.NAME, cursor.getString(1));
-						calendar.put(CalendarContract.Calendars.ACCOUNT_NAME, cursor.getString(2));
-						calendar.put(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME, cursor.getString(3));
-						calendar.put(CalendarContract.Calendars.OWNER_ACCOUNT, cursor.getString(4));
-						calendar.put(CalendarContract.Calendars.CALENDAR_COLOR, cursor.getInt(5));
-						calendar.put(CalendarContract.Calendars.ACCOUNT_TYPE, cursor.getString(7));
-						calendar.put(CalendarContract.Calendars.CALENDAR_COLOR_KEY, cursor.getString(8));
-						calendar.put(CalendarContract.Calendars.CALENDAR_TIME_ZONE, cursor.getString(9));
-
+					} else if (calendar.getAsString(CalendarContract.Calendars.OWNER_ACCOUNT)
+							.contains(GOOGLE_SECONDARY_CALENDAR)) {
 						calendarList.add(calendar);
 						break;
 					}
