@@ -318,6 +318,11 @@ public class EventUtil {
 		}
 	}
 
+	public static long convertToUtc(TimeZone timeZone, long timeMillis) {
+		timeMillis = timeMillis + timeZone.getOffset(timeMillis);
+		return timeMillis;
+	}
+
 	public static String convertDate(long date) {
 		return ClockUtil.YYYY_M_D_E.format(new Date(date));
 	}

@@ -33,6 +33,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -490,12 +491,27 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		setDateText(DateTimeType.END, endDateTimeObj, true);
 		setTimeText(DateTimeType.END, endDateTimeObj);
 
-		eventDataViewModel.setEventTimeZone(isAllDay ?
-				TimeZone.getTimeZone(originalEvent.getAsString(Events.CALENDAR_TIME_ZONE))
-				: TimeZone.getTimeZone(originalEvent.getAsString(Events.EVENT_TIMEZONE)));
-		eventDataViewModel.setCalendarTimeZone(selectedCalendarValues.containsKey(CalendarContract.Calendars.CALENDAR_TIME_ZONE) ?
-				TimeZone.getTimeZone(selectedCalendarValues.getAsString(CalendarContract.Calendars.CALENDAR_TIME_ZONE))
-				: TimeZone.getDefault());
+		TimeZone eventTimeZone = null;
+		TimeZone calendarTimeZone = null;
+
+		if (isAllDay) {
+			if (originalEvent.containsKey(Events.CALENDAR_TIME_ZONE)) {
+				eventTimeZone = TimeZone.getTimeZone(originalEvent.getAsString(Events.CALENDAR_TIME_ZONE));
+			} else {
+				eventTimeZone = TimeZone.getDefault();
+			}
+		} else {
+			eventTimeZone = TimeZone.getTimeZone(originalEvent.getAsString(Events.EVENT_TIMEZONE));
+		}
+
+		if (originalEvent.containsKey(Events.CALENDAR_TIME_ZONE)) {
+			calendarTimeZone = TimeZone.getTimeZone(originalEvent.getAsString(Events.CALENDAR_TIME_ZONE));
+		} else {
+			calendarTimeZone = TimeZone.getDefault();
+		}
+
+		eventDataViewModel.setEventTimeZone(eventTimeZone);
+		eventDataViewModel.setCalendarTimeZone(calendarTimeZone);
 		setTimeZoneText();
 
 		//캘린더
@@ -608,8 +624,9 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		}
 
 		if (eventDataViewModel.isModified(Events.DTSTART) || eventDataViewModel.isModified(Events.DTEND)) {
-			newEventValues.put(Events.DTSTART, modifiedEvent.getAsLong(Events.DTSTART));
-			newEventValues.put(Events.DTEND, modifiedEvent.getAsLong(Events.DTEND));
+			newEventValues.put(Events.DTSTART, EventUtil.convertToUtc(eventDataViewModel.getEventTimeZone(), newEventValues.getAsLong(Events.DTSTART)));
+			newEventValues.put(Events.DTEND, EventUtil.convertToUtc(eventDataViewModel.getEventTimeZone(),
+					newEventValues.getAsLong(Events.DTEND)));
 		} else {
 			newEventValues.put(Events.DTSTART, originalBegin);
 			newEventValues.put(Events.DTEND, originalEnd);
@@ -658,11 +675,12 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		newEventValues.put(CalendarContract.Events._ID, originalEvent.getAsLong(CalendarContract.Instances.EVENT_ID));
 
 		if (eventDataViewModel.isModified(Events.DTSTART) || eventDataViewModel.isModified(Events.DTEND)) {
-			newEventValues.put(Events.DTSTART, newEvent.getAsLong(Events.DTSTART));
-			newEventValues.put(Events.DTEND, newEvent.getAsLong(Events.DTEND));
+			newEventValues.put(Events.DTSTART, EventUtil.convertToUtc(eventDataViewModel.getEventTimeZone(), newEventValues.getAsLong(Events.DTSTART)));
+			newEventValues.put(Events.DTEND, EventUtil.convertToUtc(eventDataViewModel.getEventTimeZone(),
+					newEventValues.getAsLong(Events.DTEND)));
 		} else {
-			newEventValues.put(CalendarContract.Events.DTSTART, originalBegin);
-			newEventValues.put(CalendarContract.Events.DTEND, originalEnd);
+			newEventValues.put(Events.DTSTART, originalBegin);
+			newEventValues.put(Events.DTEND, originalEnd);
 		}
 
 		EventHelper eventHelper = new EventHelper(getAsyncQueryService());
@@ -678,6 +696,15 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		ContentValues modifiedEvent = eventDataViewModel.getNEW_EVENT();
 		List<ContentValues> newReminderList = eventDataViewModel.getNEW_REMINDERS();
 		List<ContentValues> newAttendeeList = eventDataViewModel.getNEW_ATTENDEES();
+
+		if (eventDataViewModel.isModified(Events.DTSTART) || eventDataViewModel.isModified(Events.DTEND)) {
+			modifiedEvent.put(Events.DTSTART, EventUtil.convertToUtc(eventDataViewModel.getEventTimeZone(), modifiedEvent.getAsLong(Events.DTSTART)));
+			modifiedEvent.put(Events.DTEND, EventUtil.convertToUtc(eventDataViewModel.getEventTimeZone(),
+					modifiedEvent.getAsLong(Events.DTEND)));
+		} else {
+			modifiedEvent.put(Events.DTSTART, originalBegin);
+			modifiedEvent.put(Events.DTEND, originalEnd);
+		}
 
 		EventHelper eventHelper = new EventHelper(getAsyncQueryService());
 		eventHelper.updateEvent(EventHelper.EventEditType.UPDATE_ALL_EVENTS, originalEvent, modifiedEvent, originalReminderList
