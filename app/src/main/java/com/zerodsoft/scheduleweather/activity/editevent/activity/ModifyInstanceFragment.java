@@ -624,9 +624,19 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		}
 
 		if (eventDataViewModel.isModified(Events.DTSTART) || eventDataViewModel.isModified(Events.DTEND)) {
-			newEventValues.put(Events.DTSTART, EventUtil.convertToUtc(eventDataViewModel.getEventTimeZone(), newEventValues.getAsLong(Events.DTSTART)));
-			newEventValues.put(Events.DTEND, EventUtil.convertToUtc(eventDataViewModel.getEventTimeZone(),
-					newEventValues.getAsLong(Events.DTEND)));
+			long begin = 0L;
+			long end = 0L;
+
+			if (binding.timeLayout.timeAlldaySwitch.isChecked()) {
+				begin = EventUtil.convertToUtc(eventDataViewModel.getEventTimeZone(), newEventValues.getAsLong(Events.DTSTART));
+				end = EventUtil.convertToUtc(eventDataViewModel.getEventTimeZone(), newEventValues.getAsLong(Events.DTEND));
+			} else {
+				begin = newEventValues.getAsLong(Events.DTSTART);
+				end = newEventValues.getAsLong(Events.DTEND);
+			}
+
+			newEventValues.put(Events.DTSTART, begin);
+			newEventValues.put(Events.DTEND, end);
 		} else {
 			newEventValues.put(Events.DTSTART, originalBegin);
 			newEventValues.put(Events.DTEND, originalEnd);
@@ -675,9 +685,19 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		newEventValues.put(CalendarContract.Events._ID, originalEvent.getAsLong(CalendarContract.Instances.EVENT_ID));
 
 		if (eventDataViewModel.isModified(Events.DTSTART) || eventDataViewModel.isModified(Events.DTEND)) {
-			newEventValues.put(Events.DTSTART, EventUtil.convertToUtc(eventDataViewModel.getEventTimeZone(), newEventValues.getAsLong(Events.DTSTART)));
-			newEventValues.put(Events.DTEND, EventUtil.convertToUtc(eventDataViewModel.getEventTimeZone(),
-					newEventValues.getAsLong(Events.DTEND)));
+			long begin = 0L;
+			long end = 0L;
+
+			if (binding.timeLayout.timeAlldaySwitch.isChecked()) {
+				begin = EventUtil.convertToUtc(eventDataViewModel.getEventTimeZone(), newEventValues.getAsLong(Events.DTSTART));
+				end = EventUtil.convertToUtc(eventDataViewModel.getEventTimeZone(), newEventValues.getAsLong(Events.DTEND));
+			} else {
+				begin = newEventValues.getAsLong(Events.DTSTART);
+				end = newEventValues.getAsLong(Events.DTEND);
+			}
+
+			newEventValues.put(Events.DTSTART, begin);
+			newEventValues.put(Events.DTEND, end);
 		} else {
 			newEventValues.put(Events.DTSTART, originalBegin);
 			newEventValues.put(Events.DTEND, originalEnd);
@@ -698,9 +718,19 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		List<ContentValues> newAttendeeList = eventDataViewModel.getNEW_ATTENDEES();
 
 		if (eventDataViewModel.isModified(Events.DTSTART) || eventDataViewModel.isModified(Events.DTEND)) {
-			modifiedEvent.put(Events.DTSTART, EventUtil.convertToUtc(eventDataViewModel.getEventTimeZone(), modifiedEvent.getAsLong(Events.DTSTART)));
-			modifiedEvent.put(Events.DTEND, EventUtil.convertToUtc(eventDataViewModel.getEventTimeZone(),
-					modifiedEvent.getAsLong(Events.DTEND)));
+			long begin = 0L;
+			long end = 0L;
+
+			if (binding.timeLayout.timeAlldaySwitch.isChecked()) {
+				begin = EventUtil.convertToUtc(eventDataViewModel.getEventTimeZone(), modifiedEvent.getAsLong(Events.DTSTART));
+				end = EventUtil.convertToUtc(eventDataViewModel.getEventTimeZone(), modifiedEvent.getAsLong(Events.DTEND));
+			} else {
+				begin = modifiedEvent.getAsLong(Events.DTSTART);
+				end = modifiedEvent.getAsLong(Events.DTEND);
+			}
+
+			modifiedEvent.put(Events.DTSTART, begin);
+			modifiedEvent.put(Events.DTEND, end);
 		} else {
 			modifiedEvent.put(Events.DTSTART, originalBegin);
 			modifiedEvent.put(Events.DTEND, originalEnd);
