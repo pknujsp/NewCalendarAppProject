@@ -503,7 +503,9 @@ public class EventHelper implements Serializable {
 		final long originalBegin = originalEvent.getAsLong(Instances.DTSTART);
 		final boolean originalAllDay = originalEvent.getAsInteger(Events.ALL_DAY) == 1;
 		final long originalEnd = originalAllDay ? originalEvent.getAsLong(Instances.END) : originalEvent.getAsLong(Instances.DTEND);
-		final String originalTimeZone = originalEvent.getAsString(Events.EVENT_TIMEZONE);
+		final String originalTimeZone = originalEvent.containsKey(Events.EVENT_TIMEZONE) ?
+				originalEvent.getAsString(Events.EVENT_TIMEZONE) :
+				originalEvent.getAsString(Events.CALENDAR_TIME_ZONE);
 
 		final long newBegin = newEvent.getAsLong(Events.DTSTART);
 		final long newEnd = newEvent.getAsLong(Events.DTEND);

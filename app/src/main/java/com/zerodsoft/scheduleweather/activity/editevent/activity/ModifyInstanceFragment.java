@@ -595,6 +595,29 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		}
 	}
 
+	private void setFinalDateTime(ContentValues contentValues) {
+		if (eventDataViewModel.isModified(Events.DTSTART) || eventDataViewModel.isModified(Events.DTEND)) {
+			long begin = 0L;
+			long end = 0L;
+
+			if (binding.timeLayout.timeAlldaySwitch.isChecked()) {
+				begin = EventUtil.convertToUtc(eventDataViewModel.getEventTimeZone(), contentValues.getAsLong(Events.DTSTART));
+				end = EventUtil.convertToUtc(eventDataViewModel.getEventTimeZone(), contentValues.getAsLong(Events.DTEND));
+			} else {
+				begin = contentValues.getAsLong(Events.DTSTART);
+				end = contentValues.getAsLong(Events.DTEND);
+			}
+
+			contentValues.put(Events.DTSTART, begin);
+			contentValues.put(Events.DTEND, end);
+		} else {
+			contentValues.put(Events.DTSTART, originalBegin);
+			contentValues.put(Events.DTEND, originalEnd);
+		}
+
+		contentValues.put(Events.ALL_DAY, binding.timeLayout.timeAlldaySwitch.isChecked() ? 1 : 0);
+	}
+
 	//이번 일정만 변경
 	protected void updateThisEvent() {
 		//인스턴스를 이벤트에서 제외
@@ -623,24 +646,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 			newEventValues.putNull(Events.RRULE);
 		}
 
-		if (eventDataViewModel.isModified(Events.DTSTART) || eventDataViewModel.isModified(Events.DTEND)) {
-			long begin = 0L;
-			long end = 0L;
-
-			if (binding.timeLayout.timeAlldaySwitch.isChecked()) {
-				begin = EventUtil.convertToUtc(eventDataViewModel.getEventTimeZone(), newEventValues.getAsLong(Events.DTSTART));
-				end = EventUtil.convertToUtc(eventDataViewModel.getEventTimeZone(), newEventValues.getAsLong(Events.DTEND));
-			} else {
-				begin = newEventValues.getAsLong(Events.DTSTART);
-				end = newEventValues.getAsLong(Events.DTEND);
-			}
-
-			newEventValues.put(Events.DTSTART, begin);
-			newEventValues.put(Events.DTEND, end);
-		} else {
-			newEventValues.put(Events.DTSTART, originalBegin);
-			newEventValues.put(Events.DTEND, originalEnd);
-		}
+		setFinalDateTime(newEventValues);
 
 		EventHelper eventHelper = new EventHelper(getAsyncQueryService());
 		eventHelper.updateEvent(EventHelper.EventEditType.UPDATE_ONLY_THIS_EVENT, originalEvent, newEventValues, originalReminderList
@@ -684,24 +690,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		setNewEventValues(CalendarContract.Events.IS_ORGANIZER, newEventValues, newEvent);
 		newEventValues.put(CalendarContract.Events._ID, originalEvent.getAsLong(CalendarContract.Instances.EVENT_ID));
 
-		if (eventDataViewModel.isModified(Events.DTSTART) || eventDataViewModel.isModified(Events.DTEND)) {
-			long begin = 0L;
-			long end = 0L;
-
-			if (binding.timeLayout.timeAlldaySwitch.isChecked()) {
-				begin = EventUtil.convertToUtc(eventDataViewModel.getEventTimeZone(), newEventValues.getAsLong(Events.DTSTART));
-				end = EventUtil.convertToUtc(eventDataViewModel.getEventTimeZone(), newEventValues.getAsLong(Events.DTEND));
-			} else {
-				begin = newEventValues.getAsLong(Events.DTSTART);
-				end = newEventValues.getAsLong(Events.DTEND);
-			}
-
-			newEventValues.put(Events.DTSTART, begin);
-			newEventValues.put(Events.DTEND, end);
-		} else {
-			newEventValues.put(Events.DTSTART, originalBegin);
-			newEventValues.put(Events.DTEND, originalEnd);
-		}
+		setFinalDateTime(newEventValues);
 
 		EventHelper eventHelper = new EventHelper(getAsyncQueryService());
 		eventHelper.updateEvent(EventHelper.EventEditType.UPDATE_FOLLOWING_EVENTS, originalEvent, newEventValues, originalReminderList
@@ -717,24 +706,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		List<ContentValues> newReminderList = eventDataViewModel.getNEW_REMINDERS();
 		List<ContentValues> newAttendeeList = eventDataViewModel.getNEW_ATTENDEES();
 
-		if (eventDataViewModel.isModified(Events.DTSTART) || eventDataViewModel.isModified(Events.DTEND)) {
-			long begin = 0L;
-			long end = 0L;
-
-			if (binding.timeLayout.timeAlldaySwitch.isChecked()) {
-				begin = EventUtil.convertToUtc(eventDataViewModel.getEventTimeZone(), modifiedEvent.getAsLong(Events.DTSTART));
-				end = EventUtil.convertToUtc(eventDataViewModel.getEventTimeZone(), modifiedEvent.getAsLong(Events.DTEND));
-			} else {
-				begin = modifiedEvent.getAsLong(Events.DTSTART);
-				end = modifiedEvent.getAsLong(Events.DTEND);
-			}
-
-			modifiedEvent.put(Events.DTSTART, begin);
-			modifiedEvent.put(Events.DTEND, end);
-		} else {
-			modifiedEvent.put(Events.DTSTART, originalBegin);
-			modifiedEvent.put(Events.DTEND, originalEnd);
-		}
+		setFinalDateTime(modifiedEvent);
 
 		EventHelper eventHelper = new EventHelper(getAsyncQueryService());
 		eventHelper.updateEvent(EventHelper.EventEditType.UPDATE_ALL_EVENTS, originalEvent, modifiedEvent, originalReminderList
