@@ -87,6 +87,18 @@ public class DateTimeObj {
 		return calendar.getTime();
 	}
 
+	public Calendar getCalendar() {
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(year, month - 1, day, hour, minute, 0);
+		return calendar;
+	}
+
+	public Calendar getUtcCalendar() {
+		Calendar calendar = Calendar.getInstance(ClockUtil.UTC_TIME_ZONE);
+		calendar.set(year, month - 1, day, hour, minute, 0);
+		return calendar;
+	}
+
 	public void setTimeMillis(long timeMillis) {
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTimeInMillis(timeMillis);

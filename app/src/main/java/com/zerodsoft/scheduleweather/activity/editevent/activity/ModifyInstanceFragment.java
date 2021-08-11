@@ -27,12 +27,12 @@ import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -243,7 +243,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 					if (originalEvent.getAsInteger(Events.ALL_DAY) == 1) {
 						TimeZone timeZone = TimeZone.getTimeZone(originalEvent.getAsString(Events.CALENDAR_TIME_ZONE));
 						eventDataViewModel.setTimezone(timeZone.getID());
-						setTimeZoneText(timeZone.getID());
+						setTimeZoneText();
 					}
 
 					if (firstModifiedDateTime) {
@@ -420,10 +420,10 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 	private void firstModifiedDateTime() {
 		if (!eventDataViewModel.getNEW_EVENT().containsKey(Events.DTSTART)) {
-			eventDataViewModel.setDtStart(new Date(originalBegin));
+			eventDataViewModel.setDtStart(eventDataViewModel.getBeginDateTimeObj().getDate());
 		}
 		if (!eventDataViewModel.getNEW_EVENT().containsKey(Events.DTEND)) {
-			eventDataViewModel.setDtEnd(new Date(originalEnd));
+			eventDataViewModel.setDtEnd(eventDataViewModel.getEndDateTimeObj().getDate());
 		}
 		if (!eventDataViewModel.getNEW_EVENT().containsKey(Events.ALL_DAY)) {
 			eventDataViewModel.setIsAllDay(binding.timeLayout.timeAlldaySwitch.isChecked());
@@ -463,32 +463,38 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		final boolean isAllDay = originalEvent.getAsInteger(CalendarContract.Instances.ALL_DAY) == 1;
 		binding.timeLayout.timeAlldaySwitch.setChecked(isAllDay);
 
-		DateTimeObj beginDateTimeObj = eventDataViewModel.getBeginDateTimeObj();
-		DateTimeObj endDateTimeObj = eventDataViewModel.getEndDateTimeObj();
 		Calendar calendar = null;
 
 		if (isAllDay) {
-			calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-			setTimeZoneText(originalEvent.getAsString(Events.CALENDAR_TIME_ZONE));
+			calendar = Calendar.getInstance(ClockUtil.UTC_TIME_ZONE);
 		} else {
 			calendar = Calendar.getInstance(TimeZone.getTimeZone(originalEvent.getAsString(Events.EVENT_TIMEZONE)));
-			setTimeZoneText(originalEvent.getAsString(Events.EVENT_TIMEZONE));
 		}
+		DateTimeObj beginDateTimeObj = eventDataViewModel.getBeginDateTimeObj();
+		DateTimeObj endDateTimeObj = eventDataViewModel.getEndDateTimeObj();
 
-		calendar.setTimeInMillis(originalEvent.getAsLong(Instances.BEGIN));
+		originalBegin = originalEvent.getAsLong(Instances.BEGIN);
+		calendar.setTimeInMillis(originalBegin);
 		beginDateTimeObj.setYear(calendar.get(Calendar.YEAR)).setMonth(calendar.get(Calendar.MONTH) + 1)
 				.setDay(calendar.get(Calendar.DAY_OF_MONTH)).setHour(calendar.get(Calendar.HOUR_OF_DAY))
 				.setMinute(calendar.get(Calendar.MINUTE));
 
-		calendar.setTimeInMillis(originalEvent.getAsLong(Instances.END));
+		originalEnd = originalEvent.getAsLong(Instances.END);
+		calendar.setTimeInMillis(originalEnd);
 		endDateTimeObj.setYear(calendar.get(Calendar.YEAR)).setMonth(calendar.get(Calendar.MONTH) + 1)
 				.setDay(calendar.get(Calendar.DAY_OF_MONTH)).setHour(calendar.get(Calendar.HOUR_OF_DAY))
 				.setMinute(calendar.get(Calendar.MINUTE));
 
-		setDateText(DateTimeType.BEGIN, beginDateTimeObj);
+		setDateText(DateTimeType.BEGIN, beginDateTimeObj, true);
 		setTimeText(DateTimeType.BEGIN, beginDateTimeObj);
-		setDateText(DateTimeType.END, endDateTimeObj);
+		setDateText(DateTimeType.END, endDateTimeObj, true);
 		setTimeText(DateTimeType.END, endDateTimeObj);
+
+		eventDataViewModel.setEventTimeZone(isAllDay ?
+				TimeZone.getTimeZone(originalEvent.getAsString(Events.CALENDAR_TIME_ZONE))
+				: TimeZone.getTimeZone(originalEvent.getAsString(Events.EVENT_TIMEZONE)));
+		eventDataViewModel.setCalendarTimeZone(TimeZone.getTimeZone(originalEvent.getAsString(Events.CALENDAR_TIME_ZONE)));
+		setTimeZoneText();
 
 		//캘린더
 		setCalendarText(originalEvent.getAsInteger(Instances.CALENDAR_COLOR),
@@ -596,7 +602,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		setNewEventValues(Events.RRULE, newEventValues, modifiedEvent);
 
 		if (!eventDataViewModel.isModified(Events.RRULE)) {
-			newEventValues.put(Events.RRULE, (String) null);
+			newEventValues.putNull(Events.RRULE);
 		}
 
 		if (eventDataViewModel.isModified(Events.DTSTART) || eventDataViewModel.isModified(Events.DTEND)) {

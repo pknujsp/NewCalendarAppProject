@@ -17,6 +17,8 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.SimpleTimeZone;
+import java.util.TimeZone;
 
 public class EventDataViewModel extends AndroidViewModel implements IEventDataViewModel {
 	private final ContentValues NEW_EVENT = new ContentValues();
@@ -28,6 +30,8 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 
 	private DateTimeObj beginDateTimeObj = new DateTimeObj();
 	private DateTimeObj endDateTimeObj = new DateTimeObj();
+	private TimeZone eventTimeZone;
+	private TimeZone calendarTimeZone;
 
 	public EventDataViewModel(@NonNull @NotNull Application application) {
 		super(application);
@@ -63,6 +67,22 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 
 	public DateTimeObj getEndDateTimeObj() {
 		return endDateTimeObj;
+	}
+
+	public TimeZone getCalendarTimeZone() {
+		return calendarTimeZone;
+	}
+
+	public TimeZone getEventTimeZone() {
+		return eventTimeZone;
+	}
+
+	public void setCalendarTimeZone(TimeZone calendarTimeZone) {
+		this.calendarTimeZone = calendarTimeZone;
+	}
+
+	public void setEventTimeZone(TimeZone eventTimeZone) {
+		this.eventTimeZone = eventTimeZone;
 	}
 
 	@Override
@@ -101,21 +121,18 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 	@Override
 	public void setDtStart(@NonNull Date date) {
 		modifiedValueSet.add(Events.DTSTART);
-
 		NEW_EVENT.put(Events.DTSTART, date.getTime());
 	}
 
 	@Override
 	public void setDtEnd(@NonNull Date date) {
 		modifiedValueSet.add(Events.DTEND);
-
 		NEW_EVENT.put(Events.DTEND, date.getTime());
 	}
 
 	@Override
 	public void setTimezone(@NonNull String timezone) {
 		modifiedValueSet.add(Events.EVENT_TIMEZONE);
-
 		NEW_EVENT.put(Events.EVENT_TIMEZONE, timezone);
 	}
 

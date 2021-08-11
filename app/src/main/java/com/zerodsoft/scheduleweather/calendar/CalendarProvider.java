@@ -344,7 +344,8 @@ public class CalendarProvider implements ICalendarProvider {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
 			final String[] PROJECTION = {CalendarContract.Calendars._ID, CalendarContract.Calendars.NAME,
 					CalendarContract.Calendars.ACCOUNT_NAME, CalendarContract.Calendars.CALENDAR_DISPLAY_NAME, CalendarContract.Calendars.OWNER_ACCOUNT,
-					CalendarContract.Calendars.CALENDAR_COLOR, CalendarContract.Calendars.IS_PRIMARY, CalendarContract.Calendars.ACCOUNT_TYPE, CalendarContract.Calendars.CALENDAR_COLOR_KEY};
+					CalendarContract.Calendars.CALENDAR_COLOR, CalendarContract.Calendars.IS_PRIMARY, CalendarContract.Calendars.ACCOUNT_TYPE
+					, CalendarContract.Calendars.CALENDAR_COLOR_KEY, CalendarContract.Calendars.CALENDAR_TIME_ZONE};
 			ContentResolver contentResolver = context.getContentResolver();
 			Cursor cursor = contentResolver.query(CalendarContract.Calendars.CONTENT_URI, PROJECTION, null, null, null);
 
@@ -365,6 +366,7 @@ public class CalendarProvider implements ICalendarProvider {
 						calendar.put(CalendarContract.Calendars.CALENDAR_COLOR, cursor.getInt(5));
 						calendar.put(CalendarContract.Calendars.ACCOUNT_TYPE, cursor.getString(7));
 						calendar.put(CalendarContract.Calendars.CALENDAR_COLOR_KEY, cursor.getString(8));
+						calendar.put(CalendarContract.Calendars.CALENDAR_TIME_ZONE, cursor.getString(9));
 
 						calendarList.add(calendar);
 					} else if (cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.OWNER_ACCOUNT)).contains(GOOGLE_SECONDARY_CALENDAR)) {
@@ -378,6 +380,7 @@ public class CalendarProvider implements ICalendarProvider {
 						calendar.put(CalendarContract.Calendars.CALENDAR_COLOR, cursor.getInt(5));
 						calendar.put(CalendarContract.Calendars.ACCOUNT_TYPE, cursor.getString(7));
 						calendar.put(CalendarContract.Calendars.CALENDAR_COLOR_KEY, cursor.getString(8));
+						calendar.put(CalendarContract.Calendars.CALENDAR_TIME_ZONE, cursor.getString(9));
 
 						calendarList.add(calendar);
 						break;

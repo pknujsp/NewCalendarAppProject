@@ -35,7 +35,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.activity.editevent.activity.ModifyInstanceFragment;
 import com.zerodsoft.scheduleweather.activity.editevent.interfaces.OnEditEventResultListener;
 import com.zerodsoft.scheduleweather.calendar.AsyncQueryService;
@@ -57,7 +56,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -657,7 +655,7 @@ public class EventFragment extends BottomSheetDialogFragment {
 		// 제목
 		instanceValues = calendarViewModel.getInstance(instanceId, originalBegin, originalEnd);
 
-		if (instanceValues.getAsInteger(CalendarContract.Instances.CALENDAR_ACCESS_LEVEL) == CalendarContract.Instances.CAL_ACCESS_READ) {
+		if (instanceValues.getAsInteger(Instances.CALENDAR_ACCESS_LEVEL) == Instances.CAL_ACCESS_READ) {
 			binding.fabsLayout.setVisibility(View.GONE);
 		}
 
@@ -672,6 +670,9 @@ public class EventFragment extends BottomSheetDialogFragment {
 		}
 		//캘린더
 		setCalendarText();
+
+		final long begin = instanceValues.getAsLong(Instances.BEGIN);
+		final long end = instanceValues.getAsLong(Instances.END);
 
 		// 시간대
 		final boolean isAllDay = instanceValues.getAsInteger(Instances.ALL_DAY) == 1;
@@ -689,27 +690,27 @@ public class EventFragment extends BottomSheetDialogFragment {
 			if (dayDifference == 0) {
 				binding.eventDatetimeView.eventStartdatetimeLabel.setText(R.string.date);
 				binding.eventDatetimeView.enddatetimeLayout.setVisibility(View.GONE);
-				binding.eventDatetimeView.startDate.setText(EventUtil.convertDate(instanceValues.getAsLong(Instances.BEGIN)));
+				binding.eventDatetimeView.startDate.setText(EventUtil.convertDate(begin));
 			} else {
-				Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-				calendar.setTimeInMillis(instanceValues.getAsLong(Instances.BEGIN));
-				binding.eventDatetimeView.startDate.setText(EventUtil.convertDate(calendar.getTime().getTime()));
+				binding.eventDatetimeView.startDate.setText(EventUtil.convertDate(begin));
 
-				calendar.add(Calendar.DATE, dayDifference);
-				binding.eventDatetimeView.endDate.setText(EventUtil.convertDate(calendar.getTime().getTime()));
+				Calendar calendar = Calendar.getInstance();
+				calendar.setTimeInMillis(end);
+				calendar.add(Calendar.DATE, -1);
+				binding.eventDatetimeView.endDate.setText(EventUtil.convertDate(calendar.getTimeInMillis()));
 			}
 		} else {
-			String timeZoneStr = instanceValues.getAsString(CalendarContract.Instances.EVENT_TIMEZONE);
-			TimeZone timeZone = TimeZone.getTimeZone(timeZoneStr);
-			setTimeZoneText(timeZone);
+			String calendarTimeZoneStr = instanceValues.getAsString(Instances.CALENDAR_TIME_ZONE);
+			String eventTimeZoneStr = instanceValues.getAsString(Instances.EVENT_TIMEZONE);
+			TimeZone calendarTimeZone = TimeZone.getTimeZone(calendarTimeZoneStr);
+			TimeZone eventTimeZone = TimeZone.getTimeZone(eventTimeZoneStr);
 
-			Date beginDate = new Date(instanceValues.getAsLong(Instances.BEGIN));
-			Date endDate = new Date(instanceValues.getAsLong(Instances.END));
+			setTimeZoneText(eventTimeZone, calendarTimeZone, begin, end);
 
-			binding.eventDatetimeView.startDate.setText(EventUtil.convertDate(beginDate.getTime()));
-			binding.eventDatetimeView.startTime.setText(EventUtil.convertTime(beginDate.getTime(), App.isPreference_key_using_24_hour_system()));
-			binding.eventDatetimeView.endDate.setText(EventUtil.convertDate(endDate.getTime()));
-			binding.eventDatetimeView.endTime.setText(EventUtil.convertTime(endDate.getTime(), App.isPreference_key_using_24_hour_system()));
+			binding.eventDatetimeView.startDate.setText(EventUtil.convertDate(begin));
+			binding.eventDatetimeView.startTime.setText(EventUtil.convertTime(begin));
+			binding.eventDatetimeView.endDate.setText(EventUtil.convertDate(end));
+			binding.eventDatetimeView.endTime.setText(EventUtil.convertTime(end));
 		}
 
 		// 반복
@@ -854,8 +855,26 @@ public class EventFragment extends BottomSheetDialogFragment {
 		binding.eventAccessLevelView.eventAccessLevel.setText(EventUtil.convertAccessLevel(instanceValues.getAsInteger(CalendarContract.Instances.ACCESS_LEVEL), getContext()));
 	}
 
-	private void setTimeZoneText(TimeZone timeZone) {
-		binding.eventDatetimeView.eventTimezone.setText(timeZone.getDisplayName(Locale.KOREAN));
+	private void setTimeZoneText(TimeZone eventTimeZone, TimeZone calendarTimeZone, Long begin, Long end) {
+		if (eventTimeZone.equals(calendarTimeZone)) {
+			binding.eventDatetimeView.eventTimezone.setText(eventTimeZone.getDisplayName(Locale.KOREAN));
+		} else {
+			Calendar calendar = Calendar.getInstance(eventTimeZone);
+			calendar.setTimeInMillis(begin);
+			String beginDateStr = EventUtil.getDateTimeStr(calendar, false);
+			calendar.setTimeInMillis(end);
+			String endDateStr = EventUtil.getDateTimeStr(calendar, false);
+
+			StringBuilder stringBuilder = new StringBuilder();
+			stringBuilder.append(eventTimeZone.getDisplayName(Locale.KOREAN));
+			stringBuilder.append("\n(");
+			stringBuilder.append(beginDateStr);
+			stringBuilder.append(" -> ");
+			stringBuilder.append(endDateStr);
+			stringBuilder.append(")");
+
+			binding.eventDatetimeView.eventTimezone.setText(stringBuilder.toString());
+		}
 	}
 
 	private void setReminderText(List<ContentValues> reminders) {

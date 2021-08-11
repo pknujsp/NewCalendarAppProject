@@ -14,14 +14,12 @@ import com.zerodsoft.scheduleweather.activity.App;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
 
 public class EventUtil {
 	private EventUtil() {
@@ -78,12 +76,19 @@ public class EventUtil {
 				dateTimeStringBuilder.append(EventUtil.convertDate(calendar.getTime().getTime()));
 			}
 		} else {
-			dateTimeStringBuilder.append(EventUtil.convertDateTime(instance.getAsLong(Instances.BEGIN), false,
-					App.isPreference_key_using_24_hour_system()))
+			TimeZone eventTimeZone = TimeZone.getTimeZone(instance.getAsString(Instances.EVENT_TIMEZONE));
+			TimeZone calendarTimeZone = TimeZone.getTimeZone(instance.getAsString(Instances.CALENDAR_TIME_ZONE));
+
+			Calendar beginCalendar = Calendar.getInstance(calendarTimeZone);
+			Calendar endCalendar = Calendar.getInstance(calendarTimeZone);
+
+			beginCalendar.setTimeInMillis(instance.getAsLong(Instances.BEGIN));
+			endCalendar.setTimeInMillis(instance.getAsLong(Instances.END));
+
+			dateTimeStringBuilder.append(EventUtil.getDateTimeStr(beginCalendar, false))
 					.append("\n")
 					.append(" -> ")
-					.append(EventUtil.convertDateTime(instance.getAsLong(Instances.END), false,
-							App.isPreference_key_using_24_hour_system()));
+					.append(EventUtil.getDateTimeStr(endCalendar, false));
 		}
 
 		return dateTimeStringBuilder.toString();
@@ -297,13 +302,19 @@ public class EventUtil {
 		return minutes;
 	}
 
-	public static String convertDateTime(long dateTime, boolean allDay, boolean is24HourSystem) {
+	public static String getDateTimeStr(Calendar dateCalendar, boolean allDay) {
+		SimpleDateFormat dateFormat = (SimpleDateFormat) ClockUtil.YYYY_M_D_E.clone();
+		dateFormat.setTimeZone(dateCalendar.getTimeZone());
+
 		if (allDay) {
-			return ClockUtil.YYYY_M_D_E.format(new Date(dateTime));
+			return dateFormat.format(dateCalendar.getTimeInMillis());
 		} else {
-			return ClockUtil.YYYY_M_D_E.format(new Date(dateTime)) + " " +
-					(is24HourSystem ? ClockUtil.HOURS_24.format(new Date(dateTime))
-							: ClockUtil.HOURS_12.format(new Date(dateTime)));
+			SimpleDateFormat timeFormat = App.isPreference_key_using_24_hour_system() ?
+					(SimpleDateFormat) ClockUtil.HOURS_24.clone() : (SimpleDateFormat) ClockUtil.HOURS_12.clone();
+			timeFormat.setTimeZone(dateCalendar.getTimeZone());
+
+			return dateFormat.format(dateCalendar.getTimeInMillis()) + " "
+					+ timeFormat.format(dateCalendar.getTimeInMillis());
 		}
 	}
 
@@ -311,9 +322,9 @@ public class EventUtil {
 		return ClockUtil.YYYY_M_D_E.format(new Date(date));
 	}
 
-	public static String convertTime(long time, boolean is24HourSystem) {
-		return is24HourSystem ? ClockUtil.HOURS_24.format(new Date(time))
-				: ClockUtil.HOURS_12.format(new Date(time));
+	public static String convertTime(long time) {
+		return App.isPreference_key_using_24_hour_system() ? ClockUtil.HOURS_24.format(time)
+				: ClockUtil.HOURS_12.format(time);
 	}
 
 	public static String convertTitle(Context context, String title) {

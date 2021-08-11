@@ -25,7 +25,6 @@ import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -230,8 +229,8 @@ public class NewEventFragment extends EventBaseFragment {
 
 		final int defaultHourRange = 60;
 
-		DateTimeObj beginDateTimeObj = new DateTimeObj();
-		DateTimeObj endDateTimeObj = new DateTimeObj();
+		DateTimeObj beginDateTimeObj = eventDataViewModel.getBeginDateTimeObj();
+		DateTimeObj endDateTimeObj = eventDataViewModel.getEndDateTimeObj();
 		beginDateTimeObj.setTimeMillis(calendar.getTime().getTime());
 		calendar.add(Calendar.MINUTE, defaultHourRange);
 		endDateTimeObj.setTimeMillis(calendar.getTime().getTime());
@@ -239,11 +238,8 @@ public class NewEventFragment extends EventBaseFragment {
 		eventDataViewModel.setDtStart(beginDateTimeObj.getDate());
 		eventDataViewModel.setDtEnd(endDateTimeObj.getDate());
 
-		eventDataViewModel.setBeginDateTimeObj(beginDateTimeObj);
-		eventDataViewModel.setEndDateTimeObj(endDateTimeObj);
-
-		setDateText(DateTimeType.BEGIN, beginDateTimeObj);
-		setDateText(DateTimeType.END, endDateTimeObj);
+		setDateText(DateTimeType.BEGIN, beginDateTimeObj, true);
+		setDateText(DateTimeType.END, endDateTimeObj, true);
 		setTimeText(DateTimeType.BEGIN, beginDateTimeObj);
 		setTimeText(DateTimeType.END, endDateTimeObj);
 
@@ -251,14 +247,16 @@ public class NewEventFragment extends EventBaseFragment {
 		binding.timeLayout.timeAlldaySwitch.setChecked(false);
 
 		// 기기 시간대로 설정
-		TimeZone timeZone = null;
+		TimeZone eventTimeZone = null;
 		if (App.isPreference_key_using_timezone_of_device()) {
-			timeZone = TimeZone.getDefault();
+			eventTimeZone = TimeZone.getDefault();
 		} else {
-			timeZone = App.getPreference_key_custom_timezone();
+			eventTimeZone = App.getPreference_key_custom_timezone();
 		}
-		eventDataViewModel.setTimezone(timeZone.getID());
-		setTimeZoneText(timeZone.getID());
+		eventDataViewModel.setEventTimeZone(eventTimeZone);
+		eventDataViewModel.setCalendarTimeZone(TimeZone.getTimeZone(selectedCalendarValues.getAsString(CalendarContract.Calendars.CALENDAR_TIME_ZONE)));
+		eventDataViewModel.setTimezone(eventTimeZone.getID());
+		setTimeZoneText();
 
 		// 접근 범위(기본)
 		eventDataViewModel.setAccessLevel(CalendarContract.Events.ACCESS_DEFAULT);
