@@ -21,6 +21,7 @@ import com.zerodsoft.scheduleweather.calendar.EventHelper;
 import com.zerodsoft.scheduleweather.calendar.dto.DateTimeObj;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -39,7 +40,7 @@ public class NewEventFragment extends EventBaseFragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		eventDataViewModel = new ViewModelProvider(this).get(EventDataViewModel.class);
+		eventModel = new EventModel();
 		calendarViewModel = new ViewModelProvider(requireActivity()).get(CalendarViewModel.class);
 		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 	}
@@ -85,7 +86,7 @@ public class NewEventFragment extends EventBaseFragment {
 		binding.titleLayout.eventColor.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				String currentColorKey = eventDataViewModel.getNEW_EVENT().getAsString(CalendarContract.Events.EVENT_COLOR_KEY);
+				String currentColorKey = eventModel.getNEW_EVENT().getAsString(CalendarContract.Events.EVENT_COLOR_KEY);
 				String accountName = selectedCalendarValues.getAsString(CalendarContract.Calendars.ACCOUNT_NAME);
 				List<ContentValues> colors = calendarViewModel.getEventColors(accountName);
 				onClickedEventColor(currentColorKey, colors);
@@ -116,10 +117,10 @@ public class NewEventFragment extends EventBaseFragment {
 			// 반복 룰과 이벤트의 시작 시간 전달
 			String rRule = null;
 
-			if (eventDataViewModel.getNEW_EVENT().containsKey(Events.RRULE)) {
-				rRule = eventDataViewModel.getNEW_EVENT().getAsString(Events.RRULE);
+			if (eventModel.getNEW_EVENT().containsKey(Events.RRULE)) {
+				rRule = eventModel.getNEW_EVENT().getAsString(Events.RRULE);
 			}
-			onClickedRecurrence(rRule, eventDataViewModel.getNEW_EVENT().getAsLong(Events.DTSTART));
+			onClickedRecurrence(rRule, eventModel.getNEW_EVENT().getAsLong(Events.DTSTART));
 		});
 
         /*
@@ -127,7 +128,7 @@ public class NewEventFragment extends EventBaseFragment {
          */
 		binding.accesslevelLayout.eventAccessLevel.setOnClickListener(view ->
 		{
-			onClickedAccessLevel(eventDataViewModel.getNEW_EVENT().getAsInteger(CalendarContract.Events.ACCESS_LEVEL));
+			onClickedAccessLevel(eventModel.getNEW_EVENT().getAsInteger(CalendarContract.Events.ACCESS_LEVEL));
 		});
 
         /*
@@ -135,7 +136,7 @@ public class NewEventFragment extends EventBaseFragment {
          */
 		binding.availabilityLayout.eventAvailability.setOnClickListener(view ->
 		{
-			onClickedAvailable(eventDataViewModel.getNEW_EVENT().getAsInteger(CalendarContract.Events.AVAILABILITY));
+			onClickedAvailable(eventModel.getNEW_EVENT().getAsInteger(CalendarContract.Events.AVAILABILITY));
 		});
 
         /*
@@ -160,8 +161,8 @@ public class NewEventFragment extends EventBaseFragment {
          */
 		binding.locationLayout.eventLocation.setOnClickListener(view ->
 		{
-			onClickedLocation(eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.EVENT_LOCATION) ?
-					eventDataViewModel.getNEW_EVENT().getAsString(CalendarContract.Events.EVENT_LOCATION) : null);
+			onClickedLocation(eventModel.getNEW_EVENT().containsKey(CalendarContract.Events.EVENT_LOCATION) ?
+					eventModel.getNEW_EVENT().getAsString(CalendarContract.Events.EVENT_LOCATION) : null);
 		});
 
         /*
@@ -173,16 +174,16 @@ public class NewEventFragment extends EventBaseFragment {
 				Bundle bundle = new Bundle();
 
 				bundle.putBoolean(CalendarContract.Events.GUESTS_CAN_MODIFY,
-						eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.GUESTS_CAN_MODIFY)
-								&& (eventDataViewModel.getNEW_EVENT().getAsInteger(CalendarContract.Events.GUESTS_CAN_MODIFY) == 1));
+						eventModel.getNEW_EVENT().containsKey(CalendarContract.Events.GUESTS_CAN_MODIFY)
+								&& (eventModel.getNEW_EVENT().getAsInteger(CalendarContract.Events.GUESTS_CAN_MODIFY) == 1));
 
 				bundle.putBoolean(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS,
-						eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS)
-								&& (eventDataViewModel.getNEW_EVENT().getAsInteger(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS) == 1));
+						eventModel.getNEW_EVENT().containsKey(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS)
+								&& (eventModel.getNEW_EVENT().getAsInteger(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS) == 1));
 
 				bundle.putBoolean(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS,
-						eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS)
-								&& (eventDataViewModel.getNEW_EVENT().getAsInteger(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS) == 1));
+						eventModel.getNEW_EVENT().containsKey(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS)
+								&& (eventModel.getNEW_EVENT().getAsInteger(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS) == 1));
 				onClickedAttendeeList(bundle);
 			}
 		});
@@ -206,7 +207,7 @@ public class NewEventFragment extends EventBaseFragment {
 		//기본 캘린더 확인
 		ContentValues defaultCalendar = calendarList.get(0);
 		selectedCalendarValues = defaultCalendar;
-		eventDataViewModel.setCalendar(defaultCalendar.getAsInteger(CalendarContract.Calendars._ID));
+		eventModel.setCalendar(defaultCalendar.getAsInteger(CalendarContract.Calendars._ID));
 
 		setCalendarText(defaultCalendar.getAsInteger(CalendarContract.Calendars.CALENDAR_COLOR),
 				defaultCalendar.getAsString(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME),
@@ -217,7 +218,7 @@ public class NewEventFragment extends EventBaseFragment {
 		int color = colors.get(0).getAsInteger(CalendarContract.Colors.COLOR);
 		String colorKey = colors.get(0).getAsString(CalendarContract.Colors.COLOR_KEY);
 
-		eventDataViewModel.setEventColor(color, colorKey);
+		eventModel.setEventColor(color, colorKey);
 		binding.titleLayout.eventColor.setBackgroundColor(EventUtil.getColor(color));
 
 		// 기기 시각으로 설정
@@ -229,21 +230,23 @@ public class NewEventFragment extends EventBaseFragment {
 
 		final int defaultHourRange = 60;
 
-		DateTimeObj beginDateTimeObj = eventDataViewModel.getBeginDateTimeObj();
-		DateTimeObj endDateTimeObj = eventDataViewModel.getEndDateTimeObj();
+		DateTimeObj beginDateTimeObj = new DateTimeObj();
+		DateTimeObj endDateTimeObj = new DateTimeObj();
+
 		beginDateTimeObj.setTimeMillis(calendar.getTime().getTime());
 		calendar.add(Calendar.MINUTE, defaultHourRange);
+
 		endDateTimeObj.setTimeMillis(calendar.getTime().getTime());
 
-		eventDataViewModel.setDtStart(beginDateTimeObj.getDate());
-		eventDataViewModel.setDtEnd(endDateTimeObj.getDate());
+		eventModel.setBeginDateTimeObj(beginDateTimeObj);
+		eventModel.setEndDateTimeObj(endDateTimeObj);
 
 		setDateText(DateTimeType.BEGIN, beginDateTimeObj, true);
 		setDateText(DateTimeType.END, endDateTimeObj, true);
 		setTimeText(DateTimeType.BEGIN, beginDateTimeObj);
 		setTimeText(DateTimeType.END, endDateTimeObj);
 
-		eventDataViewModel.setIsAllDay(false);
+		eventModel.setIsAllDay(false);
 		binding.timeLayout.timeAlldaySwitch.setChecked(false);
 
 		// 기기 시간대로 설정
@@ -253,20 +256,20 @@ public class NewEventFragment extends EventBaseFragment {
 		} else {
 			eventTimeZone = App.getPreference_key_custom_timezone();
 		}
-		eventDataViewModel.setEventTimeZone(eventTimeZone);
-		eventDataViewModel.setCalendarTimeZone(
+		eventModel.setEventTimeZone(eventTimeZone);
+		eventModel.setCalendarTimeZone(
 				selectedCalendarValues.containsKey(CalendarContract.Calendars.CALENDAR_TIME_ZONE) ?
 						TimeZone.getTimeZone(selectedCalendarValues.getAsString(CalendarContract.Calendars.CALENDAR_TIME_ZONE))
 						: TimeZone.getDefault());
-		eventDataViewModel.setTimezone(eventTimeZone.getID());
+		eventModel.setTimezone(eventTimeZone.getID());
 		setTimeZoneText();
 
 		// 접근 범위(기본)
-		eventDataViewModel.setAccessLevel(CalendarContract.Events.ACCESS_DEFAULT);
+		eventModel.setAccessLevel(CalendarContract.Events.ACCESS_DEFAULT);
 		setAccessLevelText(CalendarContract.Events.ACCESS_DEFAULT);
 
 		// 유효성(바쁨)
-		eventDataViewModel.setAvailability(CalendarContract.Events.AVAILABILITY_BUSY);
+		eventModel.setAvailability(CalendarContract.Events.AVAILABILITY_BUSY);
 		setAvailabilityText(CalendarContract.Events.AVAILABILITY_BUSY);
 
 		// 참석자 버튼 텍스트 수정
@@ -277,9 +280,32 @@ public class NewEventFragment extends EventBaseFragment {
 	private void saveNewEvent() {
 		// 시간이 바뀌는 경우, 알림 데이터도 변경해야함.
 		// 알림 재설정
-		ContentValues newEvent = eventDataViewModel.getNEW_EVENT();
-		List<ContentValues> newReminderList = eventDataViewModel.getNEW_REMINDERS();
-		List<ContentValues> newAttendeeList = eventDataViewModel.getNEW_ATTENDEES();
+		ContentValues newEvent = eventModel.getNEW_EVENT();
+		List<ContentValues> newReminderList = eventModel.getNEW_REMINDERS();
+		List<ContentValues> newAttendeeList = eventModel.getNEW_ATTENDEES();
+
+		final boolean newIsAllDay = binding.timeLayout.timeAlldaySwitch.isChecked();
+
+		DateTimeObj beginDateTimeObj = eventModel.getBeginDateTimeObj();
+		DateTimeObj endDateTimeObj = eventModel.getEndDateTimeObj();
+
+		long beginTimeMillis = 0L;
+		long endTimeMillis = 0L;
+
+		if (newIsAllDay) {
+			Calendar utcCalendar = Calendar.getInstance(ClockUtil.UTC_TIME_ZONE);
+			utcCalendar.set(beginDateTimeObj.getYear(), beginDateTimeObj.getMonth() - 1, beginDateTimeObj.getDay());
+			beginTimeMillis = utcCalendar.getTimeInMillis();
+
+			utcCalendar.set(endDateTimeObj.getYear(), endDateTimeObj.getMonth() - 1, endDateTimeObj.getDay());
+			endTimeMillis = utcCalendar.getTimeInMillis();
+		} else {
+			beginTimeMillis = beginDateTimeObj.getTimeMillis();
+			endTimeMillis = endDateTimeObj.getTimeMillis();
+		}
+
+		newEvent.put(Events.DTSTART, beginTimeMillis);
+		newEvent.put(Events.DTEND, endTimeMillis);
 
 		EventHelper eventHelper = new EventHelper(new AsyncQueryService(getActivity(), (OnEditEventResultListener) calendarViewModel));
 		eventHelper.saveNewEvent(newEvent, locationDTO, newReminderList, newAttendeeList, locationIntentCode);

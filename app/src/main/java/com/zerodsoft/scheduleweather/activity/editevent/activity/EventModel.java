@@ -1,26 +1,20 @@
 package com.zerodsoft.scheduleweather.activity.editevent.activity;
 
-import android.app.Application;
 import android.content.ContentValues;
 import android.provider.CalendarContract;
 import android.provider.CalendarContract.Events;
 
 import androidx.annotation.NonNull;
-import androidx.lifecycle.AndroidViewModel;
 
 import com.zerodsoft.scheduleweather.calendar.dto.DateTimeObj;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.SimpleTimeZone;
 import java.util.TimeZone;
 
-public class EventDataViewModel extends AndroidViewModel implements IEventDataViewModel {
+public class EventModel implements IEventDataViewModel {
 	private final ContentValues NEW_EVENT = new ContentValues();
 	private final List<ContentValues> NEW_REMINDERS = new ArrayList<>();
 	private final List<ContentValues> NEW_ATTENDEES = new ArrayList<>();
@@ -32,10 +26,6 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 	private DateTimeObj endDateTimeObj = new DateTimeObj();
 	private TimeZone eventTimeZone;
 	private TimeZone calendarTimeZone;
-
-	public EventDataViewModel(@NonNull @NotNull Application application) {
-		super(application);
-	}
 
 	public ContentValues getNEW_EVENT() {
 		return NEW_EVENT;
@@ -99,7 +89,6 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 	public void setEventColor(@NonNull Integer color, @NonNull String colorKey) {
 		modifiedValueSet.add(Events.EVENT_COLOR);
 		modifiedValueSet.add(Events.EVENT_COLOR_KEY);
-
 		NEW_EVENT.put(Events.EVENT_COLOR, color);
 		NEW_EVENT.put(Events.EVENT_COLOR_KEY, colorKey);
 	}
@@ -107,33 +96,20 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 	@Override
 	public void setCalendar(@NonNull Integer calendarId) {
 		modifiedValueSet.add(Events.CALENDAR_ID);
-
 		NEW_EVENT.put(Events.CALENDAR_ID, calendarId);
 	}
 
 	@Override
 	public void setIsAllDay(@NonNull Boolean isAllDay) {
 		modifiedValueSet.add(Events.ALL_DAY);
-
 		NEW_EVENT.put(Events.ALL_DAY, isAllDay ? 1 : 0);
 	}
+	
 
 	@Override
-	public void setDtStart(@NonNull Date date) {
-		modifiedValueSet.add(Events.DTSTART);
-		NEW_EVENT.put(Events.DTSTART, date.getTime());
-	}
-
-	@Override
-	public void setDtEnd(@NonNull Date date) {
-		modifiedValueSet.add(Events.DTEND);
-		NEW_EVENT.put(Events.DTEND, date.getTime());
-	}
-
-	@Override
-	public void setTimezone(@NonNull String timezone) {
+	public void setTimezone(@NonNull String timeZoneId) {
 		modifiedValueSet.add(Events.EVENT_TIMEZONE);
-		NEW_EVENT.put(Events.EVENT_TIMEZONE, timezone);
+		NEW_EVENT.put(Events.EVENT_TIMEZONE, timeZoneId);
 	}
 
 	@Override
@@ -275,7 +251,6 @@ public class EventDataViewModel extends AndroidViewModel implements IEventDataVi
 	@Override
 	public void setAvailability(@NonNull Integer availability) {
 		modifiedValueSet.add(Events.AVAILABILITY);
-
 		NEW_EVENT.put(Events.AVAILABILITY, availability);
 	}
 

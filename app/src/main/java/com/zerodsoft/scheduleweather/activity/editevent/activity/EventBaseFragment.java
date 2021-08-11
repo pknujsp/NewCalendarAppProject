@@ -72,7 +72,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 	protected FragmentBaseEventBinding binding;
 	protected NetworkStatus networkStatus;
 	protected CalendarViewModel calendarViewModel;
-	protected EventDataViewModel eventDataViewModel;
+	protected EventModel eventModel;
 	protected LocationViewModel locationViewModel;
 	protected boolean initializing = true;
 
@@ -213,7 +213,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 			@Override
 			public void afterTextChanged(Editable s) {
 				if (!initializing) {
-					eventDataViewModel.setTitle(s.length() > 0 ? s.toString() : "");
+					eventModel.setTitle(s.length() > 0 ? s.toString() : "");
 				}
 			}
 		});
@@ -232,7 +232,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 			@Override
 			public void afterTextChanged(Editable s) {
 				if (!initializing) {
-					eventDataViewModel.setDescription(s.length() > 0 ? s.toString() : "");
+					eventModel.setDescription(s.length() > 0 ? s.toString() : "");
 				}
 			}
 		});
@@ -277,7 +277,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 				final int color = colors.get(position).getAsInteger(CalendarContract.Colors.COLOR);
 				final String colorKey = colors.get(position).getAsString(CalendarContract.Colors.COLOR_KEY);
 
-				eventDataViewModel.setEventColor(color, colorKey);
+				eventModel.setEventColor(color, colorKey);
 				binding.titleLayout.eventColor.setBackgroundColor(EventUtil.getColor(color));
 
 				eventColorDialog.dismiss();
@@ -293,6 +293,9 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 	}
 
 	protected final void onCheckedAllDaySwitch(boolean isChecked) {
+		DateTimeObj beginDateTimeObj = eventModel.getBeginDateTimeObj();
+		DateTimeObj endDateTimeObj = eventModel.getEndDateTimeObj();
+
 		if (isChecked) {
 			binding.timeLayout.startTime.setVisibility(View.GONE);
 			binding.timeLayout.endTime.setVisibility(View.GONE);
@@ -303,12 +306,15 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 			binding.timeLayout.eventTimezoneLayout.setVisibility(View.VISIBLE);
 		}
 
+		beginDateTimeObj.setHour(0).setMinute(0);
+		endDateTimeObj.setHour(0).setMinute(0);
+
+		setTimeText(DateTimeType.BEGIN, beginDateTimeObj);
+		setTimeText(DateTimeType.END, endDateTimeObj);
 
 		if (!initializing) {
-			eventDataViewModel.setIsAllDay(isChecked);
-			setDateText(DateTimeType.END, eventDataViewModel.getEndDateTimeObj(), true);
+			eventModel.setIsAllDay(isChecked);
 		} else {
-			setDateText(DateTimeType.END, eventDataViewModel.getEndDateTimeObj(), false);
 		}
 	}
 
@@ -316,8 +322,8 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		TimeZoneFragment timeZoneFragment = new TimeZoneFragment(new TimeZoneFragment.OnTimeZoneResultListener() {
 			@Override
 			public void onResult(TimeZone timeZone) {
-				eventDataViewModel.setEventTimeZone(timeZone);
-				eventDataViewModel.setTimezone(timeZone.getID());
+				eventModel.setEventTimeZone(timeZone);
+				eventModel.setTimezone(timeZone.getID());
 				setTimeZoneText();
 				getChildFragmentManager().popBackStackImmediate();
 			}
@@ -329,22 +335,22 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 	}
 
 	protected final void setTimeZoneText() {
-		TimeZone eventTimeZone = eventDataViewModel.getEventTimeZone();
+		TimeZone eventTimeZone = eventModel.getEventTimeZone();
 
 		if (this instanceof ModifyInstanceFragment) {
 			binding.timeLayout.eventTimezone.setText(eventTimeZone.getDisplayName(Locale.KOREAN));
 			return;
 		}
-		TimeZone calendarTimeZone = eventDataViewModel.getCalendarTimeZone();
+		TimeZone calendarTimeZone = eventModel.getCalendarTimeZone();
 
 		if (eventTimeZone.equals(calendarTimeZone)) {
 			binding.timeLayout.eventTimezone.setText(eventTimeZone.getDisplayName(Locale.KOREAN));
 		} else {
-			Calendar calendar = Calendar.getInstance(eventTimeZone);
-			calendar.setTimeInMillis(eventDataViewModel.getBeginDateTimeObj().getTimeMillis());
-			String beginDateStr = EventUtil.getDateTimeStr(calendar, false);
-			calendar.setTimeInMillis(eventDataViewModel.getEndDateTimeObj().getTimeMillis());
-			String endDateStr = EventUtil.getDateTimeStr(calendar, false);
+			DateTimeObj beginDateTimeObj = eventModel.getBeginDateTimeObj();
+			DateTimeObj endDateTimeObj = eventModel.getEndDateTimeObj();
+
+			String beginDateStr = EventUtil.getDateTimeStr(beginDateTimeObj.getCalendar(), false);
+			String endDateStr = EventUtil.getDateTimeStr(endDateTimeObj.getCalendar(), false);
 
 			StringBuilder stringBuilder = new StringBuilder();
 			stringBuilder.append(eventTimeZone.getDisplayName(Locale.KOREAN));
@@ -367,7 +373,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		RecurrenceFragment recurrenceFragment = new RecurrenceFragment(new RecurrenceFragment.OnResultRecurrence() {
 			@Override
 			public void onResult(String rrule) {
-				eventDataViewModel.setRecurrence(rrule);
+				eventModel.setRecurrence(rrule);
 				setRecurrenceText(rrule);
 			}
 		});
@@ -413,7 +419,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 					break;
 			}
 
-			eventDataViewModel.setAccessLevel(accessLevel);
+			eventModel.setAccessLevel(accessLevel);
 			setAccessLevelText(accessLevel);
 			accessLevelDialog.dismiss();
 		}).setTitle(getString(R.string.accesslevel));
@@ -441,7 +447,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 					break;
 			}
 
-			eventDataViewModel.setAvailability(availability);
+			eventModel.setAvailability(availability);
 			setAvailabilityText(availability);
 			availabilityDialog.dismiss();
 
@@ -463,7 +469,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 						, (dialogInterface, position) ->
 						{
 							selectedCalendarValues = (ContentValues) calendarDialog.getListView().getAdapter().getItem(position);
-							eventDataViewModel.setCalendar(selectedCalendarValues.getAsInteger(CalendarContract.Calendars._ID));
+							eventModel.setCalendar(selectedCalendarValues.getAsInteger(CalendarContract.Calendars._ID));
 
 							setCalendarText(selectedCalendarValues.getAsInteger(CalendarContract.Calendars.CALENDAR_COLOR),
 									selectedCalendarValues.getAsString(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME),
@@ -475,11 +481,11 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 							int newEventColor = colors.get(0).getAsInteger(CalendarContract.Colors.COLOR);
 							String newEventColorKey = colors.get(0).getAsString(CalendarContract.Colors.COLOR_KEY);
 
-							eventDataViewModel.setEventColor(newEventColor, newEventColorKey);
+							eventModel.setEventColor(newEventColor, newEventColorKey);
 							binding.titleLayout.eventColor.setBackgroundColor(EventUtil.getColor(newEventColor));
 
-							if (!eventDataViewModel.getNEW_ATTENDEES().isEmpty()) {
-								eventDataViewModel.removeAttendee(accountName);
+							if (!eventModel.getNEW_ATTENDEES().isEmpty()) {
+								eventModel.removeAttendee(accountName);
 								createAttendeeListView();
 							}
 						});
@@ -499,7 +505,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 			binding.attendeeLayout.eventAttendeesTable.removeAllViews();
 		}
 
-		List<ContentValues> attendeeList = eventDataViewModel.getNEW_ATTENDEES();
+		List<ContentValues> attendeeList = eventModel.getNEW_ATTENDEES();
 
 		if (attendeeList.isEmpty()) {
 			// 참석자 버튼 텍스트 수정
@@ -545,7 +551,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 			@Override
 			public void onClick(View view) {
 				AttendeeItemHolder holder = (AttendeeItemHolder) view.getTag();
-				eventDataViewModel.removeAttendee(holder.email);
+				eventModel.removeAttendee(holder.email);
 				removeAttendeeItemView(holder.email);
 			}
 		});
@@ -584,17 +590,17 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 				break;
 			}
 		}
-		if (eventDataViewModel.getNEW_ATTENDEES().size() == 1) {
-			ContentValues attendee = eventDataViewModel.getNEW_ATTENDEES().get(0);
+		if (eventModel.getNEW_ATTENDEES().size() == 1) {
+			ContentValues attendee = eventModel.getNEW_ATTENDEES().get(0);
 			if (attendee.containsKey(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP)) {
 				if (attendee.getAsInteger(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP) ==
 						CalendarContract.Attendees.RELATIONSHIP_ORGANIZER) {
-					eventDataViewModel.clearAttendees();
+					eventModel.clearAttendees();
 				}
 			}
 		}
 
-		if (eventDataViewModel.getNEW_ATTENDEES().isEmpty()) {
+		if (eventModel.getNEW_ATTENDEES().isEmpty()) {
 			binding.attendeeLayout.showAttendeesDetail.setText(getString(R.string.add_attendee));
 		}
 	}
@@ -613,7 +619,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 			public void onResultAddedReminder(ContentValues reminder) {
 				// reminder values는 분, 메소드값을 담고 있어야 한다
 				// 수정된 minutes, method가 기존 값과 중복되는 경우 진행하지 않음
-				if (eventDataViewModel.addReminder(reminder.getAsInteger(CalendarContract.Reminders.MINUTES),
+				if (eventModel.addReminder(reminder.getAsInteger(CalendarContract.Reminders.MINUTES),
 						reminder.getAsInteger(CalendarContract.Reminders.METHOD))) {
 					addReminderItemView(reminder);
 				} else {
@@ -663,7 +669,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 
 	private final void removeReminderItemView(int minutes) {
 		final int rowCount = binding.reminderLayout.remindersTable.getChildCount();
-		eventDataViewModel.removeReminder(minutes);
+		eventModel.removeReminder(minutes);
 
 		// 아이템 삭제
 		for (int rowIndex = 0; rowIndex < rowCount; rowIndex++) {
@@ -716,7 +722,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 					int newMinutes = reminder.getAsInteger(CalendarContract.Reminders.MINUTES);
 					int newMethod = reminder.getAsInteger(CalendarContract.Reminders.METHOD);
 
-					eventDataViewModel.modifyReminder(previousMinutes, newMinutes, newMethod);
+					eventModel.modifyReminder(previousMinutes, newMinutes, newMethod);
 					modifyReminderItemView(previousMinutes, newMinutes, newMethod);
 				}
 
@@ -727,7 +733,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 
 				@Override
 				public void onResultRemovedReminder(int previousMinutes) {
-					eventDataViewModel.removeReminder(previousMinutes);
+					eventModel.removeReminder(previousMinutes);
 					removeReminderItemView(previousMinutes);
 				}
 			});
@@ -747,24 +753,20 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 	};
 
 	protected final void showDatePicker(@Nullable ModifyInstanceFragment.OnModifiedDateTimeCallback onModifiedDateTimeCallback) {
-		final DateTimeObj beginDateTimeObj = eventDataViewModel.getBeginDateTimeObj();
-		final DateTimeObj endDateTimeObj = eventDataViewModel.getEndDateTimeObj();
-		long endTimeMillis = 0L;
+		final DateTimeObj beginDateTimeObj = eventModel.getBeginDateTimeObj();
+		final DateTimeObj endDateTimeObj = eventModel.getEndDateTimeObj();
 
-		if (binding.timeLayout.timeAlldaySwitch.isChecked()) {
-			Calendar calendar = endDateTimeObj.getUtcCalendar();
-			if (endDateTimeObj.getHour() == 0 && endDateTimeObj.getMinute() == 0) {
-				calendar.add(Calendar.MINUTE, -1);
-			}
-			endTimeMillis = calendar.getTimeInMillis();
-		} else {
-			endTimeMillis = endDateTimeObj.getUtcTimeMillis();
-		}
+		Calendar calendar = Calendar.getInstance(ClockUtil.UTC_TIME_ZONE);
+		calendar.set(beginDateTimeObj.getYear(), beginDateTimeObj.getMonth() - 1, beginDateTimeObj.getDay());
+
+		final long begin = calendar.getTimeInMillis();
+		calendar.set(endDateTimeObj.getYear(), endDateTimeObj.getMonth() - 1, endDateTimeObj.getDay());
+		final long end = calendar.getTimeInMillis();
 
 		datePicker = MaterialDatePicker.Builder.dateRangePicker()
 				.setTitleText(R.string.datepicker)
 				.setInputMode(MaterialDatePicker.INPUT_MODE_CALENDAR)
-				.setSelection(new Pair<>(beginDateTimeObj.getUtcTimeMillis(), endTimeMillis))
+				.setSelection(new Pair<>(begin, end))
 				.build();
 
 		datePicker.addOnPositiveButtonClickListener(new MaterialPickerOnPositiveButtonClickListener<Pair<Long, Long>>() {
@@ -792,31 +794,23 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 					endDateTimeObj.setYear(newYear).setMonth(newMonth).setDay(newDay);
 				}
 
-				if (beginDateTimeObj.getHour() >= endDateTimeObj.getHour()) {
-					//시작 날짜가 종료 날짜보다 이후이면 시각을 조정한다
-					if (beginDateTimeObj.getHour() > endDateTimeObj.getHour()) {
-						beginDateTimeObj.setHour(9).setMinute(0);
-						endDateTimeObj.setHour(10).setMinute(0);
-					} else if (beginDateTimeObj.getMinute() > endDateTimeObj.getMinute()) {
-						beginDateTimeObj.setMinute(0);
-						endDateTimeObj.setMinute(30);
-					}
+				if (binding.timeLayout.timeAlldaySwitch.isChecked()) {
+					beginDateTimeObj.setHour(0).setMinute(0);
+					endDateTimeObj.setHour(0).setMinute(0);
 				}
 
-				eventDataViewModel.setDtStart(beginDateTimeObj.getDate());
-				eventDataViewModel.setDtEnd(endDateTimeObj.getDate());
 				setDateText(DateTimeType.BEGIN, beginDateTimeObj, false);
 				setDateText(DateTimeType.END, endDateTimeObj, false);
-				setTimeText(DateTimeType.BEGIN, beginDateTimeObj);
-				setTimeText(DateTimeType.END, endDateTimeObj);
+				eventModel.getModifiedValueSet().add(CalendarContract.Events.DTSTART);
+				eventModel.getModifiedValueSet().add(CalendarContract.Events.DTEND);
 
 				if (onModifiedDateTimeCallback != null) {
 					onModifiedDateTimeCallback.onModified();
 				}
 
-				long beginUtcMillis = beginDateTimeObj.getTimeMillis();
-				modifyRruleIfFreqMonthly(beginUtcMillis);
-				modifyRruleIfFreqWeekly(beginUtcMillis);
+				long beginTimeMillis = beginDateTimeObj.getTimeMillis();
+				modifyRruleIfFreqMonthly(beginTimeMillis);
+				modifyRruleIfFreqWeekly(beginTimeMillis);
 
 				setTimeZoneText();
 			}
@@ -830,9 +824,9 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 	}
 
 	protected final void modifyRruleIfFreqMonthly(long startDate) {
-		if (eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.RRULE)) {
+		if (eventModel.getNEW_EVENT().containsKey(CalendarContract.Events.RRULE)) {
 			EventRecurrence eventRecurrence = new EventRecurrence();
-			eventRecurrence.parse(eventDataViewModel.getNEW_EVENT().getAsString(CalendarContract.Events.RRULE));
+			eventRecurrence.parse(eventModel.getNEW_EVENT().getAsString(CalendarContract.Events.RRULE));
 
 			if (eventRecurrence.freq == EventRecurrence.MONTHLY) {
 				Calendar calendar = Calendar.getInstance();
@@ -857,16 +851,16 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 				}
 
 				String rrule = eventRecurrence.toString();
-				eventDataViewModel.setRecurrence(rrule);
+				eventModel.setRecurrence(rrule);
 				setRecurrenceText(rrule);
 			}
 		}
 	}
 
 	protected final void modifyRruleIfFreqWeekly(long startDate) {
-		if (eventDataViewModel.getNEW_EVENT().containsKey(CalendarContract.Events.RRULE)) {
+		if (eventModel.getNEW_EVENT().containsKey(CalendarContract.Events.RRULE)) {
 			EventRecurrence eventRecurrence = new EventRecurrence();
-			eventRecurrence.parse(eventDataViewModel.getNEW_EVENT().getAsString(CalendarContract.Events.RRULE));
+			eventRecurrence.parse(eventModel.getNEW_EVENT().getAsString(CalendarContract.Events.RRULE));
 
 			if (eventRecurrence.freq == EventRecurrence.WEEKLY) {
 				Calendar calendar = Calendar.getInstance();
@@ -881,7 +875,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 				}
 
 				String rrule = eventRecurrence.toString();
-				eventDataViewModel.setRecurrence(rrule);
+				eventModel.setRecurrence(rrule);
 				setRecurrenceText(rrule);
 			}
 		}
@@ -908,8 +902,8 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 
 	protected final void showTimePicker(DateTimeType dateType,
 	                                    @Nullable ModifyInstanceFragment.OnModifiedDateTimeCallback onModifiedDateTimeCallback) {
-		final DateTimeObj beginDateTimeObj = eventDataViewModel.getBeginDateTimeObj();
-		final DateTimeObj endDateTimeObj = eventDataViewModel.getEndDateTimeObj();
+		final DateTimeObj beginDateTimeObj = eventModel.getBeginDateTimeObj();
+		final DateTimeObj endDateTimeObj = eventModel.getEndDateTimeObj();
 
 		MaterialTimePicker.Builder builder = new MaterialTimePicker.Builder();
 		timePicker =
@@ -926,11 +920,9 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 
 			if (dateType == DateTimeType.BEGIN) {
 				beginDateTimeObj.setHour(newHour).setMinute(newMinute);
-				eventDataViewModel.setDtStart(beginDateTimeObj.getDate());
 				setTimeText(dateType, beginDateTimeObj);
 			} else if (dateType == DateTimeType.END) {
 				endDateTimeObj.setHour(newHour).setMinute(newMinute);
-				eventDataViewModel.setDtEnd(endDateTimeObj.getDate());
 				setTimeText(dateType, endDateTimeObj);
 			}
 
@@ -944,7 +936,6 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 						endDateTimeObj.setMinute(newMinute);
 					}
 
-					eventDataViewModel.setDtEnd(endDateTimeObj.getDate());
 					setTimeText(DateTimeType.END, endDateTimeObj);
 				}
 			} else if (dateType == DateTimeType.END) {
@@ -957,7 +948,6 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 						beginDateTimeObj.setMinute(newMinute);
 					}
 				}
-				eventDataViewModel.setDtStart(beginDateTimeObj.getDate());
 				setTimeText(DateTimeType.BEGIN, beginDateTimeObj);
 			}
 
@@ -965,6 +955,8 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 				onModifiedDateTimeCallback.onModified();
 			}
 
+			eventModel.getModifiedValueSet().add(CalendarContract.Events.DTSTART);
+			eventModel.getModifiedValueSet().add(CalendarContract.Events.DTEND);
 			setTimeZoneText();
 		});
 		timePicker.addOnNegativeButtonClickListener(view ->
@@ -1002,7 +994,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 						resultLocation = newLocation.getPlaceName();
 					}
 
-					eventDataViewModel.setEventLocation(resultLocation);
+					eventModel.setEventLocation(resultLocation);
 					binding.locationLayout.eventLocation.setText(resultLocation);
 					locationIntentCode = LocationIntentCode.RESULT_CODE_CHANGED_LOCATION;
 				}
@@ -1018,7 +1010,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 						resultLocation = newLocation.getPlaceName();
 					}
 
-					eventDataViewModel.setEventLocation(resultLocation);
+					eventModel.setEventLocation(resultLocation);
 					binding.locationLayout.eventLocation.setText(resultLocation);
 					locationIntentCode = LocationIntentCode.RESULT_CODE_SELECTED_LOCATION;
 
@@ -1026,7 +1018,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 
 				@Override
 				public void onResultUnselectedLocation() {
-					eventDataViewModel.setEventLocation("");
+					eventModel.setEventLocation("");
 					binding.locationLayout.eventLocation.setText("");
 					locationDTO = null;
 					locationIntentCode = LocationIntentCode.RESULT_CODE_REMOVED_LOCATION;
@@ -1093,13 +1085,13 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		selectedAccount.put(CalendarContract.Attendees.ATTENDEE_EMAIL, selectedCalendarValues.getAsString(CalendarContract.Calendars.ACCOUNT_NAME));
 		selectedAccount.put(CalendarContract.Attendees.ATTENDEE_RELATIONSHIP, CalendarContract.Attendees.RELATIONSHIP_ORGANIZER);
 
-		bundle.putParcelableArrayList("attendeeList", (ArrayList<? extends Parcelable>) eventDataViewModel.getNEW_ATTENDEES());
+		bundle.putParcelableArrayList("attendeeList", (ArrayList<? extends Parcelable>) eventModel.getNEW_ATTENDEES());
 		bundle.putParcelable("selectedAccount", selectedAccount);
 
 		AttendeesFragment attendeesFragment = new AttendeesFragment(new AttendeesFragment.OnAttendeesResultListener() {
 			@Override
 			public void onResult(List<ContentValues> newAttendeeList, boolean guestsCanModify, boolean guestsCanInviteOthers, boolean guestsCanSeeGuests) {
-				eventDataViewModel.setAttendees(newAttendeeList, guestsCanModify, guestsCanInviteOthers, guestsCanSeeGuests);
+				eventModel.setAttendees(newAttendeeList, guestsCanModify, guestsCanInviteOthers, guestsCanSeeGuests);
 				createAttendeeListView();
 			}
 		});

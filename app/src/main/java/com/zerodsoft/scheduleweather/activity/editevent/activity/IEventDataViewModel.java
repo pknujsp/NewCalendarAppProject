@@ -4,7 +4,6 @@ import android.content.ContentValues;
 
 import androidx.annotation.NonNull;
 
-import java.util.Date;
 import java.util.List;
 
 public interface IEventDataViewModel {
@@ -16,11 +15,7 @@ public interface IEventDataViewModel {
 
 	void setIsAllDay(@NonNull Boolean isAllDay);
 
-	void setDtStart(@NonNull Date date);
-
-	void setDtEnd(@NonNull Date date);
-
-	void setTimezone(@NonNull String timezone);
+	void setTimezone(@NonNull String timeZoneId);
 
 	void setRecurrence(@NonNull String rRule);
 

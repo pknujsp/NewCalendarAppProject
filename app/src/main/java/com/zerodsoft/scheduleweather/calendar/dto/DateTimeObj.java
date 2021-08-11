@@ -1,9 +1,6 @@
 package com.zerodsoft.scheduleweather.calendar.dto;
 
-import com.zerodsoft.scheduleweather.utility.ClockUtil;
-
 import java.util.Calendar;
-import java.util.Date;
 
 public class DateTimeObj {
 	private int year;
@@ -75,29 +72,12 @@ public class DateTimeObj {
 		return calendar.getTimeInMillis();
 	}
 
-	public long getUtcTimeMillis() {
-		Calendar calendar = Calendar.getInstance(ClockUtil.UTC_TIME_ZONE);
-		calendar.set(year, month - 1, day, hour, minute, 0);
-		return calendar.getTimeInMillis();
-	}
-
-	public Date getDate() {
-		Calendar calendar = Calendar.getInstance();
-		calendar.set(year, month - 1, day, hour, minute, 0);
-		return calendar.getTime();
-	}
-
 	public Calendar getCalendar() {
 		Calendar calendar = Calendar.getInstance();
 		calendar.set(year, month - 1, day, hour, minute, 0);
 		return calendar;
 	}
 
-	public Calendar getUtcCalendar() {
-		Calendar calendar = Calendar.getInstance(ClockUtil.UTC_TIME_ZONE);
-		calendar.set(year, month - 1, day, hour, minute, 0);
-		return calendar;
-	}
 
 	public void setTimeMillis(long timeMillis) {
 		Calendar calendar = Calendar.getInstance();
