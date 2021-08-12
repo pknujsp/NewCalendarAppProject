@@ -20,6 +20,7 @@ public class ClockUtil {
 	public static final SimpleDateFormat HH = new SimpleDateFormat("HH", Locale.KOREAN);
 	public static final SimpleDateFormat H = new SimpleDateFormat("H", Locale.KOREAN);
 	public static final SimpleDateFormat MdE_FORMAT = new SimpleDateFormat("M/d E", Locale.KOREAN);
+	public static final SimpleDateFormat Md = new SimpleDateFormat("M/d", Locale.KOREAN);
 	public static final SimpleDateFormat DATE_FORMAT_NOT_ALLDAY = new SimpleDateFormat("yyyy년 M월 d일 E a h시 m분", Locale.KOREAN);
 	public static final SimpleDateFormat YYYY_M_D_E = new SimpleDateFormat("yyyy년 M월 d일 E", Locale.KOREAN);
 	public static final SimpleDateFormat DB_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREAN);

@@ -655,8 +655,10 @@ public class EventFragment extends BottomSheetDialogFragment {
 		// 제목
 		instanceValues = calendarViewModel.getInstance(instanceId, originalBegin, originalEnd);
 
-		if (instanceValues.getAsInteger(Instances.CALENDAR_ACCESS_LEVEL) == Instances.CAL_ACCESS_READ) {
-			binding.fabsLayout.setVisibility(View.GONE);
+		if (instanceValues.containsKey(Instances.CALENDAR_ACCESS_LEVEL)) {
+			if (instanceValues.getAsInteger(Instances.CALENDAR_ACCESS_LEVEL) == Instances.CAL_ACCESS_READ) {
+				binding.fabsLayout.setVisibility(View.GONE);
+			}
 		}
 
 		if (instanceValues.getAsString(CalendarContract.Instances.TITLE) != null) {

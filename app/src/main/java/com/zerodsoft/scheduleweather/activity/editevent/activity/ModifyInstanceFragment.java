@@ -640,14 +640,10 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		setNewEventValues(Events.GUESTS_CAN_INVITE_OTHERS, newEventValues, modifiedEvent);
 		setNewEventValues(Events.GUESTS_CAN_MODIFY, newEventValues, modifiedEvent);
 		setNewEventValues(Events.GUESTS_CAN_SEE_GUESTS, newEventValues, modifiedEvent);
-		setNewEventValues(Events.IS_ORGANIZER, newEventValues, modifiedEvent);
-		setNewEventValues(Events.RRULE, newEventValues, modifiedEvent);
 
-		if (!eventModel.isModified(Events.RRULE)) {
-			newEventValues.putNull(Events.RRULE);
-		}
-
-		setIfModifiedDateTimeAllDay(newEventValues);
+		newEventValues.putNull(Events.RRULE);
+		newEventValues.put(Events.ALL_DAY, binding.timeLayout.timeAlldaySwitch.isChecked() ? 1 : 0);
+		applyModifiedDateTime(newEventValues, binding.timeLayout.timeAlldaySwitch.isChecked());
 
 		EventHelper eventHelper = new EventHelper(getAsyncQueryService());
 		eventHelper.updateEvent(EventHelper.EventEditType.UPDATE_ONLY_THIS_EVENT, originalEvent, newEventValues, originalReminderList

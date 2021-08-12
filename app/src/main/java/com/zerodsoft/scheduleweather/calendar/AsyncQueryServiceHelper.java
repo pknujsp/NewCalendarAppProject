@@ -113,6 +113,8 @@ public class AsyncQueryServiceHelper extends IntentService {
 		Integer updateOriginalEventIndex = null;
 		Integer exceptionOriginalEventIndex = null;
 
+		ContentProviderResult[] contentProviderResults = null;
+
 		synchronized (sWorkQueue) {
 			while (true) {
 				/*
@@ -149,11 +151,6 @@ public class AsyncQueryServiceHelper extends IntentService {
 					try {
 						cursor = resolver.query(args.uri, args.projection, args.selection,
 								args.selectionArgs, args.orderBy);
-						/*
-						 * Calling getCount() causes the cursor window to be
-						 * filled, which will make the first access on the main
-						 * thread a lot faster
-						 */
 						if (cursor != null) {
 							cursor.getCount();
 						}
@@ -194,19 +191,19 @@ public class AsyncQueryServiceHelper extends IntentService {
 							if (contentProviderOperation.isUpdate()) {
 								if (contentProviderOperation.getUri().toString().contains(Events.CONTENT_URI.toString())) {
 									updateOriginalEventIndex = cpoIndex;
-								} else if (contentProviderOperation.getUri().toString().contains(Events.CONTENT_EXCEPTION_URI.toString())) {
-									exceptionOriginalEventIndex = cpoIndex;
 								}
 							}
 							if (contentProviderOperation.isInsert()) {
 								if (contentProviderOperation.getUri().toString().contains(Events.CONTENT_URI.toString())) {
 									insertNewEventIndex = cpoIndex;
+								} else if (contentProviderOperation.getUri().toString().contains(Events.CONTENT_EXCEPTION_URI.toString())) {
+									exceptionOriginalEventIndex = cpoIndex;
 								}
 							}
 							cpoIndex++;
 						}
 
-						ContentProviderResult[] contentProviderResults = resolver.applyBatch(args.authority, cpo);
+						contentProviderResults = resolver.applyBatch(args.authority, cpo);
 						args.result = contentProviderResults;
 					} catch (RemoteException e) {
 						Log.e("", e.toString());
@@ -219,7 +216,6 @@ public class AsyncQueryServiceHelper extends IntentService {
 			}
 
 			ArrayList<ContentProviderOperation> cpo = args.cpo;
-			ContentProviderResult[] contentProviderResults = (ContentProviderResult[]) args.result;
 
 			if (insertNewEventIndex != null) {
 				newEventId = ContentUris.parseId(contentProviderResults[insertNewEventIndex].uri);

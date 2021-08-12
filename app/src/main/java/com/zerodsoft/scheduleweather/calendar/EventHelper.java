@@ -99,7 +99,6 @@ public class EventHelper implements Serializable {
 		ArrayList<ContentProviderOperation> contentProviderOperationList
 				= new ArrayList<>();
 		int eventIdIndex = -1;
-		boolean forceSaveReminders = false;
 
 		if (newEvent.size() != 0 || !isUnchanged(newEvent)) {
 			convertDtEndForAllDay(newEvent);
@@ -116,11 +115,9 @@ public class EventHelper implements Serializable {
 						.build());
 
 				eventIdIndex = contentProviderOperationList.size();
-				newEvent.put(Events.STATUS, originalEvent.getAsInteger(Events.STATUS));
 				setDuration(newEvent);
 				contentProviderOperationList.add(ContentProviderOperation.newInsert(Events.CONTENT_URI).withValues(newEvent)
 						.build());
-				forceSaveReminders = true;
 			} else if (eventEditType == EventEditType.UPDATE_FOLLOWING_EVENTS) {
 				newEvent.remove(Events._ID);
 				boolean hasRRuleInNewEvent = false;
@@ -171,7 +168,6 @@ public class EventHelper implements Serializable {
 					}
 				}
 
-				forceSaveReminders = true;
 			} else if (eventEditType == EventEditType.UPDATE_ALL_EVENTS) {
 				boolean hasRRuleInNewEvent = false;
 				if (newEvent.containsKey(Events.RRULE)) {
@@ -495,9 +491,9 @@ public class EventHelper implements Serializable {
 			return;
 		}
 
-		final long originalBegin = originalEvent.getAsLong(Instances.DTSTART);
+		final long originalBegin = originalEvent.getAsLong(Events.DTSTART);
 		final boolean originalAllDay = originalEvent.getAsInteger(Events.ALL_DAY) == 1;
-		final long originalEnd = originalAllDay ? originalEvent.getAsLong(Instances.END) : originalEvent.getAsLong(Instances.DTEND);
+		final long originalEnd = originalEvent.getAsLong(Instances.END);
 		final String originalTimeZone = originalEvent.containsKey(Events.EVENT_TIMEZONE) ?
 				originalEvent.getAsString(Events.EVENT_TIMEZONE) :
 				originalEvent.getAsString(Events.CALENDAR_TIME_ZONE);

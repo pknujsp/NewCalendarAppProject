@@ -22,7 +22,6 @@ import com.zerodsoft.scheduleweather.calendarview.common.InstanceBarView;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.CalendarViewInitializer;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IConnectedCalendars;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IControlEvent;
-import com.zerodsoft.scheduleweather.calendarview.interfaces.IEvent;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnDateTimeChangedListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
@@ -33,10 +32,8 @@ import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -360,6 +357,15 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
 		final int thisMonthFirstIndex = previousMonthDaysCount;
 		final int thisMonthLastIndex = TOTAL_DAY_COUNT - nextMonthDaysCount - 1;
 
+		Set<Integer> firstDayIndexSet = new HashSet<>();
+		if (previousMonthDaysCount > 0) {
+			firstDayIndexSet.add(0);
+		}
+		if (nextMonthDaysCount > 0) {
+			firstDayIndexSet.add(thisMonthLastIndex + 1);
+		}
+		firstDayIndexSet.add(thisMonthFirstIndex);
+
 		// 이전 달 일수 만큼 이동 ex) 20201001에서 20200927로 이동
 		calendar.add(Calendar.DATE, -previousMonthDaysCount);
 		List<MonthCalendarItemView> monthCalendarItemViewList = new ArrayList<>();
@@ -373,7 +379,7 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
 			int dateTextColor = (index <= thisMonthLastIndex) && (index >= thisMonthFirstIndex) ? Color.BLACK : Color.GRAY;
 
 			MonthCalendarItemView itemView = new MonthCalendarItemView(getContext(), dateTextColor);
-			itemView.setDate(calendar.getTime(), calendar2.getTime());
+			itemView.setDate(calendar.getTime(), calendar2.getTime(), firstDayIndexSet.contains(index));
 			itemView.setClickable(true);
 			itemView.setOnClickListener(dateItemOnClickListener);
 
@@ -467,6 +473,7 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
 		private final TextPaint DAY_TEXT_PAINT;
 		private Date startDate;
 		private Date endDate;
+		private boolean isFirstDay;
 
 		public MonthCalendarItemView(Context context, int dayTextColor) {
 			super(context);
@@ -482,9 +489,10 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
 			setBackgroundResource(backgroundValue.resourceId);
 		}
 
-		public MonthCalendarItemView setDate(Date startDate, Date endDate) {
+		public MonthCalendarItemView setDate(Date startDate, Date endDate, boolean isFirstDay) {
 			this.startDate = startDate;
 			this.endDate = endDate;
+			this.isFirstDay = isFirstDay;
 			return this;
 		}
 
@@ -497,7 +505,8 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
 		@Override
 		protected void onDraw(Canvas canvas) {
 			super.onDraw(canvas);
-			canvas.drawText(ClockUtil.D.format(startDate), x, y, DAY_TEXT_PAINT);
+			canvas.drawText(isFirstDay ? ClockUtil.Md.format(startDate)
+					: ClockUtil.D.format(startDate), x, y, DAY_TEXT_PAINT);
 		}
 
 		public Date getStartDate() {
