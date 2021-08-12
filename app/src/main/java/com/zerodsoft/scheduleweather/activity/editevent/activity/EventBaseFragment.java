@@ -305,10 +305,17 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 			binding.timeLayout.endTime.setVisibility(View.VISIBLE);
 			binding.timeLayout.eventTimezoneLayout.setVisibility(View.VISIBLE);
 		}
+		Calendar calendar = Calendar.getInstance();
+		calendar.add(Calendar.HOUR_OF_DAY, 1);
+		calendar.set(Calendar.MINUTE, 0);
+		calendar.set(Calendar.SECOND, 0);
 
-		beginDateTimeObj.setHour(0).setMinute(0);
-		endDateTimeObj.setHour(0).setMinute(0);
+		beginDateTimeObj.setTimeMillis(calendar.getTimeInMillis());
+		calendar.add(Calendar.HOUR_OF_DAY, 1);
+		endDateTimeObj.setTimeMillis(calendar.getTimeInMillis());
 
+		setDateText(DateTimeType.BEGIN, beginDateTimeObj, false);
+		setDateText(DateTimeType.END, endDateTimeObj, false);
 		setTimeText(DateTimeType.BEGIN, beginDateTimeObj);
 		setTimeText(DateTimeType.END, endDateTimeObj);
 
@@ -752,9 +759,8 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		}
 	};
 
-	protected final void showDatePicker(@Nullable ModifyInstanceFragment.OnModifiedDateTimeCallback onModifiedDateTimeCallback) {
-		final DateTimeObj beginDateTimeObj = eventModel.getBeginDateTimeObj();
-		final DateTimeObj endDateTimeObj = eventModel.getEndDateTimeObj();
+	protected final void showDatePicker(@Nullable ModifyInstanceFragment.OnModifiedDateTimeCallback onModifiedDateTimeCallback, DateTimeObj endDateTimeObj) {
+		DateTimeObj beginDateTimeObj = eventModel.getBeginDateTimeObj();
 
 		Calendar calendar = Calendar.getInstance(ClockUtil.UTC_TIME_ZONE);
 		calendar.set(beginDateTimeObj.getYear(), beginDateTimeObj.getMonth() - 1, beginDateTimeObj.getDay());
@@ -777,13 +783,16 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 				int newMonth = 0;
 				int newDay = 0;
 
+				final DateTimeObj modifiedBeginDateTimeObj = eventModel.getBeginDateTimeObj();
+				final DateTimeObj modifiedEndDateTimeObj = eventModel.getEndDateTimeObj();
+
 				if (selection.first != null) {
 					utcCalendar.setTimeInMillis(selection.first);
 					newYear = utcCalendar.get(Calendar.YEAR);
 					newMonth = utcCalendar.get(Calendar.MONTH) + 1;
 					newDay = utcCalendar.get(Calendar.DAY_OF_MONTH);
 
-					beginDateTimeObj.setYear(newYear).setMonth(newMonth).setDay(newDay);
+					modifiedBeginDateTimeObj.setYear(newYear).setMonth(newMonth).setDay(newDay);
 				}
 				if (selection.second != null) {
 					utcCalendar.setTimeInMillis(selection.second);
@@ -791,16 +800,16 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 					newMonth = utcCalendar.get(Calendar.MONTH) + 1;
 					newDay = utcCalendar.get(Calendar.DAY_OF_MONTH);
 
-					endDateTimeObj.setYear(newYear).setMonth(newMonth).setDay(newDay);
+					modifiedEndDateTimeObj.setYear(newYear).setMonth(newMonth).setDay(newDay);
 				}
 
 				if (binding.timeLayout.timeAlldaySwitch.isChecked()) {
-					beginDateTimeObj.setHour(0).setMinute(0);
-					endDateTimeObj.setHour(0).setMinute(0);
+					modifiedBeginDateTimeObj.setHour(0).setMinute(0);
+					modifiedEndDateTimeObj.setHour(0).setMinute(0);
 				}
 
-				setDateText(DateTimeType.BEGIN, beginDateTimeObj, false);
-				setDateText(DateTimeType.END, endDateTimeObj, false);
+				setDateText(DateTimeType.BEGIN, modifiedBeginDateTimeObj, false);
+				setDateText(DateTimeType.END, modifiedEndDateTimeObj, false);
 				eventModel.getModifiedValueSet().add(CalendarContract.Events.DTSTART);
 				eventModel.getModifiedValueSet().add(CalendarContract.Events.DTEND);
 
@@ -808,7 +817,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 					onModifiedDateTimeCallback.onModified();
 				}
 
-				long beginTimeMillis = beginDateTimeObj.getTimeMillis();
+				long beginTimeMillis = modifiedBeginDateTimeObj.getTimeMillis();
 				modifyRruleIfFreqMonthly(beginTimeMillis);
 				modifyRruleIfFreqWeekly(beginTimeMillis);
 

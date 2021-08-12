@@ -192,7 +192,7 @@ public class NewEventFragment extends EventBaseFragment {
 
 	@Override
 	protected void initDatePicker() {
-		showDatePicker(null);
+		showDatePicker(null, eventModel.getEndDateTimeObj());
 	}
 
 	@Override

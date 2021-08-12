@@ -1,8 +1,9 @@
 package com.zerodsoft.scheduleweather.calendar.dto;
 
 import java.util.Calendar;
+import java.util.Objects;
 
-public class DateTimeObj {
+public class DateTimeObj implements Cloneable {
 	private int year;
 	private int month;
 	private int day;
@@ -88,5 +89,46 @@ public class DateTimeObj {
 		day = calendar.get(Calendar.DAY_OF_MONTH);
 		hour = calendar.get(Calendar.HOUR_OF_DAY);
 		minute = calendar.get(Calendar.MINUTE);
+	}
+
+	@Override
+	public DateTimeObj clone() throws CloneNotSupportedException {
+		return (DateTimeObj) super.clone();
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o == null || getClass() != o.getClass())
+			return false;
+		DateTimeObj that = (DateTimeObj) o;
+		return year == that.year &&
+				month == that.month &&
+				day == that.day &&
+				hour == that.hour &&
+				minute == that.minute;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(year, month, day, hour, minute);
+	}
+
+	public boolean isSameDate(DateTimeObj dateTimeObj) {
+		if (year == dateTimeObj.getYear() && month == dateTimeObj.getMonth()
+				&& day == dateTimeObj.getDay()) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	public boolean isSameDateTime(DateTimeObj dateTimeObj) {
+		if (year == dateTimeObj.getYear() && month == dateTimeObj.getMonth()
+				&& day == dateTimeObj.getDay() && hour == dateTimeObj.getHour()
+				&& minute == dateTimeObj.getMinute()) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }

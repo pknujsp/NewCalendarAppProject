@@ -33,17 +33,18 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
 public class ModifyInstanceFragment extends EventBaseFragment {
 	private ContentValues originalEvent;
 	private OnEditEventResultListener onEditEventResultListener;
-
-	private boolean modifiedDateTime = false;
-
 	private List<ContentValues> originalReminderList = new ArrayList<>();
 	private List<ContentValues> originalAttendeeList = new ArrayList<>();
+
+	private DateTimeObj originalBeginDateTimeObj;
+	private DateTimeObj originalEndDateTimeObj;
 
 	protected AsyncQueryService mService;
 
@@ -138,7 +139,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 							setNewEventValues(Events.IS_ORGANIZER, newEventValues, modifiedEvent);
 							setNewEventValues(Events.RRULE, newEventValues, modifiedEvent);
 
-							setIfModifiedDateTime(newEventValues);
+							setIfModifiedDateTimeAllDay(newEventValues);
 
 							EventHelper eventHelper = new EventHelper(new AsyncQueryService(getActivity(), (OnEditEventResultListener) calendarViewModel));
 							eventHelper.saveNewEvent(newEventValues, locationDTO, newReminderList, newAttendeeList, locationIntentCode);
@@ -229,20 +230,13 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 				if (firstChecked && !initializing) {
 					firstChecked = false;
+					modifiedEnd = true;
+
 					if (originalEvent.getAsInteger(Events.ALL_DAY) == 1) {
 						TimeZone timeZone = TimeZone.getTimeZone(originalEvent.getAsString(Events.CALENDAR_TIME_ZONE));
 						eventModel.setTimezone(timeZone.getID());
 						setTimeZoneText();
 					}
-
-					modifiedDateTime = true;
-
-					if (!isChecked) {
-						DateTimeObj endDateTimeObj = eventModel.getEndDateTimeObj();
-						endDateTimeObj.add(Calendar.DATE, -1);
-						setTimeText(DateTimeType.END, endDateTimeObj);
-					}
-
 				}
 			}
 		});
@@ -378,15 +372,30 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		});
 	}
 
+	private boolean modifiedEnd = false;
 
 	@Override
 	protected final void initDatePicker() {
+		DateTimeObj endDateTimeObj = null;
+		if (modifiedEnd) {
+			endDateTimeObj = eventModel.getEndDateTimeObj();
+		} else {
+			try {
+				endDateTimeObj = eventModel.getEndDateTimeObj().clone();
+				if (binding.timeLayout.timeAlldaySwitch.isChecked()) {
+					endDateTimeObj.add(Calendar.DATE, -1);
+				}
+			} catch (Exception e) {
+
+			}
+		}
+
 		showDatePicker(new OnModifiedDateTimeCallback() {
 			@Override
 			public void onModified() {
-				modifiedDateTime = true;
+				modifiedEnd = true;
 			}
-		});
+		}, endDateTimeObj);
 	}
 
 	@Override
@@ -394,7 +403,6 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		showTimePicker(dateType, new OnModifiedDateTimeCallback() {
 			@Override
 			public void onModified() {
-				modifiedDateTime = true;
 			}
 		});
 	}
@@ -451,6 +459,13 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		endDateTimeObj.setYear(calendar.get(Calendar.YEAR)).setMonth(calendar.get(Calendar.MONTH) + 1)
 				.setDay(calendar.get(Calendar.DAY_OF_MONTH)).setHour(calendar.get(Calendar.HOUR_OF_DAY))
 				.setMinute(calendar.get(Calendar.MINUTE));
+
+		try {
+			originalBeginDateTimeObj = beginDateTimeObj.clone();
+			originalEndDateTimeObj = endDateTimeObj.clone();
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+		}
 
 		setDateText(DateTimeType.BEGIN, beginDateTimeObj, true);
 		setTimeText(DateTimeType.BEGIN, beginDateTimeObj);
@@ -560,41 +575,46 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		}
 	}
 
-	private void setIfModifiedDateTime(ContentValues contentValues) {
-		if (modifiedDateTime) {
-			final boolean originalIsAllDay = originalEvent.getAsInteger(Events.ALL_DAY) == 1;
-			final boolean newIsAllDay = binding.timeLayout.timeAlldaySwitch.isChecked();
+	private void setIfModifiedDateTimeAllDay(ContentValues contentValues) {
+		final boolean originalIsAllDay = originalEvent.getAsInteger(Events.ALL_DAY) == 1;
+		final boolean newIsAllDay = binding.timeLayout.timeAlldaySwitch.isChecked();
+		final DateTimeObj newBeginDateTimeObj = eventModel.getBeginDateTimeObj();
+		final DateTimeObj newEndDateTimeObj = eventModel.getEndDateTimeObj();
 
-			DateTimeObj beginDateTimeObj = eventModel.getBeginDateTimeObj();
-			DateTimeObj endDateTimeObj = eventModel.getEndDateTimeObj();
-
-			if (originalIsAllDay == newIsAllDay) {
-				if (!eventModel.isModified(Events.DTSTART)) {
-					return;
-				}
+		if (originalIsAllDay != newIsAllDay) {
+			applyModifiedDateTime(contentValues, newIsAllDay);
+		} else {
+			if (modifiedEnd) {
+				applyModifiedDateTime(contentValues, newIsAllDay);
 			}
-
-			long beginTimeMillis = 0L;
-			long endTimeMillis = 0L;
-
-			if (newIsAllDay) {
-				Calendar utcCalendar = Calendar.getInstance(ClockUtil.UTC_TIME_ZONE);
-				utcCalendar.set(beginDateTimeObj.getYear(), beginDateTimeObj.getMonth() - 1, beginDateTimeObj.getDay());
-				beginTimeMillis = utcCalendar.getTimeInMillis();
-
-				utcCalendar.set(endDateTimeObj.getYear(), endDateTimeObj.getMonth() - 1, endDateTimeObj.getDay());
-				endTimeMillis = utcCalendar.getTimeInMillis();
-			} else {
-				beginTimeMillis = beginDateTimeObj.getTimeMillis();
-				endTimeMillis = endDateTimeObj.getTimeMillis();
-			}
-
-			contentValues.put(Events.DTSTART, beginTimeMillis);
-			contentValues.put(Events.DTEND, endTimeMillis);
-			contentValues.put(Events.ALL_DAY, newIsAllDay ? 1 : 0);
 		}
+
+		contentValues.put(Events.ALL_DAY, newIsAllDay ? 1 : 0);
 	}
 
+	private void applyModifiedDateTime(ContentValues contentValues, boolean allDay) {
+		long beginTimeMillis = 0L;
+		long endTimeMillis = 0L;
+		DateTimeObj newBeginDateTimeObj = eventModel.getBeginDateTimeObj();
+		DateTimeObj newEndDateTimeObj = eventModel.getEndDateTimeObj();
+
+		if (allDay) {
+			Calendar utcCalendar = Calendar.getInstance(ClockUtil.UTC_TIME_ZONE);
+			utcCalendar.set(newBeginDateTimeObj.getYear(), newBeginDateTimeObj.getMonth() - 1, newBeginDateTimeObj.getDay(), 0, 0, 0);
+			beginTimeMillis = utcCalendar.getTimeInMillis();
+
+			utcCalendar.set(newEndDateTimeObj.getYear(), newEndDateTimeObj.getMonth() - 1, newEndDateTimeObj.getDay());
+			endTimeMillis = utcCalendar.getTimeInMillis();
+		} else {
+			beginTimeMillis = newBeginDateTimeObj.getTimeMillis();
+			endTimeMillis = newEndDateTimeObj.getTimeMillis();
+		}
+
+		Date begindate = new Date(beginTimeMillis);
+		Date enddate = new Date(endTimeMillis);
+		contentValues.put(Events.DTSTART, beginTimeMillis);
+		contentValues.put(Events.DTEND, endTimeMillis);
+	}
 
 	//이번 일정만 변경
 	protected void updateThisEvent() {
@@ -623,7 +643,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 			newEventValues.putNull(Events.RRULE);
 		}
 
-		setIfModifiedDateTime(newEventValues);
+		setIfModifiedDateTimeAllDay(newEventValues);
 
 		EventHelper eventHelper = new EventHelper(getAsyncQueryService());
 		eventHelper.updateEvent(EventHelper.EventEditType.UPDATE_ONLY_THIS_EVENT, originalEvent, newEventValues, originalReminderList
@@ -666,7 +686,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		setNewEventValues(CalendarContract.Events.IS_ORGANIZER, newEventValues, newEvent);
 		newEventValues.put(CalendarContract.Events._ID, originalEvent.getAsLong(CalendarContract.Instances.EVENT_ID));
 
-		setIfModifiedDateTime(newEventValues);
+		setIfModifiedDateTimeAllDay(newEventValues);
 
 		EventHelper eventHelper = new EventHelper(getAsyncQueryService());
 		eventHelper.updateEvent(EventHelper.EventEditType.UPDATE_FOLLOWING_EVENTS, originalEvent, newEventValues, originalReminderList
@@ -682,7 +702,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		List<ContentValues> newReminderList = eventModel.getNEW_REMINDERS();
 		List<ContentValues> newAttendeeList = eventModel.getNEW_ATTENDEES();
 
-		setIfModifiedDateTime(modifiedEvent);
+		setIfModifiedDateTimeAllDay(modifiedEvent);
 
 		EventHelper eventHelper = new EventHelper(getAsyncQueryService());
 		eventHelper.updateEvent(EventHelper.EventEditType.UPDATE_ALL_EVENTS, originalEvent, modifiedEvent, originalReminderList
