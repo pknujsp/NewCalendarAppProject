@@ -7,10 +7,10 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import android.provider.CalendarContract;
+import android.provider.CalendarContract.Events;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.Time;
-import android.text.util.Rfc822Token;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,8 +40,7 @@ public class RecurrenceFragment extends Fragment {
 	private FragmentRecurrenceBinding binding;
 	private OnResultRecurrence onResultRecurrence;
 
-	private long startDate;
-
+	private long startDateTimeMillis;
 	private Date untilDate;
 	private EventRecurrence givedEventRecurrence;
 
@@ -71,10 +70,9 @@ public class RecurrenceFragment extends Fragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
 		Bundle bundle = getArguments();
-		String rrule = bundle.getString(CalendarContract.Events.RRULE);
-		startDate = bundle.getLong(CalendarContract.Events.DTSTART);
+		String rrule = bundle.getString(Events.RRULE);
+		startDateTimeMillis = bundle.getLong(Events.DTSTART);
 
 		if (rrule != null) {
 			givedEventRecurrence = new EventRecurrence();
@@ -178,10 +176,10 @@ public class RecurrenceFragment extends Fragment {
 			}
 		});
 
-		untilDate = new Date(startDate);
+		untilDate = new Date(startDateTimeMillis);
 		binding.repeatUntilTextview.setText(ClockUtil.YYYY_M_D_E.format(untilDate));
 
-		Calendar calendar = Calendar.getInstance();
+		Calendar calendar = Calendar.getInstance(ClockUtil.UTC_TIME_ZONE);
 		calendar.setTime(untilDate);
 
 		SimpleDateFormat simpleDateFormat1 = new SimpleDateFormat("매월 d일", Locale.KOREAN);
@@ -306,8 +304,8 @@ public class RecurrenceFragment extends Fragment {
 			} else if (binding.radioRepeatMonthly.isChecked()) {
 				newEventRecurrence.freq = EventRecurrence.MONTHLY;
 				newEventRecurrence.interval = Integer.parseInt(binding.repeatMonthlyIntervalEdittext.getText().toString());
-				Calendar calendar = Calendar.getInstance();
-				calendar.setTimeInMillis(startDate);
+				Calendar calendar = Calendar.getInstance(ClockUtil.UTC_TIME_ZONE);
+				calendar.setTimeInMillis(startDateTimeMillis);
 
 				if (binding.radioRepeatMonthlySameDayOfMonth.isChecked()) {
 					int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);

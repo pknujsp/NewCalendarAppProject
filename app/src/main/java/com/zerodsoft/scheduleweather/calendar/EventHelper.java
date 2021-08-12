@@ -56,8 +56,6 @@ public class EventHelper implements Serializable {
 		contentProviderOperationList.add(ContentProviderOperation.newInsert(Events.CONTENT_URI).withValues(newEvent)
 				.build());
 
-		Date start = new Date(newEvent.getAsLong(Events.DTSTART));
-
 		if (!newReminderList.isEmpty()) {
 			saveRemindersWithBackRef(contentProviderOperationList, eventIdIndex, null,
 					newReminderList);
@@ -181,16 +179,14 @@ public class EventHelper implements Serializable {
 						hasRRuleInNewEvent = true;
 					}
 				}
-				setDuration(newEvent);
 
 				if (hasRRuleInNewEvent) {
 					checkTimeDependentFields(originalEvent, newEvent, eventEditType);
-					contentProviderOperationList.add(ContentProviderOperation.newUpdate(uri).withValues(newEvent).build());
 				} else {
-					contentProviderOperationList.add(ContentProviderOperation.newUpdate(uri).withValues(newEvent)
-							.build());
-					forceSaveReminders = true;
 				}
+				setDuration(newEvent);
+				contentProviderOperationList.add(ContentProviderOperation.newUpdate(uri).withValues(newEvent)
+						.build());
 			}
 		}
 
@@ -280,7 +276,6 @@ public class EventHelper implements Serializable {
 				contentProviderOperationList.add(attendeeOperationBuilder.build());
 			}
 		}
-
 		EditEventPrimaryValues editEventPrimaryValues = new EditEventPrimaryValues();
 		editEventPrimaryValues.setBegin(getValuesAsLong(originalEvent, newEvent, Events.DTSTART));
 		editEventPrimaryValues.setEventEditType(eventEditType);

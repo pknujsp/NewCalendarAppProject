@@ -258,16 +258,14 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 			String rRule = null;
 
 			if (eventModel.isModified(Events.RRULE)) {
-				rRule = eventModel.getNEW_EVENT().getAsString(CalendarContract.Events.RRULE) == null ? "" :
-						eventModel.getNEW_EVENT().getAsString(CalendarContract.Events.RRULE);
+				rRule = eventModel.getNEW_EVENT().getAsString(CalendarContract.Events.RRULE);
 			} else if (originalEvent.getAsString(CalendarContract.Instances.RRULE) != null) {
 				rRule = originalEvent.getAsString(CalendarContract.Instances.RRULE);
 			} else {
 				rRule = null;
 			}
 
-			long dtStart = eventModel.getBeginDateTimeObj().getTimeMillis();
-			onClickedRecurrence(rRule, dtStart);
+			onClickedRecurrence(rRule, eventModel.getBeginDateTimeObj().getUtcCalendar().getTimeInMillis());
 		});
 
         /*
@@ -373,6 +371,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 	}
 
 	private boolean modifiedEnd = false;
+	private boolean modifiedDateTime = false;
 
 	@Override
 	protected final void initDatePicker() {
@@ -393,7 +392,11 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		showDatePicker(new OnModifiedDateTimeCallback() {
 			@Override
 			public void onModified() {
+				if (!modifiedDateTime) {
+					eventModel.setRecurrence(originalEvent.getAsString(Events.RRULE));
+				}
 				modifiedEnd = true;
+				modifiedDateTime = true;
 			}
 		}, endDateTimeObj);
 	}
@@ -403,6 +406,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		showTimePicker(dateType, new OnModifiedDateTimeCallback() {
 			@Override
 			public void onModified() {
+				modifiedDateTime = true;
 			}
 		});
 	}
@@ -575,21 +579,23 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		}
 	}
 
-	private void setIfModifiedDateTimeAllDay(ContentValues contentValues) {
+	private boolean setIfModifiedDateTimeAllDay(ContentValues contentValues) {
 		final boolean originalIsAllDay = originalEvent.getAsInteger(Events.ALL_DAY) == 1;
 		final boolean newIsAllDay = binding.timeLayout.timeAlldaySwitch.isChecked();
-		final DateTimeObj newBeginDateTimeObj = eventModel.getBeginDateTimeObj();
-		final DateTimeObj newEndDateTimeObj = eventModel.getEndDateTimeObj();
+		boolean appliedModifiedDateTime = false;
 
 		if (originalIsAllDay != newIsAllDay) {
 			applyModifiedDateTime(contentValues, newIsAllDay);
+			appliedModifiedDateTime = true;
 		} else {
-			if (modifiedEnd) {
+			if (modifiedDateTime) {
 				applyModifiedDateTime(contentValues, newIsAllDay);
+				appliedModifiedDateTime = true;
 			}
 		}
 
 		contentValues.put(Events.ALL_DAY, newIsAllDay ? 1 : 0);
+		return appliedModifiedDateTime;
 	}
 
 	private void applyModifiedDateTime(ContentValues contentValues, boolean allDay) {
@@ -610,8 +616,6 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 			endTimeMillis = newEndDateTimeObj.getTimeMillis();
 		}
 
-		Date begindate = new Date(beginTimeMillis);
-		Date enddate = new Date(endTimeMillis);
 		contentValues.put(Events.DTSTART, beginTimeMillis);
 		contentValues.put(Events.DTEND, endTimeMillis);
 	}
@@ -702,8 +706,13 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		List<ContentValues> newReminderList = eventModel.getNEW_REMINDERS();
 		List<ContentValues> newAttendeeList = eventModel.getNEW_ATTENDEES();
 
-		setIfModifiedDateTimeAllDay(modifiedEvent);
+		boolean appliedModifiedDateTime = setIfModifiedDateTimeAllDay(modifiedEvent);
 
+		if (!appliedModifiedDateTime) {
+			if (modifiedEvent.getAsString(Events.RRULE) != null) {
+				applyModifiedDateTime(modifiedEvent, binding.timeLayout.timeAlldaySwitch.isChecked());
+			}
+		}
 		EventHelper eventHelper = new EventHelper(getAsyncQueryService());
 		eventHelper.updateEvent(EventHelper.EventEditType.UPDATE_ALL_EVENTS, originalEvent, modifiedEvent, originalReminderList
 				, originalAttendeeList, newReminderList, newAttendeeList, selectedCalendarValues, locationDTO, locationIntentCode);

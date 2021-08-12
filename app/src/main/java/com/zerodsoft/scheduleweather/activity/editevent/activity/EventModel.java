@@ -104,7 +104,7 @@ public class EventModel implements IEventDataViewModel {
 		modifiedValueSet.add(Events.ALL_DAY);
 		NEW_EVENT.put(Events.ALL_DAY, isAllDay ? 1 : 0);
 	}
-	
+
 
 	@Override
 	public void setTimezone(@NonNull String timeZoneId) {
@@ -115,9 +115,9 @@ public class EventModel implements IEventDataViewModel {
 	@Override
 	public void setRecurrence(@NonNull String rRule) {
 		if (rRule.isEmpty()) {
-			NEW_EVENT.put(Events.RRULE, (String) null);
+			NEW_EVENT.putNull(Events.RRULE);
 		} else {
-			NEW_EVENT.put(CalendarContract.Events.RRULE, rRule);
+			NEW_EVENT.put(Events.RRULE, rRule);
 		}
 		modifiedValueSet.add(Events.RRULE);
 	}

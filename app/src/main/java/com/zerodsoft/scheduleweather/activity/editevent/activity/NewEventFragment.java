@@ -120,7 +120,7 @@ public class NewEventFragment extends EventBaseFragment {
 			if (eventModel.getNEW_EVENT().containsKey(Events.RRULE)) {
 				rRule = eventModel.getNEW_EVENT().getAsString(Events.RRULE);
 			}
-			onClickedRecurrence(rRule, eventModel.getNEW_EVENT().getAsLong(Events.DTSTART));
+			onClickedRecurrence(rRule, eventModel.getBeginDateTimeObj().getTimeMillis());
 		});
 
         /*

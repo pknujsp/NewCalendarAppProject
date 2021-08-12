@@ -14,6 +14,8 @@ import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.provider.CalendarContract;
+import android.provider.CalendarContract.Events;
+import android.provider.CalendarContract.Instances;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.TypedValue;
@@ -374,8 +376,8 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 
 	protected final void onClickedRecurrence(String rRule, long dtStart) {
 		Bundle bundle = new Bundle();
-		bundle.putString(CalendarContract.Events.RRULE, rRule);
-		bundle.putLong(CalendarContract.Events.DTSTART, dtStart);
+		bundle.putString(Events.RRULE, rRule);
+		bundle.putLong(Events.DTSTART, dtStart);
 
 		RecurrenceFragment recurrenceFragment = new RecurrenceFragment(new RecurrenceFragment.OnResultRecurrence() {
 			@Override
@@ -817,7 +819,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 					onModifiedDateTimeCallback.onModified();
 				}
 
-				long beginTimeMillis = modifiedBeginDateTimeObj.getTimeMillis();
+				final long beginTimeMillis = modifiedBeginDateTimeObj.getUtcCalendar().getTimeInMillis();
 				modifyRruleIfFreqMonthly(beginTimeMillis);
 				modifyRruleIfFreqWeekly(beginTimeMillis);
 
@@ -838,7 +840,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 			eventRecurrence.parse(eventModel.getNEW_EVENT().getAsString(CalendarContract.Events.RRULE));
 
 			if (eventRecurrence.freq == EventRecurrence.MONTHLY) {
-				Calendar calendar = Calendar.getInstance();
+				Calendar calendar = Calendar.getInstance(ClockUtil.UTC_TIME_ZONE);
 				calendar.setTimeInMillis(startDate);
 
 				if (eventRecurrence.bymonthdayCount > 0) {
@@ -872,7 +874,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 			eventRecurrence.parse(eventModel.getNEW_EVENT().getAsString(CalendarContract.Events.RRULE));
 
 			if (eventRecurrence.freq == EventRecurrence.WEEKLY) {
-				Calendar calendar = Calendar.getInstance();
+				Calendar calendar = Calendar.getInstance(ClockUtil.UTC_TIME_ZONE);
 				calendar.setTimeInMillis(startDate);
 
 				if (eventRecurrence.bydayCount > 0) {

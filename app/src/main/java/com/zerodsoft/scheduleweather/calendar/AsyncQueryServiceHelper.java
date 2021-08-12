@@ -109,6 +109,10 @@ public class AsyncQueryServiceHelper extends IntentService {
 		Long originalEventId = null;
 		Long newEventId = null;
 
+		Integer insertNewEventIndex = null;
+		Integer updateOriginalEventIndex = null;
+		Integer exceptionOriginalEventIndex = null;
+
 		synchronized (sWorkQueue) {
 			while (true) {
 				/*
@@ -183,10 +187,6 @@ public class AsyncQueryServiceHelper extends IntentService {
 
 				case AsyncQueryService.Operation.EVENT_ARG_BATCH:
 					try {
-						Integer insertNewEventIndex = null;
-						Integer updateOriginalEventIndex = null;
-						Integer exceptionOriginalEventIndex = null;
-
 						ArrayList<ContentProviderOperation> cpo = args.cpo;
 
 						int cpoIndex = 0;
@@ -206,22 +206,8 @@ public class AsyncQueryServiceHelper extends IntentService {
 							cpoIndex++;
 						}
 
-						ContentProviderResult[] contentProviderResults = resolver.applyBatch(args.authority, args.cpo);
+						ContentProviderResult[] contentProviderResults = resolver.applyBatch(args.authority, cpo);
 						args.result = contentProviderResults;
-
-						if (insertNewEventIndex != null) {
-							newEventId = ContentUris.parseId(contentProviderResults[insertNewEventIndex].uri);
-							args.editEventPrimaryValues.setNewEventId(newEventId);
-						}
-						if (updateOriginalEventIndex != null) {
-							originalEventId = ContentUris.parseId(cpo.get(updateOriginalEventIndex).getUri());
-							args.editEventPrimaryValues.setOriginalEventId(originalEventId);
-						}
-						if (exceptionOriginalEventIndex != null) {
-							originalEventId = ContentUris.parseId(cpo.get(exceptionOriginalEventIndex).getUri());
-							args.editEventPrimaryValues.setOriginalEventId(originalEventId);
-						}
-
 					} catch (RemoteException e) {
 						Log.e("", e.toString());
 						args.result = null;
@@ -230,6 +216,22 @@ public class AsyncQueryServiceHelper extends IntentService {
 						args.result = null;
 					}
 					break;
+			}
+
+			ArrayList<ContentProviderOperation> cpo = args.cpo;
+			ContentProviderResult[] contentProviderResults = (ContentProviderResult[]) args.result;
+
+			if (insertNewEventIndex != null) {
+				newEventId = ContentUris.parseId(contentProviderResults[insertNewEventIndex].uri);
+				args.editEventPrimaryValues.setNewEventId(newEventId);
+			}
+			if (updateOriginalEventIndex != null) {
+				originalEventId = ContentUris.parseId(cpo.get(updateOriginalEventIndex).getUri());
+				args.editEventPrimaryValues.setOriginalEventId(originalEventId);
+			}
+			if (exceptionOriginalEventIndex != null) {
+				originalEventId = ContentUris.parseId(cpo.get(exceptionOriginalEventIndex).getUri());
+				args.editEventPrimaryValues.setOriginalEventId(originalEventId);
 			}
 
 			final EventHelper.EventEditType eventEditType = args.editEventPrimaryValues.getEventEditType();
