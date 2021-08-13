@@ -33,6 +33,8 @@ import java.util.HashMap;
 public class EventRecurrence {
 	private static String TAG = "EventRecur";
 
+	public static final String EMPTY = "FREQ=";
+
 	public static final int SECONDLY = 1;
 	public static final int MINUTELY = 2;
 	public static final int HOURLY = 3;

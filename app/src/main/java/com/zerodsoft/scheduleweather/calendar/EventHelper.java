@@ -51,7 +51,6 @@ public class EventHelper implements Serializable {
 				= new ArrayList<>();
 		int eventIdIndex = 0;
 
-		convertDtEndForAllDay(newEvent);
 		setDuration(newEvent);
 		contentProviderOperationList.add(ContentProviderOperation.newInsert(Events.CONTENT_URI).withValues(newEvent)
 				.build());
@@ -101,8 +100,6 @@ public class EventHelper implements Serializable {
 		int eventIdIndex = -1;
 
 		if (newEvent.size() != 0 || !isUnchanged(newEvent)) {
-			convertDtEndForAllDay(newEvent);
-
 			if (eventEditType == EventEditType.UPDATE_ONLY_THIS_EVENT) {
 				Uri exceptionUri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_EXCEPTION_URI,
 						originalEvent.getAsLong(Instances.EVENT_ID));
@@ -544,20 +541,6 @@ public class EventHelper implements Serializable {
 		}
 	}
 
-	public void convertDtEndForAllDay(ContentValues contentValues) {
-		if (!contentValues.containsKey(Events.RRULE) && contentValues.containsKey(Events.DTSTART)) {
-			if (contentValues.containsKey(Events.ALL_DAY)) {
-				if (contentValues.getAsInteger(Events.ALL_DAY) == 1) {
-					Calendar calendar = Calendar.getInstance();
-					calendar.setTimeInMillis(contentValues.getAsLong(Events.DTEND));
-					calendar.add(Calendar.DAY_OF_YEAR, 1);
-
-					contentValues.put(Events.DTEND, calendar.getTimeInMillis());
-				}
-			}
-		}
-	}
-
 	public void setDuration(ContentValues newEvent) {
 		//반복 이벤트면 dtEnd를 삭제하고 duration추가
 		if (!newEvent.containsKey(Events.DTSTART)) {
@@ -573,18 +556,15 @@ public class EventHelper implements Serializable {
 			String duration = null;
 
 			if (isAllDay) {
-				// if it's all day compute the duration in days
-				long days = (end - start + DateUtils.DAY_IN_MILLIS - 1)
+				long days = (end - start)
 						/ DateUtils.DAY_IN_MILLIS;
 				duration = "P" + days + "D";
 			} else {
-				// otherwise compute the duration in seconds
 				long seconds = (end - start) / DateUtils.SECOND_IN_MILLIS;
 				duration = "P" + seconds + "S";
 			}
-			// recurring events should have a duration and dtend set to null
 			newEvent.put(Events.DURATION, duration);
-			newEvent.put(Events.DTEND, (String) null);
+			newEvent.putNull(Events.DTEND);
 		}
 
 	}

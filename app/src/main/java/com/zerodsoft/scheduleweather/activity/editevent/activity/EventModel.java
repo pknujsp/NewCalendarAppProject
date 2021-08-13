@@ -6,6 +6,7 @@ import android.provider.CalendarContract.Events;
 
 import androidx.annotation.NonNull;
 
+import com.zerodsoft.scheduleweather.calendar.calendarcommon2.EventRecurrence;
 import com.zerodsoft.scheduleweather.calendar.dto.DateTimeObj;
 
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ public class EventModel implements IEventDataViewModel {
 	private DateTimeObj endDateTimeObj = new DateTimeObj();
 	private TimeZone eventTimeZone;
 	private TimeZone calendarTimeZone;
+	private EventRecurrence eventRecurrence = new EventRecurrence();
 
 	public ContentValues getNEW_EVENT() {
 		return NEW_EVENT;
@@ -75,6 +77,14 @@ public class EventModel implements IEventDataViewModel {
 		this.eventTimeZone = eventTimeZone;
 	}
 
+	public void setEventRecurrence(EventRecurrence eventRecurrence) {
+		this.eventRecurrence = eventRecurrence;
+	}
+
+	public EventRecurrence getEventRecurrence() {
+		return eventRecurrence;
+	}
+
 	@Override
 	public void setTitle(@NonNull String title) {
 		if (title.isEmpty()) {
@@ -110,16 +120,6 @@ public class EventModel implements IEventDataViewModel {
 	public void setTimezone(@NonNull String timeZoneId) {
 		modifiedValueSet.add(Events.EVENT_TIMEZONE);
 		NEW_EVENT.put(Events.EVENT_TIMEZONE, timeZoneId);
-	}
-
-	@Override
-	public void setRecurrence(@NonNull String rRule) {
-		if (rRule.isEmpty()) {
-			NEW_EVENT.putNull(Events.RRULE);
-		} else {
-			NEW_EVENT.put(Events.RRULE, rRule);
-		}
-		modifiedValueSet.add(Events.RRULE);
 	}
 
 	@Override

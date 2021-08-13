@@ -298,6 +298,7 @@ public class NewEventFragment extends EventBaseFragment {
 			beginTimeMillis = utcCalendar.getTimeInMillis();
 
 			utcCalendar.set(endDateTimeObj.getYear(), endDateTimeObj.getMonth() - 1, endDateTimeObj.getDay());
+			utcCalendar.add(Calendar.DATE, 1);
 			endTimeMillis = utcCalendar.getTimeInMillis();
 		} else {
 			beginTimeMillis = beginDateTimeObj.getTimeMillis();

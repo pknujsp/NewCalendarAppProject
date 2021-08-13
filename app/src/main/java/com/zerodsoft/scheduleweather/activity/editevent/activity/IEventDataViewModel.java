@@ -17,8 +17,6 @@ public interface IEventDataViewModel {
 
 	void setTimezone(@NonNull String timeZoneId);
 
-	void setRecurrence(@NonNull String rRule);
-
 	boolean addReminder(@NonNull Integer minutes, @NonNull Integer method);
 
 	void modifyReminder(@NonNull Integer previousMinutes, @NonNull Integer newMinutes, @NonNull Integer method);

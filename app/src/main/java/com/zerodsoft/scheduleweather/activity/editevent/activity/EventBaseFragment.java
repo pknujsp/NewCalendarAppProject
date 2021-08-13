@@ -382,7 +382,12 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 		RecurrenceFragment recurrenceFragment = new RecurrenceFragment(new RecurrenceFragment.OnResultRecurrence() {
 			@Override
 			public void onResult(String rrule) {
-				eventModel.setRecurrence(rrule);
+				EventRecurrence eventRecurrence = new EventRecurrence();
+
+				if (!rrule.equals(EventRecurrence.EMPTY)) {
+					eventRecurrence.parse(rrule);
+				}
+				eventModel.setEventRecurrence(eventRecurrence);
 				setRecurrenceText(rrule);
 			}
 		});
@@ -394,7 +399,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 	}
 
 	protected final void setRecurrenceText(String rRule) {
-		if (!rRule.isEmpty()) {
+		if (!rRule.equals(EventRecurrence.EMPTY)) {
 			EventRecurrence eventRecurrence = new EventRecurrence();
 			eventRecurrence.parse(rRule);
 
@@ -835,9 +840,8 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 	}
 
 	protected final void modifyRruleIfFreqMonthly(long startDate) {
-		if (eventModel.getNEW_EVENT().containsKey(CalendarContract.Events.RRULE)) {
-			EventRecurrence eventRecurrence = new EventRecurrence();
-			eventRecurrence.parse(eventModel.getNEW_EVENT().getAsString(CalendarContract.Events.RRULE));
+		if (!eventModel.getEventRecurrence().toString().equals(EventRecurrence.EMPTY)) {
+			EventRecurrence eventRecurrence = eventModel.getEventRecurrence();
 
 			if (eventRecurrence.freq == EventRecurrence.MONTHLY) {
 				Calendar calendar = Calendar.getInstance(ClockUtil.UTC_TIME_ZONE);
@@ -860,18 +864,15 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 					// byday의 문자열 변환 값이 4SU 이면 byday는 EventRecurrence.SU값 하나를 가지고
 					// bydaynum은 4값 하나를 가짐
 				}
-
-				String rrule = eventRecurrence.toString();
-				eventModel.setRecurrence(rrule);
-				setRecurrenceText(rrule);
+				eventModel.setEventRecurrence(eventRecurrence);
+				setRecurrenceText(eventRecurrence.toString());
 			}
 		}
 	}
 
 	protected final void modifyRruleIfFreqWeekly(long startDate) {
-		if (eventModel.getNEW_EVENT().containsKey(CalendarContract.Events.RRULE)) {
-			EventRecurrence eventRecurrence = new EventRecurrence();
-			eventRecurrence.parse(eventModel.getNEW_EVENT().getAsString(CalendarContract.Events.RRULE));
+		if (!eventModel.getEventRecurrence().toString().equals(EventRecurrence.EMPTY)) {
+			EventRecurrence eventRecurrence = eventModel.getEventRecurrence();
 
 			if (eventRecurrence.freq == EventRecurrence.WEEKLY) {
 				Calendar calendar = Calendar.getInstance(ClockUtil.UTC_TIME_ZONE);
@@ -885,9 +886,8 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 					eventRecurrence.bydayCount = 1;
 				}
 
-				String rrule = eventRecurrence.toString();
-				eventModel.setRecurrence(rrule);
-				setRecurrenceText(rrule);
+				eventModel.setEventRecurrence(eventRecurrence);
+				setRecurrenceText(eventRecurrence.toString());
 			}
 		}
 	}

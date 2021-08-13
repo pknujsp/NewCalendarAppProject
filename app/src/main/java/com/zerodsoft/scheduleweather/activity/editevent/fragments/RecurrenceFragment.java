@@ -74,7 +74,7 @@ public class RecurrenceFragment extends Fragment {
 		String rrule = bundle.getString(Events.RRULE);
 		startDateTimeMillis = bundle.getLong(Events.DTSTART);
 
-		if (rrule != null) {
+		if (!rrule.equals(EventRecurrence.EMPTY)) {
 			givedEventRecurrence = new EventRecurrence();
 			givedEventRecurrence.parse(rrule);
 		}
@@ -275,7 +275,7 @@ public class RecurrenceFragment extends Fragment {
 	@Override
 	public void onDestroy() {
 		if (binding.radioNotRepeat.isChecked()) {
-			onResultRecurrence.onResult("");
+			onResultRecurrence.onResult(EventRecurrence.EMPTY);
 		} else {
 			EventRecurrence newEventRecurrence = new EventRecurrence();
 

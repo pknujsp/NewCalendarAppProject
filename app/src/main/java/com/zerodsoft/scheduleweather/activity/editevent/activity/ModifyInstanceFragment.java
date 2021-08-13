@@ -22,6 +22,7 @@ import com.zerodsoft.scheduleweather.activity.editevent.interfaces.OnEditEventRe
 import com.zerodsoft.scheduleweather.calendar.AsyncQueryService;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.EventHelper;
+import com.zerodsoft.scheduleweather.calendar.calendarcommon2.EventRecurrence;
 import com.zerodsoft.scheduleweather.calendar.dto.DateTimeObj;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
@@ -42,6 +43,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 	private OnEditEventResultListener onEditEventResultListener;
 	private List<ContentValues> originalReminderList = new ArrayList<>();
 	private List<ContentValues> originalAttendeeList = new ArrayList<>();
+	private EventRecurrence originalEventRecurrence = new EventRecurrence();
 
 	private DateTimeObj originalBeginDateTimeObj;
 	private DateTimeObj originalEndDateTimeObj;
@@ -95,7 +97,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 			@Override
 			public void onClick(View view) {
 				if (eventModel.getModifiedValueSet().isEmpty() && !eventModel.isModifiedAttendees()
-						&& !eventModel.isModifiedReminders()) {
+						&& !eventModel.isModifiedReminders() && originalEventRecurrence.equals(eventModel.getEventRecurrence())) {
 					Toast.makeText(getContext(), R.string.not_edited, Toast.LENGTH_SHORT).show();
 					return;
 				}
@@ -255,16 +257,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		binding.recurrenceLayout.eventRecurrence.setOnClickListener(view ->
 		{
 			// 반복 룰과 이벤트의 시작 시간 전달
-			String rRule = null;
-
-			if (eventModel.isModified(Events.RRULE)) {
-				rRule = eventModel.getNEW_EVENT().getAsString(CalendarContract.Events.RRULE);
-			} else if (originalEvent.getAsString(CalendarContract.Instances.RRULE) != null) {
-				rRule = originalEvent.getAsString(CalendarContract.Instances.RRULE);
-			} else {
-				rRule = null;
-			}
-
+			String rRule = eventModel.getEventRecurrence().toString();
 			onClickedRecurrence(rRule, eventModel.getBeginDateTimeObj().getUtcCalendar().getTimeInMillis());
 		});
 
@@ -392,9 +385,6 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		showDatePicker(new OnModifiedDateTimeCallback() {
 			@Override
 			public void onModified() {
-				if (!modifiedDateTime) {
-					eventModel.setRecurrence(originalEvent.getAsString(Events.RRULE));
-				}
 				modifiedEnd = true;
 				modifiedDateTime = true;
 			}
@@ -505,8 +495,14 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 				selectedCalendarValues.getAsString(CalendarContract.Calendars.ACCOUNT_NAME));
 
 		// 반복
-		if (originalEvent.getAsString(CalendarContract.Instances.RRULE) != null) {
-			setRecurrenceText(originalEvent.getAsString(CalendarContract.Instances.RRULE));
+		if (originalEvent.getAsString(Instances.RRULE) != null) {
+			EventRecurrence eventRecurrence = new EventRecurrence();
+			eventRecurrence.parse(originalEvent.getAsString(Instances.RRULE));
+
+			originalEventRecurrence = new EventRecurrence();
+			originalEventRecurrence.parse(originalEvent.getAsString(Instances.RRULE));
+			eventModel.setEventRecurrence(eventRecurrence);
+			setRecurrenceText(originalEvent.getAsString(Instances.RRULE));
 		}
 
 		// 알림
@@ -610,6 +606,9 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 			beginTimeMillis = utcCalendar.getTimeInMillis();
 
 			utcCalendar.set(newEndDateTimeObj.getYear(), newEndDateTimeObj.getMonth() - 1, newEndDateTimeObj.getDay());
+			if (modifiedEnd) {
+				utcCalendar.add(Calendar.DATE, 1);
+			}
 			endTimeMillis = utcCalendar.getTimeInMillis();
 		} else {
 			beginTimeMillis = newBeginDateTimeObj.getTimeMillis();
@@ -682,9 +681,20 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		setNewEventValues(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS, newEventValues, newEvent);
 		setNewEventValues(CalendarContract.Events.GUESTS_CAN_MODIFY, newEventValues, newEvent);
 		setNewEventValues(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS, newEventValues, newEvent);
-		setNewEventValues(CalendarContract.Events.RRULE, newEventValues, newEvent);
 		setNewEventValues(CalendarContract.Events.IS_ORGANIZER, newEventValues, newEvent);
 		newEventValues.put(CalendarContract.Events._ID, originalEvent.getAsLong(CalendarContract.Instances.EVENT_ID));
+
+		String rrule = null;
+		if (!originalEventRecurrence.equals(eventModel.getEventRecurrence())) {
+			rrule = eventModel.getEventRecurrence().toString();
+			if (rrule.equals(EventRecurrence.EMPTY)) {
+				rrule = null;
+			}
+		} else {
+			rrule = originalEvent.getAsString(Events.RRULE);
+		}
+
+		newEventValues.put(Events.RRULE, rrule);
 
 		setIfModifiedDateTimeAllDay(newEventValues);
 
@@ -705,10 +715,46 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		boolean appliedModifiedDateTime = setIfModifiedDateTimeAllDay(modifiedEvent);
 
 		if (!appliedModifiedDateTime) {
-			if (modifiedEvent.getAsString(Events.RRULE) != null) {
+			if (!originalEventRecurrence.equals(eventModel.getEventRecurrence())) {
 				applyModifiedDateTime(modifiedEvent, binding.timeLayout.timeAlldaySwitch.isChecked());
 			}
 		}
+
+		if (modifiedEnd) {
+			if (originalEventRecurrence.equals(eventModel.getEventRecurrence())) {
+				final Long newDtStart = modifiedEvent.getAsLong(Events.DTSTART);
+				final Long newDtEnd = modifiedEvent.getAsLong(Events.DTEND);
+
+				Long dtStartDifference = null;
+				Long dtEndDifference = null;
+
+				if (binding.timeLayout.timeAlldaySwitch.isChecked()) {
+					dtStartDifference = newDtStart - originalBeginDateTimeObj.getUtcCalendar().getTimeInMillis();
+					dtEndDifference = newDtEnd - originalEndDateTimeObj.getUtcCalendar().getTimeInMillis();
+					modifiedEvent.put(Events.DTSTART, originalBeginDateTimeObj.getUtcCalendar().getTimeInMillis() + dtStartDifference);
+					modifiedEvent.put(Events.DTEND, originalEndDateTimeObj.getUtcCalendar().getTimeInMillis() + dtEndDifference);
+				} else {
+					dtStartDifference = newDtStart - originalBeginDateTimeObj.getTimeMillis();
+					dtEndDifference = newDtEnd - originalEndDateTimeObj.getTimeMillis();
+					modifiedEvent.put(Events.DTSTART, originalBeginDateTimeObj.getTimeMillis() + dtStartDifference);
+					modifiedEvent.put(Events.DTEND, originalEndDateTimeObj.getTimeMillis() + dtEndDifference);
+				}
+			}
+		}
+
+
+		if (!originalEventRecurrence.equals(eventModel.getEventRecurrence())) {
+			String rrule = eventModel.getEventRecurrence().toString();
+			if (rrule.equals(EventRecurrence.EMPTY)) {
+				rrule = null;
+			}
+			modifiedEvent.put(Events.RRULE, rrule);
+		} else {
+		}
+
+		Date begin = new Date(modifiedEvent.getAsLong(Events.DTSTART));
+		Date end = new Date(modifiedEvent.getAsLong(Events.DTEND));
+
 		EventHelper eventHelper = new EventHelper(getAsyncQueryService());
 		eventHelper.updateEvent(EventHelper.EventEditType.UPDATE_ALL_EVENTS, originalEvent, modifiedEvent, originalReminderList
 				, originalAttendeeList, newReminderList, newAttendeeList, selectedCalendarValues, locationDTO, locationIntentCode);
