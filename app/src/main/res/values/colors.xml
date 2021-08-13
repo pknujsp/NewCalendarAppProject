@@ -55,4 +55,8 @@
 
     <color name="alarm_activity_background_gradient_start">#00d2ff</color>
     <color name="alarm_activity_background_gradient_end">#928DAB</color>
+
+    <color name="cool_sky_gradient_start">#2980B9</color>
+    <color name="cool_sky_gradient_center">#6DD5FA</color>
+    <color name="cool_sky_gradient_end">#FFFFFF</color>
 </resources>

@@ -645,7 +645,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 			}
 		});
-
 		locationItemBottomSheetViewPager.setOffscreenPageLimit(2);
 
 		BottomSheetBehavior locationItemBottomSheetBehavior = BottomSheetBehavior.from(locationItemBottomSheet);
@@ -1250,6 +1249,10 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			cameraUpdate.animate(CameraAnimation.Easing, 150);
 			naverMap.moveCamera(cameraUpdate);
 		}
+
+		if (target == null) {
+			target = new LatLng(0, 0);
+		}
 		lastTarget = target;
 	}
 
@@ -1529,7 +1532,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		});
 
 		markerOfSelectedLocation.setMap(naverMap);
-
 		createMarkers(new ArrayList<>(), MarkerType.LONG_CLICKED_MAP);
 		markersMap.get(MarkerType.LONG_CLICKED_MAP).add(markerOfSelectedLocation);
 

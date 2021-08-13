@@ -752,8 +752,6 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		} else {
 		}
 
-		Date begin = new Date(modifiedEvent.getAsLong(Events.DTSTART));
-		Date end = new Date(modifiedEvent.getAsLong(Events.DTEND));
 
 		EventHelper eventHelper = new EventHelper(getAsyncQueryService());
 		eventHelper.updateEvent(EventHelper.EventEditType.UPDATE_ALL_EVENTS, originalEvent, modifiedEvent, originalReminderList

@@ -352,24 +352,28 @@ public class EventFragment extends BottomSheetDialogFragment {
 					@Override
 					public void onSavedNewEvent(long dtStart) {
 						onEventFragmentDismissListener = null;
+						dismiss();
 						getParentFragment().getParentFragmentManager().popBackStackImmediate();
 					}
 
 					@Override
 					public void onUpdatedOnlyThisEvent(long dtStart) {
 						onEventFragmentDismissListener = null;
+						dismiss();
 						getParentFragment().getParentFragmentManager().popBackStackImmediate();
 					}
 
 					@Override
 					public void onUpdatedFollowingEvents(long dtStart) {
 						onEventFragmentDismissListener = null;
+						dismiss();
 						getParentFragment().getParentFragmentManager().popBackStackImmediate();
 					}
 
 					@Override
 					public void onUpdatedAllEvents(long dtStart) {
 						onEventFragmentDismissListener = null;
+						dismiss();
 						getParentFragment().getParentFragmentManager().popBackStackImmediate();
 					}
 
