@@ -328,11 +328,11 @@ public class MidFcstFragment extends Fragment {
 		Drawable[] drawables;
 		if (data.getAmSky() != null) {
 			drawables = new Drawable[2];
-			drawables[0] = getContext().getDrawable(WeatherDataConverter.getSkyDrawableId(data.getAmSky()));
-			drawables[1] = getContext().getDrawable(WeatherDataConverter.getSkyDrawableId(data.getPmSky()));
+			drawables[0] = getContext().getDrawable(WeatherDataConverter.getSkyDrawableIdForMid(data.getAmSky()));
+			drawables[1] = getContext().getDrawable(WeatherDataConverter.getSkyDrawableIdForMid(data.getPmSky()));
 		} else {
 			drawables = new Drawable[1];
-			drawables[0] = getContext().getDrawable(WeatherDataConverter.getSkyDrawableId(data.getSky()));
+			drawables[0] = getContext().getDrawable(WeatherDataConverter.getSkyDrawableIdForMid(data.getSky()));
 		}
 		return drawables;
 	}

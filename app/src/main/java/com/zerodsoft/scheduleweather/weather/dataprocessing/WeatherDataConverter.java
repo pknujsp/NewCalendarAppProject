@@ -8,126 +8,143 @@ public class WeatherDataConverter {
 	public static Context context;
 	/*
 - 하늘상태(SKY) 코드 : 맑음(1), 구름많음(3), 흐림(4)
-- 강수형태(PTY) 코드 : 없음(0), 비(1), 비/눈/진눈깨비(2), 눈(3), 소나기(4), 빗방울(5), 빗방울/눈날림(6), 눈날림(7)
+- 강수형태(PTY) 코드 : (초단기) 없음(0), 비(1), 비/눈(2), 눈(3), 빗방울(5), 빗방울눈날림(6), 눈날림(7)
+                      (단기) 없음(0), 비(1), 비/눈(2), 눈(3), 소나기(4)
 SKY와 PTY는 별개의 데이터
 	 */
-	private static final String SUNNY = "맑음";
-	private static final String CLOUD = "구름많음";
-	private static final String CLOUD_RAIN = "구름많고 비";
-	private static final String CLOUD_SNOW = "구름많고 눈";
-	private static final String CLOUD_RAIN_SNOW = "구름많고 비/눈";
-	private static final String CLOUD_SNOW_RAIN = "구름많고 눈/비";
-	private static final String CLOUD_SHOWER = "구름많고 소나기";
-	private static final String CLOUDY = "흐림";
-	private static final String CLOUDY_RAIN = "흐리고 비";
-	private static final String CLOUDY_SNOW = "흐리고 눈";
-	private static final String CLOUDY_RAIN_SNOW = "흐리고 비/눈";
-	private static final String CLOUDY_SNOW_RAIN = "흐리고 눈/비";
-	private static final String CLOUDY_SHOWER = "흐리고 소나기";
+	private static final String SUNNY_FOR_MID = "맑음";
+	private static final String CLOUDY_FOR_MID = "구름많음";
+	private static final String CLOUDY_AND_RAIN_FOR_MID = "구름많고 비";
+	private static final String CLOUDY_AND_SNOW_FOR_MID = "구름많고 눈";
+	private static final String CLOUDY_AND_RAIN_AND_SNOW_FOR_MID = "구름많고 비/눈";
+	private static final String CLOUDY_AND_SNOW_AND_RAIN_FOR_MID = "구름많고 눈/비";
+	private static final String CLOUDY_AND_SHOWER_FOR_MID = "구름많고 소나기";
+	private static final String OVERCAST_FOR_MID = "흐림";
+	private static final String OVERCAST_AND_RAIN_FOR_MID = "흐리고 비";
+	private static final String OVERCAST_AND_SNOW_FOR_MID = "흐리고 눈";
+	private static final String OVERCAST_AND_RAIN_AND_SNOW_FOR_MID = "흐리고 비/눈";
+	private static final String OVERCAST_AND_SNOW_AND_RAIN_FOR_MID = "흐리고 눈/비";
+	private static final String OVERCAST_AND_SHOWER_FOR_MID = "흐리고 소나기";
 
-	private static final String RAIN = "비";
-	private static final String SLEET = "진눈깨비";
-	private static final String SHOWER = "소나기";
-	private static final String SNOW = "눈";
+	private static final String PTY_NOT = "0";
+	private static final String PTY_RAIN = "1";
+	private static final String PTY_RAIN_AND_SNOW = "2";
+	private static final String PTY_SNOW = "3";
+	private static final String PTY_SHOWER = "4";
+	private static final String PTY_RAINDROP = "5";
+	private static final String PTY_RAINDROP_AND_SNOWDRIFTING = "6";
+	private static final String PTY_SNOWDRIFTING = "7";
+
+	private static final String SKY_SUNNY = "1";
+	private static final String SKY_CLOUDY = "3";
+	private static final String SKY_OVERCAST = "4";
+
 
 	private WeatherDataConverter() {
 	}
 
-	public static int getSkyDrawableId(String sky, String precipitationForm, boolean day) {
+	public static int getSkyDrawableId(String sky, String pty, boolean isDay) {
 		int id = 0;
 
-		if (sky.equals(SUNNY)) {
-			if (day) {
+		if (sky.equals(SKY_SUNNY)) {
+			if (isDay) {
 				id = R.drawable.sunny_day_svg;
 			} else {
 				id = R.drawable.sunny_night_svg;
 			}
-		} else if (sky.equals(CLOUD)) {
-			if (day) {
-				id = R.drawable.cloud_day_svg;
+		} else if (sky.equals(SKY_CLOUDY)) {
+			if (isDay) {
+				id = R.drawable.cloudy_day_svg;
 			} else {
-				id = R.drawable.cloud_night_svg;
+				id = R.drawable.cloudy_night_svg;
 			}
-		} else if (sky.equals(CLOUDY)) {
-			id = R.drawable.cloudy_svg;
+		} else if (sky.equals(SKY_OVERCAST)) {
+			id = R.drawable.overcast_svg;
 		}
 
-		if (precipitationForm.equals(RAIN)) {
-			id = R.drawable.rain_svg;
-
-		} else if (precipitationForm.equals(SLEET)) {
-			id = R.drawable.sleet_svg;
-
-		} else if (precipitationForm.equals(SNOW)) {
-			id = R.drawable.snow_svg;
-
-		} else if (precipitationForm.equals(SHOWER)) {
-			id = R.drawable.shower_svg;
+		if (pty != null) {
+			if (pty.equals(PTY_NOT)) {
+				return id;
+			} else if (pty.equals(PTY_RAIN)) {
+				id = R.drawable.rain_svg;
+			} else if (pty.equals(PTY_RAIN_AND_SNOW)) {
+				id = R.drawable.rain_and_snow_svg;
+			} else if (pty.equals(PTY_SNOW)) {
+				id = R.drawable.snow_svg;
+			} else if (pty.equals(PTY_SHOWER)) {
+				id = R.drawable.shower_svg;
+			} else if (pty.equals(PTY_RAINDROP)) {
+				id = R.drawable.rain_svg;
+			} else if (pty.equals(PTY_RAINDROP_AND_SNOWDRIFTING)) {
+				id = R.drawable.rain_and_snow_svg;
+			} else if (pty.equals(PTY_SNOWDRIFTING)) {
+				id = R.drawable.snow_svg;
+			}
 		}
 
 		return id;
 	}
 
-	public static int getSkyDrawableId(String sky) {
+	public static int getSkyDrawableIdForMid(String sky) {
 		int id = 0;
 
-		if (sky.equals(SUNNY)) {
+		if (sky.equals(SUNNY_FOR_MID)) {
 			id = R.drawable.sunny_day_svg;
-		} else if (sky.equals(CLOUD)) {
-			id = R.drawable.cloud_day_svg;
-		} else if (sky.equals(CLOUD_RAIN)) {
+		} else if (sky.equals(CLOUDY_FOR_MID)) {
+			id = R.drawable.cloudy_day_svg;
+		} else if (sky.equals(CLOUDY_AND_RAIN_FOR_MID)) {
 			id = R.drawable.rain_svg;
-		} else if (sky.equals(CLOUD_SNOW)) {
+		} else if (sky.equals(CLOUDY_AND_SNOW_FOR_MID)) {
 			id = R.drawable.snow_svg;
-		} else if (sky.equals(CLOUD_RAIN_SNOW)) {
+		} else if (sky.equals(CLOUDY_AND_RAIN_AND_SNOW_FOR_MID)) {
+			id = R.drawable.rain_and_snow_svg;
+		} else if (sky.equals(CLOUDY_AND_SNOW_AND_RAIN_FOR_MID)) {
+			id = R.drawable.rain_and_snow_svg;
+		} else if (sky.equals(OVERCAST_FOR_MID)) {
+			id = R.drawable.overcast_svg;
+		} else if (sky.equals(OVERCAST_AND_RAIN_FOR_MID)) {
 			id = R.drawable.rain_svg;
-		} else if (sky.equals(CLOUD_SNOW_RAIN)) {
+		} else if (sky.equals(OVERCAST_AND_SNOW_FOR_MID)) {
 			id = R.drawable.snow_svg;
-		} else if (sky.equals(CLOUDY)) {
-			id = R.drawable.cloudy_svg;
-		} else if (sky.equals(CLOUDY_RAIN)) {
-			id = R.drawable.rain_svg;
-		} else if (sky.equals(CLOUDY_SNOW)) {
-			id = R.drawable.snow_svg;
-		} else if (sky.equals(CLOUDY_RAIN_SNOW)) {
-			id = R.drawable.rain_svg;
-		} else if (sky.equals(CLOUDY_SNOW_RAIN)) {
-			id = R.drawable.snow_svg;
-		} else if (sky.equals(CLOUD_SHOWER)) {
+		} else if (sky.equals(OVERCAST_AND_RAIN_AND_SNOW_FOR_MID)) {
+			id = R.drawable.rain_and_snow_svg;
+		} else if (sky.equals(OVERCAST_AND_SNOW_AND_RAIN_FOR_MID)) {
+			id = R.drawable.rain_and_snow_svg;
+		} else if (sky.equals(CLOUDY_AND_SHOWER_FOR_MID)) {
 			id = R.drawable.shower_svg;
-		} else if (sky.equals(CLOUDY_SHOWER)) {
+		} else if (sky.equals(OVERCAST_AND_SHOWER_FOR_MID)) {
 			id = R.drawable.shower_svg;
 		}
 
 		return id;
 	}
 
-	public static String convertPrecipitationForm(String value) {
+	public static String convertPrecipitationForm(String pty) {
 		String convertedValue = null;
 
-		switch (value) {
-			case "0":
+		switch (pty) {
+			case PTY_NOT:
 				convertedValue = "";
 				break;
-			case "1":
+			case PTY_RAIN:
 				convertedValue = context.getString(R.string.rain);
 				break;
-			case "2":
+			case PTY_RAIN_AND_SNOW:
 				convertedValue = context.getString(R.string.sleet);
 				break;
-			case "3":
+			case PTY_SNOW:
 				convertedValue = context.getString(R.string.snow);
 				break;
-			case "4":
+			case PTY_SHOWER:
 				convertedValue = context.getString(R.string.shower);
 				break;
-			case "5":
+			case PTY_RAINDROP:
 				convertedValue = context.getString(R.string.raindrop);
 				break;
-			case "6":
+			case PTY_RAINDROP_AND_SNOWDRIFTING:
 				convertedValue = context.getString(R.string.raindrop_snowdrifting);
 				break;
-			case "7":
+			case PTY_SNOWDRIFTING:
 				convertedValue = context.getString(R.string.snowdrifting);
 				break;
 		}
@@ -196,25 +213,8 @@ SKY와 PTY는 별개의 데이터
 		return convertedValue;
 	}
 
-	public static String convertSky(String value) {
-		String convertedValue = null;
-
-		switch (value) {
-			case "1":
-				convertedValue = SUNNY;
-				break;
-			case "3":
-				convertedValue = CLOUD;
-				break;
-			case "4":
-				convertedValue = CLOUDY;
-				break;
-		}
-		return convertedValue;
-	}
-
 	public static String getWindSpeedDescription(String windSpeed) {
-		double speed = Double.valueOf(windSpeed);
+		double speed = Double.parseDouble(windSpeed);
 		if (speed >= 14) {
 			return "매우 강한 바람";
 		} else if (speed >= 9) {
@@ -227,7 +227,7 @@ SKY와 PTY는 별개의 데이터
 	}
 
 	public static String getSimpleWindSpeedDescription(String windSpeed) {
-		double speed = Double.valueOf(windSpeed);
+		double speed = Double.parseDouble(windSpeed);
 		if (speed >= 14) {
 			return "매우 강";
 		} else if (speed >= 9) {

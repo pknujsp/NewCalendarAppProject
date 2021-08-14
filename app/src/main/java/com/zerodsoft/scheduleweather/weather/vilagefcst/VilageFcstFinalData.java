@@ -59,7 +59,7 @@ public class VilageFcstFinalData {
 			if (item.getCategory().equals("POP")) {
 				chanceOfShower = item.getFcstValue();
 			} else if (item.getCategory().equals("PTY")) {
-				precipitationForm = WeatherDataConverter.convertPrecipitationForm(item.getFcstValue());
+				precipitationForm = item.getFcstValue();
 			} else if (item.getCategory().equals("PCP")) {
 				rainPrecipitation1Hour = item.getFcstValue();
 			} else if (item.getCategory().equals("REH")) {
@@ -67,7 +67,7 @@ public class VilageFcstFinalData {
 			} else if (item.getCategory().equals("SNO")) {
 				snowPrecipitation1Hour = item.getFcstValue();
 			} else if (item.getCategory().equals("SKY")) {
-				sky = WeatherDataConverter.convertSky(item.getFcstValue());
+				sky = item.getFcstValue();
 			} else if (item.getCategory().equals("TMP")) {
 				temp1Hour = item.getFcstValue();
 			} else if (item.getCategory().equals("TMN")) {

@@ -65,19 +65,6 @@ public class HourlyFcstResult {
 			hourlyFcstFinalDataList.add(new HourlyFcstFinalData(hourlyFcstArrMap.get(iterator.next())));
 		}
 
-		//동네예보 데이터 리스트를 날짜 오름차순으로 정렬
-		/*
-		Collections.sort(hourlyFcstFinalDataList, (t1, t2) ->
-		{
-			if (t1.getFcstDateTime().after(t2.getFcstDateTime())) {
-				return 1;
-			} else {
-				return -1;
-			}
-		});
-
-		 */
-
 	}
 
 	public Date getDownloadedDate() {

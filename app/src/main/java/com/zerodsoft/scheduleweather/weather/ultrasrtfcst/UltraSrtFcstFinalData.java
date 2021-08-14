@@ -54,14 +54,11 @@ public class UltraSrtFcstFinalData {
 			} else if (item.getCategory().equals("RN1")) {
 				rain1Hour = item.getFcstValue();
 			} else if (item.getCategory().equals("SKY")) {
-				sky = WeatherDataConverter.convertSky(item.getFcstValue());
+				sky = item.getFcstValue();
 			} else if (item.getCategory().equals("REH")) {
 				humidity = item.getFcstValue();
 			} else if (item.getCategory().equals("PTY")) {
-				precipitationForm = WeatherDataConverter.convertPrecipitationForm(item.getFcstValue());
-				if (precipitationForm.isEmpty()) {
-					precipitationForm = "-";
-				}
+				precipitationForm = item.getFcstValue();
 			} else if (item.getCategory().equals("VEC")) {
 				windDirection = WeatherDataConverter.convertWindDirection(item.getFcstValue());
 			} else if (item.getCategory().equals("WSD")) {

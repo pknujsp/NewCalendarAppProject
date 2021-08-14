@@ -94,6 +94,7 @@ public class LocationSearchResultFragment extends Fragment implements IndicatorC
 	}
 
 	public void searchLocation(String query) {
+		binding.customProgressView.onStartedProcessingData();
 		this.query = query;
 
 		final LocalApiPlaceParameter addressParameter = LocalParameterUtil.getAddressParameter(query, "1"

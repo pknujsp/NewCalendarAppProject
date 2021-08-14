@@ -91,7 +91,19 @@ public class SearchResultChecker {
 					if (!exceptionList.isEmpty()) {
 						callback.onResponseFailed(new Exception());
 					} else {
-						callback.onResponseSuccessful(kakaoLocalResponseList);
+						int succeed = 0;
+
+						for (KakaoLocalResponse kakaoLocalResponse : kakaoLocalResponseList) {
+							if (!kakaoLocalResponse.isEmpty()) {
+								succeed++;
+							}
+						}
+
+						if (succeed >= 1) {
+							callback.onResponseSuccessful(kakaoLocalResponseList);
+						} else {
+							callback.onResponseFailed(new Exception());
+						}
 					}
 				}
 			}
