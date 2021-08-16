@@ -42,8 +42,10 @@ public class HourlyFcstFinalData {
 	private String windSpeed;
 
 	private static final String notRain = "강수없음";
-	private static final String rainLessThan1MM = "1mm 미만";
+	private static final String rainLessThan1MMStr = "1mm 미만";
+	private static final String rainLessThan1MM = "< 1";
 	private static final String zero = "0";
+	private static final String mm = "mm";
 
 	public HourlyFcstFinalData(List<HourlyFcstItem> hourlyFcstItems) {
 		nx = hourlyFcstItems.get(0).getNx();
@@ -96,10 +98,18 @@ public class HourlyFcstFinalData {
 		} else if (chanceOfShower.equals(zero)) {
 			chanceOfShower = "-";
 		}
-		if (rainPrecipitation1Hour.equals(rainLessThan1MM)) {
-			rainPrecipitation1Hour = "-";
+
+		if (precipitationForm.equals(WeatherDataConverter.PTY_RAINDROP)) {
+			rainPrecipitation1Hour = WeatherDataConverter.RAINDROP;
+			return;
+		}
+
+		if (rainPrecipitation1Hour.equals(rainLessThan1MMStr)) {
+			rainPrecipitation1Hour = rainLessThan1MM;
 		} else if (rainPrecipitation1Hour.equals(notRain)) {
 			rainPrecipitation1Hour = "-";
+		} else if (rainPrecipitation1Hour.contains(mm)) {
+			rainPrecipitation1Hour.substring(0, rainPrecipitation1Hour.length() - 2);
 		}
 	}
 

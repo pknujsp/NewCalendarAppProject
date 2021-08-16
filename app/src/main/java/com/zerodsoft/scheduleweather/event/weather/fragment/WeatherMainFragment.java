@@ -2,6 +2,8 @@ package com.zerodsoft.scheduleweather.event.weather.fragment;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.res.TypedArray;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,17 +12,23 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.databinding.FragmentWeatherItemBinding;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.weather.aircondition.AirConditionFragment;
 import com.zerodsoft.scheduleweather.weather.hourlyfcst.HourlyFcstFragment;
+import com.zerodsoft.scheduleweather.weather.icons.WeatherIconsRecyclerViewAdapter;
 import com.zerodsoft.scheduleweather.weather.mid.MidFcstFragment;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
@@ -28,7 +36,9 @@ import com.zerodsoft.scheduleweather.weather.repository.AirConditionDownloader;
 import com.zerodsoft.scheduleweather.weather.repository.WeatherDataDownloader;
 import com.zerodsoft.scheduleweather.weather.ultrasrtncst.UltraSrtNcstFragment;
 import com.zerodsoft.scheduleweather.weather.viewmodel.AreaCodeViewModel;
-import com.zerodsoft.scheduleweather.weather.vilagefcst.VilageFcstFragment;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class WeatherMainFragment extends BottomSheetDialogFragment {
 	public static final String TAG = "WeatherMainFragment";
@@ -59,6 +69,9 @@ public class WeatherMainFragment extends BottomSheetDialogFragment {
 	private boolean hasSimpleLocation;
 
 	private BottomSheetBehavior bottomSheetBehavior;
+
+	private static final List<Drawable> weatherIconDrawablesList = new ArrayList<>();
+	private static final List<String> weatherIconDescriptionsList = new ArrayList<>();
 
 	public WeatherMainFragment(DialogInterface dialogInterface, int VIEW_HEIGHT, int CALENDAR_ID, long EVENT_ID) {
 		this.dialogInterface = dialogInterface;
@@ -127,6 +140,35 @@ public class WeatherMainFragment extends BottomSheetDialogFragment {
 
 		View bottomSheet = getDialog().findViewById(R.id.design_bottom_sheet);
 		bottomSheet.getLayoutParams().height = VIEW_HEIGHT;
+
+		binding.weatherIconsInfoLayout.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				View weatherIconsInfoView = getLayoutInflater().inflate(R.layout.weather_icons_info, null);
+
+				if (weatherIconDrawablesList.isEmpty() || weatherIconDescriptionsList.isEmpty()) {
+					TypedArray imgs = getResources().obtainTypedArray(R.array.weather_icons_arr);
+
+					for (int index = 0; index < imgs.length(); index++) {
+						weatherIconDrawablesList.add(imgs.getDrawable(index));
+					}
+
+					String[] iconsDescriptionArr = getResources().getStringArray(R.array.weather_icon_descriptions_arr);
+					for (String description : iconsDescriptionArr) {
+						weatherIconDescriptionsList.add(description);
+					}
+				}
+
+				RecyclerView weatherIconsRecyclerView = (RecyclerView) weatherIconsInfoView.findViewById(R.id.weather_icons_list);
+				weatherIconsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+				weatherIconsRecyclerView.setAdapter(new WeatherIconsRecyclerViewAdapter(weatherIconDrawablesList, weatherIconDescriptionsList));
+
+				AlertDialog dialog = new MaterialAlertDialogBuilder(requireActivity())
+						.setTitle(R.string.weather_icons_info)
+						.setView(weatherIconsInfoView).create();
+				dialog.show();
+			}
+		});
 
 		binding.refreshWeatherFab.setOnClickListener(new View.OnClickListener() {
 			@Override

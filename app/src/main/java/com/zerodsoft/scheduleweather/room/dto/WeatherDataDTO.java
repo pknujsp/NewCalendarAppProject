@@ -26,6 +26,9 @@ public class WeatherDataDTO {
 	@ColumnInfo(name = "downloaded_date")
 	private String downloadedDate;
 
+	@ColumnInfo(name = "baseDateTime")
+	private String baseDateTime;
+
 	@Ignore
 	public static final int ULTRA_SRT_NCST = 0;
 	@Ignore
@@ -87,5 +90,13 @@ public class WeatherDataDTO {
 
 	public String getDownloadedDate() {
 		return downloadedDate;
+	}
+
+	public void setBaseDateTime(String baseDateTime) {
+		this.baseDateTime = baseDateTime;
+	}
+
+	public String getBaseDateTime() {
+		return baseDateTime;
 	}
 }

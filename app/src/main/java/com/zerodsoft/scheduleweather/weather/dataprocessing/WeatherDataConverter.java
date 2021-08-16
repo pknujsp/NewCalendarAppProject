@@ -12,32 +12,34 @@ public class WeatherDataConverter {
                       (단기) 없음(0), 비(1), 비/눈(2), 눈(3), 소나기(4)
 SKY와 PTY는 별개의 데이터
 	 */
-	private static final String SUNNY_FOR_MID = "맑음";
-	private static final String CLOUDY_FOR_MID = "구름많음";
-	private static final String CLOUDY_AND_RAIN_FOR_MID = "구름많고 비";
-	private static final String CLOUDY_AND_SNOW_FOR_MID = "구름많고 눈";
-	private static final String CLOUDY_AND_RAIN_AND_SNOW_FOR_MID = "구름많고 비/눈";
-	private static final String CLOUDY_AND_SNOW_AND_RAIN_FOR_MID = "구름많고 눈/비";
-	private static final String CLOUDY_AND_SHOWER_FOR_MID = "구름많고 소나기";
-	private static final String OVERCAST_FOR_MID = "흐림";
-	private static final String OVERCAST_AND_RAIN_FOR_MID = "흐리고 비";
-	private static final String OVERCAST_AND_SNOW_FOR_MID = "흐리고 눈";
-	private static final String OVERCAST_AND_RAIN_AND_SNOW_FOR_MID = "흐리고 비/눈";
-	private static final String OVERCAST_AND_SNOW_AND_RAIN_FOR_MID = "흐리고 눈/비";
-	private static final String OVERCAST_AND_SHOWER_FOR_MID = "흐리고 소나기";
+	public static final String SUNNY_FOR_MID = "맑음";
+	public static final String CLOUDY_FOR_MID = "구름많음";
+	public static final String CLOUDY_AND_RAIN_FOR_MID = "구름많고 비";
+	public static final String CLOUDY_AND_SNOW_FOR_MID = "구름많고 눈";
+	public static final String CLOUDY_AND_RAIN_AND_SNOW_FOR_MID = "구름많고 비/눈";
+	public static final String CLOUDY_AND_SNOW_AND_RAIN_FOR_MID = "구름많고 눈/비";
+	public static final String CLOUDY_AND_SHOWER_FOR_MID = "구름많고 소나기";
+	public static final String OVERCAST_FOR_MID = "흐림";
+	public static final String OVERCAST_AND_RAIN_FOR_MID = "흐리고 비";
+	public static final String OVERCAST_AND_SNOW_FOR_MID = "흐리고 눈";
+	public static final String OVERCAST_AND_RAIN_AND_SNOW_FOR_MID = "흐리고 비/눈";
+	public static final String OVERCAST_AND_SNOW_AND_RAIN_FOR_MID = "흐리고 눈/비";
+	public static final String OVERCAST_AND_SHOWER_FOR_MID = "흐리고 소나기";
 
-	private static final String PTY_NOT = "0";
-	private static final String PTY_RAIN = "1";
-	private static final String PTY_RAIN_AND_SNOW = "2";
-	private static final String PTY_SNOW = "3";
-	private static final String PTY_SHOWER = "4";
-	private static final String PTY_RAINDROP = "5";
-	private static final String PTY_RAINDROP_AND_SNOWDRIFTING = "6";
-	private static final String PTY_SNOWDRIFTING = "7";
+	public static final String RAINDROP = "빗방울";
 
-	private static final String SKY_SUNNY = "1";
-	private static final String SKY_CLOUDY = "3";
-	private static final String SKY_OVERCAST = "4";
+	public static final String PTY_NOT = "0";
+	public static final String PTY_RAIN = "1";
+	public static final String PTY_RAIN_AND_SNOW = "2";
+	public static final String PTY_SNOW = "3";
+	public static final String PTY_SHOWER = "4";
+	public static final String PTY_RAINDROP = "5";
+	public static final String PTY_RAINDROP_AND_SNOWDRIFTING = "6";
+	public static final String PTY_SNOWDRIFTING = "7";
+
+	public static final String SKY_SUNNY = "1";
+	public static final String SKY_CLOUDY = "3";
+	public static final String SKY_OVERCAST = "4";
 
 
 	private WeatherDataConverter() {
@@ -48,37 +50,37 @@ SKY와 PTY는 별개의 데이터
 
 		if (sky.equals(SKY_SUNNY)) {
 			if (isDay) {
-				id = R.drawable.sunny_day_svg;
+				id = R.drawable.sunny_day_up;
 			} else {
-				id = R.drawable.sunny_night_svg;
+				id = R.drawable.sunny_night_up;
 			}
 		} else if (sky.equals(SKY_CLOUDY)) {
 			if (isDay) {
-				id = R.drawable.cloudy_day_svg;
+				id = R.drawable.cloudy_day_up;
 			} else {
-				id = R.drawable.cloudy_night_svg;
+				id = R.drawable.cloudy_night_up;
 			}
 		} else if (sky.equals(SKY_OVERCAST)) {
-			id = R.drawable.overcast_svg;
+			id = R.drawable.overcast_up;
 		}
 
 		if (pty != null) {
 			if (pty.equals(PTY_NOT)) {
 				return id;
 			} else if (pty.equals(PTY_RAIN)) {
-				id = R.drawable.rain_svg;
+				id = R.drawable.rain_up;
 			} else if (pty.equals(PTY_RAIN_AND_SNOW)) {
-				id = R.drawable.rain_and_snow_svg;
+				id = R.drawable.rain_or_snow_up;
 			} else if (pty.equals(PTY_SNOW)) {
-				id = R.drawable.snow_svg;
+				id = R.drawable.snow_up;
 			} else if (pty.equals(PTY_SHOWER)) {
-				id = R.drawable.shower_svg;
+				id = R.drawable.shower_up;
 			} else if (pty.equals(PTY_RAINDROP)) {
-				id = R.drawable.rain_svg;
+				id = R.drawable.raindrop_up;
 			} else if (pty.equals(PTY_RAINDROP_AND_SNOWDRIFTING)) {
-				id = R.drawable.rain_and_snow_svg;
+				id = R.drawable.sometimes_snow_or_rain_onetime_snow_or_rain_up;
 			} else if (pty.equals(PTY_SNOWDRIFTING)) {
-				id = R.drawable.snow_svg;
+				id = R.drawable.snow_drifting_up;
 			}
 		}
 
@@ -89,31 +91,31 @@ SKY와 PTY는 별개의 데이터
 		int id = 0;
 
 		if (sky.equals(SUNNY_FOR_MID)) {
-			id = R.drawable.sunny_day_svg;
+			id = R.drawable.sunny_day_up;
 		} else if (sky.equals(CLOUDY_FOR_MID)) {
-			id = R.drawable.cloudy_day_svg;
+			id = R.drawable.cloudy_day_up;
 		} else if (sky.equals(CLOUDY_AND_RAIN_FOR_MID)) {
-			id = R.drawable.rain_svg;
+			id = R.drawable.sometimes_rain_onetime_rain_up;
 		} else if (sky.equals(CLOUDY_AND_SNOW_FOR_MID)) {
-			id = R.drawable.snow_svg;
+			id = R.drawable.sometimes_snow_onetime_snow_up;
 		} else if (sky.equals(CLOUDY_AND_RAIN_AND_SNOW_FOR_MID)) {
-			id = R.drawable.rain_and_snow_svg;
+			id = R.drawable.sometimes_rain_or_snow_onetime_rain_or_snow_up;
 		} else if (sky.equals(CLOUDY_AND_SNOW_AND_RAIN_FOR_MID)) {
-			id = R.drawable.rain_and_snow_svg;
+			id = R.drawable.sometimes_snow_or_rain_onetime_snow_or_rain_up;
 		} else if (sky.equals(OVERCAST_FOR_MID)) {
-			id = R.drawable.overcast_svg;
+			id = R.drawable.overcast_up;
 		} else if (sky.equals(OVERCAST_AND_RAIN_FOR_MID)) {
-			id = R.drawable.rain_svg;
+			id = R.drawable.rain_up;
 		} else if (sky.equals(OVERCAST_AND_SNOW_FOR_MID)) {
-			id = R.drawable.snow_svg;
+			id = R.drawable.snow_up;
 		} else if (sky.equals(OVERCAST_AND_RAIN_AND_SNOW_FOR_MID)) {
-			id = R.drawable.rain_and_snow_svg;
+			id = R.drawable.rain_or_snow_up;
 		} else if (sky.equals(OVERCAST_AND_SNOW_AND_RAIN_FOR_MID)) {
-			id = R.drawable.rain_and_snow_svg;
+			id = R.drawable.snow_or_rain_up;
 		} else if (sky.equals(CLOUDY_AND_SHOWER_FOR_MID)) {
-			id = R.drawable.shower_svg;
+			id = R.drawable.shower_up;
 		} else if (sky.equals(OVERCAST_AND_SHOWER_FOR_MID)) {
-			id = R.drawable.shower_svg;
+			id = R.drawable.shower_up;
 		}
 
 		return id;
@@ -153,7 +155,6 @@ SKY와 PTY는 별개의 데이터
 
 	public static String convertWindDirection(String value) {
 		final int windDirectionValue = (int) ((Integer.valueOf(value).intValue() + 22.5 * 0.5) / 22.5);
-
 		String convertedValue = null;
 
 		switch (windDirectionValue) {

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -17,6 +18,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_marginLeft="8dp"
                 android:orientation="vertical">
 
                 <TextView
@@ -24,7 +26,6 @@
                     style="@style/TextAppearance.MaterialComponents.Headline6"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginLeft="8dp"
                     android:layout_marginTop="16dp"
                     android:layout_marginBottom="16dp"
                     android:gravity="left"
@@ -34,13 +35,11 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_marginLeft="8dp"
                     android:orientation="vertical">
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="12dp"
                         android:text="@string/ultra_srt_ncst"
                         android:textColor="@android:color/black"
                         android:textSize="18sp" />
@@ -49,12 +48,12 @@
                         android:id="@+id/ultra_srt_ncst_fragment_container"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp" />
+                        android:layout_marginTop="12dp" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="12dp"
+                        android:layout_marginTop="16dp"
                         android:text="@string/air_condition"
                         android:textColor="@android:color/black"
                         android:textSize="18sp" />
@@ -63,12 +62,12 @@
                         android:id="@+id/air_condition_fragment_container"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp" />
+                        android:layout_marginTop="12dp" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="12dp"
+                        android:layout_marginTop="16dp"
                         android:text="@string/hourly_fcst"
                         android:textColor="@android:color/black"
                         android:textSize="18sp" />
@@ -77,12 +76,12 @@
                         android:id="@+id/hourly_fcst_fragment_container"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp" />
+                        android:layout_marginTop="12dp" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="12dp"
+                        android:layout_marginTop="16dp"
                         android:text="@string/mid_fcst"
                         android:textColor="@android:color/black"
                         android:textSize="18sp" />
@@ -91,7 +90,32 @@
                         android:id="@+id/mid_fcst_fragment_container"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp" />
+                        android:layout_marginTop="12dp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/weather_icons_info_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center_vertical"
+                        android:src="@drawable/ic_baseline_info_24"
+                        app:tint="@color/gray_500" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginLeft="8dp"
+                        android:text="@string/weather_icons_info" />
 
                 </LinearLayout>
             </LinearLayout>

@@ -196,20 +196,8 @@ public class WeatherDataDownloader implements RetrofitCallListManager.CallManage
 	 *
 	 * @param parameter
 	 */
-	public void getMidLandFcstData(MidLandFcstParameter parameter, Calendar calendar, JsonDownloader<JsonObject> callback) {
+	public void getMidLandFcstData(MidLandFcstParameter parameter, JsonDownloader<JsonObject> callback) {
 		Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.MID_FCST);
-
-		int hour = calendar.get(Calendar.HOUR_OF_DAY);
-		int minute = calendar.get(Calendar.MINUTE);
-
-		if (hour >= 18 && minute >= 1) {
-			parameter.setTmFc(ClockUtil.yyyyMMdd.format(calendar.getTime()) + "1800");
-		} else if (hour >= 6 && minute >= 1) {
-			parameter.setTmFc(ClockUtil.yyyyMMdd.format(calendar.getTime()) + "0600");
-		} else {
-			calendar.add(Calendar.DAY_OF_YEAR, -1);
-			parameter.setTmFc(ClockUtil.yyyyMMdd.format(calendar.getTime()) + "1800");
-		}
 
 		Call<JsonObject> call = querys.getMidLandFcstDataStr(parameter.getMap());
 		retrofitCallListManager.add(call);
@@ -235,20 +223,8 @@ public class WeatherDataDownloader implements RetrofitCallListManager.CallManage
 	 *
 	 * @param parameter
 	 */
-	public void getMidTaData(MidTaParameter parameter, Calendar calendar, JsonDownloader<JsonObject> callback) {
+	public void getMidTaData(MidTaParameter parameter, JsonDownloader<JsonObject> callback) {
 		Querys querys = HttpCommunicationClient.getApiService(HttpCommunicationClient.MID_FCST);
-
-		int hour = calendar.get(Calendar.HOUR_OF_DAY);
-		int minute = calendar.get(Calendar.MINUTE);
-
-		if (hour >= 18 && minute >= 1) {
-			parameter.setTmFc(ClockUtil.yyyyMMdd.format(calendar.getTime()) + "1800");
-		} else if (hour >= 6 && minute >= 1) {
-			parameter.setTmFc(ClockUtil.yyyyMMdd.format(calendar.getTime()) + "0600");
-		} else {
-			calendar.add(Calendar.DAY_OF_YEAR, -1);
-			parameter.setTmFc(ClockUtil.yyyyMMdd.format(calendar.getTime()) + "1800");
-		}
 
 		Call<JsonObject> call = querys.getMidTaDataStr(parameter.getMap());
 		retrofitCallListManager.add(call);
@@ -268,11 +244,11 @@ public class WeatherDataDownloader implements RetrofitCallListManager.CallManage
 		});
 	}
 
-	public void getMidFcstData(MidLandFcstParameter midLandFcstParameter, MidTaParameter midTaParameter, Calendar calendar,
+	public void getMidFcstData(MidLandFcstParameter midLandFcstParameter, MidTaParameter midTaParameter,
 	                           JsonDownloader<MidFcstRoot> callback) {
 		MidFcstRoot midFcstRoot = new MidFcstRoot();
 
-		getMidLandFcstData(midLandFcstParameter, (Calendar) calendar.clone(), new JsonDownloader<JsonObject>() {
+		getMidLandFcstData(midLandFcstParameter, new JsonDownloader<JsonObject>() {
 			@Override
 			public void onResponseSuccessful(JsonObject result) {
 				midFcstRoot.setMidLandFcst(result);
@@ -286,7 +262,7 @@ public class WeatherDataDownloader implements RetrofitCallListManager.CallManage
 			}
 		});
 
-		getMidTaData(midTaParameter, (Calendar) calendar.clone(), new JsonDownloader<JsonObject>() {
+		getMidTaData(midTaParameter, new JsonDownloader<JsonObject>() {
 			@Override
 			public void onResponseSuccessful(JsonObject result) {
 				midFcstRoot.setMidTa(result);

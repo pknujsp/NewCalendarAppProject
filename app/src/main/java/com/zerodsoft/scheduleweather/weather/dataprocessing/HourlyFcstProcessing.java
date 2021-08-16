@@ -11,12 +11,14 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.commons.Header;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.ultrasrtfcstresponse.UltraSrtFcstRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.vilagefcstresponse.VilageFcstRoot;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataHeaderChecker;
 import com.zerodsoft.scheduleweather.weather.hourlyfcst.HourlyFcstResult;
 import com.zerodsoft.scheduleweather.weather.hourlyfcst.HourlyFcstRoot;
 import com.zerodsoft.scheduleweather.weather.repository.WeatherDataDownloader;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -70,7 +72,7 @@ public class HourlyFcstProcessing extends WeatherDataProcessing<HourlyFcstResult
 		final UltraSrtFcstParameter ultraSrtFcstParameter = new UltraSrtFcstParameter();
 		ultraSrtFcstParameter.setNx(LONGITUDE).setNy(LATITUDE).setNumOfRows("400").setPageNo("1");
 
-		Calendar calendar = Calendar.getInstance();
+		Calendar calendar = Calendar.getInstance(ClockUtil.TIME_ZONE);
 		weatherDataDownloader.getHourlyFcstData(vilageFcstParameter, ultraSrtFcstParameter, calendar, new JsonDownloader<HourlyFcstRoot>() {
 			@Override
 			public void onResponseSuccessful(HourlyFcstRoot hourlyFcstRoot) {
@@ -95,21 +97,54 @@ public class HourlyFcstProcessing extends WeatherDataProcessing<HourlyFcstResult
 				}
 
 				if (exceptionMsgList.isEmpty()) {
-					Date downloadedDate = new Date(System.currentTimeMillis());
+					final Date downloadedDate = new Date(System.currentTimeMillis());
+					final String ultraSrtFcstBaseDateTimeStr = ultraSrtFcstRoot.getResponse().getBody().getItems().getItem().get(0).getBaseDate()
+							+ ultraSrtFcstRoot.getResponse().getBody().getItems().getItem().get(0).getBaseTime();
+					final String vilageFcstBaseDateTimeStr =
+							vilageFcstRoot.getResponse().getBody().getItems().getItem().get(0).getBaseDate()
+									+ vilageFcstRoot.getResponse().getBody().getItems().getItem().get(0).getBaseTime();
 
-					WeatherDataDTO ultraSrtFcstWeatherDataDTO = new WeatherDataDTO();
+					calendar.set(Calendar.SECOND, 0);
+
+					int year = Integer.parseInt(ultraSrtFcstBaseDateTimeStr.substring(0, 4));
+					int month = Integer.parseInt(ultraSrtFcstBaseDateTimeStr.substring(4, 6));
+					int day = Integer.parseInt(ultraSrtFcstBaseDateTimeStr.substring(6, 8));
+					int hour = Integer.parseInt(ultraSrtFcstBaseDateTimeStr.substring(8, 10));
+					int minute = Integer.parseInt(ultraSrtFcstBaseDateTimeStr.substring(10));
+
+					calendar.set(Calendar.YEAR, year);
+					calendar.set(Calendar.MONTH, month - 1);
+					calendar.set(Calendar.DAY_OF_MONTH, day);
+					calendar.set(Calendar.HOUR_OF_DAY, hour);
+					calendar.set(Calendar.MINUTE, minute);
+
+					final WeatherDataDTO ultraSrtFcstWeatherDataDTO = new WeatherDataDTO();
 					ultraSrtFcstWeatherDataDTO.setLatitude(LATITUDE);
 					ultraSrtFcstWeatherDataDTO.setLongitude(LONGITUDE);
 					ultraSrtFcstWeatherDataDTO.setDataType(WeatherDataDTO.ULTRA_SRT_FCST);
 					ultraSrtFcstWeatherDataDTO.setJson(hourlyFcstRoot.getUltraSrtFcst().toString());
 					ultraSrtFcstWeatherDataDTO.setDownloadedDate(String.valueOf(downloadedDate.getTime()));
+					ultraSrtFcstWeatherDataDTO.setBaseDateTime(String.valueOf(calendar.getTimeInMillis()));
 
-					WeatherDataDTO vilageFcstWeatherDataDTO = new WeatherDataDTO();
+					year = Integer.parseInt(vilageFcstBaseDateTimeStr.substring(0, 4));
+					month = Integer.parseInt(vilageFcstBaseDateTimeStr.substring(4, 6));
+					day = Integer.parseInt(vilageFcstBaseDateTimeStr.substring(6, 8));
+					hour = Integer.parseInt(vilageFcstBaseDateTimeStr.substring(8, 10));
+					minute = Integer.parseInt(vilageFcstBaseDateTimeStr.substring(10));
+
+					calendar.set(Calendar.YEAR, year);
+					calendar.set(Calendar.MONTH, month - 1);
+					calendar.set(Calendar.DAY_OF_MONTH, day);
+					calendar.set(Calendar.HOUR_OF_DAY, hour);
+					calendar.set(Calendar.MINUTE, minute);
+
+					final WeatherDataDTO vilageFcstWeatherDataDTO = new WeatherDataDTO();
 					vilageFcstWeatherDataDTO.setLatitude(LATITUDE);
 					vilageFcstWeatherDataDTO.setLongitude(LONGITUDE);
 					vilageFcstWeatherDataDTO.setDataType(WeatherDataDTO.VILAGE_FCST);
 					vilageFcstWeatherDataDTO.setJson(hourlyFcstRoot.getVilageFcst().toString());
 					vilageFcstWeatherDataDTO.setDownloadedDate(String.valueOf(downloadedDate.getTime()));
+					vilageFcstWeatherDataDTO.setBaseDateTime(String.valueOf(calendar.getTimeInMillis()));
 
 					weatherDbRepository.contains(LATITUDE, LONGITUDE, WeatherDataDTO.VILAGE_FCST,
 							new DbQueryCallback<Boolean>() {

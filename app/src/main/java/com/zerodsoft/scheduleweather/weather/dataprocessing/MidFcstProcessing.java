@@ -12,6 +12,7 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.midlandfcstr
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.midtaresponse.MidTaRoot;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataHeaderChecker;
 import com.zerodsoft.scheduleweather.weather.mid.MidFcstResult;
@@ -46,9 +47,13 @@ public class MidFcstProcessing extends WeatherDataProcessing<MidFcstResult> {
 										MidLandFcstRoot midLandFcstRoot = gson.fromJson(midLandFcstResultDto.getJson(), MidLandFcstRoot.class);
 										MidTaRoot midTaRoot = gson.fromJson(midTaResultDto.getJson(), MidTaRoot.class);
 
+										Calendar calendar = Calendar.getInstance(ClockUtil.TIME_ZONE);
+										calendar.setTimeInMillis(Long.parseLong(midTaResultDto.getBaseDateTime()));
+
 										MidFcstResult midFcstResult = new MidFcstResult();
 										midFcstResult.setMidFcstDataList(midLandFcstRoot.getResponse().getBody().getItems()
-												, midTaRoot.getResponse().getBody().getItems(), new Date(Long.parseLong(midTaResultDto.getDownloadedDate())));
+												, midTaRoot.getResponse().getBody().getItems(), new Date(Long.parseLong(midTaResultDto.getDownloadedDate())),
+												calendar.getTime());
 
 										weatherDataCallback.isSuccessful(midFcstResult);
 									}
@@ -76,8 +81,32 @@ public class MidFcstProcessing extends WeatherDataProcessing<MidFcstResult> {
 		midLandFcstParameter.setNumOfRows("300").setPageNo("1").setRegId(weatherAreaCode.getMidLandFcstCode());
 		midTaParameter.setNumOfRows("300").setPageNo("1").setRegId(weatherAreaCode.getMidTaCode());
 
-		Calendar calendar = Calendar.getInstance();
-		weatherDataDownloader.getMidFcstData(midLandFcstParameter, midTaParameter, calendar, new JsonDownloader<MidFcstRoot>() {
+		final Calendar calendar = Calendar.getInstance(ClockUtil.TIME_ZONE);
+		int hour = calendar.get(Calendar.HOUR_OF_DAY);
+		int minute = calendar.get(Calendar.MINUTE);
+		String tmFc = null;
+
+		if (hour >= 18 && minute >= 1) {
+			calendar.set(Calendar.HOUR_OF_DAY, 18);
+			tmFc = ClockUtil.yyyyMMdd.format(calendar.getTime()) + "1800";
+		} else if (hour >= 6 && minute >= 1) {
+			calendar.set(Calendar.HOUR_OF_DAY, 6);
+			tmFc = ClockUtil.yyyyMMdd.format(calendar.getTime()) + "0600";
+		} else {
+			calendar.add(Calendar.DAY_OF_YEAR, -1);
+			calendar.set(Calendar.HOUR_OF_DAY, 18);
+			tmFc = ClockUtil.yyyyMMdd.format(calendar.getTime()) + "1800";
+		}
+
+		calendar.set(Calendar.MINUTE, 0);
+		calendar.set(Calendar.SECOND, 0);
+
+		final String finalTmFc = tmFc;
+
+		midLandFcstParameter.setTmFc(finalTmFc);
+		midTaParameter.setTmFc(finalTmFc);
+
+		weatherDataDownloader.getMidFcstData(midLandFcstParameter, midTaParameter, new JsonDownloader<MidFcstRoot>() {
 			@Override
 			public void onResponseSuccessful(MidFcstRoot midFcstRoot) {
 				Gson gson = new Gson();
@@ -109,6 +138,7 @@ public class MidFcstProcessing extends WeatherDataProcessing<MidFcstResult> {
 					midLandFcstWeatherDataDTO.setDataType(WeatherDataDTO.MID_LAND_FCST);
 					midLandFcstWeatherDataDTO.setJson(midFcstRoot.getMidLandFcst().toString());
 					midLandFcstWeatherDataDTO.setDownloadedDate(String.valueOf(downloadedDate.getTime()));
+					midLandFcstWeatherDataDTO.setBaseDateTime(String.valueOf(calendar.getTimeInMillis()));
 
 					WeatherDataDTO midTaWeatherDataDTO = new WeatherDataDTO();
 					midTaWeatherDataDTO.setLatitude(LATITUDE);
@@ -116,6 +146,7 @@ public class MidFcstProcessing extends WeatherDataProcessing<MidFcstResult> {
 					midTaWeatherDataDTO.setDataType(WeatherDataDTO.MID_TA);
 					midTaWeatherDataDTO.setJson(midFcstRoot.getMidTa().toString());
 					midTaWeatherDataDTO.setDownloadedDate(String.valueOf(downloadedDate.getTime()));
+					midTaWeatherDataDTO.setBaseDateTime(String.valueOf(calendar.getTimeInMillis()));
 
 					weatherDbRepository.contains(LATITUDE, LONGITUDE, WeatherDataDTO.MID_LAND_FCST,
 							new DbQueryCallback<Boolean>() {
@@ -177,7 +208,7 @@ public class MidFcstProcessing extends WeatherDataProcessing<MidFcstResult> {
 										weatherDbRepository.insert(midTaWeatherDataDTO, new DbQueryCallback<WeatherDataDTO>() {
 											@Override
 											public void onResultSuccessful(WeatherDataDTO result) {
-												
+
 											}
 
 											@Override
@@ -196,7 +227,7 @@ public class MidFcstProcessing extends WeatherDataProcessing<MidFcstResult> {
 
 					MidFcstResult midFcstResult = new MidFcstResult();
 					midFcstResult.setMidFcstDataList(midLandFcstRoot.getResponse().getBody().getItems()
-							, midTaRoot.getResponse().getBody().getItems(), downloadedDate);
+							, midTaRoot.getResponse().getBody().getItems(), downloadedDate, calendar.getTime());
 
 					weatherDataCallback.isSuccessful(midFcstResult);
 				} else {

@@ -23,14 +23,14 @@ public class MidFcstResult {
 	/*
 	   중기예보 최종 데이터 생성
 	*/
-	public void setMidFcstDataList(MidLandFcstItems midLandFcstItems, MidTaItems midTaItems, Date downloadedDate) {
+	public void setMidFcstDataList(MidLandFcstItems midLandFcstItems, MidTaItems midTaItems, Date downloadedDate, Date baseDateTime) {
 		this.midLandFcstItems = midLandFcstItems;
 		this.midTaItems = midTaItems;
 		this.downloadedDate = downloadedDate;
 		
 		//중기예보 데이터 생성 3~10일후
-		Calendar copiedCalendar = Calendar.getInstance();
-		copiedCalendar.setTime(downloadedDate);
+		Calendar copiedCalendar = Calendar.getInstance(ClockUtil.TIME_ZONE);
+		copiedCalendar.setTime(baseDateTime);
 		
 		MidLandFcstItem midLandFcstData = midLandFcstItems.getItem().get(0);
 		MidTaItem midTaFcstData = midTaItems.getItem().get(0);

@@ -9,6 +9,7 @@ import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.UltraSrtNcstParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.weather.ultrasrtncstresponse.UltraSrtNcstRoot;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataHeaderChecker;
 import com.zerodsoft.scheduleweather.weather.repository.WeatherDataDownloader;
@@ -52,7 +53,7 @@ public class UltraSrtNcstProcessing extends WeatherDataProcessing<UltraSrtNcstRe
 		UltraSrtNcstParameter ultraSrtNcstParameter = new UltraSrtNcstParameter();
 		ultraSrtNcstParameter.setNx(LONGITUDE).setNy(LATITUDE).setNumOfRows("250").setPageNo("1");
 
-		Calendar calendar = Calendar.getInstance();
+		Calendar calendar = Calendar.getInstance(ClockUtil.TIME_ZONE);
 		weatherDataDownloader.getUltraSrtNcstData(ultraSrtNcstParameter, calendar, new JsonDownloader<JsonObject>() {
 			@Override
 			public void onResponseSuccessful(JsonObject result) {
@@ -63,6 +64,23 @@ public class UltraSrtNcstProcessing extends WeatherDataProcessing<UltraSrtNcstRe
 					@Override
 					public void isSuccessful() {
 						Date downloadedDate = new Date(System.currentTimeMillis());
+						final String ultraSrtNcstBaseDateTimeStr =
+								ultraSrtNcstRoot.getResponse().getBody().getItems().getItem().get(0).getBaseDate()
+										+ ultraSrtNcstRoot.getResponse().getBody().getItems().getItem().get(0).getBaseTime();
+
+						calendar.set(Calendar.SECOND, 0);
+
+						int year = Integer.parseInt(ultraSrtNcstBaseDateTimeStr.substring(0, 4));
+						int month = Integer.parseInt(ultraSrtNcstBaseDateTimeStr.substring(4, 6));
+						int day = Integer.parseInt(ultraSrtNcstBaseDateTimeStr.substring(6, 8));
+						int hour = Integer.parseInt(ultraSrtNcstBaseDateTimeStr.substring(8, 10));
+						int minute = Integer.parseInt(ultraSrtNcstBaseDateTimeStr.substring(10));
+
+						calendar.set(Calendar.YEAR, year);
+						calendar.set(Calendar.MONTH, month - 1);
+						calendar.set(Calendar.DAY_OF_MONTH, day);
+						calendar.set(Calendar.HOUR_OF_DAY, hour);
+						calendar.set(Calendar.MINUTE, minute);
 
 						WeatherDataDTO ultraSrtNcstWeatherDataDTO = new WeatherDataDTO();
 						ultraSrtNcstWeatherDataDTO.setLatitude(LATITUDE);
@@ -70,6 +88,7 @@ public class UltraSrtNcstProcessing extends WeatherDataProcessing<UltraSrtNcstRe
 						ultraSrtNcstWeatherDataDTO.setDataType(WeatherDataDTO.ULTRA_SRT_NCST);
 						ultraSrtNcstWeatherDataDTO.setJson(result.toString());
 						ultraSrtNcstWeatherDataDTO.setDownloadedDate(String.valueOf(downloadedDate.getTime()));
+						ultraSrtNcstWeatherDataDTO.setBaseDateTime(String.valueOf(calendar.getTimeInMillis()));
 
 						weatherDbRepository.contains(LATITUDE, LONGITUDE, WeatherDataDTO.ULTRA_SRT_NCST,
 								new DbQueryCallback<Boolean>() {

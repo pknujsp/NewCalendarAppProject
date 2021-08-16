@@ -353,5 +353,57 @@
         <item name="reset_favorite_restaurants">@string/reset_favorite_restaurants</item>
     </string-array>
 
+    <integer-array name="weather_icons_arr">
+        <item>@drawable/sunny_day_up</item>
+        <item>@drawable/sunny_night_up</item>
+        <item>@drawable/partly_cloudy_day_up</item>
+        <item>@drawable/partly_cloudy_night_up</item>
+        <item>@drawable/cloudy_day_up</item>
+        <item>@drawable/cloudy_night_up</item>
+        <item>@drawable/fog_up</item>
+        <item>@drawable/haze_up</item>
+        <item>@drawable/lightning_up</item>
+        <item>@drawable/mist_up</item>
+        <item>@drawable/yellow_dust_up</item>
+        <item>@drawable/overcast_up</item>
+        <item>@drawable/rain_up</item>
+        <item>@drawable/rain_or_snow_up</item>
+        <item>@drawable/raindrop_up</item>
+        <item>@drawable/shower_up</item>
+        <item>@drawable/snow_up</item>
+        <item>@drawable/snow_drifting_up</item>
+        <item>@drawable/snow_or_rain_up</item>
+        <item>@drawable/sometimes_rain_onetime_rain_up</item>
+        <item>@drawable/sometimes_rain_or_snow_onetime_rain_or_snow_up</item>
+        <item>@drawable/sometimes_snow_onetime_snow_up</item>
+        <item>@drawable/sometimes_snow_or_rain_onetime_snow_or_rain_up</item>
 
+    </integer-array>
+
+
+    <integer-array name="weather_icon_descriptions_arr">
+        <item>@string/sunny_day</item>
+        <item>@string/sunny_night</item>
+        <item>@string/partly_cloudy_day</item>
+        <item>@string/partly_cloudy_night</item>
+        <item>@string/cloudy_day</item>
+        <item>@string/cloudy_night</item>
+        <item>@string/fog</item>
+        <item>@string/haze</item>
+        <item>@string/lightning</item>
+        <item>@string/mist</item>
+        <item>@string/yellow_dust</item>
+        <item>@string/overcast</item>
+        <item>@string/rain</item>
+        <item>@string/rain_or_snow</item>
+        <item>@string/raindrop</item>
+        <item>@string/shower</item>
+        <item>@string/snow</item>
+        <item>@string/snow_drifting</item>
+        <item>@string/snow_or_rain</item>
+        <item>@string/sometimes_rain_onetime_rain</item>
+        <item>@string/sometimes_rain_or_snow_onetime_rain_or_snow</item>
+        <item>@string/sometimes_snow_onetime_snow</item>
+        <item>@string/sometimes_snow_or_rain_onetime_snow_or_rain</item>
+    </integer-array>
 </resources>

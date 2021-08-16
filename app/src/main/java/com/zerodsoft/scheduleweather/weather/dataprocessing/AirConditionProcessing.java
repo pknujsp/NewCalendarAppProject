@@ -15,6 +15,7 @@ import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnA
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnList.MsrstnListRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.NearbyMsrstnList.NearbyMsrstnListRoot;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.AirConditionResult;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataHeaderChecker;
@@ -23,6 +24,7 @@ import com.zerodsoft.scheduleweather.weather.repository.FindAirConditionStationD
 
 import org.json.JSONObject;
 
+import java.util.Calendar;
 import java.util.Date;
 
 public class AirConditionProcessing extends WeatherDataProcessing<AirConditionResult> {
@@ -100,7 +102,10 @@ public class AirConditionProcessing extends WeatherDataProcessing<AirConditionRe
 						nearbyMsrstnListDTO.setLongitude(LONGITUDE);
 						nearbyMsrstnListDTO.setDataType(WeatherDataDTO.NEAR_BY_MSRSTN_LIST);
 						nearbyMsrstnListDTO.setJson(nearbyMsrstnJsonObject.toString());
-						nearbyMsrstnListDTO.setDownloadedDate(String.valueOf(System.currentTimeMillis()));
+
+						final Calendar calendar = Calendar.getInstance(ClockUtil.TIME_ZONE);
+						nearbyMsrstnListDTO.setDownloadedDate(String.valueOf(calendar.getTimeInMillis()));
+						nearbyMsrstnListDTO.setBaseDateTime(String.valueOf(calendar.getTimeInMillis()));
 
 						weatherDbRepository.contains(LATITUDE, LONGITUDE, WeatherDataDTO.NEAR_BY_MSRSTN_LIST,
 								new DbQueryCallback<Boolean>() {
@@ -161,8 +166,8 @@ public class AirConditionProcessing extends WeatherDataProcessing<AirConditionRe
 												msrstnAcctoRltmMesureDnstyWeatherDataDTO.setLongitude(LONGITUDE);
 												msrstnAcctoRltmMesureDnstyWeatherDataDTO.setDataType(WeatherDataDTO.AIR_CONDITION);
 												msrstnAcctoRltmMesureDnstyWeatherDataDTO.setJson(msrstnAcctoRltmMesureDnstyResult.toString());
-												msrstnAcctoRltmMesureDnstyWeatherDataDTO.setDownloadedDate(
-														String.valueOf(System.currentTimeMillis()));
+												msrstnAcctoRltmMesureDnstyWeatherDataDTO.setDownloadedDate(String.valueOf(calendar.getTimeInMillis()));
+												msrstnAcctoRltmMesureDnstyWeatherDataDTO.setBaseDateTime(String.valueOf(calendar.getTimeInMillis()));
 
 												//db 삽입, 갱신
 												weatherDbRepository.contains(msrstnAcctoRltmMesureDnstyWeatherDataDTO.getLatitude(),
