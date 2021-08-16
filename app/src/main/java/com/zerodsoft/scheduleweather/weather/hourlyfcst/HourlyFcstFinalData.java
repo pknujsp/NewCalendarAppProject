@@ -11,6 +11,24 @@ import java.util.Date;
 import java.util.List;
 
 public class HourlyFcstFinalData {
+	private static final String POP = "POP";
+	private static final String PTY = "PTY";
+	private static final String PCP = "PCP";
+	private static final String REH = "REH";
+	private static final String SNO = "SNO";
+	private static final String SKY = "SKY";
+	private static final String TMP = "TMP";
+	private static final String TMN = "TMN";
+	private static final String TMX = "TMX";
+	private static final String UUU = "UUU";
+	private static final String VVV = "VVV";
+	private static final String WAV = "WAV";
+	private static final String VEC = "VEC";
+	private static final String WSD = "WSD";
+	private static final String T1H = "T1H";
+	private static final String RN1 = "RN1";
+	private static final String LGT = "LGT";
+
 	//nx
 	private String nx;
 	//ny
@@ -40,10 +58,12 @@ public class HourlyFcstFinalData {
 	private String windDirection;
 	//풍속 WSD
 	private String windSpeed;
+	//낙뢰 LGT
+	private String lightning;
 
 	private static final String notRain = "강수없음";
 	private static final String rainLessThan1MMStr = "1mm 미만";
-	private static final String rainLessThan1MM = "< 1";
+	private static final String rainLessThan1MM = "~1";
 	private static final String zero = "0";
 	private static final String mm = "mm";
 
@@ -64,32 +84,34 @@ public class HourlyFcstFinalData {
 		fcstDateTime = calendar.getTime();
 
 		for (HourlyFcstItem item : hourlyFcstItems) {
-			if (item.getCategory().equals("POP")) {
+			if (item.getCategory().equals(POP)) {
 				chanceOfShower = item.getFcstValue();
-			} else if (item.getCategory().equals("PTY")) {
+			} else if (item.getCategory().equals(PTY)) {
 				precipitationForm = item.getFcstValue();
-			} else if (item.getCategory().equals("PCP")) {
+			} else if (item.getCategory().equals(PCP)) {
 				rainPrecipitation1Hour = item.getFcstValue();
-			} else if (item.getCategory().equals("REH")) {
+			} else if (item.getCategory().equals(REH)) {
 				humidity = item.getFcstValue();
-			} else if (item.getCategory().equals("SNO")) {
+			} else if (item.getCategory().equals(SNO)) {
 				snowPrecipitation1Hour = item.getFcstValue();
-			} else if (item.getCategory().equals("SKY")) {
+			} else if (item.getCategory().equals(SKY)) {
 				sky = item.getFcstValue();
-			} else if (item.getCategory().equals("TMP")) {
+			} else if (item.getCategory().equals(TMP)) {
 				temp1Hour = item.getFcstValue();
-			} else if (item.getCategory().equals("TMN")) {
+			} else if (item.getCategory().equals(TMN)) {
 				tempMin = item.getFcstValue();
-			} else if (item.getCategory().equals("TMX")) {
+			} else if (item.getCategory().equals(TMX)) {
 				tempMax = item.getFcstValue();
-			} else if (item.getCategory().equals("VEC")) {
+			} else if (item.getCategory().equals(VEC)) {
 				windDirection = WeatherDataConverter.convertWindDirection(item.getFcstValue());
-			} else if (item.getCategory().equals("WSD")) {
+			} else if (item.getCategory().equals(WSD)) {
 				windSpeed = item.getFcstValue();
-			} else if (item.getCategory().equals("T1H")) {
+			} else if (item.getCategory().equals(T1H)) {
 				temp1Hour = item.getFcstValue();
-			} else if (item.getCategory().equals("RN1")) {
+			} else if (item.getCategory().equals(RN1)) {
 				rainPrecipitation1Hour = item.getFcstValue();
+			} else if (item.getCategory().equals(LGT)) {
+				lightning = item.getFcstValue();
 			}
 		}
 
@@ -101,15 +123,18 @@ public class HourlyFcstFinalData {
 
 		if (precipitationForm.equals(WeatherDataConverter.PTY_RAINDROP)) {
 			rainPrecipitation1Hour = WeatherDataConverter.RAINDROP;
-			return;
-		}
-
-		if (rainPrecipitation1Hour.equals(rainLessThan1MMStr)) {
-			rainPrecipitation1Hour = rainLessThan1MM;
-		} else if (rainPrecipitation1Hour.equals(notRain)) {
-			rainPrecipitation1Hour = "-";
-		} else if (rainPrecipitation1Hour.contains(mm)) {
-			rainPrecipitation1Hour.substring(0, rainPrecipitation1Hour.length() - 2);
+		} else if (precipitationForm.equals(WeatherDataConverter.PTY_NOT)) {
+			if (rainPrecipitation1Hour.equals(rainLessThan1MMStr) || rainPrecipitation1Hour.equals(notRain)) {
+				rainPrecipitation1Hour = "-";
+			}
+		} else {
+			if (rainPrecipitation1Hour.equals(rainLessThan1MMStr)) {
+				rainPrecipitation1Hour = rainLessThan1MM;
+			} else if (rainPrecipitation1Hour.equals(notRain)) {
+				rainPrecipitation1Hour = "-";
+			} else if (rainPrecipitation1Hour.contains(mm)) {
+				rainPrecipitation1Hour = rainPrecipitation1Hour.substring(0, rainPrecipitation1Hour.length() - 2);
+			}
 		}
 	}
 

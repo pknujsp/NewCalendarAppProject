@@ -126,15 +126,15 @@ public class MidFcstFragment extends Fragment {
 	}
 
 	private void setTable(MidFcstResult midFcstResult) {
-		final int COLUMN_WIDTH = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 74f, getResources().getDisplayMetrics());
+		final int COLUMN_WIDTH = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 80f, getResources().getDisplayMetrics());
 		final int TB_MARGIN = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 4f, getResources().getDisplayMetrics());
 		final int DIVISION_LINE_WIDTH = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1f, getResources().getDisplayMetrics());
 		final int LR_DIVISION_LINE_MARGIN = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 3f,
 				getResources().getDisplayMetrics());
 
 		final int DATE_ROW_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 22f, getResources().getDisplayMetrics());
-		final int SMALL_IMG_SIZE = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 34f, getResources().getDisplayMetrics());
-		final int BIG_SKY_IMG_SIZE = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 38f, getResources().getDisplayMetrics());
+		final int SMALL_IMG_SIZE = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 38f, getResources().getDisplayMetrics());
+		final int BIG_SKY_IMG_SIZE = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 42f, getResources().getDisplayMetrics());
 		final int SKY_ROW_HEIGHT = BIG_SKY_IMG_SIZE;
 		final int CHANCE_OF_SHOWER_ROW_HEIGHT = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 34f,
 				getResources().getDisplayMetrics());
@@ -146,7 +146,6 @@ public class MidFcstFragment extends Fragment {
 		final int VIEW_WIDTH = COLUMN_SIZE * COLUMN_WIDTH;
 
 		clearViews();
-
 		Context context = getContext();
 
 		TextView dateLabel = new TextView(context);
@@ -219,10 +218,6 @@ public class MidFcstFragment extends Fragment {
 			LinearLayout linearLayout = new LinearLayout(context);
 			linearLayout.setOrientation(LinearLayout.HORIZONTAL);
 
-			LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(0, SMALL_IMG_SIZE);
-			layoutParams.gravity = Gravity.CENTER;
-			layoutParams.weight = 1;
-
 			View divisionLine = new View(context);
 			LinearLayout.LayoutParams divisionLineParams = new LinearLayout.LayoutParams(DIVISION_LINE_WIDTH, SMALL_IMG_SIZE);
 			divisionLineParams.leftMargin = LR_DIVISION_LINE_MARGIN;
@@ -232,9 +227,13 @@ public class MidFcstFragment extends Fragment {
 			divisionLine.setLayoutParams(divisionLineParams);
 			divisionLine.setBackgroundColor(Color.GRAY);
 
-			linearLayout.addView(skyAm, layoutParams);
+			LinearLayout.LayoutParams imgLayoutParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT);
+			imgLayoutParams.gravity = Gravity.CENTER;
+			imgLayoutParams.weight = 1;
+
+			linearLayout.addView(skyAm, imgLayoutParams);
 			linearLayout.addView(divisionLine);
-			linearLayout.addView(skyPm, layoutParams);
+			linearLayout.addView(skyPm, imgLayoutParams);
 
 			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(COLUMN_WIDTH, SKY_ROW_HEIGHT);
 			params.gravity = Gravity.CENTER;

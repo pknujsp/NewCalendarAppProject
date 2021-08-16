@@ -9,13 +9,24 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.luckycatlabs.sunrisesunset.SunriseSunsetCalculator;
+import com.luckycatlabs.sunrisesunset.dto.Location;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.UltraSrtNcstFragmentBinding;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.UltraSrtNcstProcessing;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.WeatherDataConverter;
+import com.zerodsoft.scheduleweather.weather.sunsetrise.SunSetRiseData;
+import com.zerodsoft.scheduleweather.weather.sunsetrise.SunsetRise;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 
 public class UltraSrtNcstFragment extends Fragment {
@@ -101,6 +112,18 @@ public class UltraSrtNcstFragment extends Fragment {
 				WeatherDataConverter.getWindSpeedDescription(ultraSrtNcstFinalData.getWindSpeed()));
 		//시간 강수량
 		binding.ultraSrtNcstRn1.setText(ultraSrtNcstFinalData.getPrecipitation1Hour());
+
+		Calendar calendar = Calendar.getInstance(ClockUtil.TIME_ZONE);
+		SunriseSunsetCalculator sunriseSunsetCalculator = new SunriseSunsetCalculator(new Location(weatherAreaCode.getLatitudeSecondsDivide100()
+				, weatherAreaCode.getLongitudeSecondsDivide100()), calendar.getTimeZone());
+		Calendar sunRise = sunriseSunsetCalculator.getOfficialSunriseCalendarForDate(calendar);
+		Calendar sunSet = sunriseSunsetCalculator.getOfficialSunsetCalendarForDate(calendar);
+
+		SimpleDateFormat sunsetRiseDateFormat = new SimpleDateFormat("HH:mm");
+		//일출
+		binding.sunrise.setText(sunsetRiseDateFormat.format(sunRise.getTime()));
+		//일몰
+		binding.sunset.setText(sunsetRiseDateFormat.format(sunSet.getTime()));
 	}
 
 	public void refresh() {
@@ -141,5 +164,7 @@ public class UltraSrtNcstFragment extends Fragment {
 		binding.ultraSrtNcstHumidity.setText("");
 		binding.ultraSrtNcstWind.setText("");
 		binding.ultraSrtNcstRn1.setText("");
+		binding.sunrise.setText("");
+		binding.sunset.setText("");
 	}
 }
