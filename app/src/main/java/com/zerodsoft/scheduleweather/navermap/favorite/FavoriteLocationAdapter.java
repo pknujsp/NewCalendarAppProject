@@ -80,12 +80,19 @@ public class FavoriteLocationAdapter extends RecyclerView.Adapter<FavoriteLocati
 			binding.checkbox.setTag(favoriteLocationDTO);
 			binding.checkbox.setOnCheckedChangeListener(onCheckedChangeListener);
 
-			binding.getRoot().setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View view) {
-					onClickedFavoriteItem.onClickedListItem(favoriteLocationDTO, getBindingAdapterPosition());
-				}
-			});
+			if (checkBoxVisibility == View.VISIBLE) {
+				binding.getRoot().setClickable(false);
+				binding.moreButton.setVisibility(View.GONE);
+			} else {
+				binding.getRoot().setClickable(true);
+				binding.moreButton.setVisibility(View.VISIBLE);
+				binding.getRoot().setOnClickListener(new View.OnClickListener() {
+					@Override
+					public void onClick(View view) {
+						onClickedFavoriteItem.onClickedListItem(favoriteLocationDTO, getBindingAdapterPosition());
+					}
+				});
+			}
 
 			binding.moreButton.setOnClickListener(new View.OnClickListener() {
 				@Override

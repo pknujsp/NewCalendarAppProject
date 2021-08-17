@@ -328,7 +328,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 		setLocationItemsBottomSheet();
 		setLocationSearchBottomSheet();
-		//setBuildingBottomSheet();
 		setFavoriteLocationsBottomSheet();
 
 		zoomInButton = binding.naverMapButtonsLayout.zoomInButton;
@@ -360,27 +359,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 				BottomSheetBehavior locationSearchBottomSheetBehavior = bottomSheetBehaviorMap.get(BottomSheetType.SEARCH_LOCATION);
 				locationSearchBottomSheetBehavior.onLayoutChild(binding.naverMapFragmentRootLayout, locationSearchBottomSheet, ViewCompat.LAYOUT_DIRECTION_LTR);
-
-				//building list bottom sheet 크기 조정 --------------------------------------------------------------
-				int buildingBottomSheetExtraHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 60f, getContext().getResources().getDisplayMetrics());
-
-				//list 프래그먼트와 빌딩 정보 프래그먼트 두 개의 높이를 다르게 설정
-				/*
-				final int buildingListHeight = binding.naverMapFragmentRootLayout.getHeight() / 2 + buildingBottomSheetExtraHeight;
-				final int buildingInfoHeight = searchBottomSheetHeight;
-				BuildingBottomSheetHeightViewHolder buildingBottomSheetHeightViewHolder = new BuildingBottomSheetHeightViewHolder(buildingListHeight, buildingInfoHeight);
-
-				LinearLayout buildingBottomSheet = bottomSheetViewMap.get(BottomSheetType.BUILDING);
-
-				buildingBottomSheet.setTag(buildingBottomSheetHeightViewHolder);
-
-				buildingBottomSheet.getLayoutParams().height = buildingListHeight;
-				buildingBottomSheet.requestLayout();
-
-				BottomSheetBehavior buildingBottomSheetBehavior = bottomSheetBehaviorMap.get(BottomSheetType.BUILDING);
-				buildingBottomSheetBehavior.onLayoutChild(binding.naverMapFragmentRootLayout, buildingBottomSheet, ViewCompat.LAYOUT_DIRECTION_LTR);
-
-				 */
 
 				//favorite locations bottom sheet 크기 조정 ---------------------------------------------------------------
 				final int favoriteLocationsHeight = DEFAULT_HEIGHT_OF_BOTTOMSHEET;
@@ -1220,15 +1198,17 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 		if (markerType == MarkerType.FAVORITE) {
 			FavoriteLocationItemViewPagerAdapter adapter = (FavoriteLocationItemViewPagerAdapter) locationItemBottomSheetViewPager.getAdapter();
-			FavoriteLocationDTO favoriteLocationDTO = adapter.getKey(position);
-			MarkerHolder markerHolder = null;
+			if (adapter.getItemCount() > 0) {
+				FavoriteLocationDTO favoriteLocationDTO = adapter.getKey(position);
+				MarkerHolder markerHolder = null;
 
-			List<Marker> markerList = markersMap.get(markerType);
-			for (Marker marker : markerList) {
-				markerHolder = (MarkerHolder) marker.getTag();
-				if (((FavoriteMarkerHolder) markerHolder).favoriteLocationDTO.getId().equals(favoriteLocationDTO.getId())) {
-					target = marker.getPosition();
-					break;
+				List<Marker> markerList = markersMap.get(markerType);
+				for (Marker marker : markerList) {
+					markerHolder = (MarkerHolder) marker.getTag();
+					if (((FavoriteMarkerHolder) markerHolder).favoriteLocationDTO.getId().equals(favoriteLocationDTO.getId())) {
+						target = marker.getPosition();
+						break;
+					}
 				}
 			}
 		} else {

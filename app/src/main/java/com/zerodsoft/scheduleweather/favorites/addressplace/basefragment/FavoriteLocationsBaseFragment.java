@@ -59,9 +59,7 @@ public abstract class FavoriteLocationsBaseFragment extends Fragment implements 
 			@Override
 			public void onChanged(FavoriteLocationDTO favoriteLocationDTO) {
 				if (!initializing) {
-					if (favoriteLocationAdapter.getItemCount() > 0) {
-						onAddedFavoriteLocation(favoriteLocationDTO);
-					}
+					onAddedFavoriteLocation(favoriteLocationDTO);
 				}
 			}
 		});

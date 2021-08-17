@@ -55,7 +55,7 @@ public class UltraSrtNcstFinalData
                 humidity = item.getObsrValue();
             } else if (item.getCategory().equals("PTY"))
             {
-                precipitationForm = WeatherDataConverter.convertPrecipitationForm(item.getObsrValue());
+                precipitationForm = item.getObsrValue();
             } else if (item.getCategory().equals("VEC"))
             {
                 windDirection = WeatherDataConverter.convertWindDirection(item.getObsrValue());

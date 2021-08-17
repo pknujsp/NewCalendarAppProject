@@ -152,7 +152,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 			if (f instanceof RestaurantFragment || f instanceof MapHeaderSearchFragment) {
 				if (placeCategoryChipGroup != null) {
 					if (placeCategoryChipGroup.getCheckedChipIds().size() > 0) {
-						//placeCategoryChipGroup.check(placeCategoryChipGroup.getCheckedChipId());
 						placeCategoryChipGroup.clearCheck();
 					}
 				}

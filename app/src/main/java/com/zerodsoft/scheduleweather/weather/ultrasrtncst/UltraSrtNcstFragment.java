@@ -1,5 +1,6 @@
 package com.zerodsoft.scheduleweather.weather.ultrasrtncst;
 
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -7,6 +8,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.luckycatlabs.sunrisesunset.SunriseSunsetCalculator;
@@ -27,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 
 public class UltraSrtNcstFragment extends Fragment {
@@ -104,7 +107,13 @@ public class UltraSrtNcstFragment extends Fragment {
 		//기온
 		binding.ultraSrtNcstTemp.setText(ultraSrtNcstFinalData.getTemperature() + getString(R.string.celcius));
 		//강수형태
-		binding.ultraSrtNcstPty.setText(ultraSrtNcstFinalData.getPrecipitationForm());
+		int ptyDrawableId = WeatherDataConverter.getSkyDrawableId(null, ultraSrtNcstFinalData.getPrecipitationForm(), true);
+		if (ptyDrawableId != 0) {
+			binding.ptyImage.setImageDrawable(ContextCompat.getDrawable(getContext(), ptyDrawableId));
+			binding.ptyImage.setVisibility(View.VISIBLE);
+		} else {
+			binding.ptyImage.setVisibility(View.GONE);
+		}
 		//습도
 		binding.ultraSrtNcstHumidity.setText(ultraSrtNcstFinalData.getHumidity());
 		//바람
@@ -113,17 +122,28 @@ public class UltraSrtNcstFragment extends Fragment {
 		//시간 강수량
 		binding.ultraSrtNcstRn1.setText(ultraSrtNcstFinalData.getPrecipitation1Hour());
 
-		Calendar calendar = Calendar.getInstance(ClockUtil.TIME_ZONE);
+		Calendar todayCalendar = Calendar.getInstance(ClockUtil.TIME_ZONE);
+		Calendar tomorrowCalendar = (Calendar) todayCalendar.clone();
+		tomorrowCalendar.add(Calendar.DATE, 1);
+
 		SunriseSunsetCalculator sunriseSunsetCalculator = new SunriseSunsetCalculator(new Location(weatherAreaCode.getLatitudeSecondsDivide100()
-				, weatherAreaCode.getLongitudeSecondsDivide100()), calendar.getTimeZone());
-		Calendar sunRise = sunriseSunsetCalculator.getOfficialSunriseCalendarForDate(calendar);
-		Calendar sunSet = sunriseSunsetCalculator.getOfficialSunsetCalendarForDate(calendar);
+				, weatherAreaCode.getLongitudeSecondsDivide100()), todayCalendar.getTimeZone());
+
+		Calendar todaySunRise = sunriseSunsetCalculator.getOfficialSunriseCalendarForDate(todayCalendar);
+		Calendar todaySunSet = sunriseSunsetCalculator.getOfficialSunsetCalendarForDate(todayCalendar);
+		Calendar tomorrowSunRise = sunriseSunsetCalculator.getOfficialSunriseCalendarForDate(tomorrowCalendar);
+		Calendar tomorrowSunSet = sunriseSunsetCalculator.getOfficialSunsetCalendarForDate(tomorrowCalendar);
 
 		SimpleDateFormat sunsetRiseDateFormat = new SimpleDateFormat("HH:mm");
+		//날짜
+		binding.todayDatetime.setText(ClockUtil.YYYY_M_D_E.format(todayCalendar.getTime()));
+		binding.tomorrowDatetime.setText(ClockUtil.YYYY_M_D_E.format(tomorrowCalendar.getTime()));
 		//일출
-		binding.sunrise.setText(sunsetRiseDateFormat.format(sunRise.getTime()));
+		binding.todaySunrise.setText(sunsetRiseDateFormat.format(todaySunRise.getTime()));
+		binding.tomorrowSunrise.setText(sunsetRiseDateFormat.format(tomorrowSunRise.getTime()));
 		//일몰
-		binding.sunset.setText(sunsetRiseDateFormat.format(sunSet.getTime()));
+		binding.todaySunset.setText(sunsetRiseDateFormat.format(todaySunSet.getTime()));
+		binding.tomorrowSunset.setText(sunsetRiseDateFormat.format(tomorrowSunSet.getTime()));
 	}
 
 	public void refresh() {
@@ -160,11 +180,16 @@ public class UltraSrtNcstFragment extends Fragment {
 
 	public void clearViews() {
 		binding.ultraSrtNcstTemp.setText("");
-		binding.ultraSrtNcstPty.setText("");
+		binding.ptyImage.setVisibility(View.GONE);
 		binding.ultraSrtNcstHumidity.setText("");
 		binding.ultraSrtNcstWind.setText("");
 		binding.ultraSrtNcstRn1.setText("");
-		binding.sunrise.setText("");
-		binding.sunset.setText("");
+
+		binding.todaySunrise.setText("");
+		binding.todaySunset.setText("");
+		binding.tomorrowSunrise.setText("");
+		binding.tomorrowSunset.setText("");
+		binding.todayDatetime.setText("");
+		binding.tomorrowDatetime.setText("");
 	}
 }

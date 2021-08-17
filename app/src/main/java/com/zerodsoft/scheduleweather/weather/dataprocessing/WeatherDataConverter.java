@@ -2,6 +2,8 @@ package com.zerodsoft.scheduleweather.weather.dataprocessing;
 
 import android.content.Context;
 
+import androidx.annotation.Nullable;
+
 import com.zerodsoft.scheduleweather.R;
 
 public class WeatherDataConverter {
@@ -45,23 +47,25 @@ SKY와 PTY는 별개의 데이터
 	private WeatherDataConverter() {
 	}
 
-	public static int getSkyDrawableId(String sky, String pty, boolean isDay) {
+	public static int getSkyDrawableId(@Nullable String sky, @Nullable String pty, boolean isDay) {
 		int id = 0;
 
-		if (sky.equals(SKY_SUNNY)) {
-			if (isDay) {
-				id = R.drawable.sunny_day_up;
-			} else {
-				id = R.drawable.sunny_night_up;
+		if (sky != null) {
+			if (sky.equals(SKY_SUNNY)) {
+				if (isDay) {
+					id = R.drawable.sunny_day_up;
+				} else {
+					id = R.drawable.sunny_night_up;
+				}
+			} else if (sky.equals(SKY_CLOUDY)) {
+				if (isDay) {
+					id = R.drawable.cloudy_day_up;
+				} else {
+					id = R.drawable.cloudy_night_up;
+				}
+			} else if (sky.equals(SKY_OVERCAST)) {
+				id = R.drawable.overcast_up;
 			}
-		} else if (sky.equals(SKY_CLOUDY)) {
-			if (isDay) {
-				id = R.drawable.cloudy_day_up;
-			} else {
-				id = R.drawable.cloudy_night_up;
-			}
-		} else if (sky.equals(SKY_OVERCAST)) {
-			id = R.drawable.overcast_up;
 		}
 
 		if (pty != null) {
