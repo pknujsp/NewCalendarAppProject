@@ -22,19 +22,9 @@ import org.jetbrains.annotations.NotNull;
 
 public class DefaultMapFragment extends NaverMapFragment {
 
-	private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
-		@Override
-		public void handleOnBackPressed() {
-			if (!getChildFragmentManager().popBackStackImmediate()) {
-				getParentFragment().getParentFragmentManager().popBackStack();
-			}
-		}
-	};
-
 	@Override
 	public void onAttach(@NonNull @NotNull Context context) {
 		super.onAttach(context);
-		requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
 	}
 
 	@Override
@@ -57,7 +47,6 @@ public class DefaultMapFragment extends NaverMapFragment {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		onBackPressedCallback.remove();
 	}
 
 	@Override
@@ -65,13 +54,5 @@ public class DefaultMapFragment extends NaverMapFragment {
 		super.onMapReady(naverMap);
 	}
 
-	@Override
-	public void onHiddenChanged(boolean hidden) {
-		super.onHiddenChanged(hidden);
-		if (hidden) {
-			onBackPressedCallback.remove();
-		} else {
-			requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-		}
-	}
+
 }

@@ -18,6 +18,7 @@ import android.view.ViewGroup;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.common.classes.CloseWindow;
 import com.zerodsoft.scheduleweather.databinding.FragmentAllFavoritesHostBinding;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
 import com.zerodsoft.scheduleweather.favorites.addressplace.AllFavoriteAddressPlaceHostFragment;
@@ -27,6 +28,12 @@ import org.jetbrains.annotations.NotNull;
 
 public class AllFavoritesHostFragment extends Fragment {
 	private FragmentAllFavoritesHostBinding binding;
+	private CloseWindow closeWindow = new CloseWindow(new CloseWindow.OnBackKeyDoubleClickedListener() {
+		@Override
+		public void onDoubleClicked() {
+			getParentFragmentManager().popBackStackImmediate();
+		}
+	});
 
 	private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
 		@Override
@@ -34,7 +41,7 @@ public class AllFavoritesHostFragment extends Fragment {
 			Fragment primaryNavFragment = getChildFragmentManager().getPrimaryNavigationFragment();
 			FragmentManager fragmentManager = primaryNavFragment.getChildFragmentManager();
 			if (!fragmentManager.popBackStackImmediate()) {
-				getParentFragmentManager().popBackStack();
+				closeWindow.clicked(requireActivity());
 			}
 		}
 	};

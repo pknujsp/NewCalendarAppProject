@@ -124,7 +124,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
 		@Override
 		public void handleOnBackPressed() {
-
 			FragmentManager fragmentManager = getChildFragmentManager();
 			if (!fragmentManager.popBackStackImmediate()) {
 				closeWindow.clicked(requireActivity());
