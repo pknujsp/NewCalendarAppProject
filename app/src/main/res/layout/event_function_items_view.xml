@@ -1,40 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_gravity="center"
+    android:layout_marginLeft="48dp"
+    android:layout_marginRight="48dp"
     android:background="@color/transparent"
     android:gravity="center"
     android:orientation="vertical">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginBottom="12dp"
-        android:text="@string/function"
-        android:textAlignment="center"
-        android:textColor="@color/colorPrimary"
-        android:textSize="18sp" />
 
     <Button
         android:id="@+id/function_event_info"
-        android:layout_width="160dp"
+        android:layout_width="match_parent"
         android:layout_height="56dp"
         android:layout_marginBottom="16dp"
         android:text="@string/instance_info" />
 
     <Button
         android:id="@+id/function_weather"
-        android:layout_width="160dp"
+        android:layout_width="match_parent"
         android:layout_height="56dp"
         android:layout_marginBottom="16dp"
         android:text="@string/weather" />
 
     <Button
         android:id="@+id/function_restaurant"
-        android:layout_width="160dp"
+        android:layout_width="match_parent"
         android:layout_height="56dp"
         android:text="@string/restaurant" />
 

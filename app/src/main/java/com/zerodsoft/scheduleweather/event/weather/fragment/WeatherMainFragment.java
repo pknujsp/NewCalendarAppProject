@@ -64,10 +64,6 @@ public class WeatherMainFragment extends BottomSheetDialogFragment {
 	private LocationViewModel locationViewModel;
 	private WeatherAreaCodeDTO weatherAreaCode;
 
-	private String latitude;
-	private String longitude;
-	private boolean hasSimpleLocation;
-
 	private BottomSheetBehavior bottomSheetBehavior;
 
 	private static final List<Drawable> weatherIconDrawablesList = new ArrayList<>();
@@ -100,11 +96,6 @@ public class WeatherMainFragment extends BottomSheetDialogFragment {
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
-		Bundle arguments = getArguments();
-		latitude = arguments.getString("latitude");
-		longitude = arguments.getString("longitude");
-		hasSimpleLocation = arguments.getBoolean("hasSimpleLocation");
 	}
 
 	@Override
@@ -212,9 +203,6 @@ public class WeatherMainFragment extends BottomSheetDialogFragment {
 
 			@Override
 			public void onResultNoData() {
-				final double lat = Double.parseDouble(latitude);
-				final double lon = Double.parseDouble(longitude);
-				loadInitialData(lat, lon);
 			}
 		});
 
@@ -229,12 +217,6 @@ public class WeatherMainFragment extends BottomSheetDialogFragment {
 				requireActivity().runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						if (selectedLocationDto == null) {
-							Toast.makeText(getContext(), hasSimpleLocation ?
-											R.string.msg_getting_weather_data_of_map_center_point_because_havnt_detail_location :
-											R.string.msg_getting_weather_data_of_map_center_point_because_havnt_simple_location,
-									Toast.LENGTH_SHORT).show();
-						}
 						setAddressName();
 						createFragments();
 					}
@@ -254,13 +236,8 @@ public class WeatherMainFragment extends BottomSheetDialogFragment {
 		midFcstFragment = new MidFcstFragment(weatherAreaCode);
 
 		String lat, lon = null;
-		if (selectedLocationDto != null) {
-			lat = selectedLocationDto.getLatitude();
-			lon = selectedLocationDto.getLongitude();
-		} else {
-			lat = latitude;
-			lon = longitude;
-		}
+		lat = selectedLocationDto.getLatitude();
+		lon = selectedLocationDto.getLongitude();
 		airConditionFragment = new AirConditionFragment(lat, lon);
 
 		getChildFragmentManager().beginTransaction()

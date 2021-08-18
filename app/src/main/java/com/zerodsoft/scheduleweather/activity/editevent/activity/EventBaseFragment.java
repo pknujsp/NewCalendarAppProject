@@ -15,7 +15,6 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.provider.CalendarContract;
 import android.provider.CalendarContract.Events;
-import android.provider.CalendarContract.Instances;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.TypedValue;

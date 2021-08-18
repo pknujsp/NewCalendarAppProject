@@ -18,8 +18,8 @@ import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.os.Parcel;
 import android.provider.CalendarContract;
-import android.provider.CalendarContract.Events;
 import android.util.ArrayMap;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -47,14 +47,21 @@ import com.naver.maps.map.overlay.Marker;
 import com.naver.maps.map.overlay.Overlay;
 import com.naver.maps.map.overlay.OverlayImage;
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.editevent.activity.ModifyInstanceFragment;
+import com.zerodsoft.scheduleweather.activity.editevent.interfaces.OnEditEventResultListener;
 import com.zerodsoft.scheduleweather.activity.placecategory.PlaceCategorySettingsFragment;
 import com.zerodsoft.scheduleweather.activity.placecategory.viewmodel.PlaceCategoryViewModel;
+import com.zerodsoft.scheduleweather.calendar.AsyncQueryService;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
+import com.zerodsoft.scheduleweather.calendar.EventHelper;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.common.classes.CloseWindow;
+import com.zerodsoft.scheduleweather.common.enums.LocationIntentCode;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.common.interfaces.OnHiddenFragmentListener;
 import com.zerodsoft.scheduleweather.etc.LocationType;
+import com.zerodsoft.scheduleweather.event.common.DetailLocationSelectorKey;
+import com.zerodsoft.scheduleweather.event.common.SelectionDetailLocationFragment;
 import com.zerodsoft.scheduleweather.event.event.fragments.EventFragment;
 import com.zerodsoft.scheduleweather.event.foods.RestaurantFragment;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.ISetFoodMenuPoiItems;
@@ -128,7 +135,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 			if (!fragmentManager.popBackStackImmediate()) {
 				closeWindow.clicked(requireActivity());
 			}
-
 		}
 	};
 
@@ -206,6 +212,12 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 					functionButton.setVisibility(View.VISIBLE);
 					chipsLayout.setVisibility(View.VISIBLE);
 				}
+			} else if (f instanceof EventFragment) {
+				if (selectedLocationDtoInEvent == null) {
+					if (!((EventFragment) f).editing) {
+						getParentFragmentManager().popBackStackImmediate();
+					}
+				}
 			}
 		}
 
@@ -236,7 +248,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 
 		calendarViewModel = new ViewModelProvider(requireActivity()).get(CalendarViewModel.class);
 		placeCategoryViewModel = new ViewModelProvider(this).get(PlaceCategoryViewModel.class);
-		getChildFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, true);
+		getChildFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false);
 
 		eventValues = calendarViewModel.getEvent(eventId);
 	}
@@ -250,6 +262,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+
 		binding.headerLayout.setVisibility(View.GONE);
 		binding.naverMapButtonsLayout.getRoot().setVisibility(View.GONE);
 		gpsButton.setLongClickable(true);
@@ -278,14 +291,14 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 					locationViewModel.getLocation(eventId, new DbQueryCallback<LocationDTO>() {
 						@Override
 						public void onResultSuccessful(LocationDTO savedLocationDto) {
-							selectedLocationDtoInEvent = savedLocationDto;
-
 							requireActivity().runOnUiThread(new Runnable() {
 								@Override
 								public void run() {
 									//지도 로드
 									binding.headerLayout.setVisibility(View.VISIBLE);
 									binding.naverMapButtonsLayout.getRoot().setVisibility(View.VISIBLE);
+									selectedLocationDtoInEvent = savedLocationDto;
+
 									createFunctionList();
 									loadMap();
 									addPlaceCategoryListFragmentIntoBottomSheet();
@@ -307,8 +320,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 					});
 				} else {
 					//인스턴스 정보 프래그먼트 표시
-					onClickedOpenEventFragmentBtn();
 					locationViewModel.removeLocation(eventId, null);
+					onClickedOpenEventFragmentBtn();
 				}
 			}
 		});
@@ -402,13 +415,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 					}
 				}, DEFAULT_HEIGHT_OF_BOTTOMSHEET, calendarId,
 						eventId);
-				Bundle bundle = new Bundle();
-				LatLng latLng = naverMap.getContentBounds().getCenter();
-				bundle.putString("latitude", String.valueOf(latLng.latitude));
-				bundle.putString("longitude", String.valueOf(latLng.longitude));
-				bundle.putBoolean("hasSimpleLocation", false);
-
-				weatherMainFragment.setArguments(bundle);
 				weatherMainFragment.show(getChildFragmentManager(), WeatherMainFragment.TAG);
 			}
 		});
@@ -443,69 +449,232 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		});
 	}
 
-	private void onClickedOpenEventFragmentBtn() {
-		EventFragment eventFragment = new EventFragment(new EventFragment.OnEventFragmentDismissListener() {
-			@Override
-			public void onResult(long newEventId) {
-				eventId = newEventId;
-				eventValues = calendarViewModel.getEvent(eventId);
-
-				if (eventValues.getAsString(Events.EVENT_LOCATION) != null) {
-					locationViewModel.getLocation(eventId, new DbQueryCallback<LocationDTO>() {
+	private final EventFragment.OnEventEditCallback onEventEditCallback = new EventFragment.OnEventEditCallback() {
+		@Override
+		public void onResult() {
+			locationViewModel.getLocation(eventId, new DbQueryCallback<LocationDTO>() {
+				@Override
+				public void onResultSuccessful(LocationDTO savedLocationDto) {
+					requireActivity().runOnUiThread(new Runnable() {
 						@Override
-						public void onResultSuccessful(LocationDTO savedLocationDto) {
-							if (selectedLocationDtoInEvent != null) {
-								if (selectedLocationDtoInEvent.getId() != savedLocationDto.getId()) {
-									selectedLocationDtoInEvent = savedLocationDto;
+						public void run() {
+							refreshView();
+							selectedLocationDtoInEvent = savedLocationDto;
 
-									requireActivity().runOnUiThread(new Runnable() {
-										@Override
-										public void run() {
-											createSelectedLocationMarker();
-										}
-									});
-								}
-							} else {
-								selectedLocationDtoInEvent = savedLocationDto;
-								requireActivity().runOnUiThread(new Runnable() {
-									@Override
-									public void run() {
-										binding.headerLayout.setVisibility(View.VISIBLE);
-										binding.naverMapButtonsLayout.getRoot().setVisibility(View.VISIBLE);
+							binding.headerLayout.setVisibility(View.VISIBLE);
+							binding.naverMapButtonsLayout.getRoot().setVisibility(View.VISIBLE);
 
-										if (functionButton == null) {
-											createFunctionList();
-										}
-
-										if (!bottomSheetFragmentMap.containsKey(BottomSheetType.SELECTED_PLACE_CATEGORY)) {
-											addPlaceCategoryListFragmentIntoBottomSheet();
-										}
-										if (chipsLayout == null) {
-											createPlaceCategoryListChips();
-										}
-										loadMap();
-									}
-								});
+							if (functionButton != null) {
+								binding.naverMapButtonsLayout.getRoot().removeView(functionButton);
+								functionButtons = null;
 							}
-
-						}
-
-						@Override
-						public void onResultNoData() {
-							requireActivity().runOnUiThread(new Runnable() {
-								@Override
-								public void run() {
-									getParentFragmentManager().popBackStackImmediate();
-								}
-							});
+							if (bottomSheetFragmentMap.containsKey(BottomSheetType.SELECTED_PLACE_CATEGORY)) {
+								binding.naverMapFragmentRootLayout.removeView(bottomSheetViewMap.get(BottomSheetType.SELECTED_PLACE_CATEGORY));
+								getChildFragmentManager().beginTransaction()
+										.remove(getChildFragmentManager().findFragmentByTag(getString(R.string.tag_places_of_selected_categories_fragment)))
+										.commit();
+								bottomSheetFragmentMap.remove(BottomSheetType.SELECTED_PLACE_CATEGORY);
+								bottomSheetBehaviorMap.remove(BottomSheetType.SELECTED_PLACE_CATEGORY);
+								bottomSheetViewMap.remove(BottomSheetType.SELECTED_PLACE_CATEGORY);
+							}
+							if (chipsLayout != null) {
+								chipsLayout.removeAllViews();
+								binding.headerLayout.removeView(chipsLayout);
+								chipsLayout = null;
+							}
+							createFunctionList();
+							loadMap();
+							addPlaceCategoryListFragmentIntoBottomSheet();
+							createPlaceCategoryListChips();
 						}
 					});
-				} else {
-					getParentFragmentManager().popBackStackImmediate();
+
 				}
+
+				@Override
+				public void onResultNoData() {
+					requireActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							refreshView();
+							getParentFragmentManager().popBackStackImmediate();
+						}
+					});
+				}
+			});
+
+		}
+
+		@Override
+		public void onProcess(ProcessType processType) {
+			EventFragment eventFragment = (EventFragment) getChildFragmentManager().findFragmentByTag(getString(R.string.tag_event_fragment));
+
+			if (processType == ProcessType.DETAIL_LOCATION) {
+				locationViewModel.hasDetailLocation(eventId, new DbQueryCallback<Boolean>() {
+					@Override
+					public void onResultSuccessful(Boolean hasDetailLocation) {
+						requireActivity().runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								if (hasDetailLocation) {
+									eventFragment.dismissForEdit();
+									locationViewModel.getLocation(eventId, new DbQueryCallback<LocationDTO>() {
+										@Override
+										public void onResultSuccessful(LocationDTO locationResultDto) {
+											if (!locationResultDto.isEmpty()) {
+												SelectionDetailLocationFragment selectionDetailLocationFragment = new SelectionDetailLocationFragment(new SelectionDetailLocationFragment.OnDetailLocationSelectionResultListener() {
+													@Override
+													public void onResultChangedLocation(LocationDTO newLocation) {
+														changedDetailLocation(newLocation);
+													}
+
+													@Override
+													public void onResultSelectedLocation(LocationDTO newLocation) {
+
+													}
+
+													@Override
+													public void onResultUnselectedLocation() {
+														deletedDetailLocation();
+													}
+												});
+
+												Bundle bundle = new Bundle();
+												bundle.putParcelable(DetailLocationSelectorKey.SELECTED_LOCATION_DTO_IN_EVENT.value(), locationResultDto);
+												bundle.putInt("requestCode", LocationIntentCode.REQUEST_CODE_CHANGE_LOCATION.value());
+
+												selectionDetailLocationFragment.setArguments(bundle);
+												getChildFragmentManager().beginTransaction().add(binding.fragmentContainer.getId(),
+														selectionDetailLocationFragment,
+														getString(R.string.tag_detail_location_selection_fragment))
+														.addToBackStack(getString(R.string.tag_detail_location_selection_fragment)).commit();
+											}
+										}
+
+										@Override
+										public void onResultNoData() {
+
+										}
+									});
+								} else {
+									showSetLocationDialog(eventFragment);
+								}
+							}
+						});
+					}
+
+					@Override
+					public void onResultNoData() {
+
+					}
+				});
+
+			} else if (processType == ProcessType.REMOVE_EVENT) {
+				String[] items = null;
+				//이번 일정만 삭제, 향후 모든 일정 삭제, 모든 일정 삭제
+                /*
+                반복없는 이벤트 인 경우 : 일정 삭제
+                반복있는 이벤트 인 경우 : 이번 일정만 삭제, 향후 모든 일정 삭제, 모든 일정 삭제
+                 */
+				if (eventValues.getAsString(CalendarContract.Instances.RRULE) != null) {
+					items = new String[]{getString(R.string.remove_this_instance), getString(R.string.remove_all_future_instance_including_current_instance)
+							, getString(R.string.remove_event)};
+				} else {
+					items = new String[]{getString(R.string.remove_event)};
+				}
+				new MaterialAlertDialogBuilder(getActivity()).setTitle(getString(R.string.remove_event))
+						.setItems(items, new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialogInterface, int index) {
+								if (eventValues.getAsString(CalendarContract.Instances.RRULE) != null) {
+									switch (index) {
+										case 0:
+											// 이번 일정만 삭제
+											// 완성
+											showRemoveOnlyThisEventDialog(eventFragment);
+											break;
+										case 1:
+											// 향후 모든 일정만 삭제
+											removeFollowingEvents(eventFragment);
+											break;
+										case 2:
+											// 모든 일정 삭제
+											showRemoveAllEventsDialog(eventFragment);
+											break;
+									}
+								} else {
+									switch (index) {
+										case 0:
+											// 모든 일정 삭제
+											showRemoveAllEventsDialog(eventFragment);
+											break;
+									}
+								}
+							}
+						}).create().show();
+			} else if (processType == ProcessType.MODIFY_EVENT) {
+				ModifyInstanceFragment modifyInstanceFragment = new ModifyInstanceFragment(new OnEditEventResultListener() {
+					@Override
+					public void onSavedNewEvent(long dtStart) {
+						getParentFragmentManager().popBackStackImmediate();
+					}
+
+					@Override
+					public void onUpdatedOnlyThisEvent(long dtStart) {
+						getParentFragmentManager().popBackStackImmediate();
+					}
+
+					@Override
+					public void onUpdatedFollowingEvents(long dtStart) {
+						getParentFragmentManager().popBackStackImmediate();
+					}
+
+					@Override
+					public void onUpdatedAllEvents(long dtStart) {
+						getParentFragmentManager().popBackStackImmediate();
+					}
+
+					@Override
+					public void onRemovedAllEvents() {
+
+					}
+
+					@Override
+					public void onRemovedFollowingEvents() {
+
+					}
+
+					@Override
+					public void onRemovedOnlyThisEvents() {
+
+					}
+
+					@Override
+					public int describeContents() {
+						return 0;
+					}
+
+					@Override
+					public void writeToParcel(Parcel dest, int flags) {
+
+					}
+				});
+				Bundle bundle = new Bundle();
+
+				bundle.putLong(CalendarContract.Instances.EVENT_ID, eventId);
+				bundle.putLong(CalendarContract.Instances._ID, instanceId);
+				bundle.putLong(CalendarContract.Instances.BEGIN, originalBegin);
+				bundle.putLong(CalendarContract.Instances.END, originalEnd);
+
+				modifyInstanceFragment.setArguments(bundle);
+				getChildFragmentManager().beginTransaction().add(binding.fragmentContainer.getId(), modifyInstanceFragment,
+						getString(R.string.tag_modify_instance_fragment)).addToBackStack(getString(R.string.tag_modify_instance_fragment)).commit();
 			}
-		}, NewInstanceMainFragment.this, DEFAULT_HEIGHT_OF_BOTTOMSHEET
-		);
+		}
+	};
+
+	private void onClickedOpenEventFragmentBtn() {
+		EventFragment eventFragment = new EventFragment(onEventEditCallback, DEFAULT_HEIGHT_OF_BOTTOMSHEET);
 
 		Bundle bundle = new Bundle();
 		bundle.putLong(CalendarContract.Instances._ID, instanceId);
@@ -515,6 +684,161 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 
 		eventFragment.setArguments(bundle);
 		eventFragment.show(getChildFragmentManager(), getString(R.string.tag_event_fragment));
+	}
+
+	private void showRemoveAllEventsDialog(EventFragment eventFragment) {
+		new MaterialAlertDialogBuilder(requireActivity())
+				.setTitle(R.string.remove_event)
+				.setPositiveButton(R.string.check, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						EventHelper eventHelper = new EventHelper(new AsyncQueryService(getContext(), calendarViewModel));
+						eventHelper.removeEvent(EventHelper.EventEditType.REMOVE_ALL_EVENTS, eventValues);
+						dialog.dismiss();
+						getParentFragmentManager().popBackStackImmediate();
+					}
+				})
+				.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.dismiss();
+					}
+				}).create().show();
+	}
+
+
+	private void removeFollowingEvents(EventFragment eventFragment) {
+		EventHelper eventHelper = new EventHelper(new AsyncQueryService(getContext(), calendarViewModel));
+		eventHelper.removeEvent(EventHelper.EventEditType.REMOVE_FOLLOWING_EVENTS, eventValues);
+		getParentFragmentManager().popBackStackImmediate();
+	}
+
+	private void showRemoveOnlyThisEventDialog(EventFragment eventFragment) {
+		new MaterialAlertDialogBuilder(requireActivity())
+				.setTitle(R.string.remove_this_instance)
+				.setPositiveButton(R.string.check, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						EventHelper eventHelper = new EventHelper(new AsyncQueryService(getContext(), calendarViewModel));
+						eventHelper.removeEvent(EventHelper.EventEditType.REMOVE_ONLY_THIS_EVENT, eventValues);
+						dialog.dismiss();
+						getParentFragmentManager().popBackStackImmediate();
+					}
+				})
+				.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.dismiss();
+					}
+				}).create().show();
+	}
+
+	public void showSetLocationDialog(EventFragment eventFragment) {
+		MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireActivity())
+				.setTitle(getString(R.string.request_select_location_title))
+				.setMessage(getString(R.string.request_select_location_description))
+				.setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialogInterface, int i) {
+						dialogInterface.cancel();
+					}
+				})
+				.setPositiveButton(getString(R.string.check), new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialogInterface, int i) {
+						Bundle bundle = new Bundle();
+						bundle.putString(DetailLocationSelectorKey.LOCATION_NAME_IN_EVENT.value(),
+								eventValues.getAsString(CalendarContract.Instances.EVENT_LOCATION));
+						bundle.putInt("requestCode", LocationIntentCode.REQUEST_CODE_SELECT_LOCATION_BY_QUERY.value());
+
+						SelectionDetailLocationFragment selectionDetailLocationFragment = new SelectionDetailLocationFragment(new SelectionDetailLocationFragment.OnDetailLocationSelectionResultListener() {
+							@Override
+							public void onResultChangedLocation(LocationDTO newLocation) {
+
+							}
+
+							@Override
+							public void onResultSelectedLocation(LocationDTO newLocation) {
+								saveDetailLocation(newLocation);
+							}
+
+							@Override
+							public void onResultUnselectedLocation() {
+
+							}
+						});
+
+						selectionDetailLocationFragment.setArguments(bundle);
+						getChildFragmentManager().beginTransaction().add(binding.fragmentContainer.getId(), selectionDetailLocationFragment,
+								getString(R.string.tag_detail_location_selection_fragment)).addToBackStack(getString(R.string.tag_detail_location_selection_fragment)).commit();
+						dialogInterface.dismiss();
+						eventFragment.dismissForEdit();
+					}
+				});
+
+		AlertDialog dialog = builder.create();
+		dialog.show();
+	}
+
+
+	private void saveDetailLocation(LocationDTO locationDTO) {
+		// 지정이 완료된 경우 - DB에 등록하고 이벤트 액티비티로 넘어가서 날씨 또는 주변 정보 프래그먼트를 실행한다.
+		locationDTO.setEventId(eventId);
+
+		//선택된 위치를 DB에 등록
+		locationViewModel.addLocation(locationDTO, new DbQueryCallback<LocationDTO>() {
+			@Override
+			public void onResultSuccessful(LocationDTO result) {
+				onEventEditCallback.onResult();
+			}
+
+			@Override
+			public void onResultNoData() {
+
+			}
+		});
+	}
+
+	private void changedDetailLocation(LocationDTO locationDTO) {
+		// 지정이 완료된 경우 - DB에 등록하고 이벤트 액티비티로 넘어가서 날씨 또는 주변 정보 프래그먼트를 실행한다.
+		// 선택된 위치를 DB에 등록
+		locationDTO.setEventId(eventId);
+		locationViewModel.removeLocation(eventId, new DbQueryCallback<Boolean>() {
+			@Override
+			public void onResultSuccessful(Boolean result) {
+				locationViewModel.addLocation(locationDTO, new DbQueryCallback<LocationDTO>() {
+					@Override
+					public void onResultSuccessful(LocationDTO result) {
+						onEventEditCallback.onResult();
+					}
+
+					@Override
+					public void onResultNoData() {
+
+					}
+				});
+			}
+
+			@Override
+			public void onResultNoData() {
+
+			}
+		});
+
+	}
+
+	private void deletedDetailLocation() {
+		locationViewModel.removeLocation(eventId, new DbQueryCallback<Boolean>() {
+			@Override
+			public void onResultSuccessful(Boolean result) {
+				onEventEditCallback.onResult();
+			}
+
+			@Override
+			public void onResultNoData() {
+
+			}
+		});
 	}
 
 	private void createSelectedLocationMarker() {
@@ -644,7 +968,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 			@Override
 			public void onStateChanged(@NonNull View bottomSheet, int newState) {
 				if (newState == BottomSheetBehavior.STATE_EXPANDED) {
-					placeCategoryListChip.setText(R.string.close_list);
+					placeCategoryListChip.setText(R.string.close_place_category_list);
 				} else if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
 					placeCategoryListChip.setText(R.string.open_place_category_list);
 				}
@@ -730,7 +1054,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 				Fragment placesOfSelectedCategoriesFragment =
 						bottomSheetFragmentMap.get(BottomSheetType.SELECTED_PLACE_CATEGORY);
 
-				if (bottomSheetFragmentMap.get(BottomSheetType.SELECTED_PLACE_CATEGORY).isVisible()) {
+				if (placesOfSelectedCategoriesFragment.isVisible()) {
 					if (initializing) {
 						initializing = false;
 						fragmentManager.beginTransaction()

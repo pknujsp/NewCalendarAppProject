@@ -50,7 +50,7 @@ public class LocationViewModel extends AndroidViewModel implements ILocationDao 
 	}
 
 	@Override
-	public void modifyLocation(LocationDTO location, DbQueryCallback<LocationDTO> resultCallback) {
+	public void modifyLocation(LocationDTO location,@androidx.annotation.Nullable DbQueryCallback<LocationDTO> resultCallback) {
 		locationRepository.modifyLocation(location, resultCallback);
 	}
 

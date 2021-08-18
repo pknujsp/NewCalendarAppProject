@@ -119,7 +119,6 @@ import org.jetbrains.annotations.NotNull;
 import org.xmlpull.v1.XmlPullParser;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -310,8 +309,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		markerWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
 		markerHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
 		favoriteMarkerSize = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24f, getResources().getDisplayMetrics());
-
-
 	}
 
 
@@ -402,6 +399,9 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			@Override
 			public void onClick(View v) {
 				FragmentManager fragmentManager = getChildFragmentManager();
+				if (getStateOfBottomSheet(BottomSheetType.LOCATION_ITEM) == BottomSheetBehavior.STATE_EXPANDED) {
+					setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
+				}
 
 				if (bottomSheetFragmentMap.containsKey(BottomSheetType.FAVORITE_LOCATIONS)) {
 					Fragment favoriteLocationFragment = bottomSheetFragmentMap.get(BottomSheetType.FAVORITE_LOCATIONS);
@@ -419,8 +419,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 					fragmentManager.beginTransaction()
 							.add(binding.favoriteLocationsBottomSheet.fragmentContainerView.getId()
-									, favoriteLocationFragment, getString(R.string.tag_favorite_locations_fragment))
-							.commitNow();
+									, favoriteLocationFragment, getString(R.string.tag_favorite_locations_fragment)).commitNow();
 					fragmentManager.beginTransaction().show(favoriteLocationFragment).addToBackStack(getString(R.string.tag_favorite_locations_fragment)).commit();
 					setStateOfBottomSheet(BottomSheetType.FAVORITE_LOCATIONS, BottomSheetBehavior.STATE_EXPANDED);
 				}
@@ -511,9 +510,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			getChildFragmentManager().beginTransaction().add(R.id.naver_map_fragment, mapFragment, getString(R.string.tag_map_fragment)).commitNow();
 
 			fusedLocationSource = new FusedLocationSource(this, PERMISSION_REQUEST_CODE);
-			mapFragment.getMapAsync(this);
 		}
-
+		mapFragment.getMapAsync(this);
 	}
 
 	private void setLocationSearchBottomSheet() {
@@ -606,21 +604,22 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			@Override
 			public void onPageSelected(int position) {
 				super.onPageSelected(position);
-				markerType = (MarkerType) locationItemBottomSheetViewPager.getTag();
-				onPOIItemSelectedByBottomSheet(position, markerType);
+				if (getStateOfBottomSheet(BottomSheetType.LOCATION_ITEM) == BottomSheetBehavior.STATE_EXPANDED) {
+					markerType = (MarkerType) locationItemBottomSheetViewPager.getTag();
+					onPOIItemSelectedByBottomSheet(position, markerType);
 
-				if (markerType == MarkerType.FAVORITE) {
-					if (position == ((FavoriteLocationItemViewPagerAdapter) viewPagerAdapterMap.get(markerType)).getItemCount() - 1) {
-						onPageSelectedLocationItemBottomSheetViewPager(position, markerType);
+					if (markerType == MarkerType.FAVORITE) {
+						if (position == ((FavoriteLocationItemViewPagerAdapter) viewPagerAdapterMap.get(markerType)).getItemCount() - 1) {
+							onPageSelectedLocationItemBottomSheetViewPager(position, markerType);
+						} else {
+						}
 					} else {
-					}
-				} else {
-					if (position == viewPagerAdapterMap.get(markerType).getItemCount() - 1) {
-						onPageSelectedLocationItemBottomSheetViewPager(position, markerType);
-					} else {
+						if (position == viewPagerAdapterMap.get(markerType).getItemCount() - 1) {
+							onPageSelectedLocationItemBottomSheetViewPager(position, markerType);
+						} else {
+						}
 					}
 				}
-
 			}
 		});
 		locationItemBottomSheetViewPager.setOffscreenPageLimit(2);
@@ -713,16 +712,20 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			new ActivityResultCallback<Boolean>() {
 				@Override
 				public void onActivityResult(Boolean isGranted) {
-					if (isGranted) {
-						fusedLocationSource.onRequestPermissionsResult(REQUEST_CODE_LOCATION, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-								new int[]{PackageManager.PERMISSION_GRANTED});
-						naverMap.setLocationSource(fusedLocationSource);
-						naverMap.setLocationTrackingMode(LocationTrackingMode.NoFollow);
-					} else {
-						Toast.makeText(getActivity(), getString(R.string.message_needs_location_permission), Toast.LENGTH_SHORT).show();
-					}
+					onResultLocationPermission(isGranted);
 				}
 			});
+
+	protected void onResultLocationPermission(boolean isGranted) {
+		if (isGranted) {
+			fusedLocationSource.onRequestPermissionsResult(REQUEST_CODE_LOCATION, new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+					new int[]{PackageManager.PERMISSION_GRANTED});
+			naverMap.setLocationSource(fusedLocationSource);
+			naverMap.setLocationTrackingMode(LocationTrackingMode.NoFollow);
+		} else {
+			Toast.makeText(getActivity(), getString(R.string.message_needs_location_permission), Toast.LENGTH_SHORT).show();
+		}
+	}
 
 	private final OnKakaoLocalApiCallback reverseGeoCodingResponseCallback = new OnKakaoLocalApiCallback() {
 		@Override
@@ -1384,7 +1387,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 				});
 
 				Bundle bundle = new Bundle();
-
 				LatLng latLng = naverMap.getContentBounds().getCenter();
 
 				bundle.putDouble("centerLatitude", latLng.latitude);
@@ -1449,7 +1451,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 				}
 			}
 		}
-
 		return bottomSheetBehaviors;
 	}
 
@@ -1535,50 +1536,52 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	}
 
 	public void loadFavoriteLocations() {
-		favoriteLocationViewModel.getRemovedFavoriteLocationMutableLiveData().observe(this, new Observer<FavoriteLocationDTO>() {
-			@Override
-			public void onChanged(FavoriteLocationDTO favoriteLocationDTO) {
-				if (!initializingFavoriteLocations) {
-					if (naverMap != null) {
-						removeFavoriteLocationMarker(favoriteLocationDTO);
-					}
-				}
-			}
-		});
-
-		favoriteLocationViewModel.getAddedFavoriteLocationMutableLiveData().observe(this, new Observer<FavoriteLocationDTO>() {
-			@Override
-			public void onChanged(FavoriteLocationDTO favoriteLocationDTO) {
-				if (!initializingFavoriteLocations) {
-					if (naverMap != null) {
-						addFavoriteLocationsPoiItem(favoriteLocationDTO);
-					}
-				}
-			}
-		});
-
-		favoriteLocationViewModel.getFavoriteLocations(FavoriteLocationDTO.ONLY_FOR_MAP, new DbQueryCallback<List<FavoriteLocationDTO>>() {
-			@Override
-			public void onResultSuccessful(List<FavoriteLocationDTO> list) {
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						createFavoriteLocationsPoiItems(list);
-
-						if (!list.isEmpty()) {
-							showMarkers(MarkerType.FAVORITE, App.isPreference_key_show_favorite_locations_markers_on_map());
+		if (!markersMap.containsKey(MarkerType.FAVORITE)) {
+			favoriteLocationViewModel.getRemovedFavoriteLocationMutableLiveData().observe(this, new Observer<FavoriteLocationDTO>() {
+				@Override
+				public void onChanged(FavoriteLocationDTO favoriteLocationDTO) {
+					if (!initializingFavoriteLocations) {
+						if (naverMap != null) {
+							removeFavoriteLocationMarker(favoriteLocationDTO);
 						}
-
-						initializingFavoriteLocations = false;
 					}
-				});
-			}
+				}
+			});
 
-			@Override
-			public void onResultNoData() {
+			favoriteLocationViewModel.getAddedFavoriteLocationMutableLiveData().observe(this, new Observer<FavoriteLocationDTO>() {
+				@Override
+				public void onChanged(FavoriteLocationDTO favoriteLocationDTO) {
+					if (!initializingFavoriteLocations) {
+						if (naverMap != null) {
+							addFavoriteLocationsPoiItem(favoriteLocationDTO);
+						}
+					}
+				}
+			});
 
-			}
-		});
+			favoriteLocationViewModel.getFavoriteLocations(FavoriteLocationDTO.ONLY_FOR_MAP, new DbQueryCallback<List<FavoriteLocationDTO>>() {
+				@Override
+				public void onResultSuccessful(List<FavoriteLocationDTO> list) {
+					requireActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							createFavoriteLocationsPoiItems(list);
+
+							if (!list.isEmpty()) {
+								showMarkers(MarkerType.FAVORITE, App.isPreference_key_show_favorite_locations_markers_on_map());
+							}
+
+							initializingFavoriteLocations = false;
+						}
+					});
+				}
+
+				@Override
+				public void onResultNoData() {
+
+				}
+			});
+		}
 	}
 
 	public void createFavoriteLocationsPoiItems(List<FavoriteLocationDTO> favoriteLocationList) {
@@ -1610,6 +1613,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		FavoriteLocationItemViewPagerAdapter favoriteLocationItemViewPagerAdapter =
 				(FavoriteLocationItemViewPagerAdapter) viewPagerAdapterMap.get(MarkerType.FAVORITE);
 		favoriteLocationItemViewPagerAdapter.removeFavoriteLocation(removeFavoriteLocationDTO);
+
 		favoriteLocationItemViewPagerAdapter.notifyDataSetChanged();
 
 		int markerIndex = 0;
@@ -1685,16 +1689,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		bottomSheetBehavior.setPeekHeight(0);
 
 		return new Object[]{bottomSheetView, bottomSheetBehavior};
-	}
-
-	static final class BuildingBottomSheetHeightViewHolder {
-		final int listHeight;
-		final int infoHeight;
-
-		public BuildingBottomSheetHeightViewHolder(int listHeight, int infoHeight) {
-			this.listHeight = listHeight;
-			this.infoHeight = infoHeight;
-		}
 	}
 
 	static class MarkerHolder {

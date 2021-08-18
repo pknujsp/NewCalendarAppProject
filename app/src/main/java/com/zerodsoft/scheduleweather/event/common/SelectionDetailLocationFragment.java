@@ -1,7 +1,6 @@
 package com.zerodsoft.scheduleweather.event.common;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.os.Bundle;
@@ -10,7 +9,6 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -21,7 +19,6 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.naver.maps.geometry.LatLng;
 import com.naver.maps.map.CameraUpdate;
 import com.naver.maps.map.NaverMap;
@@ -31,18 +28,13 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.enums.LocationIntentCode;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
-import com.zerodsoft.scheduleweather.navermap.MarkerType;
 import com.zerodsoft.scheduleweather.navermap.NaverMapFragment;
 import com.zerodsoft.scheduleweather.navermap.searchheader.MapHeaderMainFragment;
 import com.zerodsoft.scheduleweather.navermap.searchheader.MapHeaderSearchFragment;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddressDocuments;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 
 import org.jetbrains.annotations.NotNull;
-
-import java.util.Collections;
 
 public class SelectionDetailLocationFragment extends NaverMapFragment {
 	private LocationDTO selectedLocationDTOInEvent;
@@ -316,6 +308,10 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 		}
 	}
 
+	@Override
+	protected void onResultLocationPermission(boolean isGranted) {
+		super.onResultLocationPermission(isGranted);
+	}
 
 	public interface OnDetailLocationSelectionResultListener {
 		public void onResultChangedLocation(LocationDTO newLocation);
@@ -324,4 +320,5 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 
 		public void onResultUnselectedLocation();
 	}
+
 }

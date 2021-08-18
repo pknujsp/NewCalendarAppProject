@@ -128,7 +128,6 @@ public class LocationRepository implements ILocationDao {
 	@Override
 	public void removeLocation(long eventId, @Nullable DbQueryCallback<Boolean> resultCallback) {
 		App.executorService.execute(new Runnable() {
-			@SneakyThrows
 			@Override
 			public void run() {
 				locationDAO.delete(eventId);
@@ -140,14 +139,15 @@ public class LocationRepository implements ILocationDao {
 	}
 
 	@Override
-	public void modifyLocation(LocationDTO location, DbQueryCallback<LocationDTO> resultCallback) {
+	public void modifyLocation(LocationDTO location, @androidx.annotation.Nullable DbQueryCallback<LocationDTO> resultCallback) {
 		App.executorService.execute(new Runnable() {
-			@SneakyThrows
 			@Override
 			public void run() {
 				locationDAO.update(location);
 				LocationDTO result = locationDAO.getLocation(location.getId());
-				resultCallback.processResult(result);
+				if (resultCallback != null) {
+					resultCallback.processResult(result);
+				}
 			}
 		});
 	}
