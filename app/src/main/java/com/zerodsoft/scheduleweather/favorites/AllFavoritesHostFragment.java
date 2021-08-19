@@ -23,6 +23,7 @@ import com.zerodsoft.scheduleweather.databinding.FragmentAllFavoritesHostBinding
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
 import com.zerodsoft.scheduleweather.favorites.addressplace.AllFavoriteAddressPlaceHostFragment;
 import com.zerodsoft.scheduleweather.favorites.restaurant.AllFavoriteRestaurantHostFragment;
+import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -116,7 +117,7 @@ public class AllFavoritesHostFragment extends Fragment {
 
 	@Override
 	public void onDestroy() {
-		super.onDestroy();
 		onBackPressedCallback.remove();
+		super.onDestroy();
 	}
 }

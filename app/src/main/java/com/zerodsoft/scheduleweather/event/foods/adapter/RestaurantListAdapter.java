@@ -67,11 +67,7 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
 	class ItemViewHolder extends RecyclerView.ViewHolder {
 		private TextView restaurantName;
 		private TextView restaurantAddress;
-		private ImageView restaurantImage;
-		private TextView restaurantMenuInfo;
-		private TextView restaurantRating;
 		private ImageView favoriteButton;
-		private LinearLayout restaurantReviewLayout;
 
 
 		public ItemViewHolder(View view) {
@@ -79,16 +75,9 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
 
 			restaurantName = (TextView) view.findViewById(R.id.restaurant_name);
 			restaurantAddress = (TextView) view.findViewById(R.id.restaurant_address);
-			restaurantImage = (ImageView) view.findViewById(R.id.restaurant_image);
-			restaurantRating = (TextView) view.findViewById(R.id.restaurant_rating);
 			favoriteButton = (ImageView) view.findViewById(R.id.favorite_button);
-			restaurantReviewLayout = (LinearLayout) view.findViewById(R.id.restaurant_review_layout);
-			restaurantMenuInfo = (TextView) view.findViewById(R.id.restaurant_menuinfo);
-			restaurantMenuInfo.setSelected(true);
 
 			restaurantName.setText("");
-			restaurantRating.setText("");
-			restaurantMenuInfo.setText("");
 		}
 
 		public void bind(PlaceDocuments item) {
@@ -158,7 +147,7 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
 		}
 
 		public void setData(KakaoPlaceJsonRoot kakaoPlaceJsonRoot) {
-			setRestaurantImage(kakaoPlaceJsonRoot);
+			//setRestaurantImage(kakaoPlaceJsonRoot);
 			StringBuffer menuStr = new StringBuffer();
 
 			if (kakaoPlaceJsonRoot.getMenuInfo() != null) {
@@ -199,6 +188,7 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
 		}
 
 
+		/*
 		public void setRestaurantImage(KakaoPlaceJsonRoot kakaoPlaceJsonRoot) {
 			if (kakaoPlaceJsonRoot.getBasicInfo().getMainPhotoUrl() != null) {
 				if (restaurantImagesArr.get(getBindingAdapterPosition()) == null) {
@@ -214,7 +204,7 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
 
 								restaurantImagesArr.put(getBindingAdapterPosition(), bmp);
 
-                                /*
+
                                 activity.runOnUiThread(new Runnable()
                                 {
                                     @Override
@@ -228,7 +218,7 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
                                     }
                                 });
 
-                                 */
+
 							} catch (MalformedURLException e) {
 								e.printStackTrace();
 							} catch (IOException e) {
@@ -248,21 +238,12 @@ public class RestaurantListAdapter extends PagedListAdapter<PlaceDocuments, Rest
 						.into(restaurantImage);
 			}
 		}
-
+*/
 		public void clearData() {
 			restaurantName.setText("");
-			restaurantMenuInfo.setText("");
-			restaurantRating.setText("");
-
 			favoriteButton.setImageDrawable(favoriteDisabledDrawable);
-
-            /*
-            Glide.with(itemView)
-                    .load(context.getDrawable(R.drawable.not_image)).circleCrop()
-                    .into(restaurantImage);
-
-             */
 		}
+
 	}
 
 

@@ -25,6 +25,7 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="8dp"
             android:text="type"
+            android:textColor="@color/text_blue"
             android:textSize="14sp" />
 
 

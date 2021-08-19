@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +15,7 @@ import android.view.ViewGroup;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantMainHostBinding;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
+import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
 
 public class RestaurantMainHostFragment extends Fragment implements IOnSetView {
 	private FragmentRestaurantMainHostBinding binding;
@@ -40,18 +42,30 @@ public class RestaurantMainHostFragment extends Fragment implements IOnSetView {
 	@Override
 	public void onHiddenChanged(boolean hidden) {
 		super.onHiddenChanged(hidden);
-
 		FragmentManager fragmentManager = getChildFragmentManager();
-		if (hidden) {
-			if (fragmentManager.findFragmentByTag(getString(R.string.tag_header_food_menu_list_fragment)) != null) {
-				fragmentManager.beginTransaction().hide(fragmentManager.findFragmentByTag(getString(R.string.tag_header_food_menu_list_fragment)))
-						.commitNow();
+		Fragment showingContentFragment = fragmentManager.findFragmentById(binding.contentFragmentContainer.getId());
+		FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+		if (fragmentManager.findFragmentByTag(getString(R.string.tag_header_food_menu_list_fragment)) != null) {
+			if (hidden) {
+				fragmentTransaction.hide(fragmentManager.findFragmentByTag(getString(R.string.tag_header_food_menu_list_fragment)));
+			} else {
+				fragmentTransaction.show(fragmentManager.findFragmentByTag(getString(R.string.tag_header_food_menu_list_fragment)));
 			}
+		}
+		if (showingContentFragment instanceof PlaceInfoWebFragment) {
+			if (hidden) {
+				((PlaceInfoWebFragment) showingContentFragment).onBackPressedCallback.remove();
+			} else {
+				requireActivity().getOnBackPressedDispatcher().addCallback(showingContentFragment
+						, ((PlaceInfoWebFragment) showingContentFragment).onBackPressedCallback);
+			}
+		}
+
+		if (!fragmentTransaction.isEmpty()) {
+			fragmentTransaction.commit();
 		} else {
-			if (fragmentManager.findFragmentByTag(getString(R.string.tag_header_food_menu_list_fragment)) != null) {
-				fragmentManager.beginTransaction().show(fragmentManager.findFragmentByTag(getString(R.string.tag_header_food_menu_list_fragment)))
-						.commitNow();
-			}
+			fragmentTransaction = null;
 		}
 	}
 

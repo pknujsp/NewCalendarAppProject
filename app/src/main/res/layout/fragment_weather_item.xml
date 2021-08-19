@@ -92,6 +92,20 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp" />
 
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="@string/sun_set_rise"
+                        android:textColor="@android:color/black"
+                        android:textSize="18sp" />
+
+                    <androidx.fragment.app.FragmentContainerView
+                        android:id="@+id/sun_set_rise_fragment_container"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp" />
+
                 </LinearLayout>
 
                 <LinearLayout

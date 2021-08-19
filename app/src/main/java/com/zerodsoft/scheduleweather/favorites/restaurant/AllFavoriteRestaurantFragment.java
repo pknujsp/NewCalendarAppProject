@@ -25,6 +25,8 @@ import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 import org.jetbrains.annotations.NotNull;
 
 public class AllFavoriteRestaurantFragment extends FavoriteRestaurantBaseFragment {
+	private PlaceInfoWebFragment placeInfoWebFragment;
+
 	@Override
 	protected void onAddedFavoriteRestaurant(FavoriteLocationDTO addedFavoriteRestaurant) {
 	}
@@ -60,7 +62,7 @@ public class AllFavoriteRestaurantFragment extends FavoriteRestaurantBaseFragmen
 	@Override
 	public void onClickedListItem(FavoriteLocationDTO e, int position) {
 		if (e != null) {
-			PlaceInfoWebFragment placeInfoWebFragment = new PlaceInfoWebFragment();
+			placeInfoWebFragment = new PlaceInfoWebFragment();
 			Bundle bundle = new Bundle();
 			bundle.putString("placeId", e.getPlaceId());
 			placeInfoWebFragment.setArguments(bundle);
@@ -80,4 +82,8 @@ public class AllFavoriteRestaurantFragment extends FavoriteRestaurantBaseFragmen
 	public void deleteListItem(FavoriteLocationDTO e, int position) {
 	}
 
+	@Override
+	public void onHiddenChanged(boolean hidden) {
+		super.onHiddenChanged(hidden);
+	}
 }

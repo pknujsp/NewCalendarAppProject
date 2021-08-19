@@ -34,6 +34,7 @@ import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.weather.repository.AirConditionDownloader;
 import com.zerodsoft.scheduleweather.weather.repository.WeatherDataDownloader;
+import com.zerodsoft.scheduleweather.weather.sunsetrise.SunSetRiseFragment;
 import com.zerodsoft.scheduleweather.weather.ultrasrtncst.UltraSrtNcstFragment;
 import com.zerodsoft.scheduleweather.weather.viewmodel.AreaCodeViewModel;
 
@@ -59,6 +60,8 @@ public class WeatherMainFragment extends BottomSheetDialogFragment {
 	private MidFcstFragment midFcstFragment;
 	//대기 상태
 	private AirConditionFragment airConditionFragment;
+	//일출 일몰
+	private SunSetRiseFragment sunSetRiseFragment;
 
 	private AreaCodeViewModel areaCodeViewModel;
 	private LocationViewModel locationViewModel;
@@ -168,6 +171,7 @@ public class WeatherMainFragment extends BottomSheetDialogFragment {
 				hourlyFcstFragment.refresh();
 				midFcstFragment.refresh();
 				airConditionFragment.refresh();
+				sunSetRiseFragment.refresh();
 			}
 		});
 
@@ -234,6 +238,7 @@ public class WeatherMainFragment extends BottomSheetDialogFragment {
 		ultraSrtNcstFragment = new UltraSrtNcstFragment(weatherAreaCode);
 		hourlyFcstFragment = new HourlyFcstFragment(weatherAreaCode);
 		midFcstFragment = new MidFcstFragment(weatherAreaCode);
+		sunSetRiseFragment = new SunSetRiseFragment(weatherAreaCode);
 
 		String lat, lon = null;
 		lat = selectedLocationDto.getLatitude();
@@ -245,6 +250,7 @@ public class WeatherMainFragment extends BottomSheetDialogFragment {
 				.add(binding.hourlyFcstFragmentContainer.getId(), hourlyFcstFragment, "1")
 				.add(binding.midFcstFragmentContainer.getId(), midFcstFragment, "2")
 				.add(binding.airConditionFragmentContainer.getId(), airConditionFragment, "3")
+				.add(binding.sunSetRiseFragmentContainer.getId(), sunSetRiseFragment, "4")
 				.commit();
 	}
 

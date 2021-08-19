@@ -22,21 +22,6 @@ public class PlaceInfoWebFragment extends Fragment {
 	private FragmentPlaceInfoWebBinding binding;
 	private String placeId;
 
-	private final View.OnKeyListener onKeyListener = new View.OnKeyListener() {
-		@Override
-		public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
-			if (keyCode == KeyEvent.KEYCODE_BACK && keyEvent.getAction() == KeyEvent.ACTION_UP) {
-				if (binding.webview.canGoBack()) {
-					binding.webview.goBack();
-				} else {
-					requireActivity().getOnBackPressedDispatcher().onBackPressed();
-					return false;
-				}
-			}
-			return true;
-		}
-	};
-
 	public final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
 		@Override
 		public void handleOnBackPressed() {
@@ -68,7 +53,6 @@ public class PlaceInfoWebFragment extends Fragment {
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 		initWebView();
-		//binding.webview.setOnKeyListener(onKeyListener);
 	}
 
 	@Override
@@ -115,4 +99,8 @@ public class PlaceInfoWebFragment extends Fragment {
 		binding.webview.loadUrl(KakaoPlace.WEB_URL + placeId);
 	}
 
+	@Override
+	public void onHiddenChanged(boolean hidden) {
+		super.onHiddenChanged(hidden);
+	}
 }

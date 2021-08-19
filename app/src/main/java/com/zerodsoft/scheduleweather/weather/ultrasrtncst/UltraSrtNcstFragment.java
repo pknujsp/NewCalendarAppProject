@@ -121,29 +121,6 @@ public class UltraSrtNcstFragment extends Fragment {
 				WeatherDataConverter.getWindSpeedDescription(ultraSrtNcstFinalData.getWindSpeed()));
 		//시간 강수량
 		binding.ultraSrtNcstRn1.setText(ultraSrtNcstFinalData.getPrecipitation1Hour());
-
-		Calendar todayCalendar = Calendar.getInstance(ClockUtil.TIME_ZONE);
-		Calendar tomorrowCalendar = (Calendar) todayCalendar.clone();
-		tomorrowCalendar.add(Calendar.DATE, 1);
-
-		SunriseSunsetCalculator sunriseSunsetCalculator = new SunriseSunsetCalculator(new Location(weatherAreaCode.getLatitudeSecondsDivide100()
-				, weatherAreaCode.getLongitudeSecondsDivide100()), todayCalendar.getTimeZone());
-
-		Calendar todaySunRise = sunriseSunsetCalculator.getOfficialSunriseCalendarForDate(todayCalendar);
-		Calendar todaySunSet = sunriseSunsetCalculator.getOfficialSunsetCalendarForDate(todayCalendar);
-		Calendar tomorrowSunRise = sunriseSunsetCalculator.getOfficialSunriseCalendarForDate(tomorrowCalendar);
-		Calendar tomorrowSunSet = sunriseSunsetCalculator.getOfficialSunsetCalendarForDate(tomorrowCalendar);
-
-		SimpleDateFormat sunsetRiseDateFormat = new SimpleDateFormat("HH:mm");
-		//날짜
-		binding.todayDatetime.setText(ClockUtil.YYYY_M_D_E.format(todayCalendar.getTime()));
-		binding.tomorrowDatetime.setText(ClockUtil.YYYY_M_D_E.format(tomorrowCalendar.getTime()));
-		//일출
-		binding.todaySunrise.setText(sunsetRiseDateFormat.format(todaySunRise.getTime()));
-		binding.tomorrowSunrise.setText(sunsetRiseDateFormat.format(tomorrowSunRise.getTime()));
-		//일몰
-		binding.todaySunset.setText(sunsetRiseDateFormat.format(todaySunSet.getTime()));
-		binding.tomorrowSunset.setText(sunsetRiseDateFormat.format(tomorrowSunSet.getTime()));
 	}
 
 	public void refresh() {
@@ -184,12 +161,5 @@ public class UltraSrtNcstFragment extends Fragment {
 		binding.ultraSrtNcstHumidity.setText("");
 		binding.ultraSrtNcstWind.setText("");
 		binding.ultraSrtNcstRn1.setText("");
-
-		binding.todaySunrise.setText("");
-		binding.todaySunset.setText("");
-		binding.tomorrowSunrise.setText("");
-		binding.tomorrowSunset.setText("");
-		binding.todayDatetime.setText("");
-		binding.tomorrowDatetime.setText("");
 	}
 }

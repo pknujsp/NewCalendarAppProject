@@ -5,6 +5,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +15,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantFavoritesHostBinding;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteRestaurantFragment;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
+import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -45,7 +47,17 @@ public class RestaurantFavoritesHostFragment extends Fragment implements IOnSetV
 	@Override
 	public void onHiddenChanged(boolean hidden) {
 		super.onHiddenChanged(hidden);
+		FragmentManager fragmentManager = getChildFragmentManager();
+		Fragment showingContentFragment = fragmentManager.findFragmentById(binding.contentFragmentContainer.getId());
 
+		if (showingContentFragment instanceof PlaceInfoWebFragment) {
+			if (hidden) {
+				((PlaceInfoWebFragment) showingContentFragment).onBackPressedCallback.remove();
+			} else {
+				requireActivity().getOnBackPressedDispatcher().addCallback(showingContentFragment
+						, ((PlaceInfoWebFragment) showingContentFragment).onBackPressedCallback);
+			}
+		}
 	}
 
 	@Override

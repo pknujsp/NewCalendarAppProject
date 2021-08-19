@@ -674,4 +674,5 @@
 해당 저작물은 기상청 날씨누리 웹사이트내의 날씨기호설명 버튼 클릭시 나오는 화면에서 다운받으실 수 있습니다.</string>
     <string name="tomorrow">내일</string>
     <string name="close_place_category_list">장소 카테고리 닫기</string>
+    <string name="sun_set_rise">일출/일몰</string>
 </resources>

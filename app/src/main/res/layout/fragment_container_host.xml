@@ -5,8 +5,7 @@
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/fragment_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingTop="@dimen/corner_radius">
+        android:layout_height="match_parent">
 
     </androidx.fragment.app.FragmentContainerView>
 </layout>

@@ -5,6 +5,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +14,7 @@ import android.view.ViewGroup;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentContainerHostBinding;
 import com.zerodsoft.scheduleweather.favorites.restaurant.basefragment.FavoriteRestaurantBaseFragment;
+import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -23,7 +25,6 @@ public class AllFavoriteRestaurantHostFragment extends Fragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
 	}
 
 	@Override
@@ -40,5 +41,21 @@ public class AllFavoriteRestaurantHostFragment extends Fragment {
 				.add(binding.fragmentContainer.getId(), new AllFavoriteRestaurantFragment()
 						, getString(R.string.tag_all_favorite_restaurant_fragment))
 				.commit();
+	}
+
+	@Override
+	public void onHiddenChanged(boolean hidden) {
+		super.onHiddenChanged(hidden);
+		FragmentManager fragmentManager = getChildFragmentManager();
+		Fragment showingFragment = fragmentManager.findFragmentById(binding.fragmentContainer.getId());
+
+		if (showingFragment instanceof PlaceInfoWebFragment) {
+			if (hidden) {
+				((PlaceInfoWebFragment) showingFragment).onBackPressedCallback.remove();
+			} else {
+				requireActivity().getOnBackPressedDispatcher().addCallback(showingFragment,
+						((PlaceInfoWebFragment) showingFragment).onBackPressedCallback);
+			}
+		}
 	}
 }

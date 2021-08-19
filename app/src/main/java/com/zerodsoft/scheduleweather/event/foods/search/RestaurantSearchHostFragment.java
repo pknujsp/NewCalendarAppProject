@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.view.LayoutInflater;
@@ -17,6 +18,7 @@ import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantSearchHostBin
 import com.zerodsoft.scheduleweather.event.foods.criterialocation.RestaurantCriteriaLocationSettingsFragment;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
 import com.zerodsoft.scheduleweather.event.foods.search.search.fragment.SearchRestaurantFragment;
+import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.SearchHistoryViewModel;
 
 import org.jetbrains.annotations.NotNull;
@@ -66,6 +68,17 @@ public class RestaurantSearchHostFragment extends Fragment implements IOnSetView
 	@Override
 	public void onHiddenChanged(boolean hidden) {
 		super.onHiddenChanged(hidden);
+		FragmentManager fragmentManager = getChildFragmentManager();
+		Fragment showingContentFragment = fragmentManager.findFragmentById(binding.contentFragmentContainer.getId());
+
+		if (showingContentFragment instanceof PlaceInfoWebFragment) {
+			if (hidden) {
+				((PlaceInfoWebFragment) showingContentFragment).onBackPressedCallback.remove();
+			} else {
+				requireActivity().getOnBackPressedDispatcher().addCallback(showingContentFragment
+						, ((PlaceInfoWebFragment) showingContentFragment).onBackPressedCallback);
+			}
+		}
 	}
 
 	@Override

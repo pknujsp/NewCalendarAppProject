@@ -373,6 +373,9 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 
 			@Override
 			public void onClick(View view) {
+				if (getStateOfBottomSheet(BottomSheetType.LOCATION_ITEM) == BottomSheetBehavior.STATE_EXPANDED) {
+					setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
+				}
 				functionDialog.show();
 			}
 		});
