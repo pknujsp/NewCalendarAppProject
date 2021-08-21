@@ -433,6 +433,9 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 													Toast.makeText(getContext(),
 															R.string.selected_map_center_point_because_not_selected_custom_criteria_location,
 															Toast.LENGTH_SHORT).show();
+													if (criteriaLocationListener != null) {
+														criteriaLocationListener.onFinishedGettingCriteriaLocation(criteriaLocationDTO);
+													}
 												}
 											});
 										}
@@ -531,17 +534,19 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 						criteriaLocationDTO.getLongitude(),
 						criteriaLocationDTO.getLocTitleName());
 
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						binding.criteriaLocation.setText(criteriaLocationDTO.getAddressName());
-						binding.customProgressView.onSuccessfulProcessingData();
+				if (getActivity() != null) {
+					requireActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							binding.criteriaLocation.setText(criteriaLocationDTO.getAddressName());
+							binding.customProgressView.onSuccessfulProcessingData();
 
-						if (criteriaLocationListener != null) {
-							criteriaLocationListener.onFinishedGettingCriteriaLocation(criteriaLocationDTO);
+							if (criteriaLocationListener != null) {
+								criteriaLocationListener.onFinishedGettingCriteriaLocation(criteriaLocationDTO);
+							}
 						}
-					}
-				});
+					});
+				}
 			}
 
 			@Override

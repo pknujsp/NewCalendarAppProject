@@ -121,6 +121,13 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 		super.onViewCreated(view, savedInstanceState);
 		binding.customProgressView.setContentView(binding.categoryGridview);
 
+		GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), COLUMN_COUNT);
+		binding.categoryGridview.setLayoutManager(gridLayoutManager);
+		foodCategoryAdapter = new FoodCategoryAdapter(FoodsMenuListFragment.this, COLUMN_COUNT);
+		binding.categoryGridview.setAdapter(foodCategoryAdapter);
+
+		setCategories();
+
 		headerCriteriaLocationFragment = new HeaderCriteriaLocationFragment();
 		headerCriteriaLocationFragment.setCriteriaLocationListener(new CriteriaLocationListener() {
 			@Override
@@ -140,12 +147,6 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 					.replace(R.id.header_fragment_container, headerCriteriaLocationFragment, getString(R.string.tag_restaurant_header_criteria_location_fragment)).commit();
 		}
 
-		GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), COLUMN_COUNT);
-		binding.categoryGridview.setLayoutManager(gridLayoutManager);
-		foodCategoryAdapter = new FoodCategoryAdapter(FoodsMenuListFragment.this, COLUMN_COUNT);
-		binding.categoryGridview.setAdapter(foodCategoryAdapter);
-
-		setCategories();
 	}
 
 	@Override
@@ -155,13 +156,6 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 	}
 
 	private void setCategories() {
-		requireActivity().runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				binding.customProgressView.onStartedProcessingData(getString(R.string.loading_food_menu_list));
-			}
-		});
-
 		customFoodCategoryViewModel.select(new DbQueryCallback<List<CustomFoodMenuDTO>>() {
 			@Override
 			public void onResultSuccessful(List<CustomFoodMenuDTO> resultList) {
@@ -182,14 +176,6 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 				}
 				itemsList.add(new FoodCategoryItem(getString(R.string.add_custom_food_menu), null, false));
 				foodCategoryAdapter.setItems(itemsList);
-
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						foodCategoryAdapter.notifyDataSetChanged();
-						binding.customProgressView.onSuccessfulProcessingData();
-					}
-				});
 
 				initializing = false;
 			}
