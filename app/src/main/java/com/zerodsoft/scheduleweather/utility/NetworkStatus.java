@@ -8,63 +8,52 @@ import android.widget.Toast;
 
 import com.zerodsoft.scheduleweather.R;
 
-public final class NetworkStatus
-{
-    private ConnectivityManager.NetworkCallback networkCallback;
-    private ConnectivityManager connectivityManager;
-    private Context context;
+public final class NetworkStatus {
+	private ConnectivityManager.NetworkCallback networkCallback;
+	private ConnectivityManager connectivityManager;
+	private Context context;
 
-    public NetworkStatus(Context context, ConnectivityManager.NetworkCallback networkCallback)
-    {
-        this.context = context;
-        this.networkCallback = networkCallback;
-        setNetworkCallback();
-    }
+	public NetworkStatus(Context context, ConnectivityManager.NetworkCallback networkCallback) {
+		this.context = context;
+		this.networkCallback = networkCallback;
+		setNetworkCallback();
+	}
 
-    public void unregisterNetworkCallback()
-    {
-        connectivityManager.unregisterNetworkCallback(networkCallback);
-    }
+	public void unregisterNetworkCallback() {
+		connectivityManager.unregisterNetworkCallback(networkCallback);
+	}
 
-    public void setNetworkCallback()
-    {
-        connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+	public void setNetworkCallback() {
+		connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 
-        NetworkRequest.Builder builder = new NetworkRequest.Builder();
-        builder.addTransportType(NetworkCapabilities.TRANSPORT_WIFI);
-        builder.addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR);
-        connectivityManager.registerNetworkCallback(builder.build(), networkCallback);
-    }
+		NetworkRequest.Builder builder = new NetworkRequest.Builder();
+		builder.addTransportType(NetworkCapabilities.TRANSPORT_WIFI);
+		builder.addTransportType(NetworkCapabilities.TRANSPORT_CELLULAR);
+		connectivityManager.registerNetworkCallback(builder.build(), networkCallback);
+	}
 
-    public boolean networkAvailable()
-    {
-        if (connectivityManager.getActiveNetwork() == null)
-        {
-            Toast.makeText(context, context.getString(R.string.disconnected_network), Toast.LENGTH_SHORT).show();
-            return false;
-        } else
-        {
-            NetworkCapabilities nc = connectivityManager.getNetworkCapabilities(connectivityManager.getActiveNetwork());
+	public boolean networkAvailable() {
+		if (connectivityManager.getActiveNetwork() == null) {
+			Toast.makeText(context, context.getString(R.string.disconnected_network), Toast.LENGTH_SHORT).show();
+			return false;
+		} else {
+			NetworkCapabilities nc = connectivityManager.getNetworkCapabilities(connectivityManager.getActiveNetwork());
 
-            if (nc.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
-                    nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI))
-            {
-                return true;
-            } else
-            {
-                Toast.makeText(context, context.getString(R.string.disconnected_network), Toast.LENGTH_SHORT).show();
-                return false;
-            }
-        }
-    }
+			if (nc.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
+					nc.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+				return true;
+			} else {
+				Toast.makeText(context, context.getString(R.string.disconnected_network), Toast.LENGTH_SHORT).show();
+				return false;
+			}
+		}
+	}
 
-    public void showToastDisconnected()
-    {
-        Toast.makeText(context, R.string.disconnected_network, Toast.LENGTH_SHORT).show();
-    }
+	public void showToastDisconnected() {
+		Toast.makeText(context, R.string.disconnected_network, Toast.LENGTH_SHORT).show();
+	}
 
-    public void showToastConnected()
-    {
-        Toast.makeText(context, R.string.connected_network, Toast.LENGTH_SHORT).show();
-    }
+	public void showToastConnected() {
+		Toast.makeText(context, R.string.connected_network, Toast.LENGTH_SHORT).show();
+	}
 }

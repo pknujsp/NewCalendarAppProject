@@ -1,6 +1,8 @@
 package com.zerodsoft.scheduleweather.favorites;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.Network;
 import android.os.Bundle;
 
 import androidx.activity.OnBackPressedCallback;
@@ -24,11 +26,13 @@ import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLoc
 import com.zerodsoft.scheduleweather.favorites.addressplace.AllFavoriteAddressPlaceHostFragment;
 import com.zerodsoft.scheduleweather.favorites.restaurant.AllFavoriteRestaurantHostFragment;
 import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
+import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
 import org.jetbrains.annotations.NotNull;
 
 public class AllFavoritesHostFragment extends Fragment {
 	private FragmentAllFavoritesHostBinding binding;
+	private NetworkStatus networkStatus;
 	private CloseWindow closeWindow = new CloseWindow(new CloseWindow.OnBackKeyDoubleClickedListener() {
 		@Override
 		public void onDoubleClicked() {
@@ -56,6 +60,21 @@ public class AllFavoritesHostFragment extends Fragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback() {
+			@Override
+			public void onLost(Network network) {
+				super.onLost(network);
+				if (getActivity() != null) {
+					requireActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							networkStatus.showToastDisconnected();
+							getParentFragmentManager().popBackStackImmediate();
+						}
+					});
+				}
+			}
+		});
 		new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
 	}
 

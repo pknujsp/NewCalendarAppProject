@@ -9,6 +9,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.graphics.Point;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.provider.CalendarContract;
 import android.provider.Settings;
@@ -39,6 +40,7 @@ import com.zerodsoft.scheduleweather.favorites.AllFavoritesHostFragment;
 import com.zerodsoft.scheduleweather.notification.receiver.EventAlarmReceiver;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
 import com.zerodsoft.scheduleweather.room.dto.SelectedCalendarDTO;
+import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.WeatherDataConverter;
 
 import androidx.activity.result.ActivityResult;
@@ -74,6 +76,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 	private EventTransactionFragment eventTransactionFragment;
 
 	private Bundle alarmArguments;
+	private NetworkStatus networkStatus;
 
 	private final FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks = new FragmentManager.FragmentLifecycleCallbacks() {
 		@Override
@@ -106,6 +109,8 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 		super.onCreate(savedInstanceState);
 		mainBinding = DataBindingUtil.setContentView(this, R.layout.activity_app_main);
 		mainBinding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+
+		networkStatus = new NetworkStatus(getApplicationContext(), new ConnectivityManager.NetworkCallback());
 
 		calendarViewModel = new ViewModelProvider(this).get(CalendarViewModel.class);
 		selectedCalendarViewModel = new ViewModelProvider(this).get(SelectedCalendarViewModel.class);
@@ -281,16 +286,20 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 		public void onClick(View view) {
 			switch (view.getId()) {
 				case R.id.add_account_btn:
-					Intent accountIntent = new Intent(Settings.ACTION_ADD_ACCOUNT);
-					accountIntent.putExtra(Settings.EXTRA_ACCOUNT_TYPES, new String[]{"com.google"});
-					addAccountActivityResultLauncher.launch(accountIntent);
+					if (networkStatus.networkAvailable()) {
+						Intent accountIntent = new Intent(Settings.ACTION_ADD_ACCOUNT);
+						accountIntent.putExtra(Settings.EXTRA_ACCOUNT_TYPES, new String[]{"com.google"});
+						addAccountActivityResultLauncher.launch(accountIntent);
+					}
 					break;
 				case R.id.favorite_location:
-					AllFavoritesHostFragment allFavoritesHostFragment = new AllFavoritesHostFragment();
-					getSupportFragmentManager().beginTransaction().hide(getSupportFragmentManager().findFragmentByTag(getString(R.string.tag_calendar_transaction_fragment)))
-							.add(mainBinding.fragmentContainer.getId(), allFavoritesHostFragment,
-									getString(R.string.tag_all_favorite_fragment)).addToBackStack(getString(R.string.tag_all_favorite_fragment))
-							.commit();
+					if (networkStatus.networkAvailable()) {
+						AllFavoritesHostFragment allFavoritesHostFragment = new AllFavoritesHostFragment();
+						getSupportFragmentManager().beginTransaction().hide(getSupportFragmentManager().findFragmentByTag(getString(R.string.tag_calendar_transaction_fragment)))
+								.add(mainBinding.fragmentContainer.getId(), allFavoritesHostFragment,
+										getString(R.string.tag_all_favorite_fragment)).addToBackStack(getString(R.string.tag_all_favorite_fragment))
+								.commit();
+					}
 					break;
 				case R.id.settings:
 					SettingsMainFragment settingsMainFragment = new SettingsMainFragment();

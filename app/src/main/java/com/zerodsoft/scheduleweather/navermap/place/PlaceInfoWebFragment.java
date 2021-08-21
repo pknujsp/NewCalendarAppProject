@@ -12,6 +12,7 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -85,11 +86,6 @@ public class PlaceInfoWebFragment extends Fragment {
 				binding.progressIndicator.setVisibility(View.GONE);
 			}
 
-			@Override
-			public boolean shouldOverrideUrlLoading(WebView view, String url) {
-				view.loadUrl(url);
-				return true;
-			}
 		});
 
 		// 2. WebSettings: 웹뷰의 각종 설정을 정할 수 있다.

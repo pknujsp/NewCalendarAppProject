@@ -4,6 +4,8 @@ import android.app.Dialog;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.DialogInterface;
+import android.net.ConnectivityManager;
+import android.net.Network;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.CalendarContract;
@@ -41,6 +43,7 @@ import com.zerodsoft.scheduleweather.event.common.SelectionDetailLocationFragmen
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
+import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
 import org.jetbrains.annotations.NotNull;
@@ -73,11 +76,12 @@ public class EventFragment extends BottomSheetDialogFragment implements DialogCo
 	private ContentValues instanceValues;
 	private List<ContentValues> attendeeList;
 	private CalendarViewModel calendarViewModel;
-	private LocationViewModel locationViewModel;
 	private ArrayAdapter<CharSequence> answerForInviteSpinnerAdapter;
 
 	private AlertDialog attendeeDialog;
 	private BottomSheetBehavior<FrameLayout> bottomSheetBehavior;
+
+	private NetworkStatus networkStatus;
 
 	public EventFragment(OnEventEditCallback onEventEditCallback, int VIEW_HEIGHT) {
 		this.onEventEditCallback = onEventEditCallback;
@@ -94,6 +98,18 @@ public class EventFragment extends BottomSheetDialogFragment implements DialogCo
 		instanceId = arguments.getLong(CalendarContract.Instances._ID);
 		originalBegin = arguments.getLong(CalendarContract.Instances.BEGIN);
 		originalEnd = arguments.getLong(CalendarContract.Instances.END);
+
+		networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback() {
+			@Override
+			public void onAvailable(Network network) {
+				super.onAvailable(network);
+			}
+
+			@Override
+			public void onLost(Network network) {
+				super.onLost(network);
+			}
+		});
 	}
 
 	@NonNull
@@ -108,6 +124,12 @@ public class EventFragment extends BottomSheetDialogFragment implements DialogCo
 		bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
 
 		return dialog;
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		networkStatus.unregisterNetworkCallback();
 	}
 
 	@Override
@@ -139,8 +161,6 @@ public class EventFragment extends BottomSheetDialogFragment implements DialogCo
 		View bottomSheet = getDialog().findViewById(R.id.design_bottom_sheet);
 		bottomSheet.getLayoutParams().height = VIEW_HEIGHT;
 
-		locationViewModel = new ViewModelProvider(getParentFragment()).get(LocationViewModel.class);
-
 		binding.eventRemindersView.addReminderButton.setVisibility(View.GONE);
 		binding.eventAttendeesView.showAttendeesDetail.setVisibility(View.GONE);
 		binding.eventDatetimeView.allDaySwitchLayout.setVisibility(View.GONE);
@@ -164,7 +184,9 @@ public class EventFragment extends BottomSheetDialogFragment implements DialogCo
 		binding.selectDetailLocationFab.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				onEventEditCallback.onProcess(OnEventEditCallback.ProcessType.DETAIL_LOCATION);
+				if (networkStatus.networkAvailable()) {
+					onEventEditCallback.onProcess(OnEventEditCallback.ProcessType.DETAIL_LOCATION);
+				}
 			}
 		});
 

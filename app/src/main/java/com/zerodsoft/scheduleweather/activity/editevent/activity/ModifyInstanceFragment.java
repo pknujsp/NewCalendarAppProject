@@ -50,6 +50,8 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 	protected AsyncQueryService mService;
 
+	public boolean edited = false;
+
 	public synchronized AsyncQueryService getAsyncQueryService() {
 		if (mService == null) {
 			mService = new AsyncQueryService(getActivity(), (OnEditEventResultListener) calendarViewModel);
@@ -648,8 +650,8 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		eventHelper.updateEvent(EventHelper.EventEditType.UPDATE_ONLY_THIS_EVENT, originalEvent, newEventValues, originalReminderList
 				, originalAttendeeList, newReminderList, newAttendeeList, selectedCalendarValues, locationDTO, locationIntentCode);
 
+		edited = true;
 		onEditEventResultListener.onUpdatedOnlyThisEvent(0L);
-
 	}
 
 
@@ -702,6 +704,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		eventHelper.updateEvent(EventHelper.EventEditType.UPDATE_FOLLOWING_EVENTS, originalEvent, newEventValues, originalReminderList
 				, originalAttendeeList, newReminderList, newAttendeeList, selectedCalendarValues, locationDTO, locationIntentCode);
 
+		edited = true;
 		onEditEventResultListener.onUpdatedFollowingEvents(0L);
 	}
 
@@ -757,6 +760,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		eventHelper.updateEvent(EventHelper.EventEditType.UPDATE_ALL_EVENTS, originalEvent, modifiedEvent, originalReminderList
 				, originalAttendeeList, newReminderList, newAttendeeList, selectedCalendarValues, locationDTO, locationIntentCode);
 
+		edited = true;
 		onEditEventResultListener.onUpdatedAllEvents(0L);
 	}
 

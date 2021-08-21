@@ -109,7 +109,6 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 	});
 
 	private Fragment currentFragment;
-	private NetworkStatus networkStatus;
 	private CalendarViewType calendarViewType;
 	private Date currentCalendarDate;
 
@@ -262,7 +261,6 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		getChildFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false);
-		networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback());
 
 		dateTimeTickReceiver = new DateTimeTickReceiver(dateTimeReceiverCallback);
 		IntentFilter intentFilter = new IntentFilter();
@@ -318,7 +316,6 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 	@Override
 	public void onDestroy() {
 		onBackPressedCallback.remove();
-		networkStatus.unregisterNetworkCallback();
 		requireActivity().unregisterReceiver(dateTimeTickReceiver);
 		super.onDestroy();
 	}
@@ -451,7 +448,6 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 	@Override
 	public void onClicked(int calendarId, long instanceId, long eventId, long viewBegin, long viewEnd) {
 		// 이벤트 정보 액티비티로 전환
-		if (networkStatus.networkAvailable()) {
 			Bundle bundle = new Bundle();
 			bundle.putLong(CalendarContract.Instances._ID, instanceId);
 			bundle.putLong(CalendarContract.Instances.EVENT_ID, eventId);
@@ -470,7 +466,6 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 			} else if (instanceListWeekDialogFragment != null) {
 				instanceListWeekDialogFragment.dismiss();
 			}
-		}
 	}
 
 	public void openEventInfoFragment(Bundle bundle) {

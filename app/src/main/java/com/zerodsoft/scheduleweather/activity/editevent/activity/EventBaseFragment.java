@@ -11,6 +11,7 @@ import androidx.fragment.app.FragmentManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.net.ConnectivityManager;
+import android.net.Network;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.provider.CalendarContract;
@@ -171,7 +172,26 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 	@Override
 	public void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback());
+		networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback() {
+			@Override
+			public void onLost(Network network) {
+				super.onLost(network);
+
+				if (getActivity() != null) {
+					FragmentManager fragmentManager = getChildFragmentManager();
+
+					requireActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							if (fragmentManager.findFragmentByTag(getString(R.string.tag_detail_location_selection_fragment)) != null) {
+								fragmentManager.popBackStackImmediate();
+							}
+						}
+					});
+				}
+
+			}
+		});
 		getChildFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false);
 		getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 	}

@@ -125,12 +125,12 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 		headerCriteriaLocationFragment.setCriteriaLocationListener(new CriteriaLocationListener() {
 			@Override
 			public void onStartedGettingCriteriaLocation() {
-				binding.categoryGridview.setVisibility(View.GONE);
+				binding.customProgressView.onStartedProcessingData();
 			}
 
 			@Override
 			public void onFinishedGettingCriteriaLocation(LocationDTO criteriaLocation) {
-				binding.categoryGridview.setVisibility(View.VISIBLE);
+				binding.customProgressView.onSuccessfulProcessingData();
 			}
 		});
 
@@ -161,6 +161,7 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 				binding.customProgressView.onStartedProcessingData(getString(R.string.loading_food_menu_list));
 			}
 		});
+
 		customFoodCategoryViewModel.select(new DbQueryCallback<List<CustomFoodMenuDTO>>() {
 			@Override
 			public void onResultSuccessful(List<CustomFoodMenuDTO> resultList) {

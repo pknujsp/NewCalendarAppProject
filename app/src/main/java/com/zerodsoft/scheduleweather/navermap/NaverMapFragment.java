@@ -96,7 +96,6 @@ import com.zerodsoft.scheduleweather.navermap.searchresult.LocationSearchResultF
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
-import com.zerodsoft.scheduleweather.navermap.interfaces.INetwork;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnClickedBottomSheetListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.PlacesItemBottomSheetButtonOnClickListener;
 import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebDialogFragment;
@@ -124,7 +123,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IMapPoint, IMapData, INetwork, PlacesItemBottomSheetButtonOnClickListener,
+public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IMapPoint, IMapData, PlacesItemBottomSheetButtonOnClickListener,
 		MarkerOnClickListener, OnClickedBottomSheetListener,
 		NaverMap.OnMapClickListener,
 		NaverMap.OnCameraIdleListener, CameraUpdate.FinishCallback, NaverMap.OnLocationChangeListener,
@@ -157,8 +156,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	public ImageButton gpsButton;
 	public ImageButton buildingButton;
 	public ImageButton favoriteLocationsButton;
-
-	public NetworkStatus networkStatus;
 
 	public int placeBottomSheetSelectBtnVisibility = View.GONE;
 	public int placeBottomSheetUnSelectBtnVisibility = View.GONE;
@@ -271,25 +268,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
 		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 		searchHistoryViewModel = new ViewModelProvider(this).get(SearchHistoryViewModel.class);
-
-		networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback() {
-			@Override
-			public void onAvailable(@NonNull Network network) {
-				super.onAvailable(network);
-			}
-
-			@Override
-			public void onLost(@NonNull Network network) {
-				super.onLost(network);
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						networkStatus.showToastDisconnected();
-						getParentFragmentManager().popBackStackImmediate();
-					}
-				});
-			}
-		});
 
 		CircularProgressIndicator circularProgressIndicator = new CircularProgressIndicator(getActivity());
 		circularProgressIndicator.setIndeterminate(true);
@@ -494,7 +472,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		networkStatus.unregisterNetworkCallback();
 		getChildFragmentManager().unregisterFragmentLifecycleCallbacks(fragmentLifecycleCallbacks);
 	}
 
@@ -771,12 +748,6 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 		LocalApiPlaceParameter reverseGeoCodingParameter = LocalParameterUtil.getCoordToRegionCodeParameter(latLng.latitude, latLng.longitude);
 		KakaoLocalDownloader.coordToRegionCode(reverseGeoCodingParameter, reverseGeoCodingResponseCallback);
-	}
-
-
-	@Override
-	public boolean networkAvailable() {
-		return networkStatus.networkAvailable();
 	}
 
 	@Override

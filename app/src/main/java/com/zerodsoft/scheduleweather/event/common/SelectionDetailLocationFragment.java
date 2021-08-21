@@ -3,6 +3,8 @@ package com.zerodsoft.scheduleweather.event.common;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PointF;
+import android.net.ConnectivityManager;
+import android.net.Network;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -33,6 +35,7 @@ import com.zerodsoft.scheduleweather.navermap.searchheader.MapHeaderMainFragment
 import com.zerodsoft.scheduleweather.navermap.searchheader.MapHeaderSearchFragment;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
+import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -46,6 +49,9 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 
 	boolean mapReady = false;
 	boolean mapHeaderSearchFragmentStarted = false;
+	public boolean edited = false;
+
+	private NetworkStatus networkStatus;
 
 	public SelectionDetailLocationFragment(OnDetailLocationSelectionResultListener onDetailLocationSelectionResultListener) {
 		this.onDetailLocationSelectionResultListener = onDetailLocationSelectionResultListener;
@@ -92,6 +98,17 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 
 		requestCode = LocationIntentCode.enumOf(arguments.getInt("requestCode"));
 		getChildFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false);
+		networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback() {
+			@Override
+			public void onLost(Network network) {
+				super.onLost(network);
+				requireActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+					}
+				});
+			}
+		});
 	}
 
 	@Override
@@ -186,6 +203,7 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 	public void onDestroy() {
 		super.onDestroy();
 		onBackPressedCallback.remove();
+		networkStatus.unregisterNetworkCallback();
 	}
 
 	private void showMarkerOfSelectedLocation() {
@@ -229,6 +247,7 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 		} else {
 			onDetailLocationSelectionResultListener.onResultSelectedLocation(newLocationDto);
 		}
+		edited = true;
 		getParentFragmentManager().popBackStackImmediate();
 	}
 
@@ -270,6 +289,7 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 						Toast.makeText(getContext(), R.string.canceled_location, Toast.LENGTH_SHORT).show();
 
 						onDetailLocationSelectionResultListener.onResultUnselectedLocation();
+						edited = true;
 						getParentFragmentManager().popBackStackImmediate();
 					}
 				}, new View.OnClickListener() {

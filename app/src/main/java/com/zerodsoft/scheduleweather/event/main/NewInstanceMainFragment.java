@@ -4,6 +4,8 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.Network;
 import android.os.Bundle;
 
 import androidx.activity.OnBackPressedCallback;
@@ -79,6 +81,7 @@ import com.zerodsoft.scheduleweather.navermap.searchheader.MapHeaderSearchFragme
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
+import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -122,6 +125,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 
 	private LinearLayout chipsLayout;
 	private ViewGroup functionItemsView;
+
+	private NetworkStatus networkStatus;
 	private CloseWindow closeWindow = new CloseWindow(new CloseWindow.OnBackKeyDoubleClickedListener() {
 		@Override
 		public void onDoubleClicked() {
@@ -214,10 +219,24 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 					chipsLayout.setVisibility(View.VISIBLE);
 				}
 			} else if (f instanceof EventFragment) {
+				if (((EventFragment) f).editing) {
+					return;
+				}
+				if (!networkStatus.networkAvailable()) {
+					getParentFragmentManager().popBackStackImmediate();
+					return;
+				}
+
 				if (selectedLocationDtoInEvent == null) {
-					if (!((EventFragment) f).editing) {
-						getParentFragmentManager().popBackStackImmediate();
-					}
+					getParentFragmentManager().popBackStackImmediate();
+				}
+			} else if (f instanceof ModifyInstanceFragment) {
+				if (!((ModifyInstanceFragment) f).edited) {
+					onClickedOpenEventFragmentBtn();
+				}
+			} else if (f instanceof SelectionDetailLocationFragment) {
+				if (!((SelectionDetailLocationFragment) f).edited) {
+					onClickedOpenEventFragmentBtn();
 				}
 			}
 		}
@@ -239,6 +258,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		getChildFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false);
 
 		Bundle arguments = getArguments();
 		eventId = arguments.getLong(CalendarContract.Instances.EVENT_ID);
@@ -249,9 +269,50 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 
 		calendarViewModel = new ViewModelProvider(requireActivity()).get(CalendarViewModel.class);
 		placeCategoryViewModel = new ViewModelProvider(this).get(PlaceCategoryViewModel.class);
-		getChildFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false);
 
 		eventValues = calendarViewModel.getInstance(instanceId, originalBegin, originalEnd);
+
+		networkStatus = new NetworkStatus(getContext(), new ConnectivityManager.NetworkCallback() {
+			@Override
+			public void onAvailable(@NonNull Network network) {
+				super.onAvailable(network);
+			}
+
+			@Override
+			public void onLost(@NonNull Network network) {
+				super.onLost(network);
+				if (getActivity() != null) {
+					FragmentManager fragmentManager = getChildFragmentManager();
+
+					if (fragmentManager.findFragmentByTag(getString(R.string.tag_modify_instance_fragment)) != null) {
+						return;
+					}
+					requireActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							networkStatus.showToastDisconnected();
+							//모든 프래그먼트 종료
+							if (fragmentManager.getBackStackEntryCount() > 0) {
+								while (fragmentManager.popBackStackImmediate()) {
+								}
+							}
+
+							EventFragment eventFragment = null;
+							if (fragmentManager.findFragmentByTag(getString(R.string.tag_event_fragment)) != null) {
+								eventFragment = (EventFragment) fragmentManager.findFragmentByTag(getString(R.string.tag_event_fragment));
+							}
+
+							if (eventFragment == null) {
+								onClickedOpenEventFragmentBtn();
+							} else {
+
+							}
+						}
+
+					});
+				}
+			}
+		});
 	}
 
 
@@ -284,54 +345,57 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 			public void onGlobalLayout() {
 				binding.naverMapFragmentRootLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
 
-				final int headerbarHeight = (int) getResources().getDimension(R.dimen.map_header_bar_height);
-				final int headerbarTopMargin = (int) getResources().getDimension(R.dimen.map_header_bar_top_margin);
-				final int headerbarMargin = (int) (headerbarTopMargin * 1.5f);
+				if (networkStatus.networkAvailable()) {
+					if (eventValues.getAsString(CalendarContract.Events.EVENT_LOCATION) != null) {
+						locationViewModel.getLocation(eventId, new DbQueryCallback<LocationDTO>() {
+							@Override
+							public void onResultSuccessful(LocationDTO savedLocationDto) {
+								requireActivity().runOnUiThread(new Runnable() {
+									@Override
+									public void run() {
+										//지도 로드
+										binding.headerLayout.setVisibility(View.VISIBLE);
+										binding.naverMapButtonsLayout.getRoot().setVisibility(View.VISIBLE);
+										selectedLocationDtoInEvent = savedLocationDto;
 
-				if (eventValues.getAsString(CalendarContract.Events.EVENT_LOCATION) != null) {
-					locationViewModel.getLocation(eventId, new DbQueryCallback<LocationDTO>() {
-						@Override
-						public void onResultSuccessful(LocationDTO savedLocationDto) {
-							requireActivity().runOnUiThread(new Runnable() {
-								@Override
-								public void run() {
-									//지도 로드
-									binding.headerLayout.setVisibility(View.VISIBLE);
-									binding.naverMapButtonsLayout.getRoot().setVisibility(View.VISIBLE);
-									selectedLocationDtoInEvent = savedLocationDto;
+										createFunctionList();
+										loadMap();
+										addPlaceCategoryListFragmentIntoBottomSheet();
+										createPlaceCategoryListChips();
+									}
+								});
+							}
 
-									createFunctionList();
-									loadMap();
-									addPlaceCategoryListFragmentIntoBottomSheet();
-									createPlaceCategoryListChips();
-								}
-							});
-						}
-
-						@Override
-						public void onResultNoData() {
-							requireActivity().runOnUiThread(new Runnable() {
-								@Override
-								public void run() {
-									//인스턴스 정보 프래그먼트 표시
-									onClickedOpenEventFragmentBtn();
-								}
-							});
-						}
-					});
+							@Override
+							public void onResultNoData() {
+								requireActivity().runOnUiThread(new Runnable() {
+									@Override
+									public void run() {
+										//인스턴스 정보 프래그먼트 표시
+										onClickedOpenEventFragmentBtn();
+									}
+								});
+							}
+						});
+					} else {
+						//인스턴스 정보 프래그먼트 표시
+						locationViewModel.removeLocation(eventId, null);
+						onClickedOpenEventFragmentBtn();
+					}
 				} else {
-					//인스턴스 정보 프래그먼트 표시
-					locationViewModel.removeLocation(eventId, null);
 					onClickedOpenEventFragmentBtn();
 				}
+
 			}
 		});
+
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
 		onBackPressedCallback.remove();
+		networkStatus.unregisterNetworkCallback();
 		getChildFragmentManager().unregisterFragmentLifecycleCallbacks(fragmentLifecycleCallbacks);
 	}
 
