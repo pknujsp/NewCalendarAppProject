@@ -151,16 +151,20 @@ public class FavoriteRestaurantListAdapter extends BaseExpandableListAdapter {
 
 			childViewHolder = new ChildViewHolder();
 			childViewHolder.restaurantName = (TextView) view.findViewById(R.id.restaurant_name);
+			childViewHolder.restaurantCategory = (TextView) view.findViewById(R.id.restaurant_category);
 			childViewHolder.restaurantAddress = (TextView) view.findViewById(R.id.restaurant_address);
 			childViewHolder.favoriteButton = (ImageView) view.findViewById(R.id.favorite_button);
 
 			childViewHolder.restaurantName.setText("");
+			childViewHolder.restaurantCategory.setText("");
+			childViewHolder.restaurantAddress.setText("");
 			view.setTag(R.layout.restaurant_itemview, childViewHolder);
 		} else {
 			childViewHolder = (ChildViewHolder) view.getTag(R.layout.restaurant_itemview);
 		}
 
 		childViewHolder.restaurantName.setText(restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition).getPlaceName());
+		childViewHolder.restaurantCategory.setText(restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition).getPlaceCategoryName());
 		childViewHolder.restaurantAddress.setText(restaurantListMap.get(restaurantListMap.keyAt(groupPosition)).get(childPosition).getAddress());
 		childViewHolder.favoriteButton.setImageDrawable(ContextCompat.getDrawable(context, R.drawable.star_enabled));
 
@@ -205,6 +209,7 @@ public class FavoriteRestaurantListAdapter extends BaseExpandableListAdapter {
 
 	static class ChildViewHolder {
 		TextView restaurantName;
+		TextView restaurantCategory;
 		TextView restaurantAddress;
 		ImageView favoriteButton;
 	}

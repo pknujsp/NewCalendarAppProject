@@ -4,6 +4,7 @@ import android.app.Application;
 import android.service.carrier.CarrierMessagingService;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -50,40 +51,24 @@ public class FoodCriteriaLocationInfoViewModel extends AndroidViewModel implemen
 		repository.selectByEventId(eventId, callback);
 	}
 
-	@Override
-	public void selectByInstanceId(Long instanceId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback) {
-		repository.selectByInstanceId(instanceId, callback);
-	}
 
 	@Override
-	public void insertByEventId(Long eventId, Integer usingType, Integer historyLocationId, DbQueryCallback<FoodCriteriaLocationInfoDTO> callback) {
+	public void insertByEventId(Long eventId, Integer usingType, Integer historyLocationId, @Nullable DbQueryCallback<FoodCriteriaLocationInfoDTO> callback) {
 		repository.insertByEventId(eventId, usingType, historyLocationId, callback);
 	}
 
-	@Override
-	public void insertByInstanceId(Long instanceId, Integer usingType, Integer historyLocationId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback) {
-		repository.insertByInstanceId(instanceId, usingType, historyLocationId, callback);
-	}
 
 	@Override
-	public void updateByEventId(Long eventId, Integer usingType, Integer historyLocationId, DbQueryCallback<FoodCriteriaLocationInfoDTO> callback) {
+	public void updateByEventId(Long eventId, Integer usingType, Integer historyLocationId, @Nullable DbQueryCallback<FoodCriteriaLocationInfoDTO> callback) {
 		repository.updateByEventId(eventId, usingType, historyLocationId, callback);
 	}
 
-	@Override
-	public void updateByInstanceId(Long instanceId, Integer usingType, Integer historyLocationId, CarrierMessagingService.ResultCallback<FoodCriteriaLocationInfoDTO> callback) {
-		repository.updateByInstanceId(instanceId, usingType, historyLocationId, callback);
-	}
 
 	@Override
-	public void deleteByEventId(Long eventId, CarrierMessagingService.ResultCallback<Boolean> callback) {
+	public void deleteByEventId(Long eventId, @Nullable DbQueryCallback<Boolean> callback) {
 		repository.deleteByEventId(eventId, callback);
 	}
 
-	@Override
-	public void deleteByInstanceId(Long instanceId, CarrierMessagingService.ResultCallback<Boolean> callback) {
-		repository.deleteByInstanceId(instanceId, callback);
-	}
 
 	@Override
 	public void contains(Long eventId, DbQueryCallback<FoodCriteriaLocationInfoDTO> callback) {

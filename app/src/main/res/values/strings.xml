@@ -324,7 +324,7 @@
     <string name="removed_detail_location">위치 정보 삭제완료</string>
 
     <string name="remove_this_instance">이번 일정만 삭제</string>
-    <string name="remove_all_future_instance_including_current_instance">향후 모든 일정 삭제</string>
+    <string name="remove_following_events">향후 모든 일정 삭제</string>
     <string name="empty_title">제목 없음</string>
     <string name="weather">날씨</string>
     <string name="air_condition">대기상태</string>

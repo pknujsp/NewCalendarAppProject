@@ -13,7 +13,6 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="4dp"
         android:orientation="horizontal">
 
         <TextView
@@ -32,31 +31,32 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:layout_marginRight="6dp"
             android:gravity="center_vertical"
             android:text="placename"
             android:textColor="@color/text_indigo"
             android:textSize="15sp" />
 
-        <TextView
-            android:id="@+id/place_category"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:ellipsize="marquee"
-            android:gravity="center_vertical"
-            android:singleLine="true"
-            android:text="category"
-            android:textColor="@color/gray_500"
-            android:textSize="13sp" />
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/place_category"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginTop="4dp"
+        android:ellipsize="marquee"
+        android:gravity="center_vertical"
+        android:singleLine="true"
+        android:text="category"
+        android:textColor="@color/gray_600"
+        android:textSize="13sp" />
 
     <TextView
         android:id="@+id/place_address_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
-        android:layout_marginBottom="3dp"
+        android:layout_marginTop="4dp"
         android:text="address"
         android:textColor="@color/gray_500"
         android:textSize="14sp" />
@@ -66,6 +66,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
+        android:layout_marginTop="4dp"
         android:text="1000M"
         android:textColor="@color/gray_500"
         android:textSize="14sp" />

@@ -16,7 +16,6 @@ import androidx.viewpager2.widget.CompositePageTransformer;
 import androidx.viewpager2.widget.MarginPageTransformer;
 import androidx.viewpager2.widget.ViewPager2;
 
-import android.provider.CalendarContract;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -41,8 +40,6 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickLis
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
 import com.zerodsoft.scheduleweather.databinding.FragmentInstanceListOnADayBinding;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
-import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
-import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.ArrayList;
@@ -244,8 +241,13 @@ public class InstanceListOnADayDialogFragment extends DialogFragment implements 
 
 	@Override
 	public void createInstancePopupMenu(ContentValues instance, View anchorView, int gravity) {
-		eventPopupMenu = editEventPopupMenu.createEditEventPopupMenu(instance, requireActivity(), anchorView, Gravity.CENTER
-				, calendarViewModel);
+		eventPopupMenu = editEventPopupMenu.createEditEventPopupMenu(instance, requireActivity(), anchorView, Gravity.CENTER,
+				new EditEventPopupMenu.OnEditedEventCallback() {
+					@Override
+					public void onRemoved() {
+						
+					}
+				},calendarViewModel);
 	}
 
 

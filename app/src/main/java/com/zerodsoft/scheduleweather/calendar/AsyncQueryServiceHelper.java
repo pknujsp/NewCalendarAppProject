@@ -25,7 +25,9 @@ import com.zerodsoft.scheduleweather.activity.editevent.interfaces.OnEditEventRe
 import com.zerodsoft.scheduleweather.common.enums.LocationIntentCode;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.event.common.repository.LocationRepository;
+import com.zerodsoft.scheduleweather.event.foods.repository.FoodCriteriaLocationInfoRepository;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
+import com.zerodsoft.scheduleweather.weather.repository.WeatherDbRepository;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,6 +42,7 @@ public class AsyncQueryServiceHelper extends IntentService {
 			new PriorityQueue<OperationInfo>();
 	private Class<AsyncQueryService> mService = AsyncQueryService.class;
 	private LocationRepository locationRepository;
+	private FoodCriteriaLocationInfoRepository foodCriteriaLocationInfoRepository;
 
 	public AsyncQueryServiceHelper(String name) {
 		super(name);
@@ -82,7 +85,6 @@ public class AsyncQueryServiceHelper extends IntentService {
 				}
 			}
 		}
-
 		return op;
 	}
 
@@ -99,7 +101,6 @@ public class AsyncQueryServiceHelper extends IntentService {
 			}
 		}
 
-
 		return canceled;
 	}
 
@@ -108,19 +109,16 @@ public class AsyncQueryServiceHelper extends IntentService {
 		OperationInfo args;
 		Long originalEventId = null;
 		Long newEventId = null;
+		Long removeEventId = null;
 
 		Integer insertNewEventIndex = null;
 		Integer updateOriginalEventIndex = null;
 		Integer exceptionOriginalEventIndex = null;
+		Integer removeEventIndex = null;
 
 		ContentProviderResult[] contentProviderResults = null;
-
 		synchronized (sWorkQueue) {
 			while (true) {
-				/*
-				 * This method can be called with no work because of
-				 * cancellations
-				 */
 				if (sWorkQueue.size() == 0) {
 					return;
 				} else if (sWorkQueue.size() == 1) {
@@ -143,48 +141,13 @@ public class AsyncQueryServiceHelper extends IntentService {
 		}
 
 		ContentResolver resolver = args.resolver;
+		ArrayList<ContentProviderOperation> cpo = args.cpo;
+
+
 		if (resolver != null) {
-
 			switch (args.op) {
-				case AsyncQueryService.Operation.EVENT_ARG_QUERY:
-					Cursor cursor;
-					try {
-						cursor = resolver.query(args.uri, args.projection, args.selection,
-								args.selectionArgs, args.orderBy);
-						if (cursor != null) {
-							cursor.getCount();
-						}
-					} catch (Exception e) {
-						Log.w("", e.toString());
-						cursor = null;
-					}
-
-					args.result = cursor;
-					break;
-
-				case AsyncQueryService.Operation.EVENT_ARG_INSERT:
-					args.result = resolver.insert(args.uri, args.values);
-					break;
-
-				case AsyncQueryService.Operation.EVENT_ARG_UPDATE:
-					args.result = resolver.update(args.uri, args.values, args.selection,
-							args.selectionArgs);
-					break;
-
-				case AsyncQueryService.Operation.EVENT_ARG_DELETE:
-					try {
-						args.result = resolver.delete(args.uri, args.selection, args.selectionArgs);
-					} catch (IllegalArgumentException e) {
-						Log.w("", "Delete failed.");
-						Log.w("", e.toString());
-						args.result = 0;
-					}
-
-					break;
-
 				case AsyncQueryService.Operation.EVENT_ARG_BATCH:
 					try {
-						ArrayList<ContentProviderOperation> cpo = args.cpo;
 
 						int cpoIndex = 0;
 						for (ContentProviderOperation contentProviderOperation : cpo) {
@@ -192,12 +155,15 @@ public class AsyncQueryServiceHelper extends IntentService {
 								if (contentProviderOperation.getUri().toString().contains(Events.CONTENT_URI.toString())) {
 									updateOriginalEventIndex = cpoIndex;
 								}
-							}
-							if (contentProviderOperation.isInsert()) {
+							} else if (contentProviderOperation.isInsert()) {
 								if (contentProviderOperation.getUri().toString().contains(Events.CONTENT_URI.toString())) {
 									insertNewEventIndex = cpoIndex;
 								} else if (contentProviderOperation.getUri().toString().contains(Events.CONTENT_EXCEPTION_URI.toString())) {
 									exceptionOriginalEventIndex = cpoIndex;
+								}
+							} else if (contentProviderOperation.isDelete()) {
+								if (contentProviderOperation.getUri().toString().contains(Events.CONTENT_URI.toString())) {
+									removeEventIndex = cpoIndex;
 								}
 							}
 							cpoIndex++;
@@ -215,8 +181,6 @@ public class AsyncQueryServiceHelper extends IntentService {
 					break;
 			}
 
-			ArrayList<ContentProviderOperation> cpo = args.cpo;
-
 			if (insertNewEventIndex != null) {
 				newEventId = ContentUris.parseId(contentProviderResults[insertNewEventIndex].uri);
 				args.editEventPrimaryValues.setNewEventId(newEventId);
@@ -228,6 +192,9 @@ public class AsyncQueryServiceHelper extends IntentService {
 			if (exceptionOriginalEventIndex != null) {
 				originalEventId = ContentUris.parseId(cpo.get(exceptionOriginalEventIndex).getUri());
 				args.editEventPrimaryValues.setOriginalEventId(originalEventId);
+			}
+			if (removeEventIndex != null) {
+				removeEventId = ContentUris.parseId(cpo.get(removeEventIndex).getUri());
 			}
 
 			final EventHelper.EventEditType eventEditType = args.editEventPrimaryValues.getEventEditType();
@@ -261,7 +228,6 @@ public class AsyncQueryServiceHelper extends IntentService {
 				}
 			} else if (eventEditType == EventHelper.EventEditType.UPDATE_FOLLOWING_EVENTS) {
 				if (locationIntentCode != null) {
-
 					if (locationIntentCode == LocationIntentCode.RESULT_CODE_CHANGED_LOCATION) {
 						if (newEventId != null) {
 							locationDTO.setEventId(newEventId);
@@ -308,6 +274,13 @@ public class AsyncQueryServiceHelper extends IntentService {
 					locationRepository.addLocation(locationDTO, null);
 				}
 			}
+
+
+			if (removeEventId != null) {
+				foodCriteriaLocationInfoRepository = new FoodCriteriaLocationInfoRepository(getApplicationContext());
+				foodCriteriaLocationInfoRepository.deleteByEventId(removeEventId, null);
+			}
+
 
 			Message reply = args.handler.obtainMessage(args.token);
 			reply.obj = args;

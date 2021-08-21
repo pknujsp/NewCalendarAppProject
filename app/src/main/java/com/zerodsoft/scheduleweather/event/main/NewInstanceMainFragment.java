@@ -53,6 +53,7 @@ import com.zerodsoft.scheduleweather.activity.placecategory.PlaceCategorySetting
 import com.zerodsoft.scheduleweather.activity.placecategory.viewmodel.PlaceCategoryViewModel;
 import com.zerodsoft.scheduleweather.calendar.AsyncQueryService;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
+import com.zerodsoft.scheduleweather.calendar.EditEventPopupMenu;
 import com.zerodsoft.scheduleweather.calendar.EventHelper;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.common.classes.CloseWindow;
@@ -250,7 +251,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		placeCategoryViewModel = new ViewModelProvider(this).get(PlaceCategoryViewModel.class);
 		getChildFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false);
 
-		eventValues = calendarViewModel.getEvent(eventId);
+		eventValues = calendarViewModel.getInstance(instanceId, originalBegin, originalEnd);
 	}
 
 
@@ -573,48 +574,20 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 				});
 
 			} else if (processType == ProcessType.REMOVE_EVENT) {
-				String[] items = null;
-				//이번 일정만 삭제, 향후 모든 일정 삭제, 모든 일정 삭제
-                /*
-                반복없는 이벤트 인 경우 : 일정 삭제
-                반복있는 이벤트 인 경우 : 이번 일정만 삭제, 향후 모든 일정 삭제, 모든 일정 삭제
-                 */
-				if (eventValues.getAsString(CalendarContract.Instances.RRULE) != null) {
-					items = new String[]{getString(R.string.remove_this_instance), getString(R.string.remove_all_future_instance_including_current_instance)
-							, getString(R.string.remove_event)};
-				} else {
-					items = new String[]{getString(R.string.remove_event)};
-				}
-				new MaterialAlertDialogBuilder(getActivity()).setTitle(getString(R.string.remove_event))
-						.setItems(items, new DialogInterface.OnClickListener() {
+				EditEventPopupMenu eventPopupMenu = new EditEventPopupMenu() {
+					@Override
+					public void onClickedEditEvent(Fragment modificationFragment) {
+					}
+				};
+
+				eventPopupMenu.showRemoveDialog(requireActivity(), eventValues
+						, new EditEventPopupMenu.OnEditedEventCallback() {
 							@Override
-							public void onClick(DialogInterface dialogInterface, int index) {
-								if (eventValues.getAsString(CalendarContract.Instances.RRULE) != null) {
-									switch (index) {
-										case 0:
-											// 이번 일정만 삭제
-											// 완성
-											showRemoveOnlyThisEventDialog(eventFragment);
-											break;
-										case 1:
-											// 향후 모든 일정만 삭제
-											removeFollowingEvents(eventFragment);
-											break;
-										case 2:
-											// 모든 일정 삭제
-											showRemoveAllEventsDialog(eventFragment);
-											break;
-									}
-								} else {
-									switch (index) {
-										case 0:
-											// 모든 일정 삭제
-											showRemoveAllEventsDialog(eventFragment);
-											break;
-									}
-								}
+							public void onRemoved() {
+								eventFragment.editing = true;
+								getParentFragmentManager().popBackStackImmediate();
 							}
-						}).create().show();
+						}, calendarViewModel);
 			} else if (processType == ProcessType.MODIFY_EVENT) {
 				ModifyInstanceFragment modifyInstanceFragment = new ModifyInstanceFragment(new OnEditEventResultListener() {
 					@Override
@@ -689,52 +662,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		eventFragment.show(getChildFragmentManager(), getString(R.string.tag_event_fragment));
 	}
 
-	private void showRemoveAllEventsDialog(EventFragment eventFragment) {
-		new MaterialAlertDialogBuilder(requireActivity())
-				.setTitle(R.string.remove_event)
-				.setPositiveButton(R.string.check, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						EventHelper eventHelper = new EventHelper(new AsyncQueryService(getContext(), calendarViewModel));
-						eventHelper.removeEvent(EventHelper.EventEditType.REMOVE_ALL_EVENTS, eventValues);
-						dialog.dismiss();
-						getParentFragmentManager().popBackStackImmediate();
-					}
-				})
-				.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dialog.dismiss();
-					}
-				}).create().show();
-	}
-
-
-	private void removeFollowingEvents(EventFragment eventFragment) {
-		EventHelper eventHelper = new EventHelper(new AsyncQueryService(getContext(), calendarViewModel));
-		eventHelper.removeEvent(EventHelper.EventEditType.REMOVE_FOLLOWING_EVENTS, eventValues);
-		getParentFragmentManager().popBackStackImmediate();
-	}
-
-	private void showRemoveOnlyThisEventDialog(EventFragment eventFragment) {
-		new MaterialAlertDialogBuilder(requireActivity())
-				.setTitle(R.string.remove_this_instance)
-				.setPositiveButton(R.string.check, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						EventHelper eventHelper = new EventHelper(new AsyncQueryService(getContext(), calendarViewModel));
-						eventHelper.removeEvent(EventHelper.EventEditType.REMOVE_ONLY_THIS_EVENT, eventValues);
-						dialog.dismiss();
-						getParentFragmentManager().popBackStackImmediate();
-					}
-				})
-				.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dialog.dismiss();
-					}
-				}).create().show();
-	}
 
 	public void showSetLocationDialog(EventFragment eventFragment) {
 		MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireActivity())
@@ -827,7 +754,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 
 			}
 		});
-
 	}
 
 	private void deletedDetailLocation() {

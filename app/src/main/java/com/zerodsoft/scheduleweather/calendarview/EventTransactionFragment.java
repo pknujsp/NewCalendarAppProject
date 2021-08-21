@@ -25,7 +25,6 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
@@ -157,7 +156,6 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 	};
 
 	private final EditEventPopupMenu editEventPopupMenu = new EditEventPopupMenu() {
-
 		@Override
 		public void onClickedEditEvent(Fragment modificationFragment) {
 			getParentFragmentManager().beginTransaction().add(R.id.fragment_container, modificationFragment,
@@ -522,8 +520,13 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 
 	@Override
 	public void createInstancePopupMenu(ContentValues instance, View anchorView, int gravity) {
-		editEventPopupMenu.createEditEventPopupMenu(instance, requireActivity(), anchorView, gravity
-				, calendarViewModel);
+		editEventPopupMenu.createEditEventPopupMenu(instance, requireActivity(), anchorView, gravity,
+				new EditEventPopupMenu.OnEditedEventCallback() {
+					@Override
+					public void onRemoved() {
+
+					}
+				},calendarViewModel);
 	}
 
 	@Override

@@ -109,6 +109,13 @@ public class FavoriteLocationAdapter extends RecyclerView.Adapter<FavoriteLocati
 				binding.placeItemLayout.distance.setText(distance);
 				binding.placeItemLayout.type.setText(favoriteLocationDTO.getType() == FavoriteLocationDTO.RESTAURANT ? R.string.restaurant : R.string.place);
 
+				if (favoriteLocationDTO.getType() == FavoriteLocationDTO.RESTAURANT) {
+					binding.placeItemLayout.placeCategory.setText(favoriteLocationDTO.getPlaceCategoryName());
+					binding.placeItemLayout.placeCategory.setVisibility(View.VISIBLE);
+				} else {
+					binding.placeItemLayout.placeCategory.setVisibility(View.GONE);
+				}
+
 				binding.addressItemLayout.getRoot().setVisibility(View.GONE);
 				binding.placeItemLayout.getRoot().setVisibility(View.VISIBLE);
 			} else if (favoriteLocationDTO.getType() == FavoriteLocationDTO.ADDRESS) {
