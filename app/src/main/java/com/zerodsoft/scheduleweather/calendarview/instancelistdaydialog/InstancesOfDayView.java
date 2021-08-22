@@ -96,6 +96,11 @@ public class InstancesOfDayView implements CalendarViewInitializer, OnViewPagerP
 				if (adapter == null) {
 					return;
 				}
+
+				if (adapter.getInstances().isEmpty()) {
+					Toast.makeText(view.getContext(), R.string.empty_events, Toast.LENGTH_SHORT).show();
+					return;
+				}
 				moreBtnChecked = !moreBtnChecked;
 
 				if (moreBtnChecked) {
@@ -160,7 +165,7 @@ public class InstancesOfDayView implements CalendarViewInitializer, OnViewPagerP
 			public void onChanged() {
 				super.onChanged();
 				if (adapter.getItemCount() == 0) {
-					customProgressView.onFailedProcessingData(context.getString(R.string.not_data));
+					customProgressView.onFailedProcessingData(context.getString(R.string.empty_events));
 				} else {
 					customProgressView.onSuccessfulProcessingData();
 				}

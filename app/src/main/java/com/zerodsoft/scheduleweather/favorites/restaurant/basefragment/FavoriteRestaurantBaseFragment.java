@@ -111,7 +111,7 @@ public abstract class FavoriteRestaurantBaseFragment extends Fragment implements
 					@Override
 					public void run() {
 						if (adapter.getRestaurantListMap().isEmpty()) {
-							binding.customProgressViewForFavoriteRestaurant.onFailedProcessingData(getString(R.string.not_data));
+							binding.customProgressViewForFavoriteRestaurant.onFailedProcessingData(getString(R.string.empty_favorite_locations_list));
 						} else {
 							binding.customProgressViewForFavoriteRestaurant.onSuccessfulProcessingData();
 						}
