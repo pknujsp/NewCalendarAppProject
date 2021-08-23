@@ -604,6 +604,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		BottomSheetBehavior locationItemBottomSheetBehavior = BottomSheetBehavior.from(locationItemBottomSheet);
 		locationItemBottomSheetBehavior.setDraggable(false);
 		locationItemBottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+			float differenceY;
+
 			@Override
 			public void onStateChanged(@NonNull View bottomSheet, int newState) {
 
@@ -613,7 +615,12 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			public void onSlide(@NonNull View bottomSheet, float slideOffset) {
 				//expanded일때 offset == 1.0, collapsed일때 offset == 0.0
 				//offset에 따라서 버튼들이 이동하고, 지도의 좌표가 변경되어야 한다.
-				float translationValue = -locationItemBottomSheet.getHeight() * slideOffset;
+				if (binding.bottomNavigation.getHeight() > 0) {
+					differenceY = bottomSheet.getBottom() - binding.naverMapButtonsLayout.getRoot().getBottom();
+				} else {
+					differenceY = bottomSheet.getHeight();
+				}
+				float translationValue = -differenceY * slideOffset;
 				binding.naverMapButtonsLayout.getRoot().animate().translationY(translationValue);
 			}
 		});

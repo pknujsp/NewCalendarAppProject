@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/event_info"
+        android:enabled="true"
+        android:icon="@drawable/event_icon"
+        android:title="@string/instance_info"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/weathers_info"
+        android:enabled="true"
+        android:icon="@drawable/sunny_day_up"
+        android:title="@string/weather"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/restaurants"
+        android:enabled="true"
+        android:icon="@drawable/restaurant_svg"
+        android:title="@string/restaurant"
+        app:showAsAction="always" />
+</menu>

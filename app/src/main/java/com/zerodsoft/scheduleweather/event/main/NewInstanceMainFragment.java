@@ -26,6 +26,7 @@ import android.util.ArrayMap;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -36,6 +37,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
@@ -104,8 +106,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 
 	private ContentValues eventValues;
 	private LocationDTO selectedLocationDtoInEvent;
-	private Button[] functionButtons;
-	private TextView functionButton;
 	private Marker selectedLocationInEventMarker;
 	private InfoWindow selectedLocationInEventInfoWindow;
 
@@ -121,10 +121,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	private OnExtraListDataListener<String> placeCategoryOnExtraListDataListener;
 	private Set<PlaceCategoryDTO> savedPlaceCategorySet = new HashSet<>();
 
-	private AlertDialog functionDialog;
-
 	private LinearLayout chipsLayout;
-	private ViewGroup functionItemsView;
 
 	private NetworkStatus networkStatus;
 	private CloseWindow closeWindow = new CloseWindow(new CloseWindow.OnBackKeyDoubleClickedListener() {
@@ -152,10 +149,10 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 				binding.headerLayout.setVisibility(View.GONE);
 				binding.naverMapButtonsLayout.buildingButton.setVisibility(View.GONE);
 				binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.GONE);
-				functionButton.setVisibility(View.GONE);
+				binding.bottomNavigation.setVisibility(View.GONE);
 			} else if (f instanceof MapHeaderSearchFragment) {
 				if (selectedLocationDtoInEvent != null) {
-					functionButton.setVisibility(View.GONE);
+					binding.bottomNavigation.setVisibility(View.GONE);
 					chipsLayout.setVisibility(View.GONE);
 				}
 			}
@@ -212,13 +209,14 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 				binding.headerLayout.setVisibility(View.VISIBLE);
 				binding.naverMapButtonsLayout.buildingButton.setVisibility(View.VISIBLE);
 				binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.VISIBLE);
-				functionButton.setVisibility(View.VISIBLE);
+				binding.bottomNavigation.setVisibility(View.VISIBLE);
 			} else if (f instanceof MapHeaderSearchFragment) {
 				if (selectedLocationDtoInEvent != null) {
-					functionButton.setVisibility(View.VISIBLE);
+					binding.bottomNavigation.setVisibility(View.VISIBLE);
 					chipsLayout.setVisibility(View.VISIBLE);
 				}
 			} else if (f instanceof EventFragment) {
+
 				if (((EventFragment) f).editing) {
 					return;
 				}
@@ -238,6 +236,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 				if (!((SelectionDetailLocationFragment) f).edited) {
 					onClickedOpenEventFragmentBtn();
 				}
+			} else if (f instanceof WeatherMainFragment) {
 			}
 		}
 
@@ -325,6 +324,65 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
+		binding.bottomNavigation.inflateMenu(R.menu.bottomnav_menu_in_event_info_fragment);
+
+		binding.bottomNavigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+			@Override
+			public boolean onNavigationItemSelected(@NonNull @NotNull MenuItem item) {
+				//이벤트 정보, 날씨, 음식점
+				if (getStateOfBottomSheet(BottomSheetType.LOCATION_ITEM) == BottomSheetBehavior.STATE_EXPANDED) {
+					setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
+				}
+
+				switch (item.getItemId()) {
+					case R.id.event_info:
+						onClickedOpenEventFragmentBtn();
+						break;
+					case R.id.weathers_info:
+						WeatherMainFragment weatherMainFragment = new WeatherMainFragment(new DialogInterface() {
+							@Override
+							public void cancel() {
+
+							}
+
+							@Override
+							public void dismiss() {
+							}
+						}, DEFAULT_HEIGHT_OF_BOTTOMSHEET, calendarId,
+								eventId);
+						weatherMainFragment.show(getChildFragmentManager(), WeatherMainFragment.TAG);
+						break;
+					case R.id.restaurants:
+						FragmentManager fragmentManager = getChildFragmentManager();
+						//restaurant
+						Object[] results2 = createBottomSheet(R.id.restaurant_fragment_container);
+						LinearLayout restaurantsBottomSheet = (LinearLayout) results2[0];
+						BottomSheetBehavior restaurantsBottomSheetBehavior = (BottomSheetBehavior) results2[1];
+
+						bottomSheetViewMap.put(BottomSheetType.RESTAURANT, restaurantsBottomSheet);
+						bottomSheetBehaviorMap.put(BottomSheetType.RESTAURANT, restaurantsBottomSheetBehavior);
+
+						RestaurantFragment restaurantFragment =
+								new RestaurantFragment(NewInstanceMainFragment.this
+										, new OnHiddenFragmentListener() {
+									@Override
+									public void onHiddenChangedFragment(boolean hidden) {
+
+									}
+								}, eventId);
+
+						bottomSheetFragmentMap.put(BottomSheetType.RESTAURANT, restaurantFragment);
+						fragmentManager.beginTransaction().add(binding.fragmentContainer.getId(), restaurantFragment
+								, getString(R.string.tag_restaurant_fragment)).addToBackStack(getString(R.string.tag_restaurant_fragment)).commit();
+						break;
+
+				}
+				return true;
+			}
+
+		});
+		binding.bottomNavigation.setSelected(false);
+
 		binding.headerLayout.setVisibility(View.GONE);
 		binding.naverMapButtonsLayout.getRoot().setVisibility(View.GONE);
 		gpsButton.setLongClickable(true);
@@ -358,7 +416,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 										binding.naverMapButtonsLayout.getRoot().setVisibility(View.VISIBLE);
 										selectedLocationDtoInEvent = savedLocationDto;
 
-										createFunctionList();
 										loadMap();
 										addPlaceCategoryListFragmentIntoBottomSheet();
 										createPlaceCategoryListChips();
@@ -411,112 +468,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		createSelectedLocationMarker();
 	}
 
-	private void createFunctionList() {
-		//이벤트 정보, 날씨, 음식점
-		functionButton = new TextView(getContext());
-		functionButton.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.map_button_rect));
-		functionButton.setElevation(4f);
-		functionButton.setClickable(true);
-		functionButton.setText(R.string.show_functions);
-		functionButton.setTextColor(Color.BLACK);
-		functionButton.setId(R.id.function_btn_in_instance_main_fragment);
-
-		final int btnPaddingLR = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12f, getResources().getDisplayMetrics());
-		final int btnPaddingTB = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics());
-		functionButton.setPadding(btnPaddingLR, btnPaddingTB, btnPaddingLR, btnPaddingTB);
-
-		ConstraintLayout.LayoutParams functionBtnLayoutParams = new ConstraintLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-				ViewGroup.LayoutParams.WRAP_CONTENT);
-		functionBtnLayoutParams.bottomToTop = binding.naverMapButtonsLayout.currentAddress.getId();
-		functionBtnLayoutParams.leftToLeft = binding.naverMapButtonsLayout.getRoot().getId();
-
-		final int marginBottom = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32f, getResources().getDisplayMetrics());
-		functionBtnLayoutParams.bottomMargin = marginBottom;
-
-		binding.naverMapButtonsLayout.getRoot().addView(functionButton, functionBtnLayoutParams);
-		functionButton.setOnClickListener(new View.OnClickListener() {
-
-			@Override
-			public void onClick(View view) {
-				if (getStateOfBottomSheet(BottomSheetType.LOCATION_ITEM) == BottomSheetBehavior.STATE_EXPANDED) {
-					setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
-				}
-				functionDialog.show();
-			}
-		});
-
-		//기능 세부 버튼
-		functionItemsView = (ViewGroup) getLayoutInflater().inflate(R.layout.event_function_items_view,
-				null);
-
-		functionButtons = new Button[]{functionItemsView.findViewById(R.id.function_event_info)
-				, functionItemsView.findViewById(R.id.function_weather)
-				, functionItemsView.findViewById(R.id.function_restaurant)};
-
-		functionDialog = new MaterialAlertDialogBuilder(requireActivity())
-				.setView(functionItemsView)
-				.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.transparent_background))
-				.create();
-
-		functionButtons[0].setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				functionDialog.dismiss();
-				onClickedOpenEventFragmentBtn();
-			}
-		});
-
-		functionButtons[1].setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				//날씨
-				functionDialog.dismiss();
-
-				WeatherMainFragment weatherMainFragment = new WeatherMainFragment(new DialogInterface() {
-					@Override
-					public void cancel() {
-
-					}
-
-					@Override
-					public void dismiss() {
-					}
-				}, DEFAULT_HEIGHT_OF_BOTTOMSHEET, calendarId,
-						eventId);
-				weatherMainFragment.show(getChildFragmentManager(), WeatherMainFragment.TAG);
-			}
-		});
-
-		functionButtons[2].setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				//음식점
-				functionDialog.dismiss();
-				FragmentManager fragmentManager = getChildFragmentManager();
-				//restaurant
-				Object[] results2 = createBottomSheet(R.id.restaurant_fragment_container);
-				LinearLayout restaurantsBottomSheet = (LinearLayout) results2[0];
-				BottomSheetBehavior restaurantsBottomSheetBehavior = (BottomSheetBehavior) results2[1];
-
-				bottomSheetViewMap.put(BottomSheetType.RESTAURANT, restaurantsBottomSheet);
-				bottomSheetBehaviorMap.put(BottomSheetType.RESTAURANT, restaurantsBottomSheetBehavior);
-
-				RestaurantFragment restaurantFragment =
-						new RestaurantFragment(NewInstanceMainFragment.this
-								, new OnHiddenFragmentListener() {
-							@Override
-							public void onHiddenChangedFragment(boolean hidden) {
-
-							}
-						}, eventId);
-
-				bottomSheetFragmentMap.put(BottomSheetType.RESTAURANT, restaurantFragment);
-				fragmentManager.beginTransaction().add(binding.fragmentContainer.getId(), restaurantFragment
-						, getString(R.string.tag_restaurant_fragment)).addToBackStack(getString(R.string.tag_restaurant_fragment)).commit();
-			}
-		});
-	}
-
 	private final EventFragment.OnEventEditCallback onEventEditCallback = new EventFragment.OnEventEditCallback() {
 		@Override
 		public void onResult() {
@@ -532,10 +483,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 							binding.headerLayout.setVisibility(View.VISIBLE);
 							binding.naverMapButtonsLayout.getRoot().setVisibility(View.VISIBLE);
 
-							if (functionButton != null) {
-								binding.naverMapButtonsLayout.getRoot().removeView(functionButton);
-								functionButtons = null;
-							}
 							if (bottomSheetFragmentMap.containsKey(BottomSheetType.SELECTED_PLACE_CATEGORY)) {
 								binding.naverMapFragmentRootLayout.removeView(bottomSheetViewMap.get(BottomSheetType.SELECTED_PLACE_CATEGORY));
 								getChildFragmentManager().beginTransaction()
@@ -550,7 +497,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 								binding.headerLayout.removeView(chipsLayout);
 								chipsLayout = null;
 							}
-							createFunctionList();
 							loadMap();
 							addPlaceCategoryListFragmentIntoBottomSheet();
 							createPlaceCategoryListChips();
