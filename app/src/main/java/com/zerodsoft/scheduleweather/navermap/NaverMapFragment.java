@@ -615,8 +615,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			public void onSlide(@NonNull View bottomSheet, float slideOffset) {
 				//expanded일때 offset == 1.0, collapsed일때 offset == 0.0
 				//offset에 따라서 버튼들이 이동하고, 지도의 좌표가 변경되어야 한다.
-				if (binding.bottomNavigation.getHeight() > 0) {
-					differenceY = bottomSheet.getBottom() - binding.naverMapButtonsLayout.getRoot().getBottom();
+				if (binding.bottomNavigation.getVisibility() == View.VISIBLE) {
+					differenceY = binding.naverMapButtonsLayout.getRoot().getBottom() - bottomSheet.getTop();
 				} else {
 					differenceY = bottomSheet.getHeight();
 				}

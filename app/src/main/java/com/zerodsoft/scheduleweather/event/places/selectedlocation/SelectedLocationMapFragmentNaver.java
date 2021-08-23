@@ -46,6 +46,7 @@ public class SelectedLocationMapFragmentNaver extends NaverMapFragment {
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+		binding.bottomNavigation.setVisibility(View.GONE);
 		loadMap();
 
 		binding.headerLayout.setVisibility(View.GONE);

@@ -120,6 +120,7 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 	public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
+		binding.bottomNavigation.setVisibility(View.GONE);
 		binding.naverMapButtonsLayout.buildingButton.setVisibility(View.GONE);
 		binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.GONE);
 

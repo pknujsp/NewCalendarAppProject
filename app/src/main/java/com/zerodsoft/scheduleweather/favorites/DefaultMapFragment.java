@@ -41,6 +41,7 @@ public class DefaultMapFragment extends NaverMapFragment {
 	@Override
 	public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+		binding.bottomNavigation.setVisibility(View.GONE);
 		loadMap();
 	}
 
