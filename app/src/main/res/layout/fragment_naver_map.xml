@@ -73,7 +73,9 @@
                     android:elevation="4dp"
                     app:itemHorizontalTranslationEnabled="false"
                     app:itemIconTint="@color/black"
-                    app:itemTextColor="@color/black" />
+                    app:itemTextColor="@color/black"
+                    app:labelVisibilityMode="labeled" />
+
             </LinearLayout>
 
             <androidx.fragment.app.FragmentContainerView

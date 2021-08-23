@@ -676,4 +676,5 @@
     <string name="close_place_category_list">장소 카테고리 닫기</string>
     <string name="sun_set_rise">일출/일몰</string>
     <string name="empty_events">이벤트가 없습니다</string>
+    <string name="map_around">주변</string>
 </resources>

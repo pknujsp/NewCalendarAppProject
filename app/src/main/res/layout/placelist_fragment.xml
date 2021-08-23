@@ -29,7 +29,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_alignParentTop="true"
-                    android:layout_marginBottom="4dp"
                     android:orientation="horizontal">
 
                     <TextView
@@ -45,22 +44,32 @@
 
 
                     <TextView
-                        android:id="@+id/search_radius"
+                        android:id="@+id/settings"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="?attr/selectableItemBackground"
+                        android:background="@drawable/secondary_button"
                         android:clickable="true"
-                        android:text="검색반경 50m"
-                        android:textSize="13sp" />
+                        android:text="@string/settings" />
 
                 </LinearLayout>
+
+                <TextView
+                    android:id="@+id/search_radius"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/location_name_layout"
+                    android:layout_marginTop="4dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:text="검색반경 50m"
+                    android:textSize="13sp" />
 
 
                 <LinearLayout
                     android:id="@+id/radius_seekbar_layout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/location_name_layout"
+                    android:layout_below="@id/search_radius"
                     android:orientation="horizontal">
 
                     <com.google.android.material.slider.Slider

@@ -16,6 +16,13 @@
         app:showAsAction="always" />
 
     <item
+        android:id="@+id/map_around"
+        android:enabled="true"
+        android:icon="@drawable/share_location_icon"
+        android:title="@string/map_around"
+        app:showAsAction="always" />
+
+    <item
         android:id="@+id/restaurants"
         android:enabled="true"
         android:icon="@drawable/restaurant_svg"

@@ -92,8 +92,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoodMenuPoiItems,
-		PlacesOfSelectedCategoriesFragment.PlaceCategoryChipsViewController
+public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoodMenuPoiItems
 		, IRefreshView, RestaurantListListener {
 	private int calendarId;
 	private long eventId;
@@ -102,8 +101,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	private long originalEnd;
 
 	private CalendarViewModel calendarViewModel;
-	private PlaceCategoryViewModel placeCategoryViewModel;
-
 	private ContentValues eventValues;
 	private LocationDTO selectedLocationDtoInEvent;
 	private Marker selectedLocationInEventMarker;
@@ -111,17 +108,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 
 	private RestaurantsGetter restaurantItemGetter;
 	private OnExtraListDataListener<Integer> restaurantOnExtraListDataListener;
-	private PlaceItemsGetter placeItemsGetter;
-
-	private ChipGroup placeCategoryChipGroup;
-	private ArrayMap<String, Chip> placeCategoryChipMap = new ArrayMap<>();
-	private Chip placeCategoryListChip;
-	private Chip placeCategorySettingsChip;
-	private String selectedPlaceCategoryCode;
-	private OnExtraListDataListener<String> placeCategoryOnExtraListDataListener;
-	private Set<PlaceCategoryDTO> savedPlaceCategorySet = new HashSet<>();
-
-	private LinearLayout chipsLayout;
 
 	private NetworkStatus networkStatus;
 	private CloseWindow closeWindow = new CloseWindow(new CloseWindow.OnBackKeyDoubleClickedListener() {
@@ -193,7 +179,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 								public void run() {
 									//chips 재 생성
 									placeCategoryChipMap.clear();
-									placeCategoryChipGroup.removeViews(2, placeCategoryChipGroup.getChildCount() - 2);
+									placeCategoryChipGroup.removeViews(0, placeCategoryChipGroup.getChildCount());
 									setPlaceCategoryChips(newPlaceCategoryList);
 								}
 							});
@@ -325,7 +311,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		super.onViewCreated(view, savedInstanceState);
 
 		binding.bottomNavigation.inflateMenu(R.menu.bottomnav_menu_in_event_info_fragment);
-
 		binding.bottomNavigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
 			@Override
 			public boolean onNavigationItemSelected(@NonNull @NotNull MenuItem item) {
@@ -351,6 +336,9 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 						}, DEFAULT_HEIGHT_OF_BOTTOMSHEET, calendarId,
 								eventId);
 						weatherMainFragment.show(getChildFragmentManager(), WeatherMainFragment.TAG);
+						break;
+					case R.id.map_around:
+						onClickedAroundMap();
 						break;
 					case R.id.restaurants:
 						FragmentManager fragmentManager = getChildFragmentManager();
@@ -417,8 +405,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 										selectedLocationDtoInEvent = savedLocationDto;
 
 										loadMap();
-										addPlaceCategoryListFragmentIntoBottomSheet();
-										createPlaceCategoryListChips();
 									}
 								});
 							}
@@ -456,12 +442,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		getChildFragmentManager().unregisterFragmentLifecycleCallbacks(fragmentLifecycleCallbacks);
 	}
 
-	private void setHeightOfBottomSheet(int height, LinearLayout bottomSheetView, BottomSheetBehavior bottomSheetBehavior) {
-		bottomSheetView.getLayoutParams().height = height;
-		bottomSheetView.requestLayout();
-		bottomSheetBehavior.onLayoutChild(binding.naverMapFragmentRootLayout, bottomSheetView, ViewCompat.LAYOUT_DIRECTION_LTR);
-	}
-
 	@Override
 	public void onMapReady(@NonNull NaverMap naverMap) {
 		super.onMapReady(naverMap);
@@ -483,23 +463,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 							binding.headerLayout.setVisibility(View.VISIBLE);
 							binding.naverMapButtonsLayout.getRoot().setVisibility(View.VISIBLE);
 
-							if (bottomSheetFragmentMap.containsKey(BottomSheetType.SELECTED_PLACE_CATEGORY)) {
-								binding.naverMapFragmentRootLayout.removeView(bottomSheetViewMap.get(BottomSheetType.SELECTED_PLACE_CATEGORY));
-								getChildFragmentManager().beginTransaction()
-										.remove(getChildFragmentManager().findFragmentByTag(getString(R.string.tag_places_of_selected_categories_fragment)))
-										.commit();
-								bottomSheetFragmentMap.remove(BottomSheetType.SELECTED_PLACE_CATEGORY);
-								bottomSheetBehaviorMap.remove(BottomSheetType.SELECTED_PLACE_CATEGORY);
-								bottomSheetViewMap.remove(BottomSheetType.SELECTED_PLACE_CATEGORY);
-							}
-							if (chipsLayout != null) {
-								chipsLayout.removeAllViews();
-								binding.headerLayout.removeView(chipsLayout);
-								chipsLayout = null;
-							}
 							loadMap();
-							addPlaceCategoryListFragmentIntoBottomSheet();
-							createPlaceCategoryListChips();
 						}
 					});
 
@@ -845,240 +809,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	}
 
 
-	public void createPlaceCategoryListChips() {
-		chipsLayout = new LinearLayout(getContext());
-		chipsLayout.setOrientation(LinearLayout.HORIZONTAL);
-
-		LinearLayout.LayoutParams chipLayoutsParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-				ViewGroup.LayoutParams.WRAP_CONTENT);
-		binding.headerLayout.addView(chipsLayout, chipLayoutsParams);
-
-		//scrollview
-		HorizontalScrollView chipScrollView = new HorizontalScrollView(getContext());
-		chipScrollView.setHorizontalScrollBarEnabled(false);
-		chipScrollView.setId(R.id.place_category_chips_scroll_layout);
-		LinearLayout.LayoutParams chipLayoutParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT);
-		chipLayoutParams.gravity = Gravity.CENTER_VERTICAL;
-		chipLayoutParams.weight = 1;
-
-		chipsLayout.addView(chipScrollView, chipLayoutParams);
-
-		placeCategoryChipGroup = new ChipGroup(getContext(), null, R.style.Widget_MaterialComponents_ChipGroup);
-		placeCategoryChipGroup.setSingleSelection(true);
-		placeCategoryChipGroup.setSingleLine(true);
-		placeCategoryChipGroup.setId(R.id.chip_group);
-		placeCategoryChipGroup.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-
-		chipScrollView.addView(placeCategoryChipGroup);
-		addDefaultChips();
-
-		placeCategoryViewModel.selectConvertedSelected(new DbQueryCallback<List<PlaceCategoryDTO>>() {
-			@Override
-			public void onResultSuccessful(List<PlaceCategoryDTO> savedPlaceCategoryList) {
-				savedPlaceCategorySet.addAll(savedPlaceCategoryList);
-
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						setPlaceCategoryChips(savedPlaceCategoryList);
-					}
-				});
-			}
-
-			@Override
-			public void onResultNoData() {
-			}
-		});
-	}
-
-	@Override
-	public void addPlaceCategoryListFragmentIntoBottomSheet() {
-		//place category
-		Object[] placeCategoryResult = createBottomSheet(R.id.place_category_fragment_container);
-		LinearLayout placeCategoryBottomSheet = (LinearLayout) placeCategoryResult[0];
-		BottomSheetBehavior placeCategoryBottomSheetBehavior = (BottomSheetBehavior) placeCategoryResult[1];
-
-		bottomSheetViewMap.put(BottomSheetType.SELECTED_PLACE_CATEGORY, placeCategoryBottomSheet);
-		bottomSheetBehaviorMap.put(BottomSheetType.SELECTED_PLACE_CATEGORY, placeCategoryBottomSheetBehavior);
-
-		setHeightOfBottomSheet(DEFAULT_HEIGHT_OF_BOTTOMSHEET, placeCategoryBottomSheet, placeCategoryBottomSheetBehavior);
-
-		placeCategoryBottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
-			@Override
-			public void onStateChanged(@NonNull View bottomSheet, int newState) {
-				if (newState == BottomSheetBehavior.STATE_EXPANDED) {
-					placeCategoryListChip.setText(R.string.close_place_category_list);
-				} else if (newState == BottomSheetBehavior.STATE_COLLAPSED) {
-					placeCategoryListChip.setText(R.string.open_place_category_list);
-				}
-			}
-
-			@Override
-			public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-
-			}
-		});
-
-		PlacesOfSelectedCategoriesFragment placesOfSelectedCategoriesFragment = new PlacesOfSelectedCategoriesFragment(eventId, new OnClickedPlacesListListener() {
-			@Override
-			public void onClickedItemInList(PlaceCategoryDTO placeCategory, PlaceDocuments placeDocument, int index) {
-				getChildFragmentManager().popBackStackImmediate();
-				placeCategoryChipMap.get(placeCategory.getCode()).setChecked(true);
-				onPOIItemSelectedByList(placeDocument, MarkerType.SELECTED_PLACE_CATEGORY);
-			}
-
-			@Override
-			public void onClickedMoreInList(PlaceCategoryDTO placeCategory) {
-				getChildFragmentManager().popBackStackImmediate();
-				placeCategoryChipMap.get(placeCategory.getCode()).setChecked(true);
-			}
-
-		}, new OnHiddenFragmentListener() {
-			@Override
-			public void onHiddenChangedFragment(boolean hidden) {
-				if (hidden) {
-					setStateOfBottomSheet(BottomSheetType.SELECTED_PLACE_CATEGORY, BottomSheetBehavior.STATE_COLLAPSED);
-				} else {
-
-				}
-			}
-		});
-		bottomSheetFragmentMap.put(BottomSheetType.SELECTED_PLACE_CATEGORY, placesOfSelectedCategoriesFragment);
-		placeCategoryOnExtraListDataListener = placesOfSelectedCategoriesFragment;
-		placeItemsGetter = placesOfSelectedCategoriesFragment;
-
-		getChildFragmentManager().beginTransaction()
-				.add(placeCategoryBottomSheet.getChildAt(0).getId()
-						, placesOfSelectedCategoriesFragment, getString(R.string.tag_places_of_selected_categories_fragment)).commit();
-	}
-
-	@Override
-	public void setPlaceCategoryChips(List<PlaceCategoryDTO> placeCategoryList) {
-		//카테고리를 chip으로 표시
-		int index = 0;
-
-		for (PlaceCategoryDTO placeCategory : placeCategoryList) {
-			Chip chip = new Chip(getContext(), null, R.style.Widget_MaterialComponents_Chip_Filter);
-			chip.setChecked(false);
-			chip.setText(placeCategory.getDescription());
-			chip.setClickable(true);
-			chip.setCheckable(true);
-			chip.setVisibility(View.VISIBLE);
-			chip.setOnCheckedChangeListener(placeCategoryChipOnCheckedChangeListener);
-			chip.setGravity(Gravity.CENTER);
-
-			final PlaceCategoryChipViewHolder chipViewHolder = new PlaceCategoryChipViewHolder(placeCategory, index++);
-			chip.setTag(chipViewHolder);
-
-			placeCategoryChipMap.put(placeCategory.getCode(), chip);
-			placeCategoryChipGroup.addView(chip, new ChipGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-		}
-	}
-
-	@Override
-	public void addDefaultChips() {
-		//바텀시트를 확장/축소 하는 chip
-		placeCategoryListChip = new Chip(getContext());
-		placeCategoryListChip.setChecked(false);
-		placeCategoryListChip.setText(R.string.open_place_category_list);
-		placeCategoryListChip.setClickable(true);
-		placeCategoryListChip.setCheckable(false);
-		placeCategoryListChip.setTextColor(Color.BLUE);
-		placeCategoryListChip.setOnClickListener(new View.OnClickListener() {
-			boolean initializing = true;
-
-			@Override
-			public void onClick(View view) {
-				FragmentManager fragmentManager = getChildFragmentManager();
-				Fragment placesOfSelectedCategoriesFragment =
-						bottomSheetFragmentMap.get(BottomSheetType.SELECTED_PLACE_CATEGORY);
-
-				if (placesOfSelectedCategoriesFragment.isVisible()) {
-					if (initializing) {
-						initializing = false;
-						fragmentManager.beginTransaction()
-								.show(placesOfSelectedCategoriesFragment)
-								.addToBackStack(getString(R.string.tag_places_of_selected_categories_fragment))
-								.commit();
-
-						setStateOfBottomSheet(BottomSheetType.SELECTED_PLACE_CATEGORY, BottomSheetBehavior.STATE_EXPANDED);
-					} else {
-						fragmentManager.popBackStackImmediate();
-					}
-				} else {
-					fragmentManager.beginTransaction()
-							.show(placesOfSelectedCategoriesFragment)
-							.addToBackStack(getString(R.string.tag_places_of_selected_categories_fragment))
-							.commit();
-
-					setStateOfBottomSheet(BottomSheetType.SELECTED_PLACE_CATEGORY, BottomSheetBehavior.STATE_EXPANDED);
-				}
-			}
-		});
-
-		//place category를 설정하는 프래그먼트를 여는 chip
-		placeCategorySettingsChip = new Chip(getContext());
-		placeCategorySettingsChip.setChecked(false);
-		placeCategorySettingsChip.setText(R.string.app_settings);
-		placeCategorySettingsChip.setClickable(true);
-		placeCategorySettingsChip.setCheckable(false);
-		placeCategorySettingsChip.setTextColor(Color.BLUE);
-		placeCategorySettingsChip.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				PlaceCategorySettingsFragment placeCategorySettingsFragment = new PlaceCategorySettingsFragment();
-				getChildFragmentManager().beginTransaction().add(binding.fragmentContainer.getId(), placeCategorySettingsFragment,
-						getString(R.string.tag_place_category_settings_fragment)).addToBackStack(getString(R.string.tag_place_category_settings_fragment)).commit();
-			}
-		});
-
-		placeCategoryChipGroup.addView(placeCategoryListChip, 0);
-		placeCategoryChipGroup.addView(placeCategorySettingsChip, 1);
-	}
-
-
-	private final CompoundButton.OnCheckedChangeListener placeCategoryChipOnCheckedChangeListener = new CompoundButton.OnCheckedChangeListener() {
-		@Override
-		public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-            /*
-           - chip이 이미 선택되어 있는 경우
-           같은 chip인 경우 : 선택해제, poiitem모두 삭제하고 bottomsheet를 숨긴다
-           다른 chip인 경우 : 새로운 chip이 선택되고 난 뒤에 기존 chip이 선택해제 된다
-           poiitem이 선택된 경우 해제하고, poiitem을 새로 생성한 뒤 poiitem전체가 보이도록 설정
-             */
-			if (isChecked) {
-				if (bottomSheetFragmentMap.get(BottomSheetType.SELECTED_PLACE_CATEGORY).isVisible()) {
-					getChildFragmentManager().popBackStackImmediate();
-				}
-				selectedPlaceCategoryCode = ((PlaceCategoryChipViewHolder) compoundButton.getTag()).placeCategory.getCode();
-
-				placeItemsGetter.getPlaces(new DbQueryCallback<List<PlaceDocuments>>() {
-					@Override
-					public void onResultSuccessful(List<PlaceDocuments> result) {
-						createMarkers(result, MarkerType.SELECTED_PLACE_CATEGORY);
-						showMarkers(MarkerType.SELECTED_PLACE_CATEGORY);
-					}
-
-					@Override
-					public void onResultNoData() {
-						requireActivity().runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								Toast.makeText(getActivity(), getString(R.string.not_founded_search_result), Toast.LENGTH_SHORT).show();
-							}
-						});
-					}
-				}, selectedPlaceCategoryCode);
-			} else if (placeCategoryChipGroup.getCheckedChipIds().isEmpty()
-					&& !markersMap.get(MarkerType.SELECTED_PLACE_CATEGORY)
-					.isEmpty()) {
-				removeMarkers(MarkerType.SELECTED_PLACE_CATEGORY);
-			}
-			setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
-		}
-	};
-
-
 	@Override
 	public void createRestaurantPoiItems(RestaurantsGetter restaurantsGetter,
 	                                     OnExtraListDataListener<Integer> onExtraListDataListener) {
@@ -1205,16 +935,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 
 	}
 
-
-	static final class PlaceCategoryChipViewHolder {
-		PlaceCategoryDTO placeCategory;
-		int index;
-
-		public PlaceCategoryChipViewHolder(PlaceCategoryDTO placeCategory, int index) {
-			this.placeCategory = placeCategory;
-			this.index = index;
-		}
-	}
 
 	public interface RestaurantsGetter {
 		void getRestaurants(DbQueryCallback<List<PlaceDocuments>> callback);
