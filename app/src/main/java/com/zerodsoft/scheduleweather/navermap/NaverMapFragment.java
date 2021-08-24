@@ -195,6 +195,22 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	final public Map<MarkerType, List<Marker>> markersMap = new HashMap<>();
 	final public Map<MarkerType, LocationItemViewPagerAbstractAdapter> viewPagerAdapterMap = new HashMap<>();
 
+	private final FragmentManager.OnBackStackChangedListener onBackStackChangedListener = new FragmentManager.OnBackStackChangedListener() {
+		@Override
+		public void onBackStackChanged() {
+			FragmentManager fragmentManager = getChildFragmentManager();
+
+			if (fragmentManager.getBackStackEntryCount() > 0) {
+				FragmentManager.BackStackEntry topBackStackEntry =
+						fragmentManager.getBackStackEntryAt(fragmentManager.getBackStackEntryCount() - 1);
+
+				if (topBackStackEntry.getName().equals(getString(R.string.tag_places_of_selected_categories_fragment))) {
+					setStateOfBottomSheet(BottomSheetType.SELECTED_PLACE_CATEGORY, BottomSheetBehavior.STATE_EXPANDED);
+				}
+			}
+		}
+	};
+
 	protected final FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks = new FragmentManager.FragmentLifecycleCallbacks() {
 		@Override
 		public void onFragmentAttached(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @NonNull @NotNull Context context) {
@@ -272,6 +288,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 				});
 			}
 		}
+
+
 	};
 
 
@@ -311,8 +329,10 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
+
 		favoriteLocationViewModel = new ViewModelProvider(requireActivity()).get(FavoriteLocationViewModel.class);
 		getChildFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false);
+		getChildFragmentManager().addOnBackStackChangedListener(onBackStackChangedListener);
 
 		mapSharedViewModel = new ViewModelProvider(this).get(MapSharedViewModel.class);
 		mapSharedViewModel.setBottomSheetController(this);
@@ -1752,6 +1772,15 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 				.show(placesOfSelectedCategoriesFragment)
 				.addToBackStack(getString(R.string.tag_places_of_selected_categories_fragment))
 				.commit();
+		getChildFragmentManager().executePendingTransactions();
+	}
+
+	protected void onClickedItemOfPlacesOfSelectedCategories() {
+		binding.bottomNavigation.setVisibility(View.GONE);
+		setStateOfBottomSheet(BottomSheetType.SELECTED_PLACE_CATEGORY, BottomSheetBehavior.STATE_COLLAPSED);
+		getChildFragmentManager().beginTransaction().hide(bottomSheetFragmentMap.get(BottomSheetType.SELECTED_PLACE_CATEGORY))
+				.addToBackStack(getString(R.string.tag_clicked_places_of_selected_categories)).commit();
+		getChildFragmentManager().executePendingTransactions();
 	}
 
 	public void createPlaceCategoryListChips() {
@@ -1817,16 +1846,14 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 				new OnClickedPlacesListListener() {
 					@Override
 					public void onClickedItemInList(PlaceCategoryDTO placeCategory, PlaceDocuments placeDocument, int index) {
-						binding.bottomNavigation.setVisibility(View.GONE);
-						setStateOfBottomSheet(BottomSheetType.SELECTED_PLACE_CATEGORY, BottomSheetBehavior.STATE_COLLAPSED);
+						onClickedItemOfPlacesOfSelectedCategories();
 						placeCategoryChipMap.get(placeCategory.getCode()).setChecked(true);
 						onPOIItemSelectedByList(placeDocument, MarkerType.SELECTED_PLACE_CATEGORY);
 					}
 
 					@Override
 					public void onClickedMoreInList(PlaceCategoryDTO placeCategory) {
-						binding.bottomNavigation.setVisibility(View.GONE);
-						setStateOfBottomSheet(BottomSheetType.SELECTED_PLACE_CATEGORY, BottomSheetBehavior.STATE_COLLAPSED);
+						onClickedItemOfPlacesOfSelectedCategories();
 						placeCategoryChipMap.get(placeCategory.getCode()).setChecked(true);
 					}
 				}, onAroundHiddenFragmentListener, new PlacesOfSelectedCategoriesFragment.OnRefreshCriteriaLocationListener() {
@@ -1852,6 +1879,13 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	protected final OnHiddenFragmentListener onAroundHiddenFragmentListener = new OnHiddenFragmentListener() {
 		@Override
 		public void onHiddenChangedFragment(boolean hidden) {
+			if (getChildFragmentManager().getBackStackEntryCount() > 0) {
+				FragmentManager fragmentManager = getChildFragmentManager();
+				if (fragmentManager.getBackStackEntryAt(fragmentManager.getBackStackEntryCount() - 1).getName()
+						.equals(getString(R.string.tag_clicked_places_of_selected_categories))) {
+					return;
+				}
+			}
 			if (hidden) {
 				if (placeCategoryChipGroup != null) {
 					if (placeCategoryChipGroup.getCheckedChipIds().size() > 0) {
@@ -1913,7 +1947,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
              */
 			if (isChecked) {
 				if (getStateOfBottomSheet(BottomSheetType.SELECTED_PLACE_CATEGORY) == BottomSheetBehavior.STATE_EXPANDED) {
-					setStateOfBottomSheet(BottomSheetType.SELECTED_PLACE_CATEGORY, BottomSheetBehavior.STATE_COLLAPSED);
+					onClickedItemOfPlacesOfSelectedCategories();
 				}
 				selectedPlaceCategoryCode = ((PlaceCategoryChipViewHolder) compoundButton.getTag()).placeCategory.getCode();
 

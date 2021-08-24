@@ -677,4 +677,5 @@
     <string name="sun_set_rise">일출/일몰</string>
     <string name="empty_events">이벤트가 없습니다</string>
     <string name="map_around">주변</string>
+    <string name="tag_clicked_places_of_selected_categories">tag_clicked_places_of_selected_categories</string>
 </resources>

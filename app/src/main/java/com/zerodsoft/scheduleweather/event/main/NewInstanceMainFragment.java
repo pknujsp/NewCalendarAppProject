@@ -127,6 +127,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		}
 	};
 
+
+
 	private FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks = new FragmentManager.FragmentLifecycleCallbacks() {
 		@Override
 		public void onFragmentAttached(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @NonNull @NotNull Context context) {
@@ -157,7 +159,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		@Override
 		public void onFragmentDestroyed(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
 			super.onFragmentDestroyed(fm, f);
-			 if (f instanceof RestaurantFragment) {
+			if (f instanceof RestaurantFragment) {
 				binding.headerLayout.setVisibility(View.VISIBLE);
 				binding.naverMapButtonsLayout.buildingButton.setVisibility(View.VISIBLE);
 				binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.VISIBLE);
