@@ -10,8 +10,6 @@ import android.graphics.PointF;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.net.ConnectivityManager;
-import android.net.Network;
 import android.os.Bundle;
 
 import androidx.activity.result.ActivityResult;
@@ -125,7 +123,6 @@ import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.room.interfaces.FavoriteLocationQuery;
-import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
 import org.jetbrains.annotations.NotNull;
 import org.xmlpull.v1.XmlPullParser;
@@ -239,6 +236,40 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 				buildingButton.setImageDrawable(ContextCompat.getDrawable(getContext(),
 						R.drawable.building_black));
 				binding.headerLayout.setVisibility(View.VISIBLE);
+			} else if (f instanceof PlaceCategorySettingsFragment) {
+				//place category가 변경된 경우 갱신
+				placeCategoryViewModel.selectConvertedSelected(new DbQueryCallback<List<PlaceCategoryDTO>>() {
+					@Override
+					public void onResultSuccessful(List<PlaceCategoryDTO> newPlaceCategoryList) {
+						Set<PlaceCategoryDTO> newSet = new HashSet<>();
+						newSet.addAll(newPlaceCategoryList);
+
+						Set<PlaceCategoryDTO> removedSet = new HashSet<>(savedPlaceCategorySet);
+						Set<PlaceCategoryDTO> addedSet = new HashSet<>(newSet);
+
+						removedSet.removeAll(newSet);
+						addedSet.removeAll(savedPlaceCategorySet);
+
+						if (!removedSet.isEmpty() || !addedSet.isEmpty()) {
+							savedPlaceCategorySet = newSet;
+
+							requireActivity().runOnUiThread(new Runnable() {
+								@Override
+								public void run() {
+									//chips 재 생성
+									placeCategoryChipMap.clear();
+									placeCategoryChipGroup.removeViews(0, placeCategoryChipGroup.getChildCount());
+									setPlaceCategoryChips(newPlaceCategoryList);
+								}
+							});
+						}
+
+					}
+
+					@Override
+					public void onResultNoData() {
+					}
+				});
 			}
 		}
 	};
@@ -292,6 +323,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
 		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 		searchHistoryViewModel = new ViewModelProvider(this).get(SearchHistoryViewModel.class);
+		placeCategoryViewModel = new ViewModelProvider(this).get(PlaceCategoryViewModel.class);
 
 		CircularProgressIndicator circularProgressIndicator = new CircularProgressIndicator(getActivity());
 		circularProgressIndicator.setIndeterminate(true);
@@ -1712,14 +1744,14 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		if (aroundMapInitializing) {
 			aroundMapInitializing = false;
 			placesOfSelectedCategoriesFragment.makeCategoryListView();
+
+			onAroundHiddenFragmentListener.onHiddenChangedFragment(false);
 		}
 
 		getChildFragmentManager().beginTransaction()
 				.show(placesOfSelectedCategoriesFragment)
 				.addToBackStack(getString(R.string.tag_places_of_selected_categories_fragment))
 				.commit();
-
-		setStateOfBottomSheet(BottomSheetType.SELECTED_PLACE_CATEGORY, BottomSheetBehavior.STATE_EXPANDED);
 	}
 
 	public void createPlaceCategoryListChips() {
@@ -1765,6 +1797,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			public void onResultNoData() {
 			}
 		});
+
+		chipsLayout.setVisibility(View.GONE);
 	}
 
 	@Override
@@ -1778,40 +1812,30 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		bottomSheetBehaviorMap.put(BottomSheetType.SELECTED_PLACE_CATEGORY, placeCategoryBottomSheetBehavior);
 
 		setHeightOfBottomSheet(DEFAULT_HEIGHT_OF_BOTTOMSHEET, placeCategoryBottomSheet, placeCategoryBottomSheetBehavior);
-		placeCategoryBottomSheetBehavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
-			@Override
-			public void onStateChanged(@NonNull View bottomSheet, int newState) {
 
-			}
-
-			@Override
-			public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-
-			}
-		});
-
-		PlacesOfSelectedCategoriesFragment placesOfSelectedCategoriesFragment = new PlacesOfSelectedCategoriesFragment(0L,
+		PlacesOfSelectedCategoriesFragment placesOfSelectedCategoriesFragment = new PlacesOfSelectedCategoriesFragment(
 				new OnClickedPlacesListListener() {
 					@Override
 					public void onClickedItemInList(PlaceCategoryDTO placeCategory, PlaceDocuments placeDocument, int index) {
-						getChildFragmentManager().popBackStackImmediate();
+						binding.bottomNavigation.setVisibility(View.GONE);
+						setStateOfBottomSheet(BottomSheetType.SELECTED_PLACE_CATEGORY, BottomSheetBehavior.STATE_COLLAPSED);
 						placeCategoryChipMap.get(placeCategory.getCode()).setChecked(true);
 						onPOIItemSelectedByList(placeDocument, MarkerType.SELECTED_PLACE_CATEGORY);
 					}
 
 					@Override
 					public void onClickedMoreInList(PlaceCategoryDTO placeCategory) {
-						getChildFragmentManager().popBackStackImmediate();
+						binding.bottomNavigation.setVisibility(View.GONE);
+						setStateOfBottomSheet(BottomSheetType.SELECTED_PLACE_CATEGORY, BottomSheetBehavior.STATE_COLLAPSED);
 						placeCategoryChipMap.get(placeCategory.getCode()).setChecked(true);
 					}
-
-				}, new OnHiddenFragmentListener() {
+				}, onAroundHiddenFragmentListener, new PlacesOfSelectedCategoriesFragment.OnRefreshCriteriaLocationListener() {
 			@Override
-			public void onHiddenChangedFragment(boolean hidden) {
-				if (hidden) {
-					setStateOfBottomSheet(BottomSheetType.SELECTED_PLACE_CATEGORY, BottomSheetBehavior.STATE_COLLAPSED);
-				} else {
-
+			public void onRefreshedCriteriaLocation() {
+				if (placeCategoryChipGroup != null) {
+					if (placeCategoryChipGroup.getCheckedChipIds().size() > 0) {
+						placeCategoryChipGroup.clearCheck();
+					}
 				}
 			}
 		});
@@ -1824,6 +1848,32 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 				.add(placeCategoryBottomSheet.getChildAt(0).getId()
 						, placesOfSelectedCategoriesFragment, getString(R.string.tag_places_of_selected_categories_fragment)).commit();
 	}
+
+	protected final OnHiddenFragmentListener onAroundHiddenFragmentListener = new OnHiddenFragmentListener() {
+		@Override
+		public void onHiddenChangedFragment(boolean hidden) {
+			if (hidden) {
+				if (placeCategoryChipGroup != null) {
+					if (placeCategoryChipGroup.getCheckedChipIds().size() > 0) {
+						placeCategoryChipGroup.clearCheck();
+					}
+				}
+				binding.bottomNavigation.setVisibility(View.VISIBLE);
+				binding.headerFragmentContainer.setVisibility(View.VISIBLE);
+				chipsLayout.setVisibility(View.GONE);
+				binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.VISIBLE);
+				binding.naverMapButtonsLayout.buildingButton.setVisibility(View.VISIBLE);
+				setStateOfBottomSheet(BottomSheetType.SELECTED_PLACE_CATEGORY, BottomSheetBehavior.STATE_COLLAPSED);
+			} else {
+				binding.bottomNavigation.setVisibility(View.GONE);
+				binding.headerFragmentContainer.setVisibility(View.GONE);
+				chipsLayout.setVisibility(View.VISIBLE);
+				binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.GONE);
+				binding.naverMapButtonsLayout.buildingButton.setVisibility(View.GONE);
+				setStateOfBottomSheet(BottomSheetType.SELECTED_PLACE_CATEGORY, BottomSheetBehavior.STATE_EXPANDED);
+			}
+		}
+	};
 
 	@Override
 	public void setPlaceCategoryChips(List<PlaceCategoryDTO> placeCategoryList) {
@@ -1840,11 +1890,14 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			chip.setOnCheckedChangeListener(placeCategoryChipOnCheckedChangeListener);
 			chip.setGravity(Gravity.CENTER);
 
-			final PlaceCategoryChipViewHolder chipViewHolder = new PlaceCategoryChipViewHolder(placeCategory, index++);
+			PlaceCategoryChipViewHolder chipViewHolder = new PlaceCategoryChipViewHolder(placeCategory, index++);
 			chip.setTag(chipViewHolder);
 
+			ChipGroup.LayoutParams layoutParams = new ChipGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+					ViewGroup.LayoutParams.WRAP_CONTENT);
+			placeCategoryChipGroup.addView(chip, layoutParams);
 			placeCategoryChipMap.put(placeCategory.getCode(), chip);
-			placeCategoryChipGroup.addView(chip, new ChipGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+			index++;
 		}
 	}
 
@@ -1859,8 +1912,8 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
            poiitem이 선택된 경우 해제하고, poiitem을 새로 생성한 뒤 poiitem전체가 보이도록 설정
              */
 			if (isChecked) {
-				if (bottomSheetFragmentMap.get(BottomSheetType.SELECTED_PLACE_CATEGORY).isVisible()) {
-					getChildFragmentManager().popBackStackImmediate();
+				if (getStateOfBottomSheet(BottomSheetType.SELECTED_PLACE_CATEGORY) == BottomSheetBehavior.STATE_EXPANDED) {
+					setStateOfBottomSheet(BottomSheetType.SELECTED_PLACE_CATEGORY, BottomSheetBehavior.STATE_COLLAPSED);
 				}
 				selectedPlaceCategoryCode = ((PlaceCategoryChipViewHolder) compoundButton.getTag()).placeCategory.getCode();
 

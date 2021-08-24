@@ -14,6 +14,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.paging.PagedList;
@@ -21,6 +22,7 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.naver.maps.geometry.LatLng;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
@@ -36,6 +38,7 @@ import com.zerodsoft.scheduleweather.event.places.adapter.PlaceItemsAdapters;
 import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;
 import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceItemsGetter;
 import com.zerodsoft.scheduleweather.kakaoplace.retrofit.KakaoLocalDownloader;
+import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.kakaoplace.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnKakaoLocalApiCallback;
@@ -46,8 +49,9 @@ import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalResponse;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.coordtoaddressresponse.CoordToAddress;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
-import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.text.DecimalFormat;
 import java.util.HashSet;
@@ -55,12 +59,11 @@ import java.util.List;
 import java.util.Set;
 
 public class PlacesOfSelectedCategoriesFragment extends Fragment implements PlaceItemsGetter, OnExtraListDataListener<String> {
-	private final long EVENT_ID;
 	private final OnClickedPlacesListListener onClickedPlacesListListener;
 
 	private DecimalFormat decimalFormat = new DecimalFormat("#.#");
-	private BottomSheetController bottomSheetController;
 	private OnHiddenFragmentListener onHiddenFragmentListener;
+	private OnRefreshCriteriaLocationListener onRefreshCriteriaLocationListener;
 
 	private PlacelistFragmentBinding binding;
 	private Set<PlaceCategoryDTO> placeCategorySet = new HashSet<>();
@@ -68,6 +71,7 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 	private PlaceCategoryViewModel placeCategoryViewModel;
 	private LocationViewModel locationViewModel;
 	private MapSharedViewModel mapSharedViewModel;
+	private BottomSheetController bottomSheetController;
 	private LatLng newLatLng;
 	private LatLng lastLatLng = new LatLng(0L, 0L);
 
@@ -76,11 +80,22 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 
 	private boolean initializing = true;
 
-	public PlacesOfSelectedCategoriesFragment(long EVENT_ID, OnClickedPlacesListListener onClickedPlacesListListener,
-	                                          OnHiddenFragmentListener onHiddenFragmentListener) {
-		this.EVENT_ID = EVENT_ID;
+	private FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks = new FragmentManager.FragmentLifecycleCallbacks() {
+		@Override
+		public void onFragmentDestroyed(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
+			super.onFragmentDestroyed(fm, f);
+			if (f instanceof PlaceCategorySettingsFragment) {
+				bottomSheetController.setStateOfBottomSheet(BottomSheetType.SELECTED_PLACE_CATEGORY, BottomSheetBehavior.STATE_EXPANDED);
+			}
+		}
+	};
+
+	public PlacesOfSelectedCategoriesFragment(OnClickedPlacesListListener onClickedPlacesListListener,
+	                                          OnHiddenFragmentListener onHiddenFragmentListener,
+	                                          OnRefreshCriteriaLocationListener onRefreshCriteriaLocationListener) {
 		this.onClickedPlacesListListener = onClickedPlacesListListener;
 		this.onHiddenFragmentListener = onHiddenFragmentListener;
+		this.onRefreshCriteriaLocationListener = onRefreshCriteriaLocationListener;
 	}
 
 	public void setNewLatLng(LatLng newLatLng) {
@@ -90,13 +105,13 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		getParentFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false);
 
 		mapSharedViewModel = new ViewModelProvider(getParentFragment()).get(MapSharedViewModel.class);
-		bottomSheetController = mapSharedViewModel.getBottomSheetController();
-
 		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 		placeCategoryViewModel = new ViewModelProvider(requireActivity()).get(PlaceCategoryViewModel.class);
 
+		bottomSheetController = mapSharedViewModel.getBottomSheetController();
 		placeCategoryViewModel.getOnSelectedCategoryLiveData().observe(this, new Observer<PlaceCategoryDTO>() {
 			@Override
 			public void onChanged(PlaceCategoryDTO placeCategoryDTO) {
@@ -149,7 +164,8 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 		binding.settings.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				getParentFragmentManager().popBackStackImmediate();
+				bottomSheetController.setStateOfBottomSheet(BottomSheetType.SELECTED_PLACE_CATEGORY, BottomSheetBehavior.STATE_COLLAPSED);
+
 				PlaceCategorySettingsFragment placeCategorySettingsFragment = new PlaceCategorySettingsFragment();
 				getParentFragmentManager().beginTransaction().add(R.id.fragment_container, placeCategorySettingsFragment,
 						getString(R.string.tag_place_category_settings_fragment)).addToBackStack(getString(R.string.tag_place_category_settings_fragment)).commit();
@@ -213,6 +229,7 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 			return;
 		}
 
+		onRefreshCriteriaLocationListener.onRefreshedCriteriaLocation();
 		LocalApiPlaceParameter coordToAddressParameter = LocalParameterUtil.getCoordToAddressParameter(newLatLng.latitude,
 				newLatLng.longitude);
 		KakaoLocalDownloader.coordToAddress(coordToAddressParameter, new OnKakaoLocalApiCallback() {
@@ -453,5 +470,9 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 
 		void setPlaceCategoryChips(List<PlaceCategoryDTO> placeCategoryList);
 
+	}
+
+	public interface OnRefreshCriteriaLocationListener {
+		void onRefreshedCriteriaLocation();
 	}
 }

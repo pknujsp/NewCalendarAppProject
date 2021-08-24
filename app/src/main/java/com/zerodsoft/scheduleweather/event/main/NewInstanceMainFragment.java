@@ -157,41 +157,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		@Override
 		public void onFragmentDestroyed(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
 			super.onFragmentDestroyed(fm, f);
-			if (f instanceof PlaceCategorySettingsFragment) {
-				//place category가 변경된 경우 갱신
-				placeCategoryViewModel.selectConvertedSelected(new DbQueryCallback<List<PlaceCategoryDTO>>() {
-					@Override
-					public void onResultSuccessful(List<PlaceCategoryDTO> newPlaceCategoryList) {
-						Set<PlaceCategoryDTO> newSet = new HashSet<>();
-						newSet.addAll(newPlaceCategoryList);
-
-						Set<PlaceCategoryDTO> removedSet = new HashSet<>(savedPlaceCategorySet);
-						Set<PlaceCategoryDTO> addedSet = new HashSet<>(newSet);
-
-						removedSet.removeAll(newSet);
-						addedSet.removeAll(savedPlaceCategorySet);
-
-						if (!removedSet.isEmpty() || !addedSet.isEmpty()) {
-							savedPlaceCategorySet = newSet;
-
-							requireActivity().runOnUiThread(new Runnable() {
-								@Override
-								public void run() {
-									//chips 재 생성
-									placeCategoryChipMap.clear();
-									placeCategoryChipGroup.removeViews(0, placeCategoryChipGroup.getChildCount());
-									setPlaceCategoryChips(newPlaceCategoryList);
-								}
-							});
-						}
-
-					}
-
-					@Override
-					public void onResultNoData() {
-					}
-				});
-			} else if (f instanceof RestaurantFragment) {
+			 if (f instanceof RestaurantFragment) {
 				binding.headerLayout.setVisibility(View.VISIBLE);
 				binding.naverMapButtonsLayout.buildingButton.setVisibility(View.VISIBLE);
 				binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.VISIBLE);
@@ -253,7 +219,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		originalEnd = arguments.getLong(CalendarContract.Instances.END);
 
 		calendarViewModel = new ViewModelProvider(requireActivity()).get(CalendarViewModel.class);
-		placeCategoryViewModel = new ViewModelProvider(this).get(PlaceCategoryViewModel.class);
 
 		eventValues = calendarViewModel.getInstance(instanceId, originalBegin, originalEnd);
 

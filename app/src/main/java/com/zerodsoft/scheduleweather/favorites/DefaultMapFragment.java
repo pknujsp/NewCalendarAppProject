@@ -58,6 +58,5 @@ public class DefaultMapFragment extends NaverMapFragment {
 	@Override
 	public void onHiddenChanged(boolean hidden) {
 		super.onHiddenChanged(hidden);
-		//
 	}
 }
