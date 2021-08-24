@@ -1743,7 +1743,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 		if (aroundMapInitializing) {
 			aroundMapInitializing = false;
-			placesOfSelectedCategoriesFragment.makeCategoryListView();
+			placesOfSelectedCategoriesFragment.refreshPlacesList();
 
 			onAroundHiddenFragmentListener.onHiddenChangedFragment(false);
 		}

@@ -146,7 +146,7 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 		if (hidden) {
 
 		} else {
-			makeCategoryListView();
+			refreshPlacesList();
 		}
 	}
 
@@ -195,7 +195,7 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 				App.setPreference_key_radius_range(newValueStrMeter);
 				setSearchRadius();
 
-				makeCategoryListView();
+				refreshPlacesList();
 			}
 		});
 
@@ -224,12 +224,43 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 		binding.searchRadius.setText(getString(R.string.search_radius) + " " + decimalFormat.format(value) + "km");
 	}
 
-	public void makeCategoryListView() {
+	public void refreshPlacesList() {
 		if (lastLatLng.equals(newLatLng)) {
 			return;
 		}
 
+		LocalApiPlaceParameter coordToAddressParameter = LocalParameterUtil.getCoordToAddressParameter(newLatLng.latitude,
+				newLatLng.longitude);
+		KakaoLocalDownloader.coordToAddress(coordToAddressParameter, new OnKakaoLocalApiCallback() {
+			@Override
+			public void onResultSuccessful(int type, KakaoLocalResponse result) {
+				lastLatLng = newLatLng;
+				CoordToAddress coordToAddress = (CoordToAddress) result;
+
+				if (getActivity() != null) {
+					requireActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							binding.addressName.setText(coordToAddress.getCoordToAddressDocuments().get(0).getCoordToAddressAddress().getAddressName());
+						}
+					});
+				}
+			}
+
+			@Override
+			public void onResultNoData() {
+
+			}
+		});
+
+		for (PlaceCategoryDTO placeCategoryDTO : placeCategorySet) {
+			loadList(placeCategoryDTO);
+		}
+
 		onRefreshCriteriaLocationListener.onRefreshedCriteriaLocation();
+	}
+
+	public void makeCategoryListView() {
 		LocalApiPlaceParameter coordToAddressParameter = LocalParameterUtil.getCoordToAddressParameter(newLatLng.latitude,
 				newLatLng.longitude);
 		KakaoLocalDownloader.coordToAddress(coordToAddressParameter, new OnKakaoLocalApiCallback() {
@@ -252,16 +283,13 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 									if (newPlaceCategoriesList.isEmpty()) {
 										initializing = false;
 										binding.customProgressView.onFailedProcessingData(getString(R.string.not_selected_place_category));
-										return;
 									} else {
 										binding.categoryViewlist.removeAllViews();
 										adaptersMap.clear();
 										listMap.clear();
 
-										final String rangeRadius = App.getPreference_key_radius_range();
-
 										for (PlaceCategoryDTO placeCategory : newPlaceCategoriesList) {
-											addCategoryView(placeCategory, rangeRadius);
+											addCategoryView(placeCategory);
 										}
 
 										binding.customProgressView.onSuccessfulProcessingData();
@@ -317,7 +345,6 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 									for (PlaceCategoryDTO placeCategoryDTO : removedSet) {
 										removeCodeSet.add(placeCategoryDTO.getCode());
 									}
-
 									int childCount = binding.categoryViewlist.getChildCount();
 
 									for (int index = childCount - 1; index >= 0; index--) {
@@ -333,10 +360,9 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 
 								if (!addedSet.isEmpty()) {
 									//추가
-									final String rangeRadius = App.getPreference_key_radius_range();
 
 									for (PlaceCategoryDTO placeCategory : addedSet) {
-										addCategoryView(placeCategory, rangeRadius);
+										addCategoryView(placeCategory);
 									}
 								}
 
@@ -361,12 +387,10 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 		});
 	}
 
-	private void addCategoryView(PlaceCategoryDTO placeCategory, String rangeRadius) {
+	private void addCategoryView(PlaceCategoryDTO placeCategory) {
 		LinearLayout categoryView = (LinearLayout) getLayoutInflater().inflate(R.layout.place_category_view, null);
-		PlaceItemsAdapters adapter = new PlaceItemsAdapters(onClickedPlacesListListener, placeCategory);
 		RecyclerView itemRecyclerView = (RecyclerView) categoryView.findViewById(R.id.map_category_itemsview);
 
-		adaptersMap.put(placeCategory.getCode(), adapter);
 		listMap.put(placeCategory.getCode(), itemRecyclerView);
 		categoryView.setTag(placeCategory.getCode());
 		binding.categoryViewlist.addView(categoryView);
@@ -375,12 +399,32 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 
 		CustomProgressView customProgressView = (CustomProgressView) categoryView.findViewById(R.id.custom_progress_view);
 		customProgressView.setContentView(itemRecyclerView);
-		customProgressView.onStartedProcessingData();
 
 		itemRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.HORIZONTAL, false));
 		itemRecyclerView.addItemDecoration(new CustomRecyclerViewItemDecoration((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8f, getResources().getDisplayMetrics())));
 
-		itemRecyclerView.setAdapter(adapter);
+		((Button) categoryView.findViewById(R.id.map_category_more)).setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				onClickedPlacesListListener.onClickedMoreInList(placeCategory);
+			}
+		});
+
+		loadList(placeCategory);
+	}
+
+	private void loadList(PlaceCategoryDTO placeCategory) {
+		CustomProgressView customProgressView = (CustomProgressView) binding.categoryViewlist.findViewWithTag(placeCategory.getCode())
+				.findViewById(R.id.custom_progress_view);
+		customProgressView.onStartedProcessingData();
+		PlaceItemsAdapters adapter = new PlaceItemsAdapters(onClickedPlacesListListener, placeCategory);
+
+		if (adaptersMap.containsKey(placeCategory.getCode())) {
+			adaptersMap.remove(placeCategory.getCode());
+		}
+		adaptersMap.put(placeCategory.getCode(), adapter);
+		listMap.get(placeCategory.getCode()).setAdapter(adapter);
+
 		adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
 
 			@Override
@@ -398,7 +442,7 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 		LocalApiPlaceParameter placeParameter = LocalParameterUtil.getPlaceParameter(placeCategory.getCode(), String.valueOf(newLatLng.latitude),
 				String.valueOf(newLatLng.longitude), LocalApiPlaceParameter.DEFAULT_SIZE, LocalApiPlaceParameter.DEFAULT_PAGE,
 				LocalApiPlaceParameter.SEARCH_CRITERIA_SORT_TYPE_ACCURACY);
-		placeParameter.setRadius(rangeRadius);
+		placeParameter.setRadius(App.getPreference_key_radius_range());
 
 		viewModel.init(placeParameter, new PagedList.BoundaryCallback<PlaceDocuments>() {
 			@Override
@@ -422,14 +466,6 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 						adapter.submitList(placeDocuments);
 					}
 				});
-
-		((Button) categoryView.findViewById(R.id.map_category_more)).setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				onClickedPlacesListListener.onClickedMoreInList(placeCategory);
-			}
-		});
-
 	}
 
 	@Override

@@ -6,7 +6,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:overScrollMode="never"
-        android:paddingTop="@dimen/corner_radius"
         android:scrollbarFadeDuration="10000"
         android:scrollbarSize="4dp"
         android:scrollbarStyle="insideOverlay"

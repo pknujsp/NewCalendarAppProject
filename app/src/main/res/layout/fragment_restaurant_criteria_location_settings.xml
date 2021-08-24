@@ -50,21 +50,34 @@
 
         </RadioGroup>
 
-        <com.zerodsoft.scheduleweather.common.view.CustomSearchView
-            android:id="@+id/search_view"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:backBtnVisibility="gone"
-            app:hint="@string/hint_request_input_address_or_place" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/address_history_recyclerview"
+        <LinearLayout
+            android:id="@+id/search_layout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:scrollbarDefaultDelayBeforeFade="500000"
-            android:scrollbarStyle="insideInset"
-            tools:listitem="@layout/search_location_history_item" />
+            android:orientation="vertical">
+
+            <com.zerodsoft.scheduleweather.common.view.CustomSearchView
+                android:id="@+id/search_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:backBtnVisibility="gone"
+                app:hint="@string/hint_request_input_address_or_place" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/address_history_recyclerview"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:scrollbarDefaultDelayBeforeFade="500000"
+                android:scrollbarStyle="insideInset"
+                tools:listitem="@layout/search_location_history_item" />
+
+            <com.zerodsoft.scheduleweather.common.view.CustomProgressView
+                android:id="@+id/custom_progress_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
 
     </LinearLayout>
 </layout>

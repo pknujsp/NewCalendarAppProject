@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -78,17 +79,46 @@ public class RestaurantCriteriaLocationSettingsFragment extends Fragment impleme
 	@Override
 	public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+		binding.searchLayout.setVisibility(View.GONE);
+
+		binding.customProgressView.setContentView(binding.addressHistoryRecyclerview);
+		binding.customProgressView.onSuccessfulProcessingData();
 
 		binding.addressHistoryRecyclerview.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
 		binding.addressHistoryRecyclerview.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
 
 		foodCriteriaLocationHistoryAdapter =
 				new FoodCriteriaLocationHistoryAdapter(RestaurantCriteriaLocationSettingsFragment.this);
+		foodCriteriaLocationHistoryAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+			@Override
+			public void onChanged() {
+				super.onChanged();
+				if (foodCriteriaLocationHistoryAdapter.getItemCount() == 0) {
+					binding.customProgressView.onFailedProcessingData(getString(R.string.not_search_history));
+				} else {
+					binding.customProgressView.onSuccessfulProcessingData();
+				}
+			}
+
+			@Override
+			public void onItemRangeInserted(int positionStart, int itemCount) {
+				super.onItemRangeInserted(positionStart, itemCount);
+				if (positionStart == 0) {
+					binding.customProgressView.onSuccessfulProcessingData();
+				}
+			}
+
+			@Override
+			public void onItemRangeRemoved(int positionStart, int itemCount) {
+				super.onItemRangeRemoved(positionStart, itemCount);
+				if (foodCriteriaLocationHistoryAdapter.getItemCount() == 0) {
+					binding.customProgressView.onFailedProcessingData(getString(R.string.not_search_history));
+				}
+			}
+		});
 		binding.addressHistoryRecyclerview.setAdapter(foodCriteriaLocationHistoryAdapter);
 
 		binding.radioGroup.setOnCheckedChangeListener(radioOnCheckedChangeListener);
-
-		binding.searchView.setVisibility(View.VISIBLE);
 		binding.searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
 			@Override
 			public boolean onQueryTextSubmit(String query) {
@@ -221,24 +251,21 @@ public class RestaurantCriteriaLocationSettingsFragment extends Fragment impleme
 		@Override
 		public void onCheckedChanged(RadioGroup radioGroup, int checkedId) {
 			if (checkedId == binding.radioUseSelectedLocation.getId()) {
-				binding.addressHistoryRecyclerview.setVisibility(View.GONE);
-				binding.searchView.setVisibility(View.GONE);
+				binding.searchLayout.setVisibility(View.GONE);
 
 				if (!initializing) {
 					foodCriteriaLocationInfoViewModel.updateByEventId(eventId,
 							CriteriaLocationType.TYPE_SELECTED_LOCATION.value(), null, finishCallback);
 				}
 			} else if (checkedId == binding.radioCurrentMapCenterPoint.getId()) {
-				binding.addressHistoryRecyclerview.setVisibility(View.GONE);
-				binding.searchView.setVisibility(View.GONE);
+				binding.searchLayout.setVisibility(View.GONE);
 
 				if (!initializing) {
 					foodCriteriaLocationInfoViewModel.updateByEventId(eventId,
 							CriteriaLocationType.TYPE_MAP_CENTER_POINT.value(), null, finishCallback);
 				}
 			} else if (checkedId == binding.radioCurrentLocation.getId()) {
-				binding.addressHistoryRecyclerview.setVisibility(View.GONE);
-				binding.searchView.setVisibility(View.GONE);
+				binding.searchLayout.setVisibility(View.GONE);
 
 				if (!initializing) {
 					foodCriteriaLocationInfoViewModel.updateByEventId(
@@ -246,8 +273,7 @@ public class RestaurantCriteriaLocationSettingsFragment extends Fragment impleme
 							CriteriaLocationType.TYPE_CURRENT_LOCATION_GPS.value(), null, finishCallback);
 				}
 			} else if (checkedId == binding.radioCustomSelection.getId()) {
-				binding.addressHistoryRecyclerview.setVisibility(View.VISIBLE);
-				binding.searchView.setVisibility(View.VISIBLE);
+				binding.searchLayout.setVisibility(View.VISIBLE);
 
 				if (!initializing) {
 
@@ -323,21 +349,22 @@ public class RestaurantCriteriaLocationSettingsFragment extends Fragment impleme
 					@Override
 					public void onResultSuccessful(List<FoodCriteriaLocationSearchHistoryDTO> newHistoryList) {
 						//변경 타입 업데이트
-						foodCriteriaLocationHistoryAdapter.setFoodCriteriaLocationHistoryList(newHistoryList);
-						foodCriteriaLocationHistoryAdapter.notifyDataSetChanged();
+						if (getActivity() != null) {
+							requireActivity().runOnUiThread(new Runnable() {
+								@Override
+								public void run() {
+									foodCriteriaLocationHistoryAdapter.setFoodCriteriaLocationHistoryList(newHistoryList);
+									foodCriteriaLocationHistoryAdapter.notifyDataSetChanged();
 
-						int id = newHistoryList.get(newHistoryList.size() - 1).getId();
+									int id = newHistoryList.get(newHistoryList.size() - 1).getId();
 
-						requireActivity().runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								requireActivity().getOnBackPressedDispatcher().onBackPressed();
-								foodCriteriaLocationInfoViewModel.updateByEventId(eventId,
-										CriteriaLocationType.TYPE_CUSTOM_SELECTED_LOCATION.value(),
-										id, finishCallback);
-							}
-						});
-
+									requireActivity().getOnBackPressedDispatcher().onBackPressed();
+									foodCriteriaLocationInfoViewModel.updateByEventId(eventId,
+											CriteriaLocationType.TYPE_CUSTOM_SELECTED_LOCATION.value(),
+											id, finishCallback);
+								}
+							});
+						}
 
 					}
 
