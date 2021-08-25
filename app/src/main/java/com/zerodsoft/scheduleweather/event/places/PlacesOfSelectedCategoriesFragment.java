@@ -13,7 +13,6 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Observer;
@@ -147,7 +146,7 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 		if (hidden) {
 
 		} else {
-			refreshPlacesList();
+			refreshPlacesList(false);
 		}
 	}
 
@@ -203,7 +202,7 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 				App.setPreference_key_radius_range(newValueStrMeter);
 				setSearchRadius();
 
-				refreshPlacesList();
+				refreshPlacesList(true);
 			}
 		});
 
@@ -232,11 +231,12 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 		binding.searchRadius.setText(getString(R.string.search_radius) + " " + decimalFormat.format(value) + "km");
 	}
 
-	public void refreshPlacesList() {
+	public void refreshPlacesList(boolean forceRefresh) {
 		if (lastLatLng.equals(newLatLng)) {
-			return;
+			if (!forceRefresh) {
+				return;
+			}
 		}
-
 		LocalApiPlaceParameter coordToAddressParameter = LocalParameterUtil.getCoordToAddressParameter(newLatLng.latitude,
 				newLatLng.longitude);
 		KakaoLocalDownloader.coordToAddress(coordToAddressParameter, new OnKakaoLocalApiCallback() {

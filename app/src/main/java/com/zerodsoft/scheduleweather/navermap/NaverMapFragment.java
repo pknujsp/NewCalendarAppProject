@@ -30,7 +30,6 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
-import android.os.Handler;
 import android.provider.Settings;
 import android.util.ArrayMap;
 import android.util.AttributeSet;
@@ -1765,7 +1764,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 		if (aroundMapInitializing) {
 			aroundMapInitializing = false;
-			placesOfSelectedCategoriesFragment.refreshPlacesList();
+			placesOfSelectedCategoriesFragment.refreshPlacesList(false);
 
 			onAroundHiddenFragmentListener.onHiddenChangedFragment(false);
 		}
@@ -1969,7 +1968,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			if (getStateOfBottomSheet(BottomSheetType.LOCATION_ITEM) == BottomSheetBehavior.STATE_EXPANDED) {
 				setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
 			}
-			
+
 			if (isChecked) {
 				if (getStateOfBottomSheet(BottomSheetType.SELECTED_PLACE_CATEGORY) == BottomSheetBehavior.STATE_EXPANDED) {
 					onClickedItemOfPlacesOfSelectedCategories();
