@@ -37,7 +37,6 @@ public class FoodRestaurantSearchHistoryFragment extends Fragment implements OnC
 		this.onClickedListItem = onClickedListItem;
 	}
 
-
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -46,15 +45,18 @@ public class FoodRestaurantSearchHistoryFragment extends Fragment implements OnC
 		searchHistoryViewModel.getOnAddedHistoryDTOMutableLiveData().observe(this, new Observer<SearchHistoryDTO>() {
 			@Override
 			public void onChanged(SearchHistoryDTO addedSearchHistoryDTO) {
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						adapter.getHistoryList().add(addedSearchHistoryDTO);
-						adapter.notifyItemInserted(adapter.getItemCount());
-					}
-				});
+				if (getActivity() != null) {
+					requireActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							adapter.getHistoryList().add(addedSearchHistoryDTO);
+							adapter.notifyDataSetChanged();
+						}
+					});
+				}
 			}
 		});
+
 	}
 
 	@Override
@@ -71,28 +73,8 @@ public class FoodRestaurantSearchHistoryFragment extends Fragment implements OnC
 
 		binding.searchHistoryRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
 		binding.searchHistoryRecyclerView.addItemDecoration
-				(new CustomRecyclerViewItemDecoration((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 10f, getResources().getDisplayMetrics())));
-
-		binding.deleteAllSearchHistory.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				if (adapter.getItemCount() > 0) {
-					searchHistoryViewModel.deleteAll(SearchHistoryDTO.FOOD_RESTAURANT_SEARCH, new CarrierMessagingService.ResultCallback<Boolean>() {
-						@Override
-						public void onReceiveResult(@NonNull Boolean aBoolean) throws RemoteException {
-							getActivity().runOnUiThread(new Runnable() {
-								@Override
-								public void run() {
-									adapter.getHistoryList().clear();
-									adapter.notifyDataSetChanged();
-								}
-							});
-
-						}
-					});
-				}
-			}
-		});
+				(new CustomRecyclerViewItemDecoration((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12f,
+						getResources().getDisplayMetrics())));
 
 		adapter = new FoodRestaurantSearchHistoryAdapter(FoodRestaurantSearchHistoryFragment.this);
 		adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
@@ -105,6 +87,7 @@ public class FoodRestaurantSearchHistoryFragment extends Fragment implements OnC
 				} else {
 					binding.searchHistoryRecyclerView.setVisibility(View.GONE);
 					binding.notHistory.setVisibility(View.VISIBLE);
+					binding.deleteAllSearchHistory.setVisibility(View.GONE);
 				}
 			}
 
@@ -114,6 +97,7 @@ public class FoodRestaurantSearchHistoryFragment extends Fragment implements OnC
 				if (adapter.getItemCount() > 0) {
 					binding.searchHistoryRecyclerView.setVisibility(View.VISIBLE);
 					binding.notHistory.setVisibility(View.GONE);
+					binding.deleteAllSearchHistory.setVisibility(View.VISIBLE);
 				}
 			}
 
@@ -123,30 +107,62 @@ public class FoodRestaurantSearchHistoryFragment extends Fragment implements OnC
 				if (adapter.getItemCount() > 0) {
 					binding.searchHistoryRecyclerView.setVisibility(View.VISIBLE);
 					binding.notHistory.setVisibility(View.GONE);
+					binding.deleteAllSearchHistory.setVisibility(View.VISIBLE);
 				} else {
 					binding.searchHistoryRecyclerView.setVisibility(View.GONE);
 					binding.notHistory.setVisibility(View.VISIBLE);
+					binding.deleteAllSearchHistory.setVisibility(View.GONE);
 				}
 			}
+
 		});
 
 		binding.searchHistoryRecyclerView.setAdapter(adapter);
-
 		searchHistoryViewModel.select(SearchHistoryDTO.FOOD_RESTAURANT_SEARCH, new DbQueryCallback<List<SearchHistoryDTO>>() {
 			@Override
 			public void onResultSuccessful(List<SearchHistoryDTO> result) {
-				getActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						adapter.setHistoryList(result);
-						adapter.notifyDataSetChanged();
-					}
-				});
+				if (getActivity() != null) {
+					getActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							adapter.setHistoryList(result);
+							adapter.notifyDataSetChanged();
+						}
+					});
+				}
 			}
 
 			@Override
 			public void onResultNoData() {
 
+			}
+		});
+
+
+		binding.deleteAllSearchHistory.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				if (adapter.getItemCount() > 0) {
+					searchHistoryViewModel.deleteAll(SearchHistoryDTO.FOOD_RESTAURANT_SEARCH, new DbQueryCallback<Boolean>() {
+						@Override
+						public void onResultSuccessful(Boolean result) {
+							if (getActivity() != null) {
+								getActivity().runOnUiThread(new Runnable() {
+									@Override
+									public void run() {
+										adapter.getHistoryList().clear();
+										adapter.notifyDataSetChanged();
+									}
+								});
+							}
+						}
+
+						@Override
+						public void onResultNoData() {
+
+						}
+					});
+				}
 			}
 		});
 

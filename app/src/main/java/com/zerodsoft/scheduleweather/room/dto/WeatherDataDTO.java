@@ -26,7 +26,7 @@ public class WeatherDataDTO {
 	@ColumnInfo(name = "downloaded_date")
 	private String downloadedDate;
 
-	@ColumnInfo(name = "baseDateTime")
+	@ColumnInfo(name = "base_date_time")
 	private String baseDateTime;
 
 	@Ignore

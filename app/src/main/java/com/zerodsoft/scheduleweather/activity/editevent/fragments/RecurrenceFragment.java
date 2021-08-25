@@ -74,7 +74,7 @@ public class RecurrenceFragment extends Fragment {
 		String rrule = bundle.getString(Events.RRULE);
 		startDateTimeMillis = bundle.getLong(Events.DTSTART);
 
-		if (!rrule.equals(EventRecurrence.EMPTY)) {
+		if (!rrule.equals(EventRecurrence.EMPTY) && !rrule.equals("")) {
 			givedEventRecurrence = new EventRecurrence();
 			givedEventRecurrence.parse(rrule);
 		}

@@ -60,6 +60,8 @@
                     android:layout_marginTop="4dp"
                     android:background="?attr/selectableItemBackground"
                     android:clickable="true"
+                    android:drawableRight="@drawable/expand_more_icon"
+                    android:gravity="center_vertical"
                     android:text="검색반경 50m"
                     android:textSize="13sp" />
 

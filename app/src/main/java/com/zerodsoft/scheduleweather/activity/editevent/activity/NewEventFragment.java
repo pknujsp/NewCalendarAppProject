@@ -115,11 +115,7 @@ public class NewEventFragment extends EventBaseFragment {
 		binding.recurrenceLayout.eventRecurrence.setOnClickListener(view ->
 		{
 			// 반복 룰과 이벤트의 시작 시간 전달
-			String rRule = null;
-
-			if (eventModel.getNEW_EVENT().containsKey(Events.RRULE)) {
-				rRule = eventModel.getNEW_EVENT().getAsString(Events.RRULE);
-			}
+			String rRule = eventModel.getEventRecurrence().toString();
 			onClickedRecurrence(rRule, eventModel.getBeginDateTimeObj().getTimeMillis());
 		});
 

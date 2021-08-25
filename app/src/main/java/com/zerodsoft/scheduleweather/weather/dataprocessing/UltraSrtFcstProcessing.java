@@ -76,7 +76,7 @@ public class UltraSrtFcstProcessing extends WeatherDataProcessing<UltraSrtFcstRe
 									public void onResultSuccessful(Boolean isContains) {
 										if (isContains) {
 											weatherDbRepository.update(LATITUDE, LONGITUDE, WeatherDataDTO.ULTRA_SRT_FCST, result.toString()
-													, ultraSrtFcstWeatherDataDTO.getDownloadedDate(), new DbQueryCallback<Boolean>() {
+													, ultraSrtFcstWeatherDataDTO.getDownloadedDate(), ultraSrtFcstWeatherDataDTO.getBaseDateTime(), new DbQueryCallback<Boolean>() {
 														@Override
 														public void onResultSuccessful(Boolean result) {
 

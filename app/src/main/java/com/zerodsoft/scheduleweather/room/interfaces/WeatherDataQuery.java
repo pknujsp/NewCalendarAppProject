@@ -10,7 +10,7 @@ import java.util.List;
 public interface WeatherDataQuery {
 	void insert(WeatherDataDTO weatherDataDTO, @Nullable DbQueryCallback<WeatherDataDTO> callback);
 
-	void update(String latitude, String longitude, Integer dataType, String json, String downloadedDate, @Nullable DbQueryCallback<Boolean> callback);
+	void update(String latitude, String longitude, Integer dataType, String json, String downloadedDate, String baseDateTime, @Nullable DbQueryCallback<Boolean> callback);
 
 	void getWeatherDataList(String latitude, String longitude, DbQueryCallback<List<WeatherDataDTO>> callback);
 

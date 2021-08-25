@@ -130,14 +130,14 @@ public class MidFcstProcessing extends WeatherDataProcessing<MidFcstResult> {
 				}
 
 				if (exceptionMsgList.isEmpty()) {
-					Date downloadedDate = new Date(System.currentTimeMillis());
+					Calendar downloadedCalendar = Calendar.getInstance(ClockUtil.TIME_ZONE);
 
 					WeatherDataDTO midLandFcstWeatherDataDTO = new WeatherDataDTO();
 					midLandFcstWeatherDataDTO.setLatitude(LATITUDE);
 					midLandFcstWeatherDataDTO.setLongitude(LONGITUDE);
 					midLandFcstWeatherDataDTO.setDataType(WeatherDataDTO.MID_LAND_FCST);
 					midLandFcstWeatherDataDTO.setJson(midFcstRoot.getMidLandFcst().toString());
-					midLandFcstWeatherDataDTO.setDownloadedDate(String.valueOf(downloadedDate.getTime()));
+					midLandFcstWeatherDataDTO.setDownloadedDate(String.valueOf(downloadedCalendar.getTimeInMillis()));
 					midLandFcstWeatherDataDTO.setBaseDateTime(String.valueOf(calendar.getTimeInMillis()));
 
 					WeatherDataDTO midTaWeatherDataDTO = new WeatherDataDTO();
@@ -145,7 +145,7 @@ public class MidFcstProcessing extends WeatherDataProcessing<MidFcstResult> {
 					midTaWeatherDataDTO.setLongitude(LONGITUDE);
 					midTaWeatherDataDTO.setDataType(WeatherDataDTO.MID_TA);
 					midTaWeatherDataDTO.setJson(midFcstRoot.getMidTa().toString());
-					midTaWeatherDataDTO.setDownloadedDate(String.valueOf(downloadedDate.getTime()));
+					midTaWeatherDataDTO.setDownloadedDate(String.valueOf(downloadedCalendar.getTimeInMillis()));
 					midTaWeatherDataDTO.setBaseDateTime(String.valueOf(calendar.getTimeInMillis()));
 
 					weatherDbRepository.contains(LATITUDE, LONGITUDE, WeatherDataDTO.MID_LAND_FCST,
@@ -155,6 +155,7 @@ public class MidFcstProcessing extends WeatherDataProcessing<MidFcstResult> {
 									if (isContains) {
 										weatherDbRepository.update(LATITUDE, LONGITUDE, WeatherDataDTO.MID_LAND_FCST
 												, midLandFcstWeatherDataDTO.getJson(), midLandFcstWeatherDataDTO.getDownloadedDate(),
+												midLandFcstWeatherDataDTO.getBaseDateTime(),
 												new DbQueryCallback<Boolean>() {
 													@Override
 													public void onResultSuccessful(Boolean result) {
@@ -193,7 +194,8 @@ public class MidFcstProcessing extends WeatherDataProcessing<MidFcstResult> {
 								public void onResultSuccessful(Boolean isContains) {
 									if (isContains) {
 										weatherDbRepository.update(LATITUDE, LONGITUDE, WeatherDataDTO.MID_TA
-												, midTaWeatherDataDTO.getJson(), midTaWeatherDataDTO.getDownloadedDate(), new DbQueryCallback<Boolean>() {
+												, midTaWeatherDataDTO.getJson(), midTaWeatherDataDTO.getDownloadedDate(), midTaWeatherDataDTO.getBaseDateTime(),
+												new DbQueryCallback<Boolean>() {
 													@Override
 													public void onResultSuccessful(Boolean result) {
 
@@ -227,7 +229,7 @@ public class MidFcstProcessing extends WeatherDataProcessing<MidFcstResult> {
 
 					MidFcstResult midFcstResult = new MidFcstResult();
 					midFcstResult.setMidFcstDataList(midLandFcstRoot.getResponse().getBody().getItems()
-							, midTaRoot.getResponse().getBody().getItems(), downloadedDate, calendar.getTime());
+							, midTaRoot.getResponse().getBody().getItems(), downloadedCalendar.getTime(), calendar.getTime());
 
 					weatherDataCallback.isSuccessful(midFcstResult);
 				} else {

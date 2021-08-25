@@ -1,7 +1,6 @@
 package com.zerodsoft.scheduleweather.navermap.model;
 
 import android.content.Context;
-import android.service.carrier.CarrierMessagingService;
 
 import androidx.lifecycle.MutableLiveData;
 
@@ -57,13 +56,12 @@ public class SearchLocationHistoryRepository implements SearchHistoryQuery {
 	}
 
 	@Override
-	public void select(Integer type, String value, CarrierMessagingService.ResultCallback<SearchHistoryDTO> callback) {
+	public void select(Integer type, String value, DbQueryCallback<SearchHistoryDTO> callback) {
 		App.executorService.execute(new Runnable() {
-			@SneakyThrows
 			@Override
 			public void run() {
 				SearchHistoryDTO searchHistoryDTO = dao.select(type, value);
-				callback.onReceiveResult(searchHistoryDTO);
+				callback.processResult(searchHistoryDTO);
 			}
 		});
 	}
@@ -80,25 +78,23 @@ public class SearchLocationHistoryRepository implements SearchHistoryQuery {
 	}
 
 	@Override
-	public void delete(Integer type, String value, CarrierMessagingService.ResultCallback<Boolean> callback) {
+	public void delete(Integer type, String value, DbQueryCallback<Boolean> callback) {
 		App.executorService.execute(new Runnable() {
-			@SneakyThrows
 			@Override
 			public void run() {
 				dao.delete(type, value);
-				callback.onReceiveResult(true);
+				callback.processResult(true);
 			}
 		});
 	}
 
 	@Override
-	public void deleteAll(Integer type, CarrierMessagingService.ResultCallback<Boolean> callback) {
+	public void deleteAll(Integer type, DbQueryCallback<Boolean> callback) {
 		App.executorService.execute(new Runnable() {
-			@SneakyThrows
 			@Override
 			public void run() {
-				dao.delete(type);
-				callback.onReceiveResult(true);
+				dao.deleteAll(type);
+				callback.processResult(true);
 			}
 		});
 	}
@@ -106,7 +102,6 @@ public class SearchLocationHistoryRepository implements SearchHistoryQuery {
 	@Override
 	public void contains(Integer type, String value, DbQueryCallback<Boolean> callback) {
 		App.executorService.execute(new Runnable() {
-			@SneakyThrows
 			@Override
 			public void run() {
 				int result = dao.contains(type, value);

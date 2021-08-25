@@ -77,7 +77,7 @@ public class VilageFcstProcessing extends WeatherDataProcessing<VilageFcstResult
 									public void onResultSuccessful(Boolean isContains) {
 										if (isContains) {
 											weatherDbRepository.update(LATITUDE, LONGITUDE, WeatherDataDTO.VILAGE_FCST, result.toString()
-													, vilageFcstWeatherDataDTO.getDownloadedDate(), new DbQueryCallback<Boolean>() {
+													, vilageFcstWeatherDataDTO.getDownloadedDate(), vilageFcstWeatherDataDTO.getBaseDateTime(), new DbQueryCallback<Boolean>() {
 														@Override
 														public void onResultSuccessful(Boolean result) {
 

@@ -128,7 +128,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	};
 
 
-
 	private FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks = new FragmentManager.FragmentLifecycleCallbacks() {
 		@Override
 		public void onFragmentAttached(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @NonNull @NotNull Context context) {
@@ -336,6 +335,19 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 			}
 
 		});
+
+
+		View.OnLongClickListener removeTooltipOfBottomNavOnLongClickListener = new View.OnLongClickListener() {
+			@Override
+			public boolean onLongClick(View v) {
+				return true;
+			}
+		};
+		binding.bottomNavigation.findViewById(R.id.event_info).setOnLongClickListener(removeTooltipOfBottomNavOnLongClickListener);
+		binding.bottomNavigation.findViewById(R.id.weathers_info).setOnLongClickListener(removeTooltipOfBottomNavOnLongClickListener);
+		binding.bottomNavigation.findViewById(R.id.map_around).setOnLongClickListener(removeTooltipOfBottomNavOnLongClickListener);
+		binding.bottomNavigation.findViewById(R.id.restaurants).setOnLongClickListener(removeTooltipOfBottomNavOnLongClickListener);
+
 		binding.bottomNavigation.setSelected(false);
 
 		binding.headerLayout.setVisibility(View.GONE);

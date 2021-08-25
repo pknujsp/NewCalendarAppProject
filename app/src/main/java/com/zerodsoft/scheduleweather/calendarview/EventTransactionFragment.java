@@ -185,14 +185,10 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 
 				if (assistantForDayWeekFragment.isHidden()) {
 					assistantForDayWeekFragment.setCurrentMonth(currentCalendarDate);
-					binding.mainToolbar.assistantCalendarControlImg.setImageDrawable(ContextCompat.getDrawable(getContext(),
-							R.drawable.expand_less_icon));
 					fragmentTransaction.show(assistantForDayWeekFragment).commitNow();
 					binding.assistantCalendarContainer.setVisibility(View.VISIBLE);
 				} else {
 					binding.assistantCalendarContainer.setVisibility(View.GONE);
-					binding.mainToolbar.assistantCalendarControlImg.setImageDrawable(ContextCompat.getDrawable(getContext(),
-							R.drawable.expand_more_icon));
 					fragmentTransaction.hide(assistantForDayWeekFragment).commitNow();
 				}
 			} else {
@@ -202,16 +198,18 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 
 				if (assistantForMonthFragment.isHidden()) {
 					assistantForMonthFragment.setCurrentDate(currentCalendarDate);
-					binding.mainToolbar.assistantCalendarControlImg.setImageDrawable(ContextCompat.getDrawable(getContext(),
-							R.drawable.expand_less_icon));
 					fragmentTransaction.show(assistantForMonthFragment).commitNow();
 					binding.assistantCalendarContainer.setVisibility(View.VISIBLE);
 				} else {
 					binding.assistantCalendarContainer.setVisibility(View.GONE);
-					binding.mainToolbar.assistantCalendarControlImg.setImageDrawable(ContextCompat.getDrawable(getContext(),
-							R.drawable.expand_more_icon));
 					fragmentTransaction.hide(assistantForMonthFragment).commitNow();
 				}
+			}
+
+			if (binding.assistantCalendarContainer.getVisibility() == View.VISIBLE) {
+				binding.mainToolbar.calendarMonth.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.expand_less_icon, 0);
+			} else {
+				binding.mainToolbar.calendarMonth.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.expand_more_icon, 0);
 			}
 		}
 
@@ -222,13 +220,10 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 		public void onFragmentAttached(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @NonNull @NotNull Context context) {
 			super.onFragmentAttached(fm, f, context);
 			if (f instanceof DayFragment) {
-				binding.mainToolbar.assistantCalendarControlImg.setVisibility(View.VISIBLE);
 				binding.mainToolbar.openList.setVisibility(View.VISIBLE);
 			} else if (f instanceof WeekFragment) {
-				binding.mainToolbar.assistantCalendarControlImg.setVisibility(View.VISIBLE);
 				binding.mainToolbar.openList.setVisibility(View.VISIBLE);
 			} else if (f instanceof MonthFragment) {
-				binding.mainToolbar.assistantCalendarControlImg.setVisibility(View.VISIBLE);
 				binding.mainToolbar.openList.setVisibility(View.GONE);
 			}
 		}
@@ -344,11 +339,9 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 		});
 
 		binding.mainToolbar.calendarMonth.setOnClickListener(currMonthOnClickListener);
-		binding.mainToolbar.monthLayout.setOnClickListener(currMonthOnClickListener);
 
 		//보조 캘린더(day, week) 프래그먼트 생성
 		//보조 캘린더(month) 프래그먼트 생성
-
 		MonthAssistantCalendarFragment monthAssistantCalendarFragment = new MonthAssistantCalendarFragment(this);
 		AssistantForMonthFragment assistantForMonthFragment = new AssistantForMonthFragment(this);
 
@@ -359,7 +352,6 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 						getString(R.string.tag_assistant_for_month_fragment))
 				.hide(monthAssistantCalendarFragment)
 				.hide(assistantForMonthFragment).commit();
-
 
 		switch (calendarViewType) {
 			case DAY:
@@ -390,7 +382,7 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 		}
 
 		if (binding.assistantCalendarContainer.getVisibility() == View.VISIBLE) {
-			binding.mainToolbar.monthLayout.callOnClick();
+			binding.mainToolbar.calendarMonth.callOnClick();
 		}
 
 		childFragmentManager.beginTransaction().replace(R.id.calendar_container_view, currentFragment,
@@ -416,7 +408,6 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 				fragmentManager.findFragmentByTag(getString(R.string.tag_instance_list_week_dialog_fragment)) != null) {
 			return;
 		}
-
 		// 이벤트 리스트 프래그먼트 다이얼로그 표시
 		Bundle bundle = new Bundle();
 		bundle.putLong("begin", viewBegin);
@@ -448,24 +439,24 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 	@Override
 	public void onClicked(int calendarId, long instanceId, long eventId, long viewBegin, long viewEnd) {
 		// 이벤트 정보 액티비티로 전환
-			Bundle bundle = new Bundle();
-			bundle.putLong(CalendarContract.Instances._ID, instanceId);
-			bundle.putLong(CalendarContract.Instances.EVENT_ID, eventId);
-			bundle.putInt(CalendarContract.Instances.CALENDAR_ID, calendarId);
-			bundle.putLong(CalendarContract.Instances.BEGIN, viewBegin);
-			bundle.putLong(CalendarContract.Instances.END, viewEnd);
+		Bundle bundle = new Bundle();
+		bundle.putLong(CalendarContract.Instances._ID, instanceId);
+		bundle.putLong(CalendarContract.Instances.EVENT_ID, eventId);
+		bundle.putInt(CalendarContract.Instances.CALENDAR_ID, calendarId);
+		bundle.putLong(CalendarContract.Instances.BEGIN, viewBegin);
+		bundle.putLong(CalendarContract.Instances.END, viewEnd);
 
-			openEventInfoFragment(bundle);
+		openEventInfoFragment(bundle);
 
-			DialogFragment instanceListOnADayDialogFragment = (DialogFragment) getParentFragmentManager().findFragmentByTag(InstanceListOnADayDialogFragment.TAG);
-			DialogFragment instanceListWeekDialogFragment =
-					(DialogFragment) getParentFragmentManager().findFragmentByTag(getString(R.string.tag_instance_list_week_dialog_fragment));
+		DialogFragment instanceListOnADayDialogFragment = (DialogFragment) getParentFragmentManager().findFragmentByTag(InstanceListOnADayDialogFragment.TAG);
+		DialogFragment instanceListWeekDialogFragment =
+				(DialogFragment) getParentFragmentManager().findFragmentByTag(getString(R.string.tag_instance_list_week_dialog_fragment));
 
-			if (instanceListOnADayDialogFragment != null) {
-				instanceListOnADayDialogFragment.dismiss();
-			} else if (instanceListWeekDialogFragment != null) {
-				instanceListWeekDialogFragment.dismiss();
-			}
+		if (instanceListOnADayDialogFragment != null) {
+			instanceListOnADayDialogFragment.dismiss();
+		} else if (instanceListWeekDialogFragment != null) {
+			instanceListWeekDialogFragment.dismiss();
+		}
 	}
 
 	public void openEventInfoFragment(Bundle bundle) {
@@ -521,7 +512,7 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 					public void onRemoved() {
 
 					}
-				},calendarViewModel);
+				}, calendarViewModel);
 	}
 
 	@Override

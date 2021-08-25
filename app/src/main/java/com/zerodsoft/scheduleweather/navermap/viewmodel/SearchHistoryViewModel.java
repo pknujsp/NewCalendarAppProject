@@ -1,7 +1,6 @@
 package com.zerodsoft.scheduleweather.navermap.viewmodel;
 
 import android.app.Application;
-import android.service.carrier.CarrierMessagingService;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -46,7 +45,7 @@ public class SearchHistoryViewModel extends AndroidViewModel implements SearchHi
 	}
 
 	@Override
-	public void select(Integer type, String value, CarrierMessagingService.ResultCallback<SearchHistoryDTO> callback) {
+	public void select(Integer type, String value, DbQueryCallback<SearchHistoryDTO> callback) {
 		repository.select(type, value, callback);
 	}
 
@@ -56,12 +55,12 @@ public class SearchHistoryViewModel extends AndroidViewModel implements SearchHi
 	}
 
 	@Override
-	public void delete(Integer type, String value, CarrierMessagingService.ResultCallback<Boolean> callback) {
+	public void delete(Integer type, String value, DbQueryCallback<Boolean> callback) {
 		repository.delete(type, value, callback);
 	}
 
 	@Override
-	public void deleteAll(Integer type, CarrierMessagingService.ResultCallback<Boolean> callback) {
+	public void deleteAll(Integer type, DbQueryCallback<Boolean> callback) {
 		repository.deleteAll(type, callback);
 	}
 

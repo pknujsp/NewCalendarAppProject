@@ -9,10 +9,8 @@ import com.naver.maps.geometry.Utmk;
 import com.zerodsoft.scheduleweather.common.classes.JsonDownloader;
 import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.MsrstnAcctoRltmMesureDnstyParameter;
-import com.zerodsoft.scheduleweather.retrofit.paremeters.MsrstnListParameter;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.NearbyMsrstnListParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyRoot;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnList.MsrstnListRoot;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.NearbyMsrstnList.NearbyMsrstnListRoot;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
@@ -21,8 +19,6 @@ import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataHeaderChecker;
 import com.zerodsoft.scheduleweather.weather.repository.AirConditionDownloader;
 import com.zerodsoft.scheduleweather.weather.repository.FindAirConditionStationDownloader;
-
-import org.json.JSONObject;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -114,6 +110,7 @@ public class AirConditionProcessing extends WeatherDataProcessing<AirConditionRe
 										if (isContain) {
 											weatherDbRepository.update(LATITUDE, LONGITUDE, WeatherDataDTO.NEAR_BY_MSRSTN_LIST,
 													nearbyMsrstnJsonObject.toString(), nearbyMsrstnListDTO.getDownloadedDate(),
+													nearbyMsrstnListDTO.getBaseDateTime(),
 													new DbQueryCallback<Boolean>() {
 														@Override
 														public void onResultSuccessful(Boolean result) {
@@ -182,6 +179,7 @@ public class AirConditionProcessing extends WeatherDataProcessing<AirConditionRe
 																			WeatherDataDTO.AIR_CONDITION,
 																			msrstnAcctoRltmMesureDnstyWeatherDataDTO.getJson(),
 																			msrstnAcctoRltmMesureDnstyWeatherDataDTO.getDownloadedDate(),
+																			msrstnAcctoRltmMesureDnstyWeatherDataDTO.getBaseDateTime(),
 																			new DbQueryCallback<Boolean>() {
 																				@Override
 																				public void onResultSuccessful(Boolean result) {

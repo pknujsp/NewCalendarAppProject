@@ -18,7 +18,6 @@ import com.zerodsoft.scheduleweather.weather.hourlyfcst.HourlyFcstResult;
 import com.zerodsoft.scheduleweather.weather.hourlyfcst.HourlyFcstRoot;
 import com.zerodsoft.scheduleweather.weather.repository.WeatherDataDownloader;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -152,7 +151,8 @@ public class HourlyFcstProcessing extends WeatherDataProcessing<HourlyFcstResult
 								public void onResultSuccessful(Boolean isContains) {
 									if (isContains) {
 										weatherDbRepository.update(LATITUDE, LONGITUDE, WeatherDataDTO.VILAGE_FCST
-												, vilageFcstWeatherDataDTO.getJson(), vilageFcstWeatherDataDTO.getDownloadedDate(), null);
+												, vilageFcstWeatherDataDTO.getJson(), vilageFcstWeatherDataDTO.getDownloadedDate(),
+												vilageFcstWeatherDataDTO.getBaseDateTime(), null);
 									} else {
 										weatherDbRepository.insert(vilageFcstWeatherDataDTO, null);
 									}
@@ -170,7 +170,8 @@ public class HourlyFcstProcessing extends WeatherDataProcessing<HourlyFcstResult
 								public void onResultSuccessful(Boolean isContains) {
 									if (isContains) {
 										weatherDbRepository.update(LATITUDE, LONGITUDE, WeatherDataDTO.ULTRA_SRT_FCST
-												, ultraSrtFcstWeatherDataDTO.getJson(), ultraSrtFcstWeatherDataDTO.getDownloadedDate(), null);
+												, ultraSrtFcstWeatherDataDTO.getJson(), ultraSrtFcstWeatherDataDTO.getDownloadedDate(),
+												ultraSrtFcstWeatherDataDTO.getBaseDateTime(), null);
 									} else {
 										weatherDbRepository.insert(ultraSrtFcstWeatherDataDTO, null);
 									}

@@ -28,8 +28,8 @@ public class WeatherDbViewModel extends AndroidViewModel implements WeatherDataQ
 
 	@Override
 	public void update(String latitude, String longitude, Integer dataType, String json, String downloadedDate,
-	                   @Nullable DbQueryCallback<Boolean> callback) {
-		repository.update(latitude, longitude, dataType, json, downloadedDate, callback);
+	                   String baseDateTime, @Nullable DbQueryCallback<Boolean> callback) {
+		repository.update(latitude, longitude, dataType, json, downloadedDate, baseDateTime, callback);
 	}
 
 	@Override

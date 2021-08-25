@@ -177,6 +177,14 @@ public class FoodsMenuListFragment extends Fragment implements OnClickedCategory
 				itemsList.add(new FoodCategoryItem(getString(R.string.add_custom_food_menu), null, false));
 				foodCategoryAdapter.setItems(itemsList);
 
+				if (getActivity() != null) {
+					requireActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							foodCategoryAdapter.notifyDataSetChanged();
+						}
+					});
+				}
 				initializing = false;
 			}
 

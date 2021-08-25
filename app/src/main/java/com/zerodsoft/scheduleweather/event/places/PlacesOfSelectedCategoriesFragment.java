@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Observer;
@@ -176,6 +177,13 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 			@Override
 			public void onClick(View view) {
 				binding.radiusSeekbarLayout.setVisibility(binding.radiusSeekbarLayout.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
+				int drawableId = 0;
+				if (binding.radiusSeekbarLayout.getVisibility() == View.VISIBLE) {
+					drawableId = R.drawable.expand_less_icon;
+				} else {
+					drawableId = R.drawable.expand_more_icon;
+				}
+				binding.searchRadius.setCompoundDrawablesWithIntrinsicBounds(0, 0, drawableId, 0);
 			}
 		});
 

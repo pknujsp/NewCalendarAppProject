@@ -17,8 +17,9 @@
         android:background="?attr/selectableItemBackground"
         android:src="@drawable/toolbar_menu_icon" />
 
-    <LinearLayout
-        android:id="@+id/month_layout"
+
+    <TextView
+        android:id="@+id/calendar_month"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
@@ -26,28 +27,14 @@
         android:layout_toRightOf="@id/open_navigation_drawer"
         android:background="?attr/selectableItemBackground"
         android:clickable="true"
+        android:drawableRight="@drawable/expand_more_icon"
         android:focusable="true"
-        android:orientation="horizontal">
+        android:gravity="center_vertical"
+        android:text="2020/9"
+        android:textColor="@color/light_blue_600"
+        android:textSize="16sp"
+        android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/calendar_month"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:text="2020/9"
-            android:textColor="@color/light_blue_600"
-            android:textSize="16sp"
-            android:textStyle="bold" />
-
-        <ImageView
-            android:id="@+id/assistant_calendar_control_img"
-            android:layout_width="16dp"
-            android:layout_height="16dp"
-            android:layout_gravity="center_vertical"
-            android:layout_marginLeft="4dp"
-            android:src="@drawable/expand_more_icon" />
-
-    </LinearLayout>
 
     <TextView
         android:id="@+id/open_list"
@@ -55,7 +42,7 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_marginLeft="16dp"
-        android:layout_toRightOf="@id/month_layout"
+        android:layout_toRightOf="@id/calendar_month"
         android:background="?attr/selectableItemBackground"
         android:gravity="left"
         android:text="@string/show_as_list"

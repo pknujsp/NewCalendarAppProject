@@ -38,11 +38,11 @@ public class WeatherDbRepository implements WeatherDataQuery {
 	}
 
 	@Override
-	public void update(String latitude, String longitude, Integer dataType, String json, String downloadedDate, @Nullable DbQueryCallback<Boolean> callback) {
+	public void update(String latitude, String longitude, Integer dataType, String json, String downloadedDate, String baseDateTime, @Nullable DbQueryCallback<Boolean> callback) {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				dao.update(latitude, longitude, dataType, json, downloadedDate);
+				dao.update(latitude, longitude, dataType, json, downloadedDate, baseDateTime);
 				if (callback != null) {
 					callback.onResultSuccessful(true);
 				}
