@@ -5,7 +5,7 @@ import android.app.Application;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 
-import com.zerodsoft.scheduleweather.event.places.interfaces.MarkerOnClickListener;
+import com.zerodsoft.scheduleweather.navermap.places.interfaces.MarkerOnClickListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;

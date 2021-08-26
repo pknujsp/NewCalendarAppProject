@@ -6,7 +6,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.view.LayoutInflater;
@@ -15,10 +14,9 @@ import android.view.ViewGroup;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantSearchHostBinding;
-import com.zerodsoft.scheduleweather.event.foods.criterialocation.RestaurantCriteriaLocationSettingsFragment;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
 import com.zerodsoft.scheduleweather.event.foods.search.search.fragment.SearchRestaurantFragment;
-import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
+import com.zerodsoft.scheduleweather.navermap.places.PlaceInfoWebFragment;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.SearchHistoryViewModel;
 
 import org.jetbrains.annotations.NotNull;

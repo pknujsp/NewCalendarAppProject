@@ -31,7 +31,7 @@ import com.zerodsoft.scheduleweather.event.foods.viewmodel.CustomFoodMenuViewMod
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 import com.zerodsoft.scheduleweather.event.main.NewInstanceMainFragment;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener;
-import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
+import com.zerodsoft.scheduleweather.navermap.places.PlaceInfoWebFragment;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 
 import org.jetbrains.annotations.NotNull;

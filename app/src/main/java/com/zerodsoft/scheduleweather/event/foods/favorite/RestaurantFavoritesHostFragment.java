@@ -15,7 +15,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantFavoritesHostBinding;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteRestaurantFragment;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
-import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
+import com.zerodsoft.scheduleweather.navermap.places.PlaceInfoWebFragment;
 
 import org.jetbrains.annotations.NotNull;
 

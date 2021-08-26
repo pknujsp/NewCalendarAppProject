@@ -1,29 +1,17 @@
 package com.zerodsoft.scheduleweather.navermap.favorite;
 
-import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.PopupMenu;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.preference.PreferenceManager;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.TypedValue;
-import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
@@ -34,9 +22,8 @@ import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.naver.maps.geometry.LatLng;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
-import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
-import com.zerodsoft.scheduleweather.event.places.interfaces.MarkerOnClickListener;
+import com.zerodsoft.scheduleweather.navermap.places.interfaces.MarkerOnClickListener;
 import com.zerodsoft.scheduleweather.favorites.addressplace.basefragment.FavoriteLocationsBaseFragment;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.MarkerType;
@@ -46,13 +33,8 @@ import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.MapSharedViewModel;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public class FavoriteLocationFragment extends FavoriteLocationsBaseFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 	private MarkerOnClickListener markerOnClickListener;

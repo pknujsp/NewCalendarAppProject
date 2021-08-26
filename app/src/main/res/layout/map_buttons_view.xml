@@ -23,13 +23,13 @@
         android:scaleType="centerInside"
         app:layout_constraintBottom_toTopOf="@+id/building_button"
         app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@drawable/favorite_disabled" />
+        app:srcCompat="@drawable/favorite_disabled"
+        app:tint="@color/black" />
 
     <ImageButton
         android:id="@+id/building_button"
         android:layout_width="@dimen/map_button_size"
         android:layout_height="@dimen/map_button_size"
-
         android:layout_marginBottom="32dp"
         android:background="@drawable/map_button_rect"
         android:elevation="3dp"
@@ -37,20 +37,21 @@
         android:scaleType="centerInside"
         app:layout_constraintBottom_toTopOf="@+id/zoom_in_button"
         app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@drawable/building_black" />
+        app:srcCompat="@drawable/building_black"
+        app:tint="@color/black" />
 
 
     <ImageButton
         android:id="@+id/zoom_in_button"
         android:layout_width="@dimen/map_button_size"
         android:layout_height="@dimen/map_button_size"
-
         android:layout_marginBottom="8dp"
         android:background="@drawable/map_button_rect"
         android:elevation="3dp"
         android:src="@drawable/zoom_in_icon"
         app:layout_constraintBottom_toTopOf="@+id/zoom_out_button"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:tint="@color/black" />
 
     <ImageButton
         android:id="@+id/zoom_out_button"
@@ -61,7 +62,8 @@
         android:elevation="3dp"
         android:src="@drawable/zoom_out_icon"
         app:layout_constraintBottom_toTopOf="@+id/gps_button"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:tint="@color/black" />
 
     <ImageButton
         android:id="@+id/gps_button"
@@ -71,7 +73,8 @@
         android:elevation="3dp"
         android:src="@drawable/gps_not_fixed_icon"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:tint="@color/black" />
 
 
     <TextView
@@ -91,6 +94,19 @@
         android:textSize="13sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent" />
+
+    <ImageButton
+        android:id="@+id/map_settings_button"
+        android:layout_width="@dimen/map_button_size"
+        android:layout_height="@dimen/map_button_size"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/map_button_rect"
+        android:elevation="3dp"
+        android:scaleType="centerInside"
+        app:layout_constraintBottom_toTopOf="@+id/current_address"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@drawable/map_icon"
+        app:tint="@color/black" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

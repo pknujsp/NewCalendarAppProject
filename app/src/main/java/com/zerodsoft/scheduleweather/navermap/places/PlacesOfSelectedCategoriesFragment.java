@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.event.places;
+package com.zerodsoft.scheduleweather.navermap.places;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -34,9 +34,9 @@ import com.zerodsoft.scheduleweather.common.view.CustomProgressView;
 import com.zerodsoft.scheduleweather.databinding.PlacelistFragmentBinding;
 import com.zerodsoft.scheduleweather.etc.CustomRecyclerViewItemDecoration;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
-import com.zerodsoft.scheduleweather.event.places.adapter.PlaceItemsAdapters;
-import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;
-import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceItemsGetter;
+import com.zerodsoft.scheduleweather.navermap.places.adapter.PlaceItemsAdapters;
+import com.zerodsoft.scheduleweather.navermap.places.interfaces.OnClickedPlacesListListener;
+import com.zerodsoft.scheduleweather.navermap.places.interfaces.PlaceItemsGetter;
 import com.zerodsoft.scheduleweather.kakaoplace.retrofit.KakaoLocalDownloader;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;

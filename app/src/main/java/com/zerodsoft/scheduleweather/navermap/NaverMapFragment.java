@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PointF;
@@ -27,6 +28,7 @@ import androidx.fragment.app.FragmentContainerView;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -84,10 +86,10 @@ import com.zerodsoft.scheduleweather.databinding.FragmentNaverMapBinding;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
-import com.zerodsoft.scheduleweather.event.places.PlacesOfSelectedCategoriesFragment;
-import com.zerodsoft.scheduleweather.event.places.interfaces.MarkerOnClickListener;
-import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;
-import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceItemsGetter;
+import com.zerodsoft.scheduleweather.navermap.places.PlacesOfSelectedCategoriesFragment;
+import com.zerodsoft.scheduleweather.navermap.places.interfaces.MarkerOnClickListener;
+import com.zerodsoft.scheduleweather.navermap.places.interfaces.OnClickedPlacesListListener;
+import com.zerodsoft.scheduleweather.navermap.places.interfaces.PlaceItemsGetter;
 import com.zerodsoft.scheduleweather.kakaoplace.retrofit.KakaoLocalDownloader;
 import com.zerodsoft.scheduleweather.navermap.adapter.FavoriteLocationItemViewPagerAdapter;
 import com.zerodsoft.scheduleweather.navermap.adapter.LocationItemViewPagerAbstractAdapter;
@@ -108,8 +110,9 @@ import com.zerodsoft.scheduleweather.navermap.interfaces.IMapData;
 import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
 import com.zerodsoft.scheduleweather.navermap.interfaces.OnClickedBottomSheetListener;
 import com.zerodsoft.scheduleweather.navermap.interfaces.PlacesItemBottomSheetButtonOnClickListener;
-import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebDialogFragment;
+import com.zerodsoft.scheduleweather.navermap.places.PlaceInfoWebDialogFragment;
 import com.zerodsoft.scheduleweather.kakaoplace.LocalParameterUtil;
+import com.zerodsoft.scheduleweather.navermap.settings.MapSettingsFragment;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.MapSharedViewModel;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.SearchHistoryViewModel;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
@@ -388,6 +391,21 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 		buildingButton = binding.naverMapButtonsLayout.buildingButton;
 		favoriteLocationsButton = binding.naverMapButtonsLayout.favoriteLocationsButton;
 
+		binding.naverMapButtonsLayout.mapSettingsButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				MapSettingsFragment mapSettingsFragment = new MapSettingsFragment(new MapSettingsFragment.OnChangedMapSettingsListener() {
+					@Override
+					public void onChangedMapType(NaverMap.MapType newMapType) {
+						if (naverMap.getMapType() != newMapType) {
+							naverMap.setMapType(newMapType);
+						}
+					}
+				});
+				mapSettingsFragment.show(getChildFragmentManager(), getString(R.string.tag_map_settings_fragment));
+			}
+		});
+
 		binding.naverMapFragmentRootLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
 			@Override
 			public void onGlobalLayout() {
@@ -558,7 +576,9 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 			loadingDialog.show();
 
 			NaverMapOptions naverMapOptions = new NaverMapOptions();
-			naverMapOptions.scaleBarEnabled(true).locationButtonEnabled(false).compassEnabled(false).zoomControlEnabled(false).rotateGesturesEnabled(false)
+
+			naverMapOptions.scaleBarEnabled(true).locationButtonEnabled(false)
+					.compassEnabled(false).zoomControlEnabled(false).rotateGesturesEnabled(false)
 					.mapType(NaverMap.MapType.Basic).camera(new CameraPosition(new LatLng(37.6076585, 127.0965492), 11));
 
 			mapFragment = MapFragment.newInstance(naverMapOptions);
@@ -740,6 +760,10 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 	public void onMapReady(@NonNull NaverMap naverMap) {
 		this.naverMap = naverMap;
 
+		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+		NaverMap.MapType currentMapType = NaverMap.MapType.valueOf(preferences.getString(getString(R.string.preference_key_map_type),
+				NaverMap.MapType.Basic.toString()));
+		naverMap.setMapType(currentMapType);
 		naverMap.addOnLocationChangeListener(this);
 		naverMap.addOnCameraIdleListener(this);
 		naverMap.setOnMapClickListener(this);

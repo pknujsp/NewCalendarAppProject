@@ -1,16 +1,13 @@
-package com.zerodsoft.scheduleweather.event.places.selectedlocation;
+package com.zerodsoft.scheduleweather.navermap.places.selectedlocation;
 
 import android.os.Bundle;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.naver.maps.geometry.LatLng;
 import com.naver.maps.map.CameraUpdate;

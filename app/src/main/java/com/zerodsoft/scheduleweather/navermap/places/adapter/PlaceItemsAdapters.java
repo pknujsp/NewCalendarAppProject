@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.event.places.adapter;
+package com.zerodsoft.scheduleweather.navermap.places.adapter;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,7 +15,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.navermap.callback.PlaceItemCallback;
 import com.zerodsoft.scheduleweather.navermap.util.LocationUtil;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
-import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;
+import com.zerodsoft.scheduleweather.navermap.places.interfaces.OnClickedPlacesListListener;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 
 public class PlaceItemsAdapters extends PagedListAdapter<PlaceDocuments, PlaceItemsAdapters.ItemViewHolder> {

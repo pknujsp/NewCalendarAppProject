@@ -15,7 +15,7 @@ import android.view.ViewGroup;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentRestaurantMainHostBinding;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
-import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
+import com.zerodsoft.scheduleweather.navermap.places.PlaceInfoWebFragment;
 
 public class RestaurantMainHostFragment extends Fragment implements IOnSetView {
 	private FragmentRestaurantMainHostBinding binding;

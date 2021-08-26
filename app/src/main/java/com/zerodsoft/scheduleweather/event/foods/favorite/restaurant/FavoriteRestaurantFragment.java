@@ -16,8 +16,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
 import com.zerodsoft.scheduleweather.favorites.restaurant.basefragment.FavoriteRestaurantBaseFragment;
-import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
+import com.zerodsoft.scheduleweather.navermap.places.PlaceInfoWebFragment;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 
 import org.jetbrains.annotations.NotNull;

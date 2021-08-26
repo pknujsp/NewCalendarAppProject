@@ -23,9 +23,7 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.classes.CloseWindow;
 import com.zerodsoft.scheduleweather.databinding.FragmentAllFavoritesHostBinding;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
-import com.zerodsoft.scheduleweather.favorites.addressplace.AllFavoriteAddressPlaceHostFragment;
 import com.zerodsoft.scheduleweather.favorites.restaurant.AllFavoriteRestaurantHostFragment;
-import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
 import org.jetbrains.annotations.NotNull;

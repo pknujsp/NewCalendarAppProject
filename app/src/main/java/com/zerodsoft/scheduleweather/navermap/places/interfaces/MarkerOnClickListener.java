@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.event.places.interfaces;
+package com.zerodsoft.scheduleweather.navermap.places.interfaces;
 
 import com.zerodsoft.scheduleweather.navermap.MarkerType;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;

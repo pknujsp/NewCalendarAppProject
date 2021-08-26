@@ -12,9 +12,6 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.content.ContextCompat;
-import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
@@ -22,25 +19,17 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Parcel;
 import android.provider.CalendarContract;
-import android.util.ArrayMap;
 import android.util.TypedValue;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.widget.Button;
-import android.widget.CompoundButton;
-import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
-import com.google.android.material.chip.Chip;
-import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.naver.maps.geometry.LatLng;
 import com.naver.maps.map.CameraAnimation;
@@ -53,12 +42,8 @@ import com.naver.maps.map.overlay.OverlayImage;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.editevent.activity.ModifyInstanceFragment;
 import com.zerodsoft.scheduleweather.activity.editevent.interfaces.OnEditEventResultListener;
-import com.zerodsoft.scheduleweather.activity.placecategory.PlaceCategorySettingsFragment;
-import com.zerodsoft.scheduleweather.activity.placecategory.viewmodel.PlaceCategoryViewModel;
-import com.zerodsoft.scheduleweather.calendar.AsyncQueryService;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.EditEventPopupMenu;
-import com.zerodsoft.scheduleweather.calendar.EventHelper;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.IRefreshView;
 import com.zerodsoft.scheduleweather.common.classes.CloseWindow;
 import com.zerodsoft.scheduleweather.common.enums.LocationIntentCode;
@@ -71,9 +56,6 @@ import com.zerodsoft.scheduleweather.event.event.fragments.EventFragment;
 import com.zerodsoft.scheduleweather.event.foods.RestaurantFragment;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.ISetFoodMenuPoiItems;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.RestaurantListListener;
-import com.zerodsoft.scheduleweather.event.places.interfaces.OnClickedPlacesListListener;
-import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceItemsGetter;
-import com.zerodsoft.scheduleweather.event.places.PlacesOfSelectedCategoriesFragment;
 import com.zerodsoft.scheduleweather.event.weather.fragment.WeatherMainFragment;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.NaverMapFragment;
@@ -82,15 +64,12 @@ import com.zerodsoft.scheduleweather.navermap.interfaces.OnExtraListDataListener
 import com.zerodsoft.scheduleweather.navermap.searchheader.MapHeaderSearchFragment;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
-import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoodMenuPoiItems
 		, IRefreshView, RestaurantListListener {

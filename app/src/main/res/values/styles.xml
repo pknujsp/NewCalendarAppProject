@@ -109,4 +109,9 @@
         <item name="android:textColor">@color/gray_600</item>
     </style>
 
+    <style name="ToggleButtonStyle" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="backgroundTint">@drawable/toggle_background</item>
+    </style>
+
+
 </resources>

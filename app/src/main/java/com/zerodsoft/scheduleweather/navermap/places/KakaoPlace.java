@@ -1,4 +1,4 @@
-package com.zerodsoft.scheduleweather.navermap.place;
+package com.zerodsoft.scheduleweather.navermap.places;
 
 import android.service.carrier.CarrierMessagingService;
 

@@ -10,11 +10,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentLocationItemDetailDialogBinding;
 import com.zerodsoft.scheduleweather.etc.LocationType;
 import com.zerodsoft.scheduleweather.event.foods.searchlocation.interfaces.OnSelectedNewLocation;
-import com.zerodsoft.scheduleweather.event.places.selectedlocation.SelectedLocationMapFragmentNaver;
+import com.zerodsoft.scheduleweather.navermap.places.selectedlocation.SelectedLocationMapFragmentNaver;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.KakaoLocalDocument;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.addressresponse.AddressResponseDocuments;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;

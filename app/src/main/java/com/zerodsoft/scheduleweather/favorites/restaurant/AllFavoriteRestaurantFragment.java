@@ -7,19 +7,12 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.zerodsoft.scheduleweather.R;
-import com.zerodsoft.scheduleweather.event.foods.favorite.RestaurantFavoritesHostFragment;
 import com.zerodsoft.scheduleweather.event.foods.favorite.restaurant.FavoriteLocationViewModel;
-import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
-import com.zerodsoft.scheduleweather.favorites.DefaultMapFragment;
-import com.zerodsoft.scheduleweather.favorites.addressplace.AllFavoriteLocationsFragment;
 import com.zerodsoft.scheduleweather.favorites.restaurant.basefragment.FavoriteRestaurantBaseFragment;
-import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
-import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;
+import com.zerodsoft.scheduleweather.navermap.places.PlaceInfoWebFragment;
 import com.zerodsoft.scheduleweather.room.dto.FavoriteLocationDTO;
 
 import org.jetbrains.annotations.NotNull;

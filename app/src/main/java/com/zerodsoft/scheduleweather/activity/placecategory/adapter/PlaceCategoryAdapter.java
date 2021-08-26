@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.placecategory.interfaces.OnItemMoveListener;
-import com.zerodsoft.scheduleweather.event.places.interfaces.PlaceCategory;
 import com.zerodsoft.scheduleweather.room.dto.PlaceCategoryDTO;
 
 import java.util.ArrayList;

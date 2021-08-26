@@ -405,6 +405,11 @@
     <string name="preference_title_reset_app_db_data">앱 데이터 초기화</string>
     <string name="preference_summary_reset_app_db_data">앱의 데이터를 초기화합니다</string>
 
+    <!-- 지도 유형 설정 관련 -->
+    <string name="preference_key_map_type" translatable="false">preference_key_map_type</string>
+    <string name="preference_title_map_type">지도 유형</string>
+    <string name="preference_summary_map_type">지도 유형을 지정합니다</string>
+
 
     <!-- 설정화면 카테고리 이름 설정 관련 -->
     <string name="preference_calendar_category_title">캘린더</string>
@@ -678,4 +683,9 @@
     <string name="empty_events">이벤트가 없습니다</string>
     <string name="map_around">주변</string>
     <string name="tag_clicked_places_of_selected_categories">tag_clicked_places_of_selected_categories</string>
+    <string name="map_type">지도 유형</string>
+    <string name="map_type_basic">일반 지도</string>
+    <string name="map_type_satellite">위성 지도</string>
+    <string name="map_type_terrain">지형도</string>
+    <string name="tag_map_settings_fragment">tag_map_settings_fragment</string>
 </resources>

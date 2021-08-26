@@ -27,7 +27,7 @@ import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
 import com.zerodsoft.scheduleweather.event.foods.interfaces.RestaurantListListener;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
 import com.zerodsoft.scheduleweather.kakaoplace.viewmodel.KakaoRestaurantsViewModel;
-import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
+import com.zerodsoft.scheduleweather.navermap.places.PlaceInfoWebFragment;
 import com.zerodsoft.scheduleweather.kakaoplace.LocalParameterUtil;
 import com.zerodsoft.scheduleweather.retrofit.paremeters.LocalApiPlaceParameter;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.map.placeresponse.PlaceDocuments;

@@ -20,7 +20,7 @@ import com.zerodsoft.scheduleweather.event.foods.interfaces.IOnSetView;
 import com.zerodsoft.scheduleweather.event.foods.main.RestaurantListFragment;
 import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationCloud;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
-import com.zerodsoft.scheduleweather.navermap.place.PlaceInfoWebFragment;
+import com.zerodsoft.scheduleweather.navermap.places.PlaceInfoWebFragment;
 import com.zerodsoft.scheduleweather.navermap.viewmodel.SearchHistoryViewModel;
 import com.zerodsoft.scheduleweather.room.dto.SearchHistoryDTO;
 

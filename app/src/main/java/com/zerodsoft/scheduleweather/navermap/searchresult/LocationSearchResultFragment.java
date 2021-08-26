@@ -19,7 +19,7 @@ import com.zerodsoft.scheduleweather.common.enums.KakaoLocalApiResultType;
 import com.zerodsoft.scheduleweather.common.interfaces.OnClickedListItem;
 import com.zerodsoft.scheduleweather.databinding.FragmentSearchResultListBinding;
 import com.zerodsoft.scheduleweather.etc.LocationType;
-import com.zerodsoft.scheduleweather.event.places.interfaces.MarkerOnClickListener;
+import com.zerodsoft.scheduleweather.navermap.places.interfaces.MarkerOnClickListener;
 import com.zerodsoft.scheduleweather.navermap.BottomSheetType;
 import com.zerodsoft.scheduleweather.navermap.MarkerType;
 import com.zerodsoft.scheduleweather.navermap.interfaces.BottomSheetController;
