@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ripple xmlns:android="http://schemas.android.com/apk/res/android"
-    android:color="@color/colorPrimaryDark">
+    android:color="@color/gray_600">
 
     <item android:id="@android:id/background">
         <shape android:shape="rectangle">
             <solid android:color="@color/colorPrimary" />
             <corners android:radius="@dimen/corner_radius" />
+            <padding
+                android:bottom="@dimen/primary_button_padding_top_bottom"
+                android:left="@dimen/primary_button_padding_left_right"
+                android:right="@dimen/primary_button_padding_left_right"
+                android:top="@dimen/primary_button_padding_top_bottom" />
         </shape>
     </item>
 

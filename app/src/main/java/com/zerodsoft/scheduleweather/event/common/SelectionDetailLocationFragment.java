@@ -121,7 +121,6 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 		super.onViewCreated(view, savedInstanceState);
 
 		binding.bottomNavigation.setVisibility(View.GONE);
-		binding.naverMapButtonsLayout.buildingButton.setVisibility(View.GONE);
 		binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.GONE);
 
 		setPlaceBottomSheetSelectBtnVisibility(View.VISIBLE);
@@ -129,7 +128,6 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 
 		if (requestCode == LocationIntentCode.REQUEST_CODE_CHANGE_LOCATION) {
 			binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.GONE);
-			binding.naverMapButtonsLayout.buildingButton.setVisibility(View.GONE);
 			binding.naverMapButtonsLayout.currentAddress.setVisibility(View.GONE);
 			binding.naverMapButtonsLayout.gpsButton.setVisibility(View.GONE);
 			binding.headerLayout.setVisibility(View.GONE);
@@ -302,7 +300,6 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 
 						mapFragment.getMapView().setOnTouchListener(null);
 						binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.VISIBLE);
-						binding.naverMapButtonsLayout.buildingButton.setVisibility(View.VISIBLE);
 						binding.naverMapButtonsLayout.currentAddress.setVisibility(View.VISIBLE);
 						binding.naverMapButtonsLayout.gpsButton.setVisibility(View.VISIBLE);
 						binding.headerLayout.setVisibility(View.VISIBLE);

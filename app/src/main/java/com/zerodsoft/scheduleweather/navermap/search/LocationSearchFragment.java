@@ -35,9 +35,14 @@ public class LocationSearchFragment extends Fragment {
 
 	private SearchLocationHistoryAdapter searchLocationHistoryAdapter;
 	private SearchHistoryViewModel searchHistoryViewModel;
+	private SearchBuildingsBtnOnClickedListener searchBuildingsBtnOnClickedListener;
 
 	private BottomSheetController bottomSheetController;
 	private MapSharedViewModel mapSharedViewModel;
+
+	public LocationSearchFragment(SearchBuildingsBtnOnClickedListener searchBuildingsBtnOnClickedListener) {
+		this.searchBuildingsBtnOnClickedListener = searchBuildingsBtnOnClickedListener;
+	}
 
 	private final OnClickedListItem<SearchHistoryDTO> searchHistoryDTOOnClickedListItem = new OnClickedListItem<SearchHistoryDTO>() {
 		@Override
@@ -67,6 +72,8 @@ public class LocationSearchFragment extends Fragment {
 				searchLocationHistoryAdapter.notifyItemInserted(searchLocationHistoryAdapter.getItemCount() - 1);
 			}
 		});
+
+
 
 	}
 
@@ -135,11 +142,23 @@ public class LocationSearchFragment extends Fragment {
 
 			}
 		});
+
+		binding.btnSearchBuildings.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				getParentFragmentManager().popBackStackImmediate();
+				searchBuildingsBtnOnClickedListener.onClickedSearchBuildings();
+			}
+		});
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
 		bottomSheetController.setStateOfBottomSheet(BottomSheetType.SEARCH_LOCATION, BottomSheetBehavior.STATE_COLLAPSED);
+	}
+
+	public interface SearchBuildingsBtnOnClickedListener {
+		void onClickedSearchBuildings();
 	}
 }

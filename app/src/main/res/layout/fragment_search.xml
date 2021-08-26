@@ -8,11 +8,23 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <TextView
+            android:id="@+id/btn_search_buildings"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:background="@drawable/primary_button"
+            android:clickable="true"
+            android:text="@string/search_buildings"
+            android:textColor="@color/white" />
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/search_history_recyclerview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_below="@id/btn_search_buildings"
             android:layout_alignParentBottom="true"
+            android:layout_marginTop="8dp"
             android:orientation="vertical"
             tools:listitem="@layout/search_history_item" />
 

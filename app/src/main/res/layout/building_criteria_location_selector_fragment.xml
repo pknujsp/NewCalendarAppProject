@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:background="#4FEEEEEE">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/selector_image"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="36dp"
+            android:text="@string/message_how_to_use_criteria_location_btn_for_search_buildings"
+            android:textAlignment="center"
+            android:textColor="@color/text_blue"
+            android:textSize="16sp" />
+
+        <View
+            android:id="@+id/selector_image"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_centerInParent="true"
+            android:background="@drawable/building_location_selector"
+            android:scaleX="2"
+            android:scaleY="2" />
+
+        <Button
+            android:id="@+id/search_buildings_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/selector_image"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="36dp"
+            android:text="@string/search_buildings" />
+
+        <ImageButton
+            android:id="@+id/close_btn"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_below="@id/search_buildings_button"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="32dp"
+            android:background="@color/transparent"
+            android:scaleType="fitXY"
+            android:src="@drawable/close_icon"
+            app:tint="@color/black" />
+
+    </RelativeLayout>
+
+</layout>

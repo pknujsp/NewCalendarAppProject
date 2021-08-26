@@ -49,7 +49,6 @@ public class SelectedLocationMapFragmentNaver extends NaverMapFragment {
 		binding.headerLayout.setVisibility(View.GONE);
 		binding.naverMapButtonsLayout.gpsButton.setVisibility(View.GONE);
 		binding.naverMapButtonsLayout.currentAddress.setVisibility(View.GONE);
-		binding.naverMapButtonsLayout.buildingButton.setVisibility(View.GONE);
 		binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.GONE);
 	}
 

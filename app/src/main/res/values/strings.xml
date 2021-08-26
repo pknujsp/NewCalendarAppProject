@@ -688,4 +688,6 @@
     <string name="map_type_satellite">위성 지도</string>
     <string name="map_type_terrain">지형도</string>
     <string name="tag_map_settings_fragment">tag_map_settings_fragment</string>
+    <string name="tag_criteria_location_for_search_buildings_selector_fragment">tag_criteria_location_for_search_buildings_selector_fragment</string>
+    <string name="message_how_to_use_criteria_location_btn_for_search_buildings">검색할 장소에 아래의 원을 위치시킨 후 건물 검색 버튼 클릭</string>
 </resources>

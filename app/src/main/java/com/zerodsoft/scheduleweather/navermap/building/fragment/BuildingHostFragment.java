@@ -55,11 +55,10 @@ public class BuildingHostFragment extends BottomSheetDialogFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		getChildFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false);
 
 		arguments = getArguments();
 		bottomSheetHeight = arguments.getInt("bottomSheetHeight");
-
-		getChildFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, true);
 	}
 
 	@NonNull

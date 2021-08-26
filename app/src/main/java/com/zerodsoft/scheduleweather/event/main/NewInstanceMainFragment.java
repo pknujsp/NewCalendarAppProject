@@ -113,7 +113,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 			super.onFragmentAttached(fm, f, context);
 			if (f instanceof RestaurantFragment) {
 				binding.headerLayout.setVisibility(View.GONE);
-				binding.naverMapButtonsLayout.buildingButton.setVisibility(View.GONE);
 				binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.GONE);
 				binding.bottomNavigation.setVisibility(View.GONE);
 			} else if (f instanceof MapHeaderSearchFragment) {
@@ -139,13 +138,11 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 			super.onFragmentDestroyed(fm, f);
 			if (f instanceof RestaurantFragment) {
 				binding.headerLayout.setVisibility(View.VISIBLE);
-				binding.naverMapButtonsLayout.buildingButton.setVisibility(View.VISIBLE);
 				binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.VISIBLE);
 				binding.bottomNavigation.setVisibility(View.VISIBLE);
 			} else if (f instanceof MapHeaderSearchFragment) {
 				if (selectedLocationDtoInEvent != null) {
 					binding.bottomNavigation.setVisibility(View.VISIBLE);
-					chipsLayout.setVisibility(View.VISIBLE);
 				}
 			} else if (f instanceof EventFragment) {
 
