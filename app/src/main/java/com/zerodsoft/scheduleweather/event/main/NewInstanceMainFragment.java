@@ -71,8 +71,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoodMenuPoiItems
-		, IRefreshView, RestaurantListListener {
+public class NewInstanceMainFragment extends NaverMapFragment implements IRefreshView {
 	private int calendarId;
 	private long eventId;
 	private long instanceId;
@@ -85,8 +84,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 	private Marker selectedLocationInEventMarker;
 	private InfoWindow selectedLocationInEventInfoWindow;
 
-	private RestaurantsGetter restaurantItemGetter;
-	private OnExtraListDataListener<Integer> restaurantOnExtraListDataListener;
 
 	private NetworkStatus networkStatus;
 	private CloseWindow closeWindow = new CloseWindow(new CloseWindow.OnBackKeyDoubleClickedListener() {
@@ -111,41 +108,23 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		@Override
 		public void onFragmentAttached(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f, @NonNull @NotNull Context context) {
 			super.onFragmentAttached(fm, f, context);
-			if (f instanceof RestaurantFragment) {
-				binding.headerLayout.setVisibility(View.GONE);
-				binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.GONE);
-				binding.bottomNavigation.setVisibility(View.GONE);
-			} else if (f instanceof MapHeaderSearchFragment) {
+			if (f instanceof MapHeaderSearchFragment) {
 				if (selectedLocationDtoInEvent != null) {
 					binding.bottomNavigation.setVisibility(View.GONE);
 					chipsLayout.setVisibility(View.GONE);
 				}
 			}
-
-			if (f instanceof RestaurantFragment || f instanceof MapHeaderSearchFragment) {
-				if (placeCategoryChipGroup != null) {
-					if (placeCategoryChipGroup.getCheckedChipIds().size() > 0) {
-						placeCategoryChipGroup.clearCheck();
-					}
-				}
-			}
-
 		}
 
 
 		@Override
 		public void onFragmentDestroyed(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
 			super.onFragmentDestroyed(fm, f);
-			if (f instanceof RestaurantFragment) {
-				binding.headerLayout.setVisibility(View.VISIBLE);
-				binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.VISIBLE);
-				binding.bottomNavigation.setVisibility(View.VISIBLE);
-			} else if (f instanceof MapHeaderSearchFragment) {
+			if (f instanceof MapHeaderSearchFragment) {
 				if (selectedLocationDtoInEvent != null) {
 					binding.bottomNavigation.setVisibility(View.VISIBLE);
 				}
 			} else if (f instanceof EventFragment) {
-
 				if (((EventFragment) f).editing) {
 					return;
 				}
@@ -165,10 +144,8 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 				if (!((SelectionDetailLocationFragment) f).edited) {
 					onClickedOpenEventFragmentBtn();
 				}
-			} else if (f instanceof WeatherMainFragment) {
 			}
 		}
-
 
 	};
 
@@ -257,9 +234,7 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 			@Override
 			public boolean onNavigationItemSelected(@NonNull @NotNull MenuItem item) {
 				//이벤트 정보, 날씨, 음식점
-				if (getStateOfBottomSheet(BottomSheetType.LOCATION_ITEM) == BottomSheetBehavior.STATE_EXPANDED) {
-					setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
-				}
+				onClickedBottomNav();
 
 				switch (item.getItemId()) {
 					case R.id.event_info:
@@ -283,47 +258,14 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 						onClickedAroundMap();
 						break;
 					case R.id.restaurants:
-						FragmentManager fragmentManager = getChildFragmentManager();
-						//restaurant
-						Object[] results2 = createBottomSheet(R.id.restaurant_fragment_container);
-						LinearLayout restaurantsBottomSheet = (LinearLayout) results2[0];
-						BottomSheetBehavior restaurantsBottomSheetBehavior = (BottomSheetBehavior) results2[1];
-
-						bottomSheetViewMap.put(BottomSheetType.RESTAURANT, restaurantsBottomSheet);
-						bottomSheetBehaviorMap.put(BottomSheetType.RESTAURANT, restaurantsBottomSheetBehavior);
-
-						RestaurantFragment restaurantFragment =
-								new RestaurantFragment(NewInstanceMainFragment.this
-										, new OnHiddenFragmentListener() {
-									@Override
-									public void onHiddenChangedFragment(boolean hidden) {
-
-									}
-								}, eventId);
-
-						bottomSheetFragmentMap.put(BottomSheetType.RESTAURANT, restaurantFragment);
-						fragmentManager.beginTransaction().add(binding.fragmentContainer.getId(), restaurantFragment
-								, getString(R.string.tag_restaurant_fragment)).addToBackStack(getString(R.string.tag_restaurant_fragment)).commit();
+						openRestaurantFragment(eventId);
 						break;
-
 				}
 				return true;
 			}
 
 		});
-
-
-		View.OnLongClickListener removeTooltipOfBottomNavOnLongClickListener = new View.OnLongClickListener() {
-			@Override
-			public boolean onLongClick(View v) {
-				return true;
-			}
-		};
-		binding.bottomNavigation.findViewById(R.id.event_info).setOnLongClickListener(removeTooltipOfBottomNavOnLongClickListener);
-		binding.bottomNavigation.findViewById(R.id.weathers_info).setOnLongClickListener(removeTooltipOfBottomNavOnLongClickListener);
-		binding.bottomNavigation.findViewById(R.id.map_around).setOnLongClickListener(removeTooltipOfBottomNavOnLongClickListener);
-		binding.bottomNavigation.findViewById(R.id.restaurants).setOnLongClickListener(removeTooltipOfBottomNavOnLongClickListener);
-
+		removeTooltipInBottomNav();
 		binding.bottomNavigation.setSelected(false);
 
 		binding.headerLayout.setVisibility(View.GONE);
@@ -763,59 +705,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		naverMap.moveCamera(cameraUpdate);
 	}
 
-
-	@Override
-	public void createRestaurantPoiItems(RestaurantsGetter restaurantsGetter,
-	                                     OnExtraListDataListener<Integer> onExtraListDataListener) {
-		this.restaurantItemGetter = restaurantsGetter;
-		this.restaurantOnExtraListDataListener = onExtraListDataListener;
-	}
-
-	@Override
-	public void removeRestaurantPoiItems() {
-		setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
-
-		restaurantItemGetter = null;
-		restaurantOnExtraListDataListener = null;
-
-		viewPagerAdapterMap.remove(MarkerType.RESTAURANT);
-		removeMarkers(MarkerType.RESTAURANT);
-		removeMarkers(MarkerType.CRITERIA_LOCATION_FOR_RESTAURANTS);
-
-		markersMap.get(MarkerType.CRITERIA_LOCATION_FOR_RESTAURANTS).clear();
-	}
-
-	@Override
-	public void createCriteriaLocationMarker(String name, String latitude, String longitude) {
-		LatLng latLng = new LatLng(Double.parseDouble(latitude), Double.parseDouble(longitude));
-		final int markerWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 42f, getResources().getDisplayMetrics());
-		final int markerHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 42f, getResources().getDisplayMetrics());
-
-		Marker criteriaLocationForRestaurantsMarker = new Marker(latLng);
-		criteriaLocationForRestaurantsMarker.setMap(naverMap);
-		criteriaLocationForRestaurantsMarker.setWidth(markerWidth);
-		criteriaLocationForRestaurantsMarker.setHeight(markerHeight);
-		criteriaLocationForRestaurantsMarker.setIcon(OverlayImage.fromResource(R.drawable.criteria_location_svg));
-		criteriaLocationForRestaurantsMarker.setForceShowIcon(true);
-		criteriaLocationForRestaurantsMarker.setCaptionColor(Color.BLACK);
-		criteriaLocationForRestaurantsMarker.setCaptionTextSize(13f);
-		criteriaLocationForRestaurantsMarker.setCaptionText(name);
-		criteriaLocationForRestaurantsMarker.setSubCaptionText(getString(R.string.criteria_location));
-		criteriaLocationForRestaurantsMarker.setSubCaptionTextSize(11f);
-		criteriaLocationForRestaurantsMarker.setSubCaptionColor(Color.BLUE);
-
-		if (!markersMap.containsKey(MarkerType.CRITERIA_LOCATION_FOR_RESTAURANTS)) {
-			markersMap.put(MarkerType.CRITERIA_LOCATION_FOR_RESTAURANTS, new ArrayList<>());
-		}
-		markersMap.get(MarkerType.CRITERIA_LOCATION_FOR_RESTAURANTS).add(criteriaLocationForRestaurantsMarker);
-	}
-
-	@Override
-	public void onChangeFoodMenu() {
-		setStateOfBottomSheet(BottomSheetType.LOCATION_ITEM, BottomSheetBehavior.STATE_COLLAPSED);
-	}
-
-
 	@Override
 	public void onPageSelectedLocationItemBottomSheetViewPager(int position, MarkerType markerType) {
 		super.onPageSelectedLocationItemBottomSheetViewPager(position, markerType);
@@ -841,27 +730,10 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 				break;
 			}
 
-			case RESTAURANT: {
-				restaurantOnExtraListDataListener.loadExtraListData(null, new RecyclerView.AdapterDataObserver() {
-					@Override
-					public void onItemRangeInserted(int positionStart, int itemCount) {
-						restaurantItemGetter.getRestaurants(new DbQueryCallback<List<PlaceDocuments>>() {
-							@Override
-							public void onResultSuccessful(List<PlaceDocuments> placeDocuments) {
-								addExtraMarkers(placeDocuments, markerType);
-							}
 
-							@Override
-							public void onResultNoData() {
-
-							}
-						});
-					}
-				});
-				break;
-			}
 		}
 	}
+
 
 	@Override
 	public void refreshView() {
@@ -874,24 +746,4 @@ public class NewInstanceMainFragment extends NaverMapFragment implements ISetFoo
 		}
 	}
 
-	@Override
-	public void onLoadedInitialRestaurantList(String query, List<PlaceDocuments> restaurantList) {
-		if (restaurantList.size() == 0) {
-			Toast.makeText(getActivity(), getString(R.string.not_founded_search_result), Toast.LENGTH_SHORT).show();
-			removeMarkers(MarkerType.RESTAURANT);
-		} else {
-			createMarkers(restaurantList, MarkerType.RESTAURANT);
-			showMarkers(MarkerType.RESTAURANT);
-		}
-	}
-
-	@Override
-	public void onLoadedExtraRestaurantList(String query, List<PlaceDocuments> restaurantList) {
-
-	}
-
-
-	public interface RestaurantsGetter {
-		void getRestaurants(DbQueryCallback<List<PlaceDocuments>> callback);
-	}
 }

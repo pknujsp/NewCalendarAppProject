@@ -8,6 +8,7 @@ import android.net.Network;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +21,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.naver.maps.geometry.LatLng;
 import com.naver.maps.map.CameraUpdate;
@@ -120,7 +122,25 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 	public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
-		binding.bottomNavigation.setVisibility(View.GONE);
+		binding.bottomNavigation.inflateMenu(R.menu.bottomnav_menu_in_event_info_fragment);
+		binding.bottomNavigation.getMenu().findItem(R.id.event_info).setVisible(false);
+		binding.bottomNavigation.getMenu().findItem(R.id.weathers_info).setVisible(false);
+		binding.bottomNavigation.getMenu().findItem(R.id.restaurants).setVisible(false);
+		binding.bottomNavigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+			@Override
+			public boolean onNavigationItemSelected(@NonNull @NotNull MenuItem item) {
+				onClickedBottomNav();
+				switch (item.getItemId()) {
+					case R.id.map_around:
+						onClickedAroundMap();
+						break;
+				}
+				return true;
+			}
+
+		});
+		removeTooltipInBottomNav();
+		binding.bottomNavigation.setSelected(false);
 		binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.GONE);
 
 		setPlaceBottomSheetSelectBtnVisibility(View.VISIBLE);

@@ -31,12 +31,11 @@ import com.zerodsoft.scheduleweather.event.foods.share.CriteriaLocationCloud;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationHistoryViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationInfoViewModel;
 import com.zerodsoft.scheduleweather.event.foods.viewmodel.RestaurantSharedViewModel;
-import com.zerodsoft.scheduleweather.navermap.interfaces.IMapPoint;
 
 import org.jetbrains.annotations.NotNull;
 
 public class RestaurantFragment extends Fragment implements IOnSetView {
-	private final long EVENT_ID;
+	private final Long EVENT_ID;
 	private final ISetFoodMenuPoiItems ISetFoodMenuPoiItems;
 	private OnHiddenFragmentListener onHiddenFragmentListener;
 
@@ -47,7 +46,7 @@ public class RestaurantFragment extends Fragment implements IOnSetView {
 
 
 	public RestaurantFragment(ISetFoodMenuPoiItems ISetFoodMenuPoiItems
-			, OnHiddenFragmentListener onHiddenFragmentListener, long EVENT_ID) {
+			, OnHiddenFragmentListener onHiddenFragmentListener, @Nullable Long EVENT_ID) {
 		this.ISetFoodMenuPoiItems = ISetFoodMenuPoiItems;
 		this.onHiddenFragmentListener = onHiddenFragmentListener;
 		this.EVENT_ID = EVENT_ID;

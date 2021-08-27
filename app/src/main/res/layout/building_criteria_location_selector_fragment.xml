@@ -6,7 +6,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center"
-        android:background="#4FEEEEEE">
+        android:background="#59EEEEEE"
+        android:padding="36dp">
 
         <TextView
             android:layout_width="wrap_content"
@@ -16,8 +17,8 @@
             android:layout_marginBottom="36dp"
             android:text="@string/message_how_to_use_criteria_location_btn_for_search_buildings"
             android:textAlignment="center"
-            android:textColor="@color/text_blue"
-            android:textSize="16sp" />
+            android:textColor="@color/colorPrimary"
+            android:textSize="17sp" />
 
         <View
             android:id="@+id/selector_image"

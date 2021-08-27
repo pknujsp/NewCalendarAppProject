@@ -86,6 +86,7 @@ public class AllFavoritesHostFragment extends Fragment {
 	@Override
 	public void onViewCreated(@NonNull @NotNull View view, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+		binding.bottomNavigation.setVisibility(View.GONE);
 
 		binding.bottomNavigation.setOnNavigationItemSelectedListener(onNavigationItemSelectedListener);
 		binding.bottomNavigation.setOnNavigationItemReselectedListener(new BottomNavigationView.OnNavigationItemReselectedListener() {

@@ -173,6 +173,10 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 			}
 		});
 
+		if (eventId == null) {
+			binding.criteriaLocation.setClickable(false);
+		}
+
 		loadCriteriaLocation();
 	}
 
@@ -200,72 +204,37 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 			return;
 		}
 
-		foodCriteriaLocationInfoViewModel.selectByEventId(eventId
-				, new DbQueryCallback<FoodCriteriaLocationInfoDTO>() {
-					@Override
-					public void onResultSuccessful(FoodCriteriaLocationInfoDTO result) {
-						savedFoodCriteriaLocationInfoDTO = result;
+		if (eventId == null) {
+			setCriteria(CriteriaLocationType.TYPE_MAP_CENTER_POINT);
+		} else {
+			foodCriteriaLocationInfoViewModel.selectByEventId(eventId
+					, new DbQueryCallback<FoodCriteriaLocationInfoDTO>() {
+						@Override
+						public void onResultSuccessful(FoodCriteriaLocationInfoDTO result) {
+							savedFoodCriteriaLocationInfoDTO = result;
 
-						if (CriteriaLocationType.enumOf(savedFoodCriteriaLocationInfoDTO.getUsingType()) == CriteriaLocationType.TYPE_SELECTED_LOCATION) {
-							locationViewModel.getLocation(eventId, new DbQueryCallback<LocationDTO>() {
-								@Override
-								public void onResultSuccessful(LocationDTO savedLocationDto) {
-									requireActivity().runOnUiThread(new Runnable() {
-										@Override
-										public void run() {
-											criteriaLocationDTO = savedLocationDto;
-											setCriteria(CriteriaLocationType.enumOf(savedFoodCriteriaLocationInfoDTO.getUsingType()));
-										}
-									});
-								}
+							if (CriteriaLocationType.enumOf(savedFoodCriteriaLocationInfoDTO.getUsingType()) == CriteriaLocationType.TYPE_SELECTED_LOCATION) {
+								locationViewModel.getLocation(eventId, new DbQueryCallback<LocationDTO>() {
+									@Override
+									public void onResultSuccessful(LocationDTO savedLocationDto) {
+										requireActivity().runOnUiThread(new Runnable() {
+											@Override
+											public void run() {
+												criteriaLocationDTO = savedLocationDto;
+												setCriteria(CriteriaLocationType.enumOf(savedFoodCriteriaLocationInfoDTO.getUsingType()));
+											}
+										});
+									}
 
-								@Override
-								public void onResultNoData() {
-									foodCriteriaLocationInfoViewModel.updateByEventId(eventId, CriteriaLocationType.TYPE_MAP_CENTER_POINT.value(), null, new DbQueryCallback<FoodCriteriaLocationInfoDTO>() {
-										@Override
-										public void onResultSuccessful(FoodCriteriaLocationInfoDTO newFoodCriteriaLocationInfoDTO) {
-											requireActivity().runOnUiThread(new Runnable() {
-												@Override
-												public void run() {
-													savedFoodCriteriaLocationInfoDTO = newFoodCriteriaLocationInfoDTO;
-													setCriteria(CriteriaLocationType.enumOf(newFoodCriteriaLocationInfoDTO.getUsingType()));
-												}
-											});
-										}
-
-										@Override
-										public void onResultNoData() {
-
-										}
-									});
-								}
-							});
-						} else {
-							requireActivity().runOnUiThread(new Runnable() {
-								@Override
-								public void run() {
-									setCriteria(CriteriaLocationType.enumOf(savedFoodCriteriaLocationInfoDTO.getUsingType()));
-								}
-							});
-						}
-					}
-
-					@Override
-					public void onResultNoData() {
-						locationViewModel.getLocation(eventId, new DbQueryCallback<LocationDTO>() {
-							@Override
-							public void onResultSuccessful(LocationDTO savedLocationDto) {
-								criteriaLocationDTO = savedLocationDto;
-								foodCriteriaLocationInfoViewModel.insertByEventId(eventId
-										, CriteriaLocationType.TYPE_SELECTED_LOCATION.value(), null,
-										new DbQueryCallback<FoodCriteriaLocationInfoDTO>() {
+									@Override
+									public void onResultNoData() {
+										foodCriteriaLocationInfoViewModel.updateByEventId(eventId, CriteriaLocationType.TYPE_MAP_CENTER_POINT.value(), null, new DbQueryCallback<FoodCriteriaLocationInfoDTO>() {
 											@Override
 											public void onResultSuccessful(FoodCriteriaLocationInfoDTO newFoodCriteriaLocationInfoDTO) {
-												savedFoodCriteriaLocationInfoDTO = newFoodCriteriaLocationInfoDTO;
-
 												requireActivity().runOnUiThread(new Runnable() {
 													@Override
 													public void run() {
+														savedFoodCriteriaLocationInfoDTO = newFoodCriteriaLocationInfoDTO;
 														setCriteria(CriteriaLocationType.enumOf(newFoodCriteriaLocationInfoDTO.getUsingType()));
 													}
 												});
@@ -276,35 +245,74 @@ public class HeaderCriteriaLocationFragment extends Fragment {
 
 											}
 										});
+									}
+								});
+							} else {
+								requireActivity().runOnUiThread(new Runnable() {
+									@Override
+									public void run() {
+										setCriteria(CriteriaLocationType.enumOf(savedFoodCriteriaLocationInfoDTO.getUsingType()));
+									}
+								});
 							}
+						}
 
-							@Override
-							public void onResultNoData() {
-								foodCriteriaLocationInfoViewModel.insertByEventId(eventId
-										, CriteriaLocationType.TYPE_MAP_CENTER_POINT.value(), null,
-										new DbQueryCallback<FoodCriteriaLocationInfoDTO>() {
-											@Override
-											public void onResultSuccessful(FoodCriteriaLocationInfoDTO newFoodCriteriaLocationInfoDTO) {
-												savedFoodCriteriaLocationInfoDTO = newFoodCriteriaLocationInfoDTO;
+						@Override
+						public void onResultNoData() {
+							locationViewModel.getLocation(eventId, new DbQueryCallback<LocationDTO>() {
+								@Override
+								public void onResultSuccessful(LocationDTO savedLocationDto) {
+									criteriaLocationDTO = savedLocationDto;
+									foodCriteriaLocationInfoViewModel.insertByEventId(eventId
+											, CriteriaLocationType.TYPE_SELECTED_LOCATION.value(), null,
+											new DbQueryCallback<FoodCriteriaLocationInfoDTO>() {
+												@Override
+												public void onResultSuccessful(FoodCriteriaLocationInfoDTO newFoodCriteriaLocationInfoDTO) {
+													savedFoodCriteriaLocationInfoDTO = newFoodCriteriaLocationInfoDTO;
 
-												requireActivity().runOnUiThread(new Runnable() {
-													@Override
-													public void run() {
-														setCriteria(CriteriaLocationType.enumOf(savedFoodCriteriaLocationInfoDTO.getUsingType()));
-													}
-												});
-											}
+													requireActivity().runOnUiThread(new Runnable() {
+														@Override
+														public void run() {
+															setCriteria(CriteriaLocationType.enumOf(newFoodCriteriaLocationInfoDTO.getUsingType()));
+														}
+													});
+												}
 
-											@Override
-											public void onResultNoData() {
+												@Override
+												public void onResultNoData() {
 
-											}
-										});
-							}
-						});
+												}
+											});
+								}
 
-					}
-				});
+								@Override
+								public void onResultNoData() {
+									foodCriteriaLocationInfoViewModel.insertByEventId(eventId
+											, CriteriaLocationType.TYPE_MAP_CENTER_POINT.value(), null,
+											new DbQueryCallback<FoodCriteriaLocationInfoDTO>() {
+												@Override
+												public void onResultSuccessful(FoodCriteriaLocationInfoDTO newFoodCriteriaLocationInfoDTO) {
+													savedFoodCriteriaLocationInfoDTO = newFoodCriteriaLocationInfoDTO;
+
+													requireActivity().runOnUiThread(new Runnable() {
+														@Override
+														public void run() {
+															setCriteria(CriteriaLocationType.enumOf(savedFoodCriteriaLocationInfoDTO.getUsingType()));
+														}
+													});
+												}
+
+												@Override
+												public void onResultNoData() {
+
+												}
+											});
+								}
+							});
+
+						}
+					});
+		}
 	}
 
 
