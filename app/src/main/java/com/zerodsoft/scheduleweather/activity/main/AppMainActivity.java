@@ -21,7 +21,6 @@ import android.widget.Toast;
 
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.activity.App;
-import com.zerodsoft.scheduleweather.activity.preferences.fragments.SettingsFragment;
 import com.zerodsoft.scheduleweather.activity.preferences.fragments.SettingsMainFragment;
 import com.zerodsoft.scheduleweather.calendar.selectedcalendar.SelectedCalendarViewModel;
 import com.zerodsoft.scheduleweather.calendarview.SideBarCalendarListAdapter;
@@ -35,7 +34,6 @@ import com.zerodsoft.scheduleweather.common.interfaces.DbQueryCallback;
 import com.zerodsoft.scheduleweather.databinding.ActivityAppMainBinding;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.common.classes.AppPermission;
-import com.zerodsoft.scheduleweather.event.main.NewInstanceMainFragment;
 import com.zerodsoft.scheduleweather.favorites.AllFavoritesHostFragment;
 import com.zerodsoft.scheduleweather.notification.receiver.EventAlarmReceiver;
 import com.zerodsoft.scheduleweather.retrofit.KakaoLocalApiCategoryUtil;
@@ -75,7 +73,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 
 	private EventTransactionFragment eventTransactionFragment;
 
-	private Bundle alarmArguments;
+	private Intent intent;
 	private NetworkStatus networkStatus;
 
 	private final FragmentManager.FragmentLifecycleCallbacks fragmentLifecycleCallbacks = new FragmentManager.FragmentLifecycleCallbacks() {
@@ -83,9 +81,10 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 		public void onFragmentStarted(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
 			super.onFragmentStarted(fm, f);
 			if (f instanceof EventTransactionFragment) {
-				if (alarmArguments != null) {
-					((EventTransactionFragment) f).openEventInfoFragment(alarmArguments);
-					alarmArguments = null;
+				if (intent != null) {
+					if (intent.getAction().equals(EventAlarmReceiver.ALARM_NOTIFICATION_CLICK_ACTION)) {
+						((EventTransactionFragment) f).openEventInfoFragment(intent.getExtras());
+					}
 				}
 			}
 		}
@@ -116,8 +115,7 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 		selectedCalendarViewModel = new ViewModelProvider(this).get(SelectedCalendarViewModel.class);
 
 		getSupportFragmentManager().registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false);
-		alarmArguments = getIntent().getExtras();
-
+		intent = getIntent();
 		Point point = new Point();
 		getWindowManager().getDefaultDisplay().getRealSize(point);
 

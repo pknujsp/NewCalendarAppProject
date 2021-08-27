@@ -23,9 +23,7 @@ public class EventAlarmProcessingReceiver extends BroadcastReceiver {
 		String action = intent.getAction();
 		Bundle bundle = intent.getExtras();
 
-
 		if (action.equals(ACTION_PROCESS_EVENT_STATUS)) {
-
 			if (ActivityCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) != PackageManager.PERMISSION_GRANTED) {
 				return;
 			}

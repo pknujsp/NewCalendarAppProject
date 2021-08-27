@@ -130,11 +130,14 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 			Intent activityIntent = new Intent(context, AppMainActivity.class);
 			activityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
-			activityIntent.putExtra(Instances.CALENDAR_ID, instance.getAsInteger(CalendarAlerts.CALENDAR_ID));
-			activityIntent.putExtra(Instances._ID, instance.getAsLong(Instances._ID));
-			activityIntent.putExtra(Instances.EVENT_ID, instance.getAsLong(CalendarAlerts.EVENT_ID));
-			activityIntent.putExtra(Instances.BEGIN, instance.getAsLong(CalendarAlerts.BEGIN));
-			activityIntent.putExtra(Instances.END, instance.getAsLong(CalendarAlerts.END));
+			Bundle eventBundle = new Bundle();
+			eventBundle.putInt(Instances.CALENDAR_ID, instance.getAsInteger(CalendarAlerts.CALENDAR_ID));
+			eventBundle.putLong(Instances._ID, instance.getAsLong(Instances._ID));
+			eventBundle.putLong(Instances.EVENT_ID, instance.getAsLong(CalendarAlerts.EVENT_ID));
+			eventBundle.putLong(Instances.BEGIN, instance.getAsLong(CalendarAlerts.BEGIN));
+			eventBundle.putLong(Instances.END, instance.getAsLong(CalendarAlerts.END));
+
+			activityIntent.putExtras(eventBundle);
 			activityIntent.setAction(ALARM_NOTIFICATION_CLICK_ACTION);
 
 			PendingIntent pendingIntent = PendingIntent.getActivity(context, requestCode++, activityIntent,
