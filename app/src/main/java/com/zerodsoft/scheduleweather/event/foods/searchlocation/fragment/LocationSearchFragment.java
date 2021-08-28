@@ -148,7 +148,8 @@ public class LocationSearchFragment extends Fragment implements IndicatorCreater
 	public void onClickedLocationItem(KakaoLocalDocument kakaoLocalDocument) {
 		//map으로 표시
 		LocationItemDetailDialogFragment locationItemDetailDialogFragment = new LocationItemDetailDialogFragment(this, kakaoLocalDocument);
-		locationItemDetailDialogFragment.show(getParentFragmentManager(), "");
+		locationItemDetailDialogFragment.setCancelable(false);
+		locationItemDetailDialogFragment.show(getChildFragmentManager(), getString(R.string.tag_location_item_detail_fragment));
 	}
 
 	@Override

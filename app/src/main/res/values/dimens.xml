@@ -20,7 +20,7 @@
 
     <dimen name="toolbar_left_right_margin">24dp</dimen>
     <dimen name="toolbar_start_end_margin">16dp</dimen>
-    <dimen name="toolbar_page_title_margin">32dp</dimen>
+    <dimen name="toolbar_page_title_margin">28dp</dimen>
     <dimen name="toolbar_image_size">24dp</dimen>
     <dimen name="toolbar_height">56dp</dimen>
 

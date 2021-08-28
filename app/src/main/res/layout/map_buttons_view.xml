@@ -17,12 +17,13 @@
         android:id="@+id/favorite_locations_button"
         android:layout_width="@dimen/map_button_size"
         android:layout_height="@dimen/map_button_size"
-        android:layout_marginBottom="32dp"
+        android:layout_marginBottom="36dp"
         android:background="@drawable/map_button_rect"
         android:elevation="3dp"
         android:scaleType="centerInside"
         app:layout_constraintBottom_toTopOf="@+id/zoom_in_button"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_goneMarginBottom="0dp"
         app:srcCompat="@drawable/favorite_disabled"
         app:tint="@color/black" />
 
@@ -32,6 +33,7 @@
         android:layout_width="@dimen/map_button_size"
         android:layout_height="@dimen/map_button_size"
         android:layout_marginBottom="8dp"
+
         android:background="@drawable/map_button_rect"
         android:elevation="3dp"
         android:src="@drawable/zoom_in_icon"
@@ -43,12 +45,13 @@
         android:id="@+id/zoom_out_button"
         android:layout_width="@dimen/map_button_size"
         android:layout_height="@dimen/map_button_size"
-        android:layout_marginBottom="32dp"
+        android:layout_marginBottom="28dp"
         android:background="@drawable/map_button_rect"
         android:elevation="3dp"
         android:src="@drawable/zoom_out_icon"
         app:layout_constraintBottom_toTopOf="@+id/gps_button"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_goneMarginBottom="0dp"
         app:tint="@color/black" />
 
     <ImageButton
@@ -91,6 +94,7 @@
         android:scaleType="centerInside"
         app:layout_constraintBottom_toTopOf="@+id/current_address"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_goneMarginBottom="0dp"
         app:srcCompat="@drawable/map_icon"
         app:tint="@color/black" />
 
