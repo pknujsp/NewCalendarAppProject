@@ -299,12 +299,8 @@ public class WeekView extends HourEventsView implements CalendarViewInitializer,
 		long start2 = event2.getAsLong(CalendarContract.Instances.BEGIN);
 		long end2 = event2.getAsLong(CalendarContract.Instances.END);
 
-		if ((start1 >= start2 && start1 <= end2) || (end1 >= start2 && end1 <= end2)
-				|| (start1 <= start2 && end1 >= end2)) {
-			return true;
-		} else {
-			return false;
-		}
+		return (start1 >= start2 && start1 <= end2) || (end1 >= start2 && end1 <= end2)
+				|| (start1 <= start2 && end1 >= end2);
 	}
 
 

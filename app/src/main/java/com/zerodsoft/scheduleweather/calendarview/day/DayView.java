@@ -190,12 +190,8 @@ public class DayView extends HourEventsView implements CalendarViewInitializer, 
 		long start2 = i2.getAsLong(Instances.BEGIN);
 		long end2 = i2.getAsLong(Instances.END);
 
-		if ((start1 >= start2 && start1 <= end2) || (end1 >= start2 && end1 <= end2)
-				|| (start1 <= start2 && end1 >= end2)) {
-			return true;
-		} else {
-			return false;
-		}
+		return (start1 >= start2 && start1 <= end2) || (end1 >= start2 && end1 <= end2)
+				|| (start1 <= start2 && end1 >= end2);
 	}
 
 	public void setInstances(List<ContentValues> instances) {

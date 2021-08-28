@@ -13,7 +13,7 @@ public class AddressItemDataSourceFactory extends DataSource.Factory<Integer, Ad
 {
     private AddressItemDataSource dataSource;
     private MutableLiveData<AddressItemDataSource> liveData;
-    private LocalApiPlaceParameter addressParameter;
+    private final LocalApiPlaceParameter addressParameter;
 
     public AddressItemDataSourceFactory(LocalApiPlaceParameter addressParameter )
     {

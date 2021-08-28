@@ -259,10 +259,8 @@ public abstract class FavoriteLocationsBaseFragment extends Fragment implements 
 			@SuppressLint("NonConstantResourceId")
 			@Override
 			public boolean onMenuItemClick(MenuItem menuItem) {
-				switch (menuItem.getItemId()) {
-					case R.id.delete_favorite_location:
-						favoriteLocationViewModel.delete(e, null);
-						break;
+				if (menuItem.getItemId() == R.id.delete_favorite_location) {
+					favoriteLocationViewModel.delete(e, null);
 				}
 				return true;
 			}

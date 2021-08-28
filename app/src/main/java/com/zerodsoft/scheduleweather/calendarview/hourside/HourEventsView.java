@@ -58,9 +58,17 @@ public class HourEventsView extends ViewGroup {
 	protected CurrentTimeLineView currentTimeLineView;
 
 
-	protected enum SCROLL_DIRECTION {NONE, VERTICAL, FINISHED}
+	protected enum SCROLL_DIRECTION {
+		NONE,
+		VERTICAL,
+		FINISHED
+	}
 
-	protected enum TIME_CATEGORY {NONE, START, END}
+	protected enum TIME_CATEGORY {
+		NONE,
+		START,
+		END
+	}
 
 	public HourEventsView(Context context, @Nullable AttributeSet attrs) {
 		super(context, attrs);
@@ -159,8 +167,7 @@ public class HourEventsView extends ViewGroup {
 				for (int j = 0; j <= 3; j++) {
 					if (y >= minute15Height * j && y <= minute15Height * (j + 1)) {
 						int year = time.get(Calendar.YEAR), month = time.get(Calendar.MONTH), date = time.get(Calendar.DAY_OF_MONTH);
-						int hour = i, minute = j * 15;
-						time.set(year, month, date, hour, minute);
+						time.set(year, month, date, i, j * 15);
 						fixTimeError(timeCategory, originalTime);
 
 						return true;

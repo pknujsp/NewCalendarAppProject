@@ -78,8 +78,7 @@ public class FavoriteRestaurantListAdapter extends BaseExpandableListAdapter {
 		}
 		restaurantListMap.get(category).add(addedFavoriteRestaurant);
 
-		int groupPosition = restaurantListMap.indexOfKey(category);
-		return groupPosition;
+		return restaurantListMap.indexOfKey(category);
 	}
 
 	public Set<String> getPlaceIdSet() {

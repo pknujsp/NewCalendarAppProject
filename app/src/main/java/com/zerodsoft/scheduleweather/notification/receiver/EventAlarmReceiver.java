@@ -68,7 +68,6 @@ public class EventAlarmReceiver extends BroadcastReceiver {
 			}
 
 			final Long alarmTime = intent.getExtras().getLong(CalendarAlerts.ALARM_TIME);
-
 			final String selection = CalendarAlerts.ALARM_TIME + " = ?";
 			final String[] selectionArgs = {alarmTime.toString()};
 

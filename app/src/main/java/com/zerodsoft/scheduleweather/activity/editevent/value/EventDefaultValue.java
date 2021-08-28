@@ -30,11 +30,7 @@ public class EventDefaultValue {
 	}
 
 	private boolean checkPermission(String permission) {
-		if (ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED) {
-			return true;
-		} else {
-			return false;
-		}
+		return ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED;
 	}
 
 

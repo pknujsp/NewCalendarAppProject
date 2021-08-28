@@ -700,7 +700,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 	}
 
 
-	private final void removeReminderItemView(int minutes) {
+	private void removeReminderItemView(int minutes) {
 		final int rowCount = binding.reminderLayout.remindersTable.getChildCount();
 		eventModel.removeReminder(minutes);
 
@@ -1094,10 +1094,9 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 				if (locationDTO != null) {
 					locationViewModel.removeLocation(locationDTO.getEventId(), null);
 					locationDTO = null;
-					bundle.putInt("requestCode", LocationIntentCode.REQUEST_CODE_SELECT_LOCATION_EMPTY_QUERY.value());
-				} else {
-					bundle.putInt("requestCode", LocationIntentCode.REQUEST_CODE_SELECT_LOCATION_EMPTY_QUERY.value());
 				}
+				bundle.putInt("requestCode", LocationIntentCode.REQUEST_CODE_SELECT_LOCATION_EMPTY_QUERY.value());
+
 			}
 
 			selectionDetailLocationFragment.setArguments(bundle);

@@ -53,10 +53,6 @@ public class SgisAuth {
 	}
 
 	public static boolean hasAccessToken() {
-		if (sgisAuthResponse == null) {
-			return false;
-		} else {
-			return true;
-		}
+		return sgisAuthResponse != null;
 	}
 }

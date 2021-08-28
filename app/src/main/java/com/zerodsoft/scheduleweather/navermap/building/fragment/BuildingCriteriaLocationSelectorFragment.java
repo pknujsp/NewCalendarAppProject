@@ -11,7 +11,6 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
 import com.zerodsoft.scheduleweather.R;
-;
 import com.zerodsoft.scheduleweather.databinding.BuildingCriteriaLocationSelectorFragmentBinding;
 import com.zerodsoft.scheduleweather.navermap.search.LocationSearchFragment;
 

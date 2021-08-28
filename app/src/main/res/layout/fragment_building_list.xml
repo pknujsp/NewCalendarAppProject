@@ -29,9 +29,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
-                android:layout_marginRight="4dp"
                 android:background="?attr/selectableItemBackground"
                 android:clickable="true"
+                android:drawableRight="@drawable/expand_more_icon"
+                android:gravity="center_vertical"
                 android:text="검색반경 50m"
                 android:textSize="13sp" />
 

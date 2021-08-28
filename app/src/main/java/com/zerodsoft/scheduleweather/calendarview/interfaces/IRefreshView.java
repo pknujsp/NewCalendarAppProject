@@ -8,7 +8,6 @@ import com.zerodsoft.scheduleweather.calendarview.month.MonthViewPagerAdapter;
 
 import java.util.List;
 
-public interface IRefreshView
-{
-    public void refreshView();
+public interface IRefreshView {
+	void refreshView();
 }

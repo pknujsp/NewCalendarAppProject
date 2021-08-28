@@ -70,16 +70,12 @@ public class FoodCriteriaLocationHistoryAdapter extends RecyclerView.Adapter<Foo
 
 			if (history.getLocationType() == LocationType.PLACE) {
 				placeNameTextView.setText(history.getPlaceName());
-				addressNameTextView.setText(history.getAddressName());
-
 				placeNameTextView.setVisibility(View.VISIBLE);
-				addressNameTextView.setVisibility(View.VISIBLE);
 			} else {
-				addressNameTextView.setText(history.getAddressName());
-
 				placeNameTextView.setVisibility(View.GONE);
-				addressNameTextView.setVisibility(View.VISIBLE);
 			}
+			addressNameTextView.setText(history.getAddressName());
+			addressNameTextView.setVisibility(View.VISIBLE);
 
 			rootLayout.setOnClickListener(new View.OnClickListener() {
 				@Override

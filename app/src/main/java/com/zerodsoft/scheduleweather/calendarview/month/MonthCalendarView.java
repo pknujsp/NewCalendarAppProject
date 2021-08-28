@@ -120,9 +120,7 @@ public class MonthCalendarView extends ViewGroup implements CalendarViewInitiali
 	protected void onLayout(boolean b, int i, int i1, int i2, int i3) {
 		ITEM_WIDTH = getWidth() / 7;
 		ITEM_HEIGHT = getHeight() / 6;
-
-		float height = (float) ((ITEM_HEIGHT - DAY_SPACE_HEIGHT) - SPACING_BETWEEN_INSTANCE * (MAX_ROWS_COUNT - 1)) / MAX_ROWS_COUNT;
-		INSTANCE_BAR_HEIGHT = height;
+		INSTANCE_BAR_HEIGHT = (float) ((ITEM_HEIGHT - DAY_SPACE_HEIGHT) - SPACING_BETWEEN_INSTANCE * (MAX_ROWS_COUNT - 1)) / MAX_ROWS_COUNT;
 
 		int left = 0;
 		int right = 0;

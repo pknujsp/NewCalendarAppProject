@@ -60,13 +60,13 @@ public class CustomFoodMenuAdapter extends RecyclerView.Adapter<CustomFoodMenuAd
 		}
 
 		public void onBind() {
-			CustomFoodMenuDTO customFoodMenuDTO = list.get(getAdapterPosition());
+			CustomFoodMenuDTO customFoodMenuDTO = list.get(getBindingAdapterPosition());
 
 			valueTextView.setText(customFoodMenuDTO.getMenuName());
 			deleteButton.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View view) {
-					onClickedListItem.deleteListItem(customFoodMenuDTO, getAdapterPosition());
+					onClickedListItem.deleteListItem(customFoodMenuDTO, getBindingAdapterPosition());
 				}
 			});
 		}

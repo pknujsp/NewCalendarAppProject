@@ -239,7 +239,7 @@ public class VilageFcstFragment extends Fragment {
 			date.setTime(dataList.get(col).getFcstDateTime());
 
 			if (date.get(Calendar.HOUR_OF_DAY) == 0 || col == 0) {
-				setValueTextView(textView, ClockUtil.MdE_FORMAT.format(date.getTime()) + "\n" + Integer.toString(date.get(Calendar.HOUR_OF_DAY)));
+				setValueTextView(textView, ClockUtil.MdE_FORMAT.format(date.getTime()) + "\n" + date.get(Calendar.HOUR_OF_DAY));
 			} else {
 				setValueTextView(textView, Integer.toString(date.get(Calendar.HOUR_OF_DAY)));
 			}
@@ -404,7 +404,7 @@ public class VilageFcstFragment extends Fragment {
 		}
 	}
 
-	class TempView extends View {
+	static class TempView extends View {
 		private List<String> tempList;
 		private final int MAX_TEMP;
 		private final int MIN_TEMP;
@@ -538,7 +538,7 @@ public class VilageFcstFragment extends Fragment {
 
 	}
 
-	class RainfallView extends View {
+	static class RainfallView extends View {
 		List<String> rainfallList;
 		final int COLUMN_SIZE;
 		final TextPaint VALUE_PAINT;

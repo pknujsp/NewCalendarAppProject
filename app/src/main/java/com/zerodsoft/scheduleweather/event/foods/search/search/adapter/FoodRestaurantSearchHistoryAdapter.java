@@ -60,7 +60,7 @@ public class FoodRestaurantSearchHistoryAdapter extends RecyclerView.Adapter<Foo
 		}
 
 		public void onBind() {
-			valueTextView.setText(historyList.get(getAdapterPosition()).getValue());
+			valueTextView.setText(historyList.get(getBindingAdapterPosition()).getValue());
 
 			valueTextView.setOnClickListener(new View.OnClickListener() {
 				@Override
@@ -71,7 +71,7 @@ public class FoodRestaurantSearchHistoryAdapter extends RecyclerView.Adapter<Foo
 			deleteButton.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View view) {
-					onClickedListItem.deleteListItem(historyList.get(getAdapterPosition()), getAdapterPosition());
+					onClickedListItem.deleteListItem(historyList.get(getBindingAdapterPosition()), getBindingAdapterPosition());
 				}
 			});
 		}

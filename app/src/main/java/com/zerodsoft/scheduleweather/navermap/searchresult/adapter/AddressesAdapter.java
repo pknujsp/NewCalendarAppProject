@@ -29,10 +29,10 @@ public class AddressesAdapter extends PagedListAdapter<AddressResponseDocuments,
 
 
 	class ItemViewHolder extends RecyclerView.ViewHolder {
-		private TextView addressName;
-		private TextView anotherAddressName;
-		private TextView anotherAddressType;
-		private TextView addressIndex;
+		private final TextView addressName;
+		private final TextView anotherAddressName;
+		private final TextView anotherAddressType;
+		private final TextView addressIndex;
 
 		public ItemViewHolder(View view) {
 			super(view);

@@ -121,21 +121,13 @@ public class DateTimeObj implements Cloneable {
 	}
 
 	public boolean isSameDate(DateTimeObj dateTimeObj) {
-		if (year == dateTimeObj.getYear() && month == dateTimeObj.getMonth()
-				&& day == dateTimeObj.getDay()) {
-			return true;
-		} else {
-			return false;
-		}
+		return year == dateTimeObj.getYear() && month == dateTimeObj.getMonth()
+				&& day == dateTimeObj.getDay();
 	}
 
 	public boolean isSameDateTime(DateTimeObj dateTimeObj) {
-		if (year == dateTimeObj.getYear() && month == dateTimeObj.getMonth()
+		return year == dateTimeObj.getYear() && month == dateTimeObj.getMonth()
 				&& day == dateTimeObj.getDay() && hour == dateTimeObj.getHour()
-				&& minute == dateTimeObj.getMinute()) {
-			return true;
-		} else {
-			return false;
-		}
+				&& minute == dateTimeObj.getMinute();
 	}
 }

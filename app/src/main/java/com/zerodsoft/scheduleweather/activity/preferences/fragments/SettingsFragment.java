@@ -96,11 +96,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 		useDefaultTimeZoneSwitchPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
 			@Override
 			public boolean onPreferenceClick(Preference preference) {
-				if (useDefaultTimeZoneSwitchPreference.isChecked()) {
-					customTimeZonePreference.setEnabled(false);
-				} else {
-					customTimeZonePreference.setEnabled(true);
-				}
+				customTimeZonePreference.setEnabled(!useDefaultTimeZoneSwitchPreference.isChecked());
 				return true;
 			}
 		});
@@ -497,19 +493,11 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 
 		//주차 표시
 		boolean showingWeekOfYear = preferences.getBoolean(getString(R.string.preference_key_show_week_of_year), false);
-		if (showingWeekOfYear) {
-			weekOfYearSwitchPreference.setChecked(true);
-		} else {
-			weekOfYearSwitchPreference.setChecked(false);
-		}
+		weekOfYearSwitchPreference.setChecked(showingWeekOfYear);
 
 		//거절한 일정 표시
 		boolean showingCanceledInstance = preferences.getBoolean(getString(R.string.preference_key_show_canceled_instances), false);
-		if (showingCanceledInstance) {
-			showCanceledInstanceSwitchPreference.setChecked(true);
-		} else {
-			showCanceledInstanceSwitchPreference.setChecked(false);
-		}
+		showCanceledInstanceSwitchPreference.setChecked(showingCanceledInstance);
 
 		//24시간제 사용
 		boolean using24HourSystem = preferences.getBoolean(getString(R.string.preference_key_using_24_hour_system), false);

@@ -84,7 +84,6 @@ public class AttendeesFragment extends Fragment {
 		List<ContentValues> finalAttendeeList = new ArrayList<>();
 		for (ContentValues attendee : attendeeList) {
 			if (attendee.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL).equals(selectedAccount.getAsString(CalendarContract.Attendees.ATTENDEE_EMAIL))) {
-				continue;
 			} else {
 				finalAttendeeList.add(attendee);
 			}

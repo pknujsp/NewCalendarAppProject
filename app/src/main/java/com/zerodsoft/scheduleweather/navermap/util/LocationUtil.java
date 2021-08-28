@@ -12,7 +12,7 @@ public class LocationUtil {
 		double meterDistance = Double.parseDouble(distance);
 
 		if (meterDistance >= 1000) {
-			return String.valueOf(meterDistance / 1000) + "km";
+			return meterDistance / 1000 + "km";
 		} else {
 			return distance + "m";
 		}

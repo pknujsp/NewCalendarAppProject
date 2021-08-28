@@ -336,7 +336,7 @@ public class MidFcstFragment extends Fragment {
 		return drawables;
 	}
 
-	class TempView extends View {
+	static class TempView extends View {
 		private List<String> maxTempList;
 		private List<String> minTempList;
 		private final int MAX_TEMP;

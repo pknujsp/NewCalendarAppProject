@@ -57,8 +57,8 @@ public class CompanyListAdapter extends RecyclerView.Adapter<CompanyListAdapter.
 
         public void onBind()
         {
-            companyNameTextView.setText(companyDataList.get(getAdapterPosition()).getCompanyName());
-            companyThemeTextView.setText(companyDataList.get(getAdapterPosition()).getCompanyTheme());
+            companyNameTextView.setText(companyDataList.get(getBindingAdapterPosition()).getCompanyName());
+            companyThemeTextView.setText(companyDataList.get(getBindingAdapterPosition()).getCompanyTheme());
         }
     }
 }

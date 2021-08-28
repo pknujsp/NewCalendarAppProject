@@ -119,7 +119,6 @@ public class BuildingFragment extends Fragment implements BuildingFloorListAdapt
 						if (buildingFloorListAdapter.getAboveGroundCount() < BuildingFloorListAdapter.ABOVEGROUND_COUNT_MAX) {
 							buildingFloorListAdapter.addFloors(BuildingFloorListAdapter.FloorClassification.ABOVEGROUND);
 						}
-						return;
 					}
 				} else {
 
@@ -127,7 +126,6 @@ public class BuildingFragment extends Fragment implements BuildingFloorListAdapt
 						if (buildingFloorListAdapter.getUnderGroundCount() < BuildingFloorListAdapter.UNDERGROUND_COUNT_MAX) {
 							buildingFloorListAdapter.addFloors(BuildingFloorListAdapter.FloorClassification.UNDERGROUND);
 						}
-						return;
 					}
 				}
 			}

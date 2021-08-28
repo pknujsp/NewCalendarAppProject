@@ -53,8 +53,7 @@ public class BuildingFloorListAdapter extends RecyclerView.Adapter<BuildingFloor
 
 
 	public int getFloor(int position) {
-		int floor = position >= aboveGroundCount ? aboveGroundCount - position - 1 : aboveGroundCount - position;
-		return floor;
+		return position >= aboveGroundCount ? aboveGroundCount - position - 1 : aboveGroundCount - position;
 	}
 
 	public void addFloors(FloorClassification floorClassification) {

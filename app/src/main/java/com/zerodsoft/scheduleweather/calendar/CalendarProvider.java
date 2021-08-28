@@ -253,9 +253,7 @@ public class CalendarProvider implements ICalendarProvider {
 	public int deleteEvent(Long eventId) {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
 			Uri uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, eventId);
-			int result = context.getContentResolver().delete(uri, null, null);
-
-			return result;
+			return context.getContentResolver().delete(uri, null, null);
 		} else {
 			return -1;
 		}
@@ -291,8 +289,7 @@ public class CalendarProvider implements ICalendarProvider {
 	public int updateEvent(ContentValues event) {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
 			Uri uri = ContentUris.withAppendedId(CalendarContract.Events.CONTENT_URI, event.getAsLong(CalendarContract.Events._ID));
-			int result = context.getContentResolver().update(uri, event, null, null);
-			return result;
+			return context.getContentResolver().update(uri, event, null, null);
 		} else {
 			return -1;
 		}
@@ -495,8 +492,7 @@ public class CalendarProvider implements ICalendarProvider {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
 			String where = CalendarContract.Reminders.EVENT_ID + "=?";
 			String[] selectionArgs = {eventId.toString()};
-			int result = context.getContentResolver().delete(CalendarContract.Reminders.CONTENT_URI, where, selectionArgs);
-			return result;
+			return context.getContentResolver().delete(CalendarContract.Reminders.CONTENT_URI, where, selectionArgs);
 		} else {
 			return -1;
 		}
@@ -770,8 +766,7 @@ public class CalendarProvider implements ICalendarProvider {
 			String where = CalendarContract.Attendees.EVENT_ID + "=?";
 			String[] selectionArgs = {eventId.toString()};
 
-			int updatedRows = contentResolver.delete(CalendarContract.Attendees.CONTENT_URI, where, selectionArgs);
-			return updatedRows;
+			return contentResolver.delete(CalendarContract.Attendees.CONTENT_URI, where, selectionArgs);
 		} else {
 			return -1;
 		}
@@ -909,9 +904,7 @@ public class CalendarProvider implements ICalendarProvider {
 
 			String where = CalendarContract.Calendars._ID + "=?";
 			String[] selectionArgs = {calendarId.toString()};
-			int result = context.getContentResolver().update(CalendarContract.Calendars.CONTENT_URI, calendar, where, selectionArgs);
-
-			return result;
+			return context.getContentResolver().update(CalendarContract.Calendars.CONTENT_URI, calendar, where, selectionArgs);
 		} else {
 			return -1;
 		}

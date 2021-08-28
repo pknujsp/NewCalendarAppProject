@@ -134,12 +134,19 @@ public class BuildingListFragment extends Fragment implements OnClickedListItem<
 		setSearchRadius();
 
 		binding.radiusSeekbarLayout.setVisibility(View.GONE);
-		binding.radiusSeekbar.setValue(Float.valueOf(App.getPreference_key_range_meter_for_search_buildings()));
+		binding.radiusSeekbar.setValue(Float.parseFloat(App.getPreference_key_range_meter_for_search_buildings()));
 
 		binding.searchRadius.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
 				binding.radiusSeekbarLayout.setVisibility(binding.radiusSeekbarLayout.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
+				int drawableId = 0;
+				if (binding.radiusSeekbarLayout.getVisibility() == View.VISIBLE) {
+					drawableId = R.drawable.expand_less_icon;
+				} else {
+					drawableId = R.drawable.expand_more_icon;
+				}
+				binding.searchRadius.setCompoundDrawablesWithIntrinsicBounds(0, 0, drawableId, 0);
 			}
 		});
 

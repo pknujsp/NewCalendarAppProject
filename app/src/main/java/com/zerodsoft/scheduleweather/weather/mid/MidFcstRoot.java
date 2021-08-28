@@ -2,49 +2,41 @@ package com.zerodsoft.scheduleweather.weather.mid;
 
 import com.google.gson.JsonObject;
 
-public class MidFcstRoot
-{
-    volatile int count = 0;
-    private volatile JsonObject midTa;
-    private volatile JsonObject midLandFcst;
-    private volatile Exception exception;
+public class MidFcstRoot {
+	int count = 0;
+	private volatile JsonObject midTa;
+	private volatile JsonObject midLandFcst;
+	private volatile Exception exception;
 
-    public JsonObject getMidTa()
-    {
-        return midTa;
-    }
+	public JsonObject getMidTa() {
+		return midTa;
+	}
 
-    public void setMidTa(JsonObject midTa)
-    {
-        ++this.count;
-        this.midTa = midTa;
-    }
+	public void setMidTa(JsonObject midTa) {
+		++this.count;
+		this.midTa = midTa;
+	}
 
-    public JsonObject getMidLandFcst()
-    {
-        return midLandFcst;
-    }
+	public JsonObject getMidLandFcst() {
+		return midLandFcst;
+	}
 
-    public void setMidLandFcst(JsonObject midLandFcst)
-    {
-        ++this.count;
-        this.midLandFcst = midLandFcst;
-    }
+	public void setMidLandFcst(JsonObject midLandFcst) {
+		++this.count;
+		this.midLandFcst = midLandFcst;
+	}
 
-    public void setException(Exception exception)
-    {
-        this.exception = exception;
-        ++this.count;
+	public void setException(Exception exception) {
+		this.exception = exception;
+		++this.count;
 
-    }
+	}
 
-    public Exception getException()
-    {
-        return exception;
-    }
+	public Exception getException() {
+		return exception;
+	}
 
-    public int getCount()
-    {
-        return count;
-    }
+	public int getCount() {
+		return count;
+	}
 }

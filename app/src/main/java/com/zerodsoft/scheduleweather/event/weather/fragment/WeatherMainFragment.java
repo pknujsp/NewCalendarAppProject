@@ -39,6 +39,7 @@ import com.zerodsoft.scheduleweather.weather.ultrasrtncst.UltraSrtNcstFragment;
 import com.zerodsoft.scheduleweather.weather.viewmodel.AreaCodeViewModel;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class WeatherMainFragment extends BottomSheetDialogFragment {
@@ -147,10 +148,7 @@ public class WeatherMainFragment extends BottomSheetDialogFragment {
 						weatherIconDrawablesList.add(imgs.getDrawable(index));
 					}
 
-					String[] iconsDescriptionArr = getResources().getStringArray(R.array.weather_icon_descriptions_arr);
-					for (String description : iconsDescriptionArr) {
-						weatherIconDescriptionsList.add(description);
-					}
+					weatherIconDescriptionsList.addAll(Arrays.asList(getResources().getStringArray(R.array.weather_icon_descriptions_arr)));
 				}
 
 				RecyclerView weatherIconsRecyclerView = (RecyclerView) weatherIconsInfoView.findViewById(R.id.weather_icons_list);

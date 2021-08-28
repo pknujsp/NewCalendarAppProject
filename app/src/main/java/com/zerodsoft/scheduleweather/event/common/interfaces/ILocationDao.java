@@ -10,19 +10,19 @@ import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import org.jetbrains.annotations.Nullable;
 
 public interface ILocationDao {
-	public void getLocation(long eventId, DbQueryCallback<LocationDTO> resultCallback);
+	void getLocation(long eventId, DbQueryCallback<LocationDTO> resultCallback);
 
-	public void getLocation(int id, DbQueryCallback<LocationDTO> resultCallback);
+	void getLocation(int id, DbQueryCallback<LocationDTO> resultCallback);
 
-	public void hasDetailLocation(long eventId, DbQueryCallback<Boolean> resultCallback);
+	void hasDetailLocation(long eventId, DbQueryCallback<Boolean> resultCallback);
 
-	public void addLocation(LocationDTO location, @Nullable DbQueryCallback<LocationDTO> resultCallback);
+	void addLocation(LocationDTO location, @Nullable DbQueryCallback<LocationDTO> resultCallback);
 
-	public void removeLocation(long eventId, @Nullable DbQueryCallback<Boolean> resultCallback);
+	void removeLocation(long eventId, @Nullable DbQueryCallback<Boolean> resultCallback);
 
-	public void modifyLocation(LocationDTO location, DbQueryCallback<LocationDTO> resultCallback);
+	void modifyLocation(LocationDTO location, DbQueryCallback<LocationDTO> resultCallback);
 
-	public void getAddressItem(LocalApiPlaceParameter parameter, JsonDownloader<AddressKakaoLocalResponse> callback);
+	void getAddressItem(LocalApiPlaceParameter parameter, JsonDownloader<AddressKakaoLocalResponse> callback);
 
-	public void getPlaceItem(LocalApiPlaceParameter parameter, String placeId, JsonDownloader<PlaceKakaoLocalResponse> callback);
+	void getPlaceItem(LocalApiPlaceParameter parameter, String placeId, JsonDownloader<PlaceKakaoLocalResponse> callback);
 }

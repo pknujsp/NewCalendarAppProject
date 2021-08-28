@@ -125,14 +125,17 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 		binding.bottomNavigation.inflateMenu(R.menu.bottomnav_menu_in_event_info_fragment);
 		binding.bottomNavigation.getMenu().findItem(R.id.event_info).setVisible(false);
 		binding.bottomNavigation.getMenu().findItem(R.id.weathers_info).setVisible(false);
-		binding.bottomNavigation.getMenu().findItem(R.id.restaurants).setVisible(false);
 		binding.bottomNavigation.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
 			@Override
 			public boolean onNavigationItemSelected(@NonNull @NotNull MenuItem item) {
 				onClickedBottomNav();
+
 				switch (item.getItemId()) {
 					case R.id.map_around:
 						onClickedAroundMap();
+						break;
+					case R.id.restaurants:
+						openRestaurantFragment(null);
 						break;
 				}
 				return true;
@@ -175,9 +178,7 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 					//바텀 시트의 상태에 따라서 카메라를 이동시킬 Y값
 					if (firstInitializing) {
 						firstInitializing = false;
-
-						final int bottomSheetTopY = binding.naverMapViewLayout.getHeight() - selectedLocationInfoBottomSheet.getHeight();
-						final int SIZE_BETWEEN_HEADER_BAR_BOTTOM_AND_BOTTOM_SHEET_TOP = bottomSheetTopY;
+						final int SIZE_BETWEEN_HEADER_BAR_BOTTOM_AND_BOTTOM_SHEET_TOP = binding.naverMapViewLayout.getHeight() - selectedLocationInfoBottomSheet.getHeight();
 
 						Projection projection = naverMap.getProjection();
 						PointF point = projection.toScreenLocation(naverMap.getContentBounds().getCenter());

@@ -333,7 +333,7 @@ public class WeekHeaderView extends ViewGroup implements CalendarViewInitializer
 	}
 
 
-	class ItemCell {
+	static class ItemCell {
 		boolean[] rows;
 		int eventsCount;
 

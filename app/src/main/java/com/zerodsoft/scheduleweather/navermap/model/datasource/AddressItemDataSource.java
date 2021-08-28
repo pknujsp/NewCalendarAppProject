@@ -24,7 +24,7 @@ import retrofit2.Response;
 public class AddressItemDataSource extends PositionalDataSource<AddressResponseDocuments> {
 	private Querys querys;
 	private AddressResponseMeta addressMeta;
-	private LocalApiPlaceParameter localApiPlaceParameter;
+	private final LocalApiPlaceParameter localApiPlaceParameter;
 
 	public AddressItemDataSource(LocalApiPlaceParameter localApiParameter) {
 		this.localApiPlaceParameter = localApiParameter;

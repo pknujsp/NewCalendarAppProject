@@ -297,9 +297,8 @@ public class EventUtil {
 		final int DAY_1 = 1440;
 		final int HOUR_1 = 60;
 
-		final int minutes = reminderDto.getWeek() * WEEK_1 + reminderDto.getDay() * DAY_1 +
+		return reminderDto.getWeek() * WEEK_1 + reminderDto.getDay() * DAY_1 +
 				reminderDto.getHour() * HOUR_1 + reminderDto.getMinute();
-		return minutes;
 	}
 
 	public static String getDateTimeStr(Calendar dateCalendar, boolean allDay) {

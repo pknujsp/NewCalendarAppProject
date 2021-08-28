@@ -480,7 +480,7 @@ public class HourlyFcstFragment extends Fragment {
 		}
 	}
 
-	class TempView extends View {
+	static class TempView extends View {
 		private List<String> tempList;
 		private final int MAX_TEMP;
 		private final int MIN_TEMP;
@@ -614,7 +614,7 @@ public class HourlyFcstFragment extends Fragment {
 
 	}
 
-	class RainfallView extends View {
+	static class RainfallView extends View {
 		List<String> rainfallList;
 		final int COLUMN_SIZE;
 		final TextPaint VALUE_PAINT;
@@ -683,7 +683,7 @@ public class HourlyFcstFragment extends Fragment {
 		}
 	}
 
-	class DateView extends View {
+	static class DateView extends View {
 		private final List<DateValue> dateValueList;
 		private final TextPaint dateTextPaint;
 		private final int textHeight;

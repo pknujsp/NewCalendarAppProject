@@ -60,15 +60,11 @@ public class ClockUtil {
 		GregorianCalendar dt2Calendar = new GregorianCalendar();
 		dt2Calendar.setTimeInMillis(dt2);
 
-		if (dt1Calendar.get(Calendar.YEAR) == dt2Calendar.get(Calendar.YEAR) &&
+		return dt1Calendar.get(Calendar.YEAR) == dt2Calendar.get(Calendar.YEAR) &&
 				dt1Calendar.get(Calendar.MONTH) == dt2Calendar.get(Calendar.MONTH) &&
 				dt1Calendar.get(Calendar.DAY_OF_MONTH) == dt2Calendar.get(Calendar.DAY_OF_MONTH)
 				&& dt1Calendar.get(Calendar.HOUR_OF_DAY) == dt2Calendar.get(Calendar.HOUR_OF_DAY)
-				&& dt1Calendar.get(Calendar.MINUTE) == dt2Calendar.get(Calendar.MINUTE)) {
-			return true;
-		} else {
-			return false;
-		}
+				&& dt1Calendar.get(Calendar.MINUTE) == dt2Calendar.get(Calendar.MINUTE);
 	}
 
 	public static int calcBeginDayDifference(long instanceBegin, long view) {

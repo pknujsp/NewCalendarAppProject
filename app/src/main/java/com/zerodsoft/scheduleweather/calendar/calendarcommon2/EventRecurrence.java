@@ -592,11 +592,7 @@ public class EventRecurrence {
 			return false;
 		}
 
-		if (bydayNum[0] <= 0) {
-			return false;
-		}
-
-		return true;
+		return bydayNum[0] > 0;
 	}
 
 	/**

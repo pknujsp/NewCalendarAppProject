@@ -331,8 +331,7 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 		placeCategoryViewModel.selectConvertedSelected(new DbQueryCallback<List<PlaceCategoryDTO>>() {
 			@Override
 			public void onResultSuccessful(List<PlaceCategoryDTO> newPlaceCategoryList) {
-				Set<PlaceCategoryDTO> newSet = new HashSet<>();
-				newSet.addAll(newPlaceCategoryList);
+				Set<PlaceCategoryDTO> newSet = new HashSet<>(newPlaceCategoryList);
 
 				Set<PlaceCategoryDTO> removedSet = new HashSet<>(placeCategorySet);
 				Set<PlaceCategoryDTO> addedSet = new HashSet<>(newSet);
@@ -427,9 +426,6 @@ public class PlacesOfSelectedCategoriesFragment extends Fragment implements Plac
 		customProgressView.onStartedProcessingData();
 		PlaceItemsAdapters adapter = new PlaceItemsAdapters(onClickedPlacesListListener, placeCategory);
 
-		if (adaptersMap.containsKey(placeCategory.getCode())) {
-			adaptersMap.remove(placeCategory.getCode());
-		}
 		adaptersMap.put(placeCategory.getCode(), adapter);
 		listMap.get(placeCategory.getCode()).setAdapter(adapter);
 

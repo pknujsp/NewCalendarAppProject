@@ -127,10 +127,10 @@ public class EventsInfoRecyclerViewAdapter extends RecyclerView.Adapter<EventsIn
 				instanceTitleTextView.setLongClickable(false);
 			} else {
 				checkBox.setVisibility(checkBoxVisibility);
-				instanceTitleTextView.setLongClickable(checkBoxVisibility == View.VISIBLE ? false : true);
+				instanceTitleTextView.setLongClickable(checkBoxVisibility != View.VISIBLE);
 			}
 
-			instanceTitleTextView.setClickable(checkBoxVisibility == View.VISIBLE ? false : true);
+			instanceTitleTextView.setClickable(checkBoxVisibility != View.VISIBLE);
 
 			checkBox.setTag(holder);
 			checkBox.setOnCheckedChangeListener(onCheckedChangeListener);

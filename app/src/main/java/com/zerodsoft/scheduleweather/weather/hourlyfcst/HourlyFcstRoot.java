@@ -3,7 +3,7 @@ package com.zerodsoft.scheduleweather.weather.hourlyfcst;
 import com.google.gson.JsonObject;
 
 public class HourlyFcstRoot {
-	volatile int count = 0;
+	int count = 0;
 	private volatile JsonObject ultraSrtFcst;
 	private volatile JsonObject vilageFcst;
 	private volatile Exception exception;

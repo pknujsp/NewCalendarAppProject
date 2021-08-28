@@ -28,9 +28,9 @@ public class AddressesListAdapter extends PagedListAdapter<AddressResponseDocume
 
     class ItemViewHolder extends RecyclerView.ViewHolder
     {
-        private TextView addressName;
-        private TextView anotherAddressName;
-        private TextView anotherAddressType;
+        private final TextView addressName;
+        private final TextView anotherAddressName;
+        private final TextView anotherAddressType;
 
         public ItemViewHolder(View view)
         {

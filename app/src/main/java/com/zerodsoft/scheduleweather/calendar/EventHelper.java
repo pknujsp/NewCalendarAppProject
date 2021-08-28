@@ -534,11 +534,7 @@ public class EventHelper implements Serializable {
 
 
 	public boolean isUnchanged(ContentValues newEvent) {
-		if (newEvent.size() == 0) {
-			return true;
-		} else {
-			return false;
-		}
+		return newEvent.size() == 0;
 	}
 
 	public void setDuration(ContentValues newEvent) {

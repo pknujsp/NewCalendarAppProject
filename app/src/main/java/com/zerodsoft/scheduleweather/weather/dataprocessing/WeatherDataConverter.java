@@ -163,6 +163,7 @@ SKY와 PTY는 별개의 데이터
 
 		switch (windDirectionValue) {
 			case 0:
+			case 16:
 				convertedValue = context.getString(R.string.n);
 				break;
 			case 1:
@@ -209,9 +210,6 @@ SKY와 PTY는 별개의 데이터
 				break;
 			case 15:
 				convertedValue = context.getString(R.string.nnw);
-				break;
-			case 16:
-				convertedValue = context.getString(R.string.n);
 				break;
 		}
 

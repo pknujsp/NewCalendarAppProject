@@ -15,5 +15,5 @@ public interface BottomSheetController extends Serializable {
 
 	void collapseAllExpandedBottomSheets();
 
-	public BottomSheetBehavior getBottomSheetBehavior(BottomSheetType bottomSheetType);
+	BottomSheetBehavior getBottomSheetBehavior(BottomSheetType bottomSheetType);
 }

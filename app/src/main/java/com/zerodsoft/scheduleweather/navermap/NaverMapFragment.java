@@ -282,8 +282,7 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 				placeCategoryViewModel.selectConvertedSelected(new DbQueryCallback<List<PlaceCategoryDTO>>() {
 					@Override
 					public void onResultSuccessful(List<PlaceCategoryDTO> newPlaceCategoryList) {
-						Set<PlaceCategoryDTO> newSet = new HashSet<>();
-						newSet.addAll(newPlaceCategoryList);
+						Set<PlaceCategoryDTO> newSet = new HashSet<>(newPlaceCategoryList);
 
 						Set<PlaceCategoryDTO> removedSet = new HashSet<>(savedPlaceCategorySet);
 						Set<PlaceCategoryDTO> addedSet = new HashSet<>(newSet);
