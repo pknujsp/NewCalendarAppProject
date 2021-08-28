@@ -80,5 +80,6 @@
     <dimen name="location_category_item_height" >36dp</dimen>
     <dimen name="primary_button_padding_top_bottom">8dp</dimen>
     <dimen name="primary_button_padding_left_right">16dp</dimen>
+    <dimen name="btn_corner_radius">4dp</dimen>
 
 </resources>

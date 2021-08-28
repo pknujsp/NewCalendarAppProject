@@ -28,7 +28,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".notification.receiver.AlarmActivity"></activity>
+        <activity
+            android:name=".notification.receiver.AlarmActivity"
+            android:screenOrientation="portrait"></activity>
         <activity
             android:name=".activity.main.AppMainActivity"
             android:label="@string/app_name"
@@ -41,7 +43,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activity.main.IntroActivity" />
 
         <meta-data
             android:name="com.kakao.sdk.AppKey"

@@ -18,6 +18,7 @@ import com.zerodsoft.scheduleweather.activity.editevent.interfaces.OnEditEventRe
 import com.zerodsoft.scheduleweather.calendar.AsyncQueryService;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.EventHelper;
+import com.zerodsoft.scheduleweather.calendar.calendarcommon2.EventRecurrence;
 import com.zerodsoft.scheduleweather.calendar.dto.DateTimeObj;
 import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.event.util.EventUtil;
@@ -116,7 +117,7 @@ public class NewEventFragment extends EventBaseFragment {
 		{
 			// 반복 룰과 이벤트의 시작 시간 전달
 			String rRule = eventModel.getEventRecurrence().toString();
-			onClickedRecurrence(rRule, eventModel.getBeginDateTimeObj().getTimeMillis());
+			onClickedRecurrence(rRule, eventModel.getBeginDateTimeObj().getUtcCalendar().getTimeInMillis());
 		});
 
         /*
@@ -170,16 +171,16 @@ public class NewEventFragment extends EventBaseFragment {
 				Bundle bundle = new Bundle();
 
 				bundle.putBoolean(CalendarContract.Events.GUESTS_CAN_MODIFY,
-						eventModel.getNEW_EVENT().containsKey(CalendarContract.Events.GUESTS_CAN_MODIFY)
-								&& (eventModel.getNEW_EVENT().getAsInteger(CalendarContract.Events.GUESTS_CAN_MODIFY) == 1));
+						eventModel.getNEW_EVENT().containsKey(Events.GUESTS_CAN_MODIFY)
+								&& (eventModel.getNEW_EVENT().getAsInteger(Events.GUESTS_CAN_MODIFY) == 1));
 
 				bundle.putBoolean(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS,
-						eventModel.getNEW_EVENT().containsKey(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS)
-								&& (eventModel.getNEW_EVENT().getAsInteger(CalendarContract.Events.GUESTS_CAN_INVITE_OTHERS) == 1));
+						eventModel.getNEW_EVENT().containsKey(Events.GUESTS_CAN_INVITE_OTHERS)
+								&& (eventModel.getNEW_EVENT().getAsInteger(Events.GUESTS_CAN_INVITE_OTHERS) == 1));
 
 				bundle.putBoolean(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS,
-						eventModel.getNEW_EVENT().containsKey(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS)
-								&& (eventModel.getNEW_EVENT().getAsInteger(CalendarContract.Events.GUESTS_CAN_SEE_GUESTS) == 1));
+						eventModel.getNEW_EVENT().containsKey(Events.GUESTS_CAN_SEE_GUESTS)
+								&& (eventModel.getNEW_EVENT().getAsInteger(Events.GUESTS_CAN_SEE_GUESTS) == 1));
 				onClickedAttendeeList(bundle);
 			}
 		});
@@ -280,6 +281,9 @@ public class NewEventFragment extends EventBaseFragment {
 		List<ContentValues> newReminderList = eventModel.getNEW_REMINDERS();
 		List<ContentValues> newAttendeeList = eventModel.getNEW_ATTENDEES();
 
+		if (!eventModel.getEventRecurrence().equals(EventRecurrence.EMPTY)) {
+			newEvent.put(Events.RRULE, eventModel.getEventRecurrence().toString());
+		}
 		final boolean newIsAllDay = binding.timeLayout.timeAlldaySwitch.isChecked();
 
 		DateTimeObj beginDateTimeObj = eventModel.getBeginDateTimeObj();

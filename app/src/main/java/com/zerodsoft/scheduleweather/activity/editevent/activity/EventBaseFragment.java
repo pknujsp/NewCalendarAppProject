@@ -314,18 +314,13 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 	}
 
 	protected final void onCheckedAllDaySwitch(boolean isChecked) {
+		binding.timeLayout.startTime.setVisibility(isChecked ? View.GONE : View.VISIBLE);
+		binding.timeLayout.endTime.setVisibility(isChecked ? View.GONE : View.VISIBLE);
+		binding.timeLayout.eventTimezoneLayout.setVisibility(isChecked ? View.GONE : View.VISIBLE);
+
 		DateTimeObj beginDateTimeObj = eventModel.getBeginDateTimeObj();
 		DateTimeObj endDateTimeObj = eventModel.getEndDateTimeObj();
 
-		if (isChecked) {
-			binding.timeLayout.startTime.setVisibility(View.GONE);
-			binding.timeLayout.endTime.setVisibility(View.GONE);
-			binding.timeLayout.eventTimezoneLayout.setVisibility(View.GONE);
-		} else {
-			binding.timeLayout.startTime.setVisibility(View.VISIBLE);
-			binding.timeLayout.endTime.setVisibility(View.VISIBLE);
-			binding.timeLayout.eventTimezoneLayout.setVisibility(View.VISIBLE);
-		}
 		Calendar calendar = Calendar.getInstance();
 		calendar.add(Calendar.HOUR_OF_DAY, 1);
 		calendar.set(Calendar.MINUTE, 0);

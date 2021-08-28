@@ -282,6 +282,8 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+		binding.customProgressView.setContentView(binding.getRoot());
+		binding.customProgressView.onStartedProcessingData();
 
 		binding.assistantCalendarContainer.setVisibility(View.GONE);
 
@@ -306,6 +308,11 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 			}
 		});
 		init();
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
 	}
 
 	@Override
@@ -364,6 +371,7 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 				replaceFragment(MonthFragment.TAG);
 				break;
 		}
+		binding.customProgressView.onSuccessfulProcessingData();
 	}
 
 	public void replaceFragment(String fragmentTag) {

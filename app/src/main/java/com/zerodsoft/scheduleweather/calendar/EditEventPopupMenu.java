@@ -11,6 +11,7 @@ import android.provider.CalendarContract.Instances;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.PopupMenu;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -80,7 +81,6 @@ public abstract class EditEventPopupMenu {
 			dialogItems = new String[]{context.getString(R.string.remove_this_instance),
 					context.getString(R.string.remove_following_events)
 					, context.getString(R.string.remove_event)};
-
 			dialogItemsIndexArr = new int[]{REMOVE_ONLY_THIS_EVENT, REMOVE_FOLLOWING_EVENTS, REMOVE_ALL_EVENTS};
 		} else {
 			dialogItems = new String[]{context.getString(R.string.remove_event)};
@@ -88,11 +88,11 @@ public abstract class EditEventPopupMenu {
 		}
 
 		final int[] finalDialogItemsIndexArr = dialogItemsIndexArr;
-		final int[] clickedTypeArr = new int[1];
+		final int[] clickedTypeArr = new int[]{-1};
 
 		new MaterialAlertDialogBuilder(activity).setTitle(R.string.remove_event)
 				.setCancelable(false)
-				.setSingleChoiceItems(dialogItems, 0, new DialogInterface.OnClickListener() {
+				.setSingleChoiceItems(dialogItems, -1, new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int index) {
 						clickedTypeArr[0] = finalDialogItemsIndexArr[index];
@@ -101,6 +101,10 @@ public abstract class EditEventPopupMenu {
 				.setPositiveButton(R.string.check, new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int index) {
+						if (clickedTypeArr[0] == -1) {
+							Toast.makeText(activity, R.string.not_choiced_item, Toast.LENGTH_SHORT).show();
+							return;
+						}
 						EventHelper eventHelper = new EventHelper(new AsyncQueryService(activity.getApplicationContext(), onEditEventResultListener));
 
 						switch (clickedTypeArr[0]) {
@@ -123,67 +127,6 @@ public abstract class EditEventPopupMenu {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 
-			}
-		}).create().show();
-	}
-
-	private void showRemoveAllEventsDialog(Activity activity, ContentValues instance, OnEditedEventCallback onEditedEventCallback,
-	                                       OnEditEventResultListener onEditEventResultListener) {
-		new MaterialAlertDialogBuilder(activity)
-				.setTitle(R.string.remove_event).setCancelable(false)
-				.setPositiveButton(R.string.check, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						EventHelper eventHelper = new EventHelper(new AsyncQueryService(activity.getApplicationContext(), onEditEventResultListener));
-
-						eventHelper.removeEvent(EventHelper.EventEditType.REMOVE_ALL_EVENTS, instance);
-						dialog.dismiss();
-						onEditedEventCallback.onRemoved();
-					}
-				})
-				.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dialog.dismiss();
-					}
-				}).create().show();
-	}
-
-
-	private void showRemoveFollowingEventsDialog(Activity activity, ContentValues instance, OnEditedEventCallback onEditedEventCallback, OnEditEventResultListener onEditEventResultListener) {
-		new MaterialAlertDialogBuilder(activity)
-				.setTitle(R.string.remove_following_events).setCancelable(false)
-				.setPositiveButton(R.string.check, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						EventHelper eventHelper = new EventHelper(new AsyncQueryService(activity, onEditEventResultListener));
-						eventHelper.removeEvent(EventHelper.EventEditType.REMOVE_FOLLOWING_EVENTS, instance);
-						dialog.dismiss();
-						onEditedEventCallback.onRemoved();
-					}
-				}).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				dialog.dismiss();
-			}
-		}).create().show();
-	}
-
-	private void showRemoveOnlyThisEventDialog(Activity activity, ContentValues instance, OnEditedEventCallback onEditedEventCallback, OnEditEventResultListener onEditEventResultListener) {
-		new MaterialAlertDialogBuilder(activity)
-				.setTitle(R.string.remove_this_instance).setCancelable(false)
-				.setPositiveButton(R.string.check, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						EventHelper eventHelper = new EventHelper(new AsyncQueryService(activity.getApplicationContext(), onEditEventResultListener));
-						eventHelper.removeEvent(EventHelper.EventEditType.REMOVE_ONLY_THIS_EVENT, instance);
-						dialog.dismiss();
-						onEditedEventCallback.onRemoved();
-					}
-				}).setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				dialog.dismiss();
 			}
 		}).create().show();
 	}

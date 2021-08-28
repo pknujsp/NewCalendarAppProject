@@ -38,6 +38,11 @@
             app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior" />
 
 
+        <com.zerodsoft.scheduleweather.common.view.CustomProgressView
+            android:id="@+id/custom_progress_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
 </layout>
