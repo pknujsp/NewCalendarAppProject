@@ -116,6 +116,7 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 
 	private NotificationCompat.Builder notificationBuilder;
 	private NotificationManager notificationManager;
+	private boolean initializing = true;
 
 	private final OnBackPressedCallback onBackPressedCallback = new OnBackPressedCallback(true) {
 		@Override
@@ -229,6 +230,16 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 		}
 
 		@Override
+		public void onFragmentResumed(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
+			super.onFragmentResumed(fm, f);
+			if (initializing) {
+				if (f instanceof DayFragment || f instanceof WeekFragment || f instanceof MonthFragment) {
+					initializing = false;
+				}
+			}
+		}
+
+		@Override
 		public void onFragmentDestroyed(@NonNull @NotNull FragmentManager fm, @NonNull @NotNull Fragment f) {
 			super.onFragmentDestroyed(fm, f);
 			if (f instanceof DayFragment) {
@@ -282,9 +293,6 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
-		binding.customProgressView.setContentView(binding.getRoot());
-		binding.customProgressView.onStartedProcessingData();
-
 		binding.assistantCalendarContainer.setVisibility(View.GONE);
 
 		selectedCalendarViewModel.getOnListSelectedCalendarLiveData().observe(getViewLifecycleOwner(), new Observer<List<SelectedCalendarDTO>>() {
@@ -371,7 +379,6 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 				replaceFragment(MonthFragment.TAG);
 				break;
 		}
-		binding.customProgressView.onSuccessfulProcessingData();
 	}
 
 	public void replaceFragment(String fragmentTag) {
@@ -389,12 +396,12 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 				break;
 		}
 
+		childFragmentManager.beginTransaction().replace(R.id.calendar_container_view, currentFragment,
+				fragmentTag).setPrimaryNavigationFragment(currentFragment).commit();
+
 		if (binding.assistantCalendarContainer.getVisibility() == View.VISIBLE) {
 			binding.mainToolbar.calendarMonth.callOnClick();
 		}
-
-		childFragmentManager.beginTransaction().replace(R.id.calendar_container_view, currentFragment,
-				fragmentTag).setPrimaryNavigationFragment(currentFragment).commit();
 	}
 
 	public void goToToday() {

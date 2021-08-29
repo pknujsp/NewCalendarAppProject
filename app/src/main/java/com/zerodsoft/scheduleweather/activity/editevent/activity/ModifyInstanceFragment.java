@@ -108,7 +108,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 				반복값을 수정한 경우 : update all/following events
 				반복값을 삭제한 경우 : remove all events and save new event
 				 */
-				if (originalEvent.get(Events.RRULE) != null) {
+				if (!originalEventRecurrence.toString().equals(EventRecurrence.EMPTY)) {
 					String[] dialogMenus = null;
 					int[] dialogMenusIndexArr = null;
 
@@ -116,8 +116,8 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 					final int UPDATE_FOLLOWING_EVENTS = 1;
 					final int UPDATE_ALL_EVENTS = 2;
 
-					if (eventModel.isModified(Events.RRULE)) {
-						if (eventModel.getNEW_EVENT().get(Events.RRULE) == null) {
+					if (!originalEventRecurrence.equals(eventModel.getEventRecurrence())) {
+						if (eventModel.getEventRecurrence().toString().equals(EventRecurrence.EMPTY)) {
 							//반복값을 삭제한 경우 : remove all events and save new event
 							EventHelper eventRemoveHelper = new EventHelper(new AsyncQueryService(getActivity(),
 									(OnEditEventResultListener) calendarViewModel));
@@ -141,14 +141,16 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 							setNewEventValues(Events.GUESTS_CAN_MODIFY, newEventValues, modifiedEvent);
 							setNewEventValues(Events.GUESTS_CAN_SEE_GUESTS, newEventValues, modifiedEvent);
 							setNewEventValues(Events.IS_ORGANIZER, newEventValues, modifiedEvent);
-							setNewEventValues(Events.RRULE, newEventValues, modifiedEvent);
+							newEventValues.putNull(Events.RRULE);
 
-							setIfModifiedDateTimeAllDay(newEventValues);
+							if (!setIfModifiedDateTimeAllDay(newEventValues)) {
+								applyModifiedDateTime(newEventValues, binding.timeLayout.timeAlldaySwitch.isChecked());
+							}
 
-							EventHelper eventHelper = new EventHelper(new AsyncQueryService(getActivity(), (OnEditEventResultListener) calendarViewModel));
+							edited = true;
+							EventHelper eventHelper = new EventHelper(new AsyncQueryService(getActivity(), onEditEventResultListener));
 							eventHelper.saveNewEvent(newEventValues, locationDTO, newReminderList, newAttendeeList, locationIntentCode);
 
-							onEditEventResultListener.onSavedNewEvent(newEventValues.getAsLong(Events.DTSTART));
 							return;
 						} else {
 							//	반복값을 수정한 경우 : update all/following events

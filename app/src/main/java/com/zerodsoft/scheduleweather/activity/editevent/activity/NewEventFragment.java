@@ -281,7 +281,7 @@ public class NewEventFragment extends EventBaseFragment {
 		List<ContentValues> newReminderList = eventModel.getNEW_REMINDERS();
 		List<ContentValues> newAttendeeList = eventModel.getNEW_ATTENDEES();
 
-		if (!eventModel.getEventRecurrence().equals(EventRecurrence.EMPTY)) {
+		if (!eventModel.getEventRecurrence().toString().equals(EventRecurrence.EMPTY)) {
 			newEvent.put(Events.RRULE, eventModel.getEventRecurrence().toString());
 		}
 		final boolean newIsAllDay = binding.timeLayout.timeAlldaySwitch.isChecked();
