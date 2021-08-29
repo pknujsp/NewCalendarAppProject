@@ -35,6 +35,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.calendarcommon2.EventRecurrence;
+import com.zerodsoft.scheduleweather.calendar.dto.DateTimeObj;
 import com.zerodsoft.scheduleweather.common.enums.LocationIntentCode;
 import com.zerodsoft.scheduleweather.common.interfaces.DialogController;
 import com.zerodsoft.scheduleweather.databinding.EventFragmentBinding;
@@ -48,6 +49,7 @@ import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -377,7 +379,6 @@ public class EventFragment extends BottomSheetDialogFragment implements DialogCo
 			binding.eventDatetimeView.eventTimezoneLayout.setVisibility(View.GONE);
 			binding.eventDatetimeView.startTime.setVisibility(View.GONE);
 			binding.eventDatetimeView.endTime.setVisibility(View.GONE);
-			binding.eventDatetimeView.eventTimezoneLayout.setVisibility(View.GONE);
 
 			final int startDay = instanceValues.getAsInteger(Instances.START_DAY);
 			final int endDay = instanceValues.getAsInteger(Instances.END_DAY);
@@ -396,18 +397,18 @@ public class EventFragment extends BottomSheetDialogFragment implements DialogCo
 				binding.eventDatetimeView.endDate.setText(EventUtil.convertDate(calendar.getTimeInMillis()));
 			}
 		} else {
-			String calendarTimeZoneStr = instanceValues.getAsString(Instances.CALENDAR_TIME_ZONE);
-			String eventTimeZoneStr = instanceValues.getAsString(Instances.EVENT_TIMEZONE);
-			TimeZone calendarTimeZone = TimeZone.getTimeZone(calendarTimeZoneStr);
-			TimeZone eventTimeZone = TimeZone.getTimeZone(eventTimeZoneStr);
+			TimeZone calendarTimeZone = TimeZone.getTimeZone(instanceValues.getAsString(Events.CALENDAR_TIME_ZONE));
+			TimeZone eventTimeZone = TimeZone.getTimeZone(instanceValues.getAsString(Events.EVENT_TIMEZONE));
 
 			setTimeZoneText(eventTimeZone, calendarTimeZone, begin, end);
 
 			Calendar calendar = Calendar.getInstance(calendarTimeZone);
+			calendar.setTimeZone(calendarTimeZone);
 			calendar.setTimeInMillis(begin);
 			long beginByCalendarTimeZone = calendar.getTimeInMillis();
 			calendar.setTimeInMillis(end);
 			long endByCalendarTimeZone = calendar.getTimeInMillis();
+
 
 			binding.eventDatetimeView.startDate.setText(EventUtil.convertDate(beginByCalendarTimeZone));
 			binding.eventDatetimeView.startTime.setText(EventUtil.convertTime(beginByCalendarTimeZone));
@@ -561,14 +562,22 @@ public class EventFragment extends BottomSheetDialogFragment implements DialogCo
 		if (eventTimeZone.equals(calendarTimeZone)) {
 			binding.eventDatetimeView.eventTimezone.setText(eventTimeZone.getDisplayName(Locale.KOREAN));
 		} else {
-			Calendar calendar = Calendar.getInstance(eventTimeZone);
-			calendar.setTimeInMillis(begin);
-			String beginDateStr = EventUtil.getDateTimeStr(calendar, false);
-			calendar.setTimeInMillis(end);
-			String endDateStr = EventUtil.getDateTimeStr(calendar, false);
+			Calendar beginCalendarByCalendarTimeZone = Calendar.getInstance(eventTimeZone);
+			Calendar endCalendarByCalendarTimeZone = Calendar.getInstance(eventTimeZone);
+			beginCalendarByCalendarTimeZone.setTimeInMillis(begin);
+			endCalendarByCalendarTimeZone.setTimeInMillis(end);
+
+			String beginDateStr = EventUtil.getDateTimeStr(beginCalendarByCalendarTimeZone, false);
+			String endDateStr = EventUtil.getDateTimeStr(endCalendarByCalendarTimeZone, false);
+
+			SimpleDateFormat timeZoneFormat = new SimpleDateFormat("z", Locale.KOREAN);
+			timeZoneFormat.setTimeZone(eventTimeZone);
 
 			StringBuilder stringBuilder = new StringBuilder();
 			stringBuilder.append(eventTimeZone.getDisplayName(Locale.KOREAN));
+			stringBuilder.append("(");
+			stringBuilder.append(timeZoneFormat.format(beginCalendarByCalendarTimeZone.getTime()));
+			stringBuilder.append(")");
 			stringBuilder.append("\n(");
 			stringBuilder.append(beginDateStr);
 			stringBuilder.append(" -> ");

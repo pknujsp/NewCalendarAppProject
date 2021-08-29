@@ -360,12 +360,6 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 
 	protected final void setTimeZoneText() {
 		TimeZone eventTimeZone = eventModel.getEventTimeZone();
-
-		if (this instanceof ModifyInstanceFragment) {
-			binding.timeLayout.eventTimezone.setText(eventTimeZone.getDisplayName(Locale.KOREAN));
-			return;
-		}
-
 		TimeZone calendarTimeZone = eventModel.getCalendarTimeZone();
 
 		if (eventTimeZone.equals(calendarTimeZone)) {
