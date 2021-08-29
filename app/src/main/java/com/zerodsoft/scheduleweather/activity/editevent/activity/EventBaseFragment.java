@@ -64,6 +64,7 @@ import com.zerodsoft.scheduleweather.utility.model.ReminderDto;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -364,6 +365,7 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 			binding.timeLayout.eventTimezone.setText(eventTimeZone.getDisplayName(Locale.KOREAN));
 			return;
 		}
+
 		TimeZone calendarTimeZone = eventModel.getCalendarTimeZone();
 
 		if (eventTimeZone.equals(calendarTimeZone)) {
@@ -372,12 +374,29 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 			DateTimeObj beginDateTimeObj = eventModel.getBeginDateTimeObj();
 			DateTimeObj endDateTimeObj = eventModel.getEndDateTimeObj();
 
-			String beginDateStr = EventUtil.getDateTimeStr(beginDateTimeObj.getCalendar(), false);
-			String endDateStr = EventUtil.getDateTimeStr(endDateTimeObj.getCalendar(), false);
+			Calendar beginCalendarByCalendarTimeZone = beginDateTimeObj.getCalendar(eventTimeZone);
+			Calendar endCalendarByCalendarTimeZone = endDateTimeObj.getCalendar(eventTimeZone);
+
+			final int timeDifferenceEventTimeZone = eventTimeZone.getOffset(beginCalendarByCalendarTimeZone.getTimeInMillis());
+			final int timeDifferenceCalendarTimeZone = calendarTimeZone.getOffset(beginCalendarByCalendarTimeZone.getTimeInMillis());
+
+			beginCalendarByCalendarTimeZone.add(Calendar.MILLISECOND, timeDifferenceCalendarTimeZone - timeDifferenceEventTimeZone);
+			endCalendarByCalendarTimeZone.add(Calendar.MILLISECOND, timeDifferenceCalendarTimeZone - timeDifferenceEventTimeZone);
+
+			String beginDateStr = EventUtil.getDateTimeStr(beginCalendarByCalendarTimeZone, false);
+			String endDateStr = EventUtil.getDateTimeStr(endCalendarByCalendarTimeZone, false);
+
+			SimpleDateFormat timeZoneFormat = new SimpleDateFormat("z", Locale.KOREAN);
+			timeZoneFormat.setTimeZone(eventTimeZone);
 
 			StringBuilder stringBuilder = new StringBuilder();
 			stringBuilder.append(eventTimeZone.getDisplayName(Locale.KOREAN));
+			stringBuilder.append("(");
+			stringBuilder.append(timeZoneFormat.format(beginCalendarByCalendarTimeZone.getTime()));
+			stringBuilder.append(")");
 			stringBuilder.append("\n(");
+			stringBuilder.append(calendarTimeZone.getDisplayName(Locale.KOREAN));
+			stringBuilder.append(" : ");
 			stringBuilder.append(beginDateStr);
 			stringBuilder.append(" -> ");
 			stringBuilder.append(endDateStr);

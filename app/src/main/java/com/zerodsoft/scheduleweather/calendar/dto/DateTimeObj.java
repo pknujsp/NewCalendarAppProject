@@ -4,6 +4,7 @@ import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
 import java.util.Calendar;
 import java.util.Objects;
+import java.util.TimeZone;
 
 public class DateTimeObj implements Cloneable {
 	private int year;
@@ -77,6 +78,12 @@ public class DateTimeObj implements Cloneable {
 
 	public Calendar getCalendar() {
 		Calendar calendar = Calendar.getInstance();
+		calendar.set(year, month - 1, day, hour, minute, 0);
+		return calendar;
+	}
+
+	public Calendar getCalendar(TimeZone timeZone) {
+		Calendar calendar = Calendar.getInstance(timeZone);
 		calendar.set(year, month - 1, day, hour, minute, 0);
 		return calendar;
 	}

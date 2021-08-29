@@ -403,10 +403,16 @@ public class EventFragment extends BottomSheetDialogFragment implements DialogCo
 
 			setTimeZoneText(eventTimeZone, calendarTimeZone, begin, end);
 
-			binding.eventDatetimeView.startDate.setText(EventUtil.convertDate(begin));
-			binding.eventDatetimeView.startTime.setText(EventUtil.convertTime(begin));
-			binding.eventDatetimeView.endDate.setText(EventUtil.convertDate(end));
-			binding.eventDatetimeView.endTime.setText(EventUtil.convertTime(end));
+			Calendar calendar = Calendar.getInstance(calendarTimeZone);
+			calendar.setTimeInMillis(begin);
+			long beginByCalendarTimeZone = calendar.getTimeInMillis();
+			calendar.setTimeInMillis(end);
+			long endByCalendarTimeZone = calendar.getTimeInMillis();
+
+			binding.eventDatetimeView.startDate.setText(EventUtil.convertDate(beginByCalendarTimeZone));
+			binding.eventDatetimeView.startTime.setText(EventUtil.convertTime(beginByCalendarTimeZone));
+			binding.eventDatetimeView.endDate.setText(EventUtil.convertDate(endByCalendarTimeZone));
+			binding.eventDatetimeView.endTime.setText(EventUtil.convertTime(endByCalendarTimeZone));
 		}
 
 		// 반복
