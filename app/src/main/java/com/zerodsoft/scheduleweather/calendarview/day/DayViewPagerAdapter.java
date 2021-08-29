@@ -49,12 +49,13 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
 		this.iConnectedCalendars = iConnectedCalendars;
 		this.onEventItemLongClickListener = onEventItemLongClickListener;
 
-		CALENDAR = Calendar.getInstance(ClockUtil.TIME_ZONE);
+		CALENDAR = Calendar.getInstance();
 		currentDateTime = CALENDAR.getTime();
 		// 날짜를 오늘 0시0분0초로 설정
 		CALENDAR.set(Calendar.HOUR_OF_DAY, 0);
 		CALENDAR.set(Calendar.MINUTE, 0);
 		CALENDAR.set(Calendar.SECOND, 0);
+		CALENDAR.set(Calendar.MILLISECOND, 0);
 
 		iToolbar.setMonth(CALENDAR.getTime());
 	}
@@ -124,19 +125,18 @@ public class DayViewPagerAdapter extends RecyclerView.Adapter<DayViewPagerAdapte
 	}
 
 	class DayViewPagerHolder extends RecyclerView.ViewHolder {
-		private DayCalendarView dayCalendarView;
-		private DayView dayView;
+		private final DayCalendarView dayCalendarView;
+		private final DayView dayView;
 
 		public DayViewPagerHolder(View view) {
 			super(view);
-			DayHeaderView dayHeaderView = (DayHeaderView) view.findViewById(R.id.dayheaderview);
 			dayView = (DayView) view.findViewById(R.id.dayview);
-			dayCalendarView = new DayCalendarView(dayHeaderView, dayView);
+			dayCalendarView = new DayCalendarView((DayHeaderView) view.findViewById(R.id.dayheaderview), dayView);
 		}
 
 		public void onBind() {
 			Calendar copiedCalendar = (Calendar) CALENDAR.clone();
-			copiedCalendar.add(Calendar.DAY_OF_YEAR, getBindingAdapterPosition() - EventTransactionFragment.FIRST_VIEW_POSITION);
+			copiedCalendar.add(Calendar.DATE, getBindingAdapterPosition() - EventTransactionFragment.FIRST_VIEW_POSITION);
 			dayCalendarView.init(copiedCalendar, onEventItemLongClickListener, onEventItemClickListener, iControlEvent, iConnectedCalendars);
 		}
 

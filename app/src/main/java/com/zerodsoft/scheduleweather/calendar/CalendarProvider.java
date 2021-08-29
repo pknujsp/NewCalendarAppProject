@@ -545,6 +545,10 @@ public class CalendarProvider implements ICalendarProvider {
 					}
 				}
 
+				if (instance.getAsLong(CalendarContract.Instances.BEGIN).equals(end)) {
+					continue;
+				}
+
 				calendarId = cursor.getInt(cursor.getColumnIndex(CalendarContract.Instances.CALENDAR_ID));
 				if (!calendarInstanceMap.containsKey(calendarId)) {
 					calendarInstanceMap.put(calendarId, new CalendarInstance(new ArrayList<>(), calendarId));

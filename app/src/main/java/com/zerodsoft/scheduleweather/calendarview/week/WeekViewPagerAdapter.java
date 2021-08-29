@@ -60,6 +60,7 @@ public class WeekViewPagerAdapter extends RecyclerView.Adapter<WeekViewPagerAdap
 		CALENDAR.set(Calendar.HOUR_OF_DAY, 0);
 		CALENDAR.set(Calendar.MINUTE, 0);
 		CALENDAR.set(Calendar.SECOND, 0);
+		CALENDAR.set(Calendar.MILLISECOND, 0);
 
 		iToolbar.setMonth(CALENDAR.getTime());
 	}

@@ -41,6 +41,7 @@ public class instanceListWeekViewPagerAdapter extends RecyclerView.Adapter<insta
 		beginCalendar.set(Calendar.HOUR_OF_DAY, 0);
 		beginCalendar.set(Calendar.MINUTE, 0);
 		beginCalendar.set(Calendar.SECOND, 0);
+		beginCalendar.set(Calendar.MILLISECOND, 0);
 
 		this.onEventItemClickListener = onEventItemClickListener;
 		this.iConnectedCalendars = iConnectedCalendars;

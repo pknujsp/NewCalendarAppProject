@@ -30,6 +30,27 @@
                     android:layout_height="match_parent"
                     android:orientation="vertical">
 
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="16dp">
+
+                        <ImageView
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:src="@mipmap/app_icon" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginLeft="8dp"
+                            android:text="@string/app_name"
+                            android:textSize="16sp" />
+
+                    </LinearLayout>
+
                     <include
                         android:id="@+id/side_nav_calendar_types"
                         layout="@layout/side_nav_calendar_types" />

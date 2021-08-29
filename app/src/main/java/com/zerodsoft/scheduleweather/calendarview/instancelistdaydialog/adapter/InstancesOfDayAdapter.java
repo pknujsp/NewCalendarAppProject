@@ -38,7 +38,9 @@ public class InstancesOfDayAdapter extends RecyclerView.Adapter<InstancesOfDayAd
 		this.beginCalendar = Calendar.getInstance();
 		this.endCalendar = Calendar.getInstance();
 		this.beginCalendar.setTimeInMillis(begin);
+		this.beginCalendar.set(Calendar.MILLISECOND, 0);
 		this.endCalendar.setTimeInMillis(end);
+		this.endCalendar.set(Calendar.MILLISECOND, 0);
 
 		this.onEventItemClickListener = onEventItemClickListener;
 		this.iConnectedCalendars = iConnectedCalendars;
