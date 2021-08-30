@@ -77,7 +77,9 @@ public class EventUtil {
 			}
 		} else {
 			TimeZone eventTimeZone = TimeZone.getTimeZone(instance.getAsString(Instances.EVENT_TIMEZONE));
-			TimeZone calendarTimeZone = TimeZone.getTimeZone(instance.getAsString(Instances.CALENDAR_TIME_ZONE));
+			TimeZone calendarTimeZone =
+					TimeZone.getTimeZone(instance.containsKey(Events.CALENDAR_TIME_ZONE) ?
+							instance.getAsString(Instances.CALENDAR_TIME_ZONE) : eventTimeZone.getID());
 
 			Calendar beginCalendar = Calendar.getInstance(calendarTimeZone);
 			Calendar endCalendar = Calendar.getInstance(calendarTimeZone);

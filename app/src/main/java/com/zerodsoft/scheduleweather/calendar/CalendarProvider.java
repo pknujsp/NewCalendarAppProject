@@ -572,8 +572,7 @@ public class CalendarProvider implements ICalendarProvider {
 			ContentUris.appendId(builder, begin);
 			ContentUris.appendId(builder, end);
 
-			ContentResolver contentResolver = context.getContentResolver();
-			Cursor cursor = contentResolver.query(builder.build(), null, selection, selectionArgs, null);
+			Cursor cursor = context.getContentResolver().query(builder.build(), null, selection, selectionArgs, null);
 			ContentValues instance = new ContentValues();
 
 			while (cursor.moveToNext()) {

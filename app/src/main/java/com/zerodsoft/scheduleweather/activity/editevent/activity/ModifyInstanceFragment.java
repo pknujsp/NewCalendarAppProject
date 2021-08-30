@@ -239,7 +239,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 					modifiedEnd = true;
 
 					if (originalEvent.getAsInteger(Events.ALL_DAY) == 1) {
-						TimeZone timeZone = TimeZone.getTimeZone(originalEvent.getAsString(Events.CALENDAR_TIME_ZONE));
+						TimeZone timeZone = TimeZone.getTimeZone(originalEvent.getAsString(Events.EVENT_TIMEZONE));
 						eventModel.setTimezone(timeZone.getID());
 						setTimeZoneText();
 					}
@@ -615,8 +615,9 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 			}
 			endTimeMillis = utcCalendar.getTimeInMillis();
 		} else {
-			beginTimeMillis = newBeginDateTimeObj.getTimeMillis();
-			endTimeMillis = newEndDateTimeObj.getTimeMillis();
+			TimeZone eventTimeZone = eventModel.getEventTimeZone();
+			beginTimeMillis = newBeginDateTimeObj.getCalendar(eventTimeZone).getTimeInMillis();
+			endTimeMillis = newEndDateTimeObj.getCalendar(eventTimeZone).getTimeInMillis();
 		}
 
 		contentValues.put(Events.DTSTART, beginTimeMillis);
@@ -643,6 +644,8 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		setNewEventValues(Events.GUESTS_CAN_INVITE_OTHERS, newEventValues, modifiedEvent);
 		setNewEventValues(Events.GUESTS_CAN_MODIFY, newEventValues, modifiedEvent);
 		setNewEventValues(Events.GUESTS_CAN_SEE_GUESTS, newEventValues, modifiedEvent);
+
+		setDateTimeIfChangedTimeZone(newEventValues);
 
 		newEventValues.putNull(Events.RRULE);
 		newEventValues.put(Events.ALL_DAY, binding.timeLayout.timeAlldaySwitch.isChecked() ? 1 : 0);
@@ -688,6 +691,8 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		setNewEventValues(CalendarContract.Events.IS_ORGANIZER, newEventValues, newEvent);
 		newEventValues.put(CalendarContract.Events._ID, originalEvent.getAsLong(CalendarContract.Instances.EVENT_ID));
 
+		setDateTimeIfChangedTimeZone(newEventValues);
+
 		String rrule = null;
 		if (!originalEventRecurrence.equals(eventModel.getEventRecurrence())) {
 			rrule = eventModel.getEventRecurrence().toString();
@@ -719,6 +724,8 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 		boolean appliedModifiedDateTime = setIfModifiedDateTimeAllDay(modifiedEvent);
 
+		setDateTimeIfChangedTimeZone(modifiedEvent);
+
 		if (!appliedModifiedDateTime) {
 			if (!originalEventRecurrence.equals(eventModel.getEventRecurrence())) {
 				applyModifiedDateTime(modifiedEvent, binding.timeLayout.timeAlldaySwitch.isChecked());
@@ -739,10 +746,12 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 					modifiedEvent.put(Events.DTSTART, originalBeginDateTimeObj.getUtcCalendar().getTimeInMillis() + dtStartDifference);
 					modifiedEvent.put(Events.DTEND, originalEndDateTimeObj.getUtcCalendar().getTimeInMillis() + dtEndDifference);
 				} else {
-					dtStartDifference = newDtStart - originalBeginDateTimeObj.getTimeMillis();
-					dtEndDifference = newDtEnd - originalEndDateTimeObj.getTimeMillis();
-					modifiedEvent.put(Events.DTSTART, originalBeginDateTimeObj.getTimeMillis() + dtStartDifference);
-					modifiedEvent.put(Events.DTEND, originalEndDateTimeObj.getTimeMillis() + dtEndDifference);
+					dtStartDifference = newDtStart - originalBeginDateTimeObj.getCalendar(eventModel.getEventTimeZone()).getTimeInMillis();
+					dtEndDifference = newDtEnd - originalEndDateTimeObj.getCalendar(eventModel.getEventTimeZone()).getTimeInMillis();
+					modifiedEvent.put(Events.DTSTART, originalBeginDateTimeObj.getCalendar(eventModel.getEventTimeZone()).getTimeInMillis()
+							+ dtStartDifference);
+					modifiedEvent.put(Events.DTEND, originalEndDateTimeObj.getCalendar(eventModel.getEventTimeZone()).getTimeInMillis()
+							+ dtEndDifference);
 				}
 			}
 		}
@@ -764,6 +773,25 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 		edited = true;
 		onEditEventResultListener.onUpdatedAllEvents(0L);
+	}
+
+	private void setDateTimeIfChangedTimeZone(ContentValues contentValues) {
+		if (modifiedDateTime || modifiedEnd) {
+			return;
+		}
+
+		if (!binding.timeLayout.timeAlldaySwitch.isChecked()) {
+			if (originalEvent.containsKey(Events.EVENT_TIMEZONE)) {
+				if (!originalEvent.getAsString(Events.EVENT_TIMEZONE).equals(eventModel.getEventTimeZone().getID())) {
+					TimeZone eventTimeZone = eventModel.getEventTimeZone();
+					long beginTimeMillis = eventModel.getBeginDateTimeObj().getCalendar(eventTimeZone).getTimeInMillis();
+					long endTimeMillis = eventModel.getEndDateTimeObj().getCalendar(eventTimeZone).getTimeInMillis();
+
+					contentValues.put(Events.DTSTART, beginTimeMillis);
+					contentValues.put(Events.DTEND, endTimeMillis);
+				}
+			}
+		}
 	}
 
 	private void setNewEventValues(String key, ContentValues newEventValues, ContentValues modifiedInstance) {

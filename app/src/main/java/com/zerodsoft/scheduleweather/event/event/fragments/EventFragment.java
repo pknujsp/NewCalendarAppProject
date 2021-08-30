@@ -397,7 +397,9 @@ public class EventFragment extends BottomSheetDialogFragment implements DialogCo
 				binding.eventDatetimeView.endDate.setText(EventUtil.convertDate(calendar.getTimeInMillis()));
 			}
 		} else {
-			TimeZone calendarTimeZone = TimeZone.getTimeZone(instanceValues.getAsString(Events.CALENDAR_TIME_ZONE));
+			TimeZone calendarTimeZone =
+					TimeZone.getTimeZone(instanceValues.containsKey(Events.CALENDAR_TIME_ZONE) ?
+							instanceValues.getAsString(Events.CALENDAR_TIME_ZONE) : instanceValues.getAsString(Events.EVENT_TIMEZONE));
 			TimeZone eventTimeZone = TimeZone.getTimeZone(instanceValues.getAsString(Events.EVENT_TIMEZONE));
 
 			setTimeZoneText(eventTimeZone, calendarTimeZone, begin, end);

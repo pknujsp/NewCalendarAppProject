@@ -710,26 +710,6 @@ public class NewInstanceMainFragment extends NaverMapFragment implements IRefres
 		super.onPageSelectedLocationItemBottomSheetViewPager(position, markerType);
 
 		switch (markerType) {
-			case SELECTED_PLACE_CATEGORY: {
-				placeCategoryOnExtraListDataListener.loadExtraListData(selectedPlaceCategoryCode, new RecyclerView.AdapterDataObserver() {
-					@Override
-					public void onItemRangeInserted(int positionStart, int itemCount) {
-						placeItemsGetter.getPlaces(new DbQueryCallback<List<PlaceDocuments>>() {
-							@Override
-							public void onResultSuccessful(List<PlaceDocuments> placeDocuments) {
-								addExtraMarkers(placeDocuments, markerType);
-							}
-
-							@Override
-							public void onResultNoData() {
-
-							}
-						}, selectedPlaceCategoryCode);
-					}
-				});
-				break;
-			}
-
 
 		}
 	}

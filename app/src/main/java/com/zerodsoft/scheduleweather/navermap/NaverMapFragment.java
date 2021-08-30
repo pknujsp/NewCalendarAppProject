@@ -728,6 +728,15 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 	@Override
 	public void onDestroy() {
+		if (naverMap != null) {
+			SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+			SharedPreferences.Editor editor = preferences.edit();
+
+			LatLng lastLatLng = naverMap.getCameraPosition().target;
+			editor.putString(getString(R.string.key_last_latitude_on_map), String.valueOf(lastLatLng.latitude));
+			editor.putString(getString(R.string.key_last_longitude_on_map), String.valueOf(lastLatLng.longitude));
+			editor.apply();
+		}
 		super.onDestroy();
 		getChildFragmentManager().unregisterFragmentLifecycleCallbacks(fragmentLifecycleCallbacks);
 	}
@@ -738,9 +747,14 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 			NaverMapOptions naverMapOptions = new NaverMapOptions();
 
+			SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+			LatLng lastLatLng = new LatLng(Double.parseDouble(preferences.getString(getString(R.string.key_last_latitude_on_map),
+					"37.6076585")), Double.parseDouble(preferences.getString(getString(R.string.key_last_longitude_on_map),
+					"127.0965492")));
+
 			naverMapOptions.scaleBarEnabled(true).locationButtonEnabled(false)
 					.compassEnabled(false).zoomControlEnabled(false).rotateGesturesEnabled(false)
-					.mapType(NaverMap.MapType.Basic).camera(new CameraPosition(new LatLng(37.6076585, 127.0965492), 11));
+					.mapType(NaverMap.MapType.Basic).camera(new CameraPosition(lastLatLng, 11));
 
 			mapFragment = MapFragment.newInstance(naverMapOptions);
 			getChildFragmentManager().beginTransaction().add(R.id.naver_map_fragment, mapFragment, getString(R.string.tag_map_fragment)).commitNow();
@@ -804,6 +818,25 @@ public class NaverMapFragment extends Fragment implements OnMapReadyCallback, IM
 
 	public void onPageSelectedLocationItemBottomSheetViewPager(int position, MarkerType markerType) {
 		switch (markerType) {
+			case SELECTED_PLACE_CATEGORY:
+				placeCategoryOnExtraListDataListener.loadExtraListData(selectedPlaceCategoryCode, new RecyclerView.AdapterDataObserver() {
+					@Override
+					public void onItemRangeInserted(int positionStart, int itemCount) {
+						placeItemsGetter.getPlaces(new DbQueryCallback<List<PlaceDocuments>>() {
+							@Override
+							public void onResultSuccessful(List<PlaceDocuments> placeDocuments) {
+								addExtraMarkers(placeDocuments, markerType);
+							}
+
+							@Override
+							public void onResultNoData() {
+
+							}
+						}, selectedPlaceCategoryCode);
+					}
+				});
+				return;
+
 			case SEARCH_RESULT_ADDRESS:
 				LocationSearchResultFragment locationSearchResultFragmentForAddress =
 						(LocationSearchResultFragment) getChildFragmentManager().findFragmentByTag(getString(R.string.tag_location_search_result_fragment));
