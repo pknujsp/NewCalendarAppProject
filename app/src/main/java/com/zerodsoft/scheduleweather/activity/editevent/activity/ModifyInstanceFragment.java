@@ -698,13 +698,14 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 			rrule = eventModel.getEventRecurrence().toString();
 			if (rrule.equals(EventRecurrence.EMPTY)) {
 				rrule = null;
+			} else {
+				applyModifiedDateTime(newEventValues, binding.timeLayout.timeAlldaySwitch.isChecked());
 			}
 		} else {
 			rrule = originalEvent.getAsString(Events.RRULE);
 		}
 
 		newEventValues.put(Events.RRULE, rrule);
-
 		setIfModifiedDateTimeAllDay(newEventValues);
 
 		EventHelper eventHelper = new EventHelper(getAsyncQueryService());

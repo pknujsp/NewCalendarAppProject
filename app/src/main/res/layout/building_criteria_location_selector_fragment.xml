@@ -9,46 +9,56 @@
         android:background="#59EEEEEE"
         android:padding="36dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_above="@id/selector_image"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="36dp"
-            android:text="@string/message_how_to_use_criteria_location_btn_for_search_buildings"
-            android:textAlignment="center"
-            android:textColor="@color/colorPrimary"
-            android:textSize="17sp" />
 
         <View
             android:id="@+id/selector_image"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
             android:layout_centerInParent="true"
             android:background="@drawable/building_location_selector"
-            android:scaleX="2"
-            android:scaleY="2" />
+            android:scaleX="2.3"
+            android:scaleY="2.3" />
 
-        <Button
-            android:id="@+id/search_buildings_button"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/selector_image"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="36dp"
-            android:text="@string/search_buildings" />
+            android:layout_above="@id/selector_image"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/black_stroke_background"
+            android:orientation="vertical"
+            android:padding="8dp">
 
-        <ImageButton
-            android:id="@+id/close_btn"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_below="@id/search_buildings_button"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="32dp"
-            android:background="@color/transparent"
-            android:scaleType="fitXY"
-            android:src="@drawable/close_icon"
-            app:tint="@color/black" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_above="@id/selector_image"
+                android:text="@string/message_how_to_use_criteria_location_btn_for_search_buildings"
+                android:textColor="@color/black" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/search_buildings_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/search_buildings" />
+
+                <Button
+                    android:id="@+id/close_btn"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="16dp"
+                    android:text="@string/cancel" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
 
     </RelativeLayout>
 
