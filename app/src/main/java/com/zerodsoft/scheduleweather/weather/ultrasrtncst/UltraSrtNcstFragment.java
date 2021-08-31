@@ -25,6 +25,7 @@ import com.zerodsoft.scheduleweather.weather.sunsetrise.SunSetRiseData;
 import com.zerodsoft.scheduleweather.weather.sunsetrise.SunsetRise;
 
 import java.text.SimpleDateFormat;
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -81,6 +82,8 @@ public class UltraSrtNcstFragment extends Fragment {
 						@Override
 						public void run() {
 							setValue(e);
+							Date lastUpdatedTime = e.getDownloadedDate();
+							binding.lastUpdatedTime.setText(ClockUtil.weatherLastUpdatedTimeFormat.format(lastUpdatedTime));
 							binding.customProgressView.onSuccessfulProcessingData();
 						}
 					});
@@ -134,6 +137,8 @@ public class UltraSrtNcstFragment extends Fragment {
 						@Override
 						public void run() {
 							setValue(e);
+							Date lastUpdatedTime = e.getDownloadedDate();
+							binding.lastUpdatedTime.setText(ClockUtil.weatherLastUpdatedTimeFormat.format(lastUpdatedTime));
 							binding.customProgressView.onSuccessfulProcessingData();
 						}
 					});

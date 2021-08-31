@@ -24,10 +24,12 @@ import androidx.fragment.app.Fragment;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.MidFcstFragmentBinding;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.MidFcstProcessing;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.WeatherDataConverter;
 
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -63,8 +65,10 @@ public class MidFcstFragment extends Fragment {
 					requireActivity().runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							binding.customProgressView.onSuccessfulProcessingData();
+							Date lastUpdatedTime = e.getDownloadedDate();
+							binding.lastUpdatedTime.setText(ClockUtil.weatherLastUpdatedTimeFormat.format(lastUpdatedTime));
 							setTable(e);
+							binding.customProgressView.onSuccessfulProcessingData();
 						}
 					});
 				}
@@ -76,9 +80,8 @@ public class MidFcstFragment extends Fragment {
 					requireActivity().runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							clearViews();
 							binding.customProgressView.onFailedProcessingData(getString(R.string.error));
-
+							clearViews();
 						}
 					});
 				}
@@ -96,9 +99,10 @@ public class MidFcstFragment extends Fragment {
 					requireActivity().runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							binding.customProgressView.onSuccessfulProcessingData();
-
+							Date lastUpdatedTime = e.getDownloadedDate();
+							binding.lastUpdatedTime.setText(ClockUtil.weatherLastUpdatedTimeFormat.format(lastUpdatedTime));
 							setTable(e);
+							binding.customProgressView.onSuccessfulProcessingData();
 						}
 					});
 				}
@@ -110,8 +114,8 @@ public class MidFcstFragment extends Fragment {
 					requireActivity().runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							clearViews();
 							binding.customProgressView.onFailedProcessingData(getString(R.string.error));
+							clearViews();
 						}
 					});
 				}

@@ -79,8 +79,10 @@ public class HourlyFcstFragment extends Fragment {
 					requireActivity().runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							binding.customProgressView.onSuccessfulProcessingData();
+							Date lastUpdatedTime = e.getDownloadedDate();
+							binding.lastUpdatedTime.setText(ClockUtil.weatherLastUpdatedTimeFormat.format(lastUpdatedTime));
 							setTable(e);
+							binding.customProgressView.onSuccessfulProcessingData();
 						}
 					});
 				}
@@ -92,8 +94,8 @@ public class HourlyFcstFragment extends Fragment {
 					getActivity().runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							clearViews();
 							binding.customProgressView.onFailedProcessingData(getString(R.string.error));
+							clearViews();
 						}
 					});
 
@@ -122,6 +124,8 @@ public class HourlyFcstFragment extends Fragment {
 						@Override
 						public void run() {
 							setTable(e);
+							Date lastUpdatedTime = e.getDownloadedDate();
+							binding.lastUpdatedTime.setText(ClockUtil.weatherLastUpdatedTimeFormat.format(lastUpdatedTime));
 							binding.customProgressView.onSuccessfulProcessingData();
 						}
 					});

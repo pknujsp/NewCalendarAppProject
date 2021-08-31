@@ -7,29 +7,43 @@
 
         <LinearLayout
             android:id="@+id/vilage_fcst_layout"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="vertical">
 
             <LinearLayout
-                android:id="@+id/vilage_fcst_header_col"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical" />
-
-            <HorizontalScrollView
-                android:id="@+id/scroll_view"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false"
-                android:scrollbars="none">
+                android:orientation="horizontal">
 
                 <LinearLayout
-                    android:id="@+id/vilage_fcst_view"
+                    android:id="@+id/vilage_fcst_header_col"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical" />
-            </HorizontalScrollView>
+
+                <HorizontalScrollView
+                    android:id="@+id/scroll_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    android:scrollbars="none">
+
+                    <LinearLayout
+                        android:id="@+id/vilage_fcst_view"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical" />
+                </HorizontalScrollView>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/last_updated_time"
+                style="@style/WeatherLastUpdatedTimeTextViewStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:text="lastUpdatedTime" />
         </LinearLayout>
 
         <com.zerodsoft.scheduleweather.common.view.CustomProgressView

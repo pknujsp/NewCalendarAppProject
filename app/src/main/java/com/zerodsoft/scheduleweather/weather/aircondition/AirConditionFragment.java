@@ -14,11 +14,14 @@ import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.FragmentAirConditionBinding;
 import com.zerodsoft.scheduleweather.retrofit.queryresponse.aircondition.MsrstnAcctoRltmMesureDnsty.MsrstnAcctoRltmMesureDnstyItem;
 import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
+import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.AirConditionResult;
 import com.zerodsoft.scheduleweather.weather.common.OnUpdateListener;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.AirConditionProcessing;
 import com.zerodsoft.scheduleweather.weather.aircondition.airconditionbar.BarInitDataCreater;
+
+import java.util.Date;
 
 public class AirConditionFragment extends Fragment implements OnUpdateListener {
 	private FragmentAirConditionBinding binding;
@@ -67,8 +70,10 @@ public class AirConditionFragment extends Fragment implements OnUpdateListener {
 					requireActivity().runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							binding.customProgressView.onSuccessfulProcessingData();
+							Date lastUpdatedTime = e.getDownloadedDate();
+							binding.lastUpdatedTime.setText(ClockUtil.weatherLastUpdatedTimeFormat.format(lastUpdatedTime));
 							setData(e);
+							binding.customProgressView.onSuccessfulProcessingData();
 						}
 					});
 				}
@@ -131,8 +136,10 @@ public class AirConditionFragment extends Fragment implements OnUpdateListener {
 					requireActivity().runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							binding.customProgressView.onSuccessfulProcessingData();
+							Date lastUpdatedTime = e.getDownloadedDate();
+							binding.lastUpdatedTime.setText(ClockUtil.weatherLastUpdatedTimeFormat.format(lastUpdatedTime));
 							setData(e);
+							binding.customProgressView.onSuccessfulProcessingData();
 						}
 					});
 				}

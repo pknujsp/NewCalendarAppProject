@@ -193,11 +193,7 @@ public class WeatherMainFragment extends BottomSheetDialogFragment {
 					@Override
 					public void run() {
 						selectedLocationDto = selectedLocationResultDto;
-
-						final double lat = Double.parseDouble(selectedLocationResultDto.getLatitude());
-						final double lon = Double.parseDouble(selectedLocationResultDto.getLongitude());
-
-						loadInitialData(lat, lon);
+						loadInitialData(Double.parseDouble(selectedLocationDto.getLatitude()), Double.parseDouble(selectedLocationDto.getLongitude()));
 					}
 				});
 
