@@ -3,13 +3,14 @@ package com.zerodsoft.scheduleweather.activity.editevent.activity;
 import android.content.ContentValues;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.util.List;
 
 public interface IEventDataViewModel {
 	void setTitle(@NonNull String title);
 
-	void setEventColor(@NonNull Integer color, @NonNull String colorKey);
+	void setEventColor(@Nullable Integer color, @Nullable String colorKey);
 
 	void setCalendar(@NonNull Integer calendarId);
 

@@ -21,6 +21,7 @@ import com.zerodsoft.scheduleweather.weather.common.OnUpdateListener;
 import com.zerodsoft.scheduleweather.weather.common.ViewProgress;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.AirConditionProcessing;
+import com.zerodsoft.scheduleweather.weather.repository.AirConditionDownloader;
 
 public class AirConditionDialogFragment extends DialogFragment {
 	public static final String TAG = "AirConditionDialogFragment";
@@ -74,26 +75,30 @@ public class AirConditionDialogFragment extends DialogFragment {
 				airConditionProcessing.refresh(new WeatherDataCallback<AirConditionResult>() {
 					@Override
 					public void isSuccessful(AirConditionResult e) {
-						requireActivity().runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								setData(e);
-								binding.customProgressView.onSuccessfulProcessingData();
-								onUpdateListener.onUpdatedData();
-							}
-						});
+						if (getActivity() != null) {
+							requireActivity().runOnUiThread(new Runnable() {
+								@Override
+								public void run() {
+									setData(e);
+									binding.customProgressView.onSuccessfulProcessingData();
+									onUpdateListener.onUpdatedData();
+								}
+							});
+						}
 					}
 
 					@Override
 					public void isFailure(Exception e) {
-						requireActivity().runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								binding.customProgressView.onFailedProcessingData(getString(R.string.error));
-								binding.updatedTime.setText(R.string.error);
-								onUpdateListener.onUpdatedData();
-							}
-						});
+						if (getActivity() != null) {
+							requireActivity().runOnUiThread(new Runnable() {
+								@Override
+								public void run() {
+									binding.customProgressView.onFailedProcessingData(getString(R.string.error));
+									binding.updatedTime.setText(R.string.error);
+									onUpdateListener.onUpdatedData();
+								}
+							});
+						}
 					}
 				});
 			}
@@ -103,27 +108,37 @@ public class AirConditionDialogFragment extends DialogFragment {
 		airConditionProcessing.getWeatherData(new WeatherDataCallback<AirConditionResult>() {
 			@Override
 			public void isSuccessful(AirConditionResult e) {
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						setData(e);
-						binding.customProgressView.onSuccessfulProcessingData();
-					}
-				});
+				if (getActivity() != null) {
+					requireActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							setData(e);
+							binding.customProgressView.onSuccessfulProcessingData();
+						}
+					});
+				}
 			}
 
 			@Override
 			public void isFailure(Exception e) {
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						binding.customProgressView.onFailedProcessingData(getString(R.string.error));
-						binding.updatedTime.setText(R.string.error);
-					}
-				});
+				if (getActivity() != null) {
+					requireActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							binding.customProgressView.onFailedProcessingData(getString(R.string.error));
+							binding.updatedTime.setText(R.string.error);
+						}
+					});
+				}
 			}
 		});
 
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		AirConditionDownloader.close();
 	}
 
 	@Override

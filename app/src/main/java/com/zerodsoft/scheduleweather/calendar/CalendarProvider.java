@@ -875,12 +875,13 @@ public class CalendarProvider implements ICalendarProvider {
 	}
 
 	@Override
-	public List<ContentValues> getEventColors(String accountName) {
+	public List<ContentValues> getEventColors(String accountName, String accountType) {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED) {
 			String[] projection = {CalendarContract.Colors.COLOR, CalendarContract.Colors.COLOR_KEY};
 			String selection = CalendarContract.Colors.ACCOUNT_NAME + "=? AND "
-					+ CalendarContract.Colors.COLOR_TYPE + "=?";
-			String[] selectionArgs = {accountName, String.valueOf(CalendarContract.Colors.TYPE_EVENT)};
+					+ CalendarContract.Colors.COLOR_TYPE + "=? AND "
+					+ CalendarContract.Colors.ACCOUNT_TYPE + "=?";
+			String[] selectionArgs = {accountName, String.valueOf(CalendarContract.Colors.TYPE_EVENT), accountType};
 			Cursor cursor = context.getContentResolver().query(CalendarContract.Colors.CONTENT_URI, projection, selection, selectionArgs, null);
 			List<ContentValues> colors = new ArrayList<>();
 

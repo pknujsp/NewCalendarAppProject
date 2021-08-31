@@ -5,6 +5,7 @@ import android.provider.CalendarContract;
 import android.provider.CalendarContract.Events;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.zerodsoft.scheduleweather.calendar.calendarcommon2.EventRecurrence;
 import com.zerodsoft.scheduleweather.calendar.dto.DateTimeObj;
@@ -96,7 +97,7 @@ public class EventModel implements IEventDataViewModel {
 	}
 
 	@Override
-	public void setEventColor(@NonNull Integer color, @NonNull String colorKey) {
+	public void setEventColor(@Nullable Integer color, @Nullable String colorKey) {
 		modifiedValueSet.add(Events.EVENT_COLOR);
 		modifiedValueSet.add(Events.EVENT_COLOR_KEY);
 		NEW_EVENT.put(Events.EVENT_COLOR, color);

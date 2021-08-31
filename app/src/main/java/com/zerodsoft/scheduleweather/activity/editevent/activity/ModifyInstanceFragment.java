@@ -34,7 +34,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -209,7 +208,9 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 			@Override
 			public void onClick(View view) {
 				String accountName = selectedCalendarValues.getAsString(CalendarContract.Calendars.ACCOUNT_NAME);
-				List<ContentValues> colors = calendarViewModel.getEventColors(accountName);
+				String accountType = selectedCalendarValues.getAsString(CalendarContract.Calendars.ACCOUNT_TYPE);
+				List<ContentValues> colors = calendarViewModel.getEventColors(accountName, accountType);
+
 				String colorKey;
 
 				if (firstClicked) {
@@ -430,6 +431,8 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 		//알림, 참석자 정보는 따로 불러온다.
 		if (originalEvent.containsKey(Events.EVENT_COLOR)) {
 			binding.titleLayout.eventColor.setBackgroundColor(EventUtil.getColor(originalEvent.getAsInteger(Instances.EVENT_COLOR)));
+		} else {
+			binding.titleLayout.eventColor.setVisibility(View.GONE);
 		}
 		//제목
 		binding.titleLayout.title.setText(originalEvent.getAsString(Instances.TITLE));

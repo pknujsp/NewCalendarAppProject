@@ -79,7 +79,7 @@ public interface ICalendarProvider {
 
 	List<ContentValues> getCalendarColors(String accountName, String accountType);
 
-	List<ContentValues> getEventColors(String accountName);
+	List<ContentValues> getEventColors(String accountName, String accountType);
 
 	int updateCalendarColor(Integer calendarId, Integer color, String colorKey);
 

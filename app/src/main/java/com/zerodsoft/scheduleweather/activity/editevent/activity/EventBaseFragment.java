@@ -517,13 +517,21 @@ public abstract class EventBaseFragment extends Fragment implements IEventRepeat
 									selectedCalendarValues.getAsString(CalendarContract.Calendars.ACCOUNT_NAME));
 
 							String accountName = selectedCalendarValues.getAsString(CalendarContract.Calendars.ACCOUNT_NAME);
-							List<ContentValues> colors = calendarViewModel.getEventColors(accountName);
+							String accountType = selectedCalendarValues.getAsString(CalendarContract.Calendars.ACCOUNT_TYPE);
 
-							int newEventColor = colors.get(0).getAsInteger(CalendarContract.Colors.COLOR);
-							String newEventColorKey = colors.get(0).getAsString(CalendarContract.Colors.COLOR_KEY);
+							List<ContentValues> eventColors = calendarViewModel.getEventColors(accountName, accountType);
 
-							eventModel.setEventColor(newEventColor, newEventColorKey);
-							binding.titleLayout.eventColor.setBackgroundColor(EventUtil.getColor(newEventColor));
+							if (eventColors.isEmpty()) {
+								binding.titleLayout.eventColor.setVisibility(View.GONE);
+								eventModel.setEventColor(null, null);
+							} else {
+								binding.titleLayout.eventColor.setVisibility(View.VISIBLE);
+								int newEventColor = eventColors.get(0).getAsInteger(CalendarContract.Colors.COLOR);
+								String newEventColorKey = eventColors.get(0).getAsString(CalendarContract.Colors.COLOR_KEY);
+
+								eventModel.setEventColor(newEventColor, newEventColorKey);
+								binding.titleLayout.eventColor.setBackgroundColor(EventUtil.getColor(newEventColor));
+							}
 
 							if (!eventModel.getNEW_ATTENDEES().isEmpty()) {
 								eventModel.removeAttendee(accountName);

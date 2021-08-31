@@ -217,8 +217,8 @@ public class CalendarViewModel extends AndroidViewModel implements ICalendarProv
 	}
 
 	@Override
-	public List<ContentValues> getEventColors(String accountName) {
-		return calendarProvider.getEventColors(accountName);
+	public List<ContentValues> getEventColors(String accountName, String accountType) {
+		return calendarProvider.getEventColors(accountName, accountType);
 	}
 
 	@Override

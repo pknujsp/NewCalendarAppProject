@@ -89,7 +89,9 @@ public class NewEventFragment extends EventBaseFragment {
 			public void onClick(View view) {
 				String currentColorKey = eventModel.getNEW_EVENT().getAsString(CalendarContract.Events.EVENT_COLOR_KEY);
 				String accountName = selectedCalendarValues.getAsString(CalendarContract.Calendars.ACCOUNT_NAME);
-				List<ContentValues> colors = calendarViewModel.getEventColors(accountName);
+				String accountType = selectedCalendarValues.getAsString(CalendarContract.Calendars.ACCOUNT_TYPE);
+
+				List<ContentValues> colors = calendarViewModel.getEventColors(accountName, accountType);
 				onClickedEventColor(currentColorKey, colors);
 			}
 		});
@@ -211,7 +213,8 @@ public class NewEventFragment extends EventBaseFragment {
 				defaultCalendar.getAsString(CalendarContract.Calendars.ACCOUNT_NAME));
 
 		//event color
-		List<ContentValues> colors = calendarViewModel.getEventColors(defaultCalendar.getAsString(CalendarContract.Calendars.ACCOUNT_NAME));
+		List<ContentValues> colors = calendarViewModel.getEventColors(defaultCalendar.getAsString(CalendarContract.Calendars.ACCOUNT_NAME),
+				defaultCalendar.getAsString(CalendarContract.Calendars.ACCOUNT_TYPE));
 		int color = colors.get(0).getAsInteger(CalendarContract.Colors.COLOR);
 		String colorKey = colors.get(0).getAsString(CalendarContract.Colors.COLOR_KEY);
 
