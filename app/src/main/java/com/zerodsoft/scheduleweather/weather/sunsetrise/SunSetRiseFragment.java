@@ -18,6 +18,7 @@ import com.zerodsoft.scheduleweather.databinding.UltraSrtNcstFragmentBinding;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
+import com.zerodsoft.scheduleweather.weather.interfaces.CheckSuccess;
 import com.zerodsoft.scheduleweather.weather.ultrasrtncst.UltraSrtNcstResult;
 
 import org.jetbrains.annotations.NotNull;
@@ -26,9 +27,10 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 
-public class SunSetRiseFragment extends Fragment {
+public class SunSetRiseFragment extends Fragment implements CheckSuccess {
 	private FragmentSunsetriseBinding binding;
 	private WeatherAreaCodeDTO weatherAreaCode;
+	private Calendar currentCalendar;
 
 	public SunSetRiseFragment(WeatherAreaCodeDTO weatherAreaCode) {
 		this.weatherAreaCode = weatherAreaCode;
@@ -52,7 +54,6 @@ public class SunSetRiseFragment extends Fragment {
 		super.onViewCreated(view, savedInstanceState);
 
 		binding.customProgressView.setContentView(binding.sunSetRiseLayout);
-		binding.customProgressView.onStartedProcessingData();
 		clearViews();
 		setData();
 	}
@@ -67,9 +68,17 @@ public class SunSetRiseFragment extends Fragment {
 	}
 
 	private void setData() {
-
 		Calendar todayCalendar = Calendar.getInstance(ClockUtil.TIME_ZONE);
+
+		if (currentCalendar != null) {
+			if (ClockUtil.areSameDate(todayCalendar.getTimeInMillis(), currentCalendar.getTimeInMillis())) {
+				return;
+			}
+		}
+		binding.customProgressView.onStartedProcessingData();
+
 		Calendar tomorrowCalendar = (Calendar) todayCalendar.clone();
+		currentCalendar = (Calendar) todayCalendar.clone();
 		tomorrowCalendar.add(Calendar.DATE, 1);
 
 		SunriseSunsetCalculator sunriseSunsetCalculator = new SunriseSunsetCalculator(new Location(weatherAreaCode.getLatitudeSecondsDivide100()
@@ -95,7 +104,11 @@ public class SunSetRiseFragment extends Fragment {
 	}
 
 	public void refresh() {
-		binding.customProgressView.onStartedProcessingData();
 		setData();
+	}
+
+	@Override
+	public boolean isSuccess() {
+		return binding.customProgressView.isSuccess();
 	}
 }

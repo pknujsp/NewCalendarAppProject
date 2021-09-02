@@ -29,6 +29,7 @@ import com.zerodsoft.scheduleweather.event.common.viewmodel.LocationViewModel;
 import com.zerodsoft.scheduleweather.weather.aircondition.AirConditionFragment;
 import com.zerodsoft.scheduleweather.weather.hourlyfcst.HourlyFcstFragment;
 import com.zerodsoft.scheduleweather.weather.icons.WeatherIconsRecyclerViewAdapter;
+import com.zerodsoft.scheduleweather.weather.interfaces.LoadWeatherDataResultCallback;
 import com.zerodsoft.scheduleweather.weather.mid.MidFcstFragment;
 import com.zerodsoft.scheduleweather.room.dto.LocationDTO;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
@@ -130,6 +131,9 @@ public class WeatherMainFragment extends BottomSheetDialogFragment {
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+		binding.customProgressView.setContentView(binding.weatherDataLayout);
+		binding.customProgressView.onStartedProcessingData();
+
 		areaCodeViewModel = new ViewModelProvider(this).get(AreaCodeViewModel.class);
 		locationViewModel = new ViewModelProvider(this).get(LocationViewModel.class);
 
@@ -165,11 +169,14 @@ public class WeatherMainFragment extends BottomSheetDialogFragment {
 		binding.refreshWeatherFab.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				ultraSrtNcstFragment.refresh();
-				hourlyFcstFragment.refresh();
-				midFcstFragment.refresh();
-				airConditionFragment.refresh();
-				sunSetRiseFragment.refresh();
+				if (!loadWeatherDataResultCallback.isLoading()) {
+					binding.customProgressView.onStartedProcessingData();
+					ultraSrtNcstFragment.refresh();
+					hourlyFcstFragment.refresh();
+					midFcstFragment.refresh();
+					airConditionFragment.refresh();
+					sunSetRiseFragment.refresh();
+				}
 			}
 		});
 
@@ -212,13 +219,15 @@ public class WeatherMainFragment extends BottomSheetDialogFragment {
 			public void onResultSuccessful(WeatherAreaCodeDTO weatherAreaCodeResultDto) {
 				weatherAreaCode = weatherAreaCodeResultDto;
 
-				requireActivity().runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						setAddressName();
-						createFragments();
-					}
-				});
+				if (getActivity() != null) {
+					requireActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							setAddressName();
+							createFragments();
+						}
+					});
+				}
 			}
 
 			@Override
@@ -229,15 +238,12 @@ public class WeatherMainFragment extends BottomSheetDialogFragment {
 	}
 
 	private void createFragments() {
-		ultraSrtNcstFragment = new UltraSrtNcstFragment(weatherAreaCode);
-		hourlyFcstFragment = new HourlyFcstFragment(weatherAreaCode);
-		midFcstFragment = new MidFcstFragment(weatherAreaCode);
+		ultraSrtNcstFragment = new UltraSrtNcstFragment(weatherAreaCode, loadWeatherDataResultCallback);
+		hourlyFcstFragment = new HourlyFcstFragment(weatherAreaCode, loadWeatherDataResultCallback);
+		midFcstFragment = new MidFcstFragment(weatherAreaCode, loadWeatherDataResultCallback);
 		sunSetRiseFragment = new SunSetRiseFragment(weatherAreaCode);
-
-		String lat, lon = null;
-		lat = selectedLocationDto.getLatitude();
-		lon = selectedLocationDto.getLongitude();
-		airConditionFragment = new AirConditionFragment(lat, lon);
+		airConditionFragment = new AirConditionFragment(selectedLocationDto.getLatitude(), selectedLocationDto.getLongitude()
+				, loadWeatherDataResultCallback);
 
 		getChildFragmentManager().beginTransaction()
 				.add(binding.ultraSrtNcstFragmentContainer.getId(), ultraSrtNcstFragment, "0")
@@ -248,10 +254,27 @@ public class WeatherMainFragment extends BottomSheetDialogFragment {
 				.commit();
 	}
 
+	private final LoadWeatherDataResultCallback loadWeatherDataResultCallback = new LoadWeatherDataResultCallback() {
+		@Override
+		public void onFinalResult(boolean allSucceed) {
+			if (getActivity() != null) {
+				getActivity().runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						if (allSucceed) {
+							binding.customProgressView.onSuccessfulProcessingData();
+						} else {
+							binding.customProgressView.onFailedProcessingData(getString(R.string.error));
+						}
+					}
+				});
+			}
+		}
+	};
+
 	private void setAddressName() {
 		String addressName = weatherAreaCode.getPhase1() + " " + weatherAreaCode.getPhase2() + " " + weatherAreaCode.getPhase3();
 		binding.addressName.setText(addressName);
 	}
-
 
 }

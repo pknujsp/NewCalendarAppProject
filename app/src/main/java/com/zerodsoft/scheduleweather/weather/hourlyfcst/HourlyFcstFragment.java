@@ -10,8 +10,6 @@ import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.TextPaint;
-import android.util.ArrayMap;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -32,6 +30,8 @@ import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.HourlyFcstProcessing;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.WeatherDataConverter;
+import com.zerodsoft.scheduleweather.weather.interfaces.CheckSuccess;
+import com.zerodsoft.scheduleweather.weather.interfaces.LoadWeatherDataResultCallback;
 import com.zerodsoft.scheduleweather.weather.sunsetrise.SunSetRiseData;
 import com.zerodsoft.scheduleweather.weather.sunsetrise.SunsetRise;
 
@@ -42,19 +42,20 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-public class HourlyFcstFragment extends Fragment {
+public class HourlyFcstFragment extends Fragment implements CheckSuccess {
 	private VilageFcstFragmentBinding binding;
 	private WeatherAreaCodeDTO weatherAreaCode;
 	private HourlyFcstProcessing hourlyFcstProcessing;
+	private LoadWeatherDataResultCallback loadWeatherDataResultCallback;
 
 	private Map<Integer, Date> vilageFcstXMap = new HashMap<>();
 
 	private DateView dateRow;
 
-	public HourlyFcstFragment(WeatherAreaCodeDTO weatherAreaCodeDTO) {
+	public HourlyFcstFragment(WeatherAreaCodeDTO weatherAreaCodeDTO, LoadWeatherDataResultCallback loadWeatherDataResultCallback) {
 		this.weatherAreaCode = weatherAreaCodeDTO;
+		this.loadWeatherDataResultCallback = loadWeatherDataResultCallback;
 	}
 
 	@Nullable
@@ -71,6 +72,7 @@ public class HourlyFcstFragment extends Fragment {
 		hourlyFcstProcessing = new HourlyFcstProcessing(getContext(), weatherAreaCode.getY(), weatherAreaCode.getX());
 		binding.customProgressView.setContentView(binding.vilageFcstLayout);
 		binding.customProgressView.onStartedProcessingData();
+		loadWeatherDataResultCallback.onLoadStarted();
 
 		hourlyFcstProcessing.getWeatherData(new WeatherDataCallback<HourlyFcstResult>() {
 			@Override
@@ -79,10 +81,9 @@ public class HourlyFcstFragment extends Fragment {
 					requireActivity().runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							Date lastUpdatedTime = e.getDownloadedDate();
-							binding.lastUpdatedTime.setText(ClockUtil.weatherLastUpdatedTimeFormat.format(lastUpdatedTime));
 							setTable(e);
 							binding.customProgressView.onSuccessfulProcessingData();
+							loadWeatherDataResultCallback.onResult(true);
 						}
 					});
 				}
@@ -95,6 +96,7 @@ public class HourlyFcstFragment extends Fragment {
 						@Override
 						public void run() {
 							binding.customProgressView.onFailedProcessingData(getString(R.string.error));
+							loadWeatherDataResultCallback.onResult(false);
 							clearViews();
 						}
 					});
@@ -114,6 +116,7 @@ public class HourlyFcstFragment extends Fragment {
 	}
 
 	public void refresh() {
+		loadWeatherDataResultCallback.onLoadStarted();
 		binding.customProgressView.onStartedProcessingData();
 
 		hourlyFcstProcessing.refresh(new WeatherDataCallback<HourlyFcstResult>() {
@@ -124,9 +127,8 @@ public class HourlyFcstFragment extends Fragment {
 						@Override
 						public void run() {
 							setTable(e);
-							Date lastUpdatedTime = e.getDownloadedDate();
-							binding.lastUpdatedTime.setText(ClockUtil.weatherLastUpdatedTimeFormat.format(lastUpdatedTime));
 							binding.customProgressView.onSuccessfulProcessingData();
+							loadWeatherDataResultCallback.onResult(true);
 						}
 					});
 				}
@@ -139,6 +141,7 @@ public class HourlyFcstFragment extends Fragment {
 						@Override
 						public void run() {
 							binding.customProgressView.onFailedProcessingData(getString(R.string.error));
+							loadWeatherDataResultCallback.onResult(false);
 							clearViews();
 						}
 					});
@@ -423,6 +426,12 @@ public class HourlyFcstFragment extends Fragment {
 		textView.setText(value == null ? "-" : value);
 	}
 
+	@Override
+	public boolean isSuccess() {
+		return binding.customProgressView.isSuccess();
+
+	}
+
 
 	class SkyView extends View {
 		private List<Drawable> skyImageList = new ArrayList<>();
@@ -639,7 +648,7 @@ public class HourlyFcstFragment extends Fragment {
 
 			VALUE_PAINT = new TextPaint();
 			VALUE_PAINT.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 12f, getResources().getDisplayMetrics()));
-			VALUE_PAINT.setColor(Color.GRAY);
+			VALUE_PAINT.setColor(ContextCompat.getColor(getContext(), R.color.text_blue));
 			VALUE_PAINT.setTextAlign(Paint.Align.CENTER);
 
 			Rect rect = new Rect();

@@ -1,6 +1,5 @@
 package com.zerodsoft.scheduleweather.weather.ultrasrtncst;
 
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,29 +10,20 @@ import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
-import com.luckycatlabs.sunrisesunset.SunriseSunsetCalculator;
-import com.luckycatlabs.sunrisesunset.dto.Location;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.databinding.UltraSrtNcstFragmentBinding;
 import com.zerodsoft.scheduleweather.room.dto.WeatherAreaCodeDTO;
-import com.zerodsoft.scheduleweather.room.dto.WeatherDataDTO;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.UltraSrtNcstProcessing;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.WeatherDataConverter;
-import com.zerodsoft.scheduleweather.weather.sunsetrise.SunSetRiseData;
-import com.zerodsoft.scheduleweather.weather.sunsetrise.SunsetRise;
+import com.zerodsoft.scheduleweather.weather.interfaces.CheckSuccess;
+import com.zerodsoft.scheduleweather.weather.interfaces.LoadWeatherDataResultCallback;
 
-import java.text.SimpleDateFormat;
-import java.time.Clock;
-import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
-import java.util.Locale;
 
 
-public class UltraSrtNcstFragment extends Fragment {
+public class UltraSrtNcstFragment extends Fragment implements CheckSuccess {
 	/*
 	- 초단기 실황 -
 	기온
@@ -48,10 +38,12 @@ public class UltraSrtNcstFragment extends Fragment {
 	private UltraSrtNcstFragmentBinding binding;
 	private WeatherAreaCodeDTO weatherAreaCode;
 	private UltraSrtNcstProcessing ultraSrtNcstProcessing;
+	private LoadWeatherDataResultCallback loadWeatherDataResultCallback;
 
 
-	public UltraSrtNcstFragment(WeatherAreaCodeDTO weatherAreaCodeDTO) {
+	public UltraSrtNcstFragment(WeatherAreaCodeDTO weatherAreaCodeDTO, LoadWeatherDataResultCallback loadWeatherDataResultCallback) {
 		this.weatherAreaCode = weatherAreaCodeDTO;
+		this.loadWeatherDataResultCallback = loadWeatherDataResultCallback;
 	}
 
 	@Override
@@ -71,6 +63,7 @@ public class UltraSrtNcstFragment extends Fragment {
 		super.onViewCreated(view, savedInstanceState);
 		binding.customProgressView.setContentView(binding.ultraSrtNcstLayout);
 		binding.customProgressView.onStartedProcessingData();
+		loadWeatherDataResultCallback.onLoadStarted();
 		clearViews();
 
 		ultraSrtNcstProcessing = new UltraSrtNcstProcessing(getContext(), weatherAreaCode.getY(), weatherAreaCode.getX());
@@ -82,9 +75,8 @@ public class UltraSrtNcstFragment extends Fragment {
 						@Override
 						public void run() {
 							setValue(e);
-							Date lastUpdatedTime = e.getDownloadedDate();
-							binding.lastUpdatedTime.setText(ClockUtil.weatherLastUpdatedTimeFormat.format(lastUpdatedTime));
 							binding.customProgressView.onSuccessfulProcessingData();
+							loadWeatherDataResultCallback.onResult(true);
 						}
 					});
 				}
@@ -97,6 +89,7 @@ public class UltraSrtNcstFragment extends Fragment {
 						@Override
 						public void run() {
 							binding.customProgressView.onFailedProcessingData(getString(R.string.error));
+							loadWeatherDataResultCallback.onResult(false);
 							clearViews();
 						}
 					});
@@ -128,6 +121,7 @@ public class UltraSrtNcstFragment extends Fragment {
 
 	public void refresh() {
 		binding.customProgressView.onStartedProcessingData();
+		loadWeatherDataResultCallback.onLoadStarted();
 
 		ultraSrtNcstProcessing.refresh(new WeatherDataCallback<UltraSrtNcstResult>() {
 			@Override
@@ -137,9 +131,8 @@ public class UltraSrtNcstFragment extends Fragment {
 						@Override
 						public void run() {
 							setValue(e);
-							Date lastUpdatedTime = e.getDownloadedDate();
-							binding.lastUpdatedTime.setText(ClockUtil.weatherLastUpdatedTimeFormat.format(lastUpdatedTime));
 							binding.customProgressView.onSuccessfulProcessingData();
+							loadWeatherDataResultCallback.onResult(true);
 						}
 					});
 				}
@@ -152,6 +145,7 @@ public class UltraSrtNcstFragment extends Fragment {
 						@Override
 						public void run() {
 							binding.customProgressView.onFailedProcessingData(getString(R.string.error));
+							loadWeatherDataResultCallback.onResult(false);
 							clearViews();
 						}
 					});
@@ -166,5 +160,10 @@ public class UltraSrtNcstFragment extends Fragment {
 		binding.ultraSrtNcstHumidity.setText("");
 		binding.ultraSrtNcstWind.setText("");
 		binding.ultraSrtNcstRn1.setText("");
+	}
+
+	@Override
+	public boolean isSuccess() {
+		return binding.customProgressView.isSuccess();
 	}
 }

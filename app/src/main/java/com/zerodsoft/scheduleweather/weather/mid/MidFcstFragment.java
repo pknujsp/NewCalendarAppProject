@@ -28,18 +28,22 @@ import com.zerodsoft.scheduleweather.utility.ClockUtil;
 import com.zerodsoft.scheduleweather.weather.common.WeatherDataCallback;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.MidFcstProcessing;
 import com.zerodsoft.scheduleweather.weather.dataprocessing.WeatherDataConverter;
+import com.zerodsoft.scheduleweather.weather.interfaces.CheckSuccess;
+import com.zerodsoft.scheduleweather.weather.interfaces.LoadWeatherDataResultCallback;
 
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
-public class MidFcstFragment extends Fragment {
+public class MidFcstFragment extends Fragment implements CheckSuccess {
 	private MidFcstFragmentBinding binding;
 	private WeatherAreaCodeDTO weatherAreaCode;
 	private MidFcstProcessing midFcstProcessing;
+	private LoadWeatherDataResultCallback loadWeatherDataResultCallback;
 
-	public MidFcstFragment(WeatherAreaCodeDTO weatherAreaCodeDTO) {
+	public MidFcstFragment(WeatherAreaCodeDTO weatherAreaCodeDTO, LoadWeatherDataResultCallback loadWeatherDataResultCallback) {
 		this.weatherAreaCode = weatherAreaCodeDTO;
+		this.loadWeatherDataResultCallback = loadWeatherDataResultCallback;
 	}
 
 	@Nullable
@@ -57,6 +61,7 @@ public class MidFcstFragment extends Fragment {
 		midFcstProcessing = new MidFcstProcessing(getContext(), weatherAreaCode.getY(), weatherAreaCode.getX(), weatherAreaCode);
 		binding.customProgressView.setContentView(binding.midFcstLayout);
 		binding.customProgressView.onStartedProcessingData();
+		loadWeatherDataResultCallback.onLoadStarted();
 
 		midFcstProcessing.getWeatherData(new WeatherDataCallback<MidFcstResult>() {
 			@Override
@@ -65,10 +70,9 @@ public class MidFcstFragment extends Fragment {
 					requireActivity().runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							Date lastUpdatedTime = e.getDownloadedDate();
-							binding.lastUpdatedTime.setText(ClockUtil.weatherLastUpdatedTimeFormat.format(lastUpdatedTime));
 							setTable(e);
 							binding.customProgressView.onSuccessfulProcessingData();
+							loadWeatherDataResultCallback.onResult(true);
 						}
 					});
 				}
@@ -81,6 +85,7 @@ public class MidFcstFragment extends Fragment {
 						@Override
 						public void run() {
 							binding.customProgressView.onFailedProcessingData(getString(R.string.error));
+							loadWeatherDataResultCallback.onResult(false);
 							clearViews();
 						}
 					});
@@ -90,6 +95,7 @@ public class MidFcstFragment extends Fragment {
 	}
 
 	public void refresh() {
+		loadWeatherDataResultCallback.onLoadStarted();
 		binding.customProgressView.onStartedProcessingData();
 
 		midFcstProcessing.refresh(new WeatherDataCallback<MidFcstResult>() {
@@ -99,10 +105,9 @@ public class MidFcstFragment extends Fragment {
 					requireActivity().runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							Date lastUpdatedTime = e.getDownloadedDate();
-							binding.lastUpdatedTime.setText(ClockUtil.weatherLastUpdatedTimeFormat.format(lastUpdatedTime));
 							setTable(e);
 							binding.customProgressView.onSuccessfulProcessingData();
+							loadWeatherDataResultCallback.onResult(true);
 						}
 					});
 				}
@@ -115,6 +120,7 @@ public class MidFcstFragment extends Fragment {
 						@Override
 						public void run() {
 							binding.customProgressView.onFailedProcessingData(getString(R.string.error));
+							loadWeatherDataResultCallback.onResult(false);
 							clearViews();
 						}
 					});
@@ -338,6 +344,11 @@ public class MidFcstFragment extends Fragment {
 			drawables[0] = getContext().getDrawable(WeatherDataConverter.getSkyDrawableIdForMid(data.getSky()));
 		}
 		return drawables;
+	}
+
+	@Override
+	public boolean isSuccess() {
+		return binding.customProgressView.isSuccess();
 	}
 
 	static class TempView extends View {

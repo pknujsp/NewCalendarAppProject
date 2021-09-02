@@ -22,6 +22,14 @@
                 android:orientation="vertical">
 
                 <TextView
+                    style="@style/WeatherLastUpdatedTimeTextViewStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="right"
+                    android:text="@string/last_updated_time"
+                    android:visibility="gone" />
+
+                <TextView
                     android:id="@+id/address_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -30,7 +38,9 @@
                     android:textColor="@color/black"
                     android:textSize="20sp" />
 
+
                 <LinearLayout
+                    android:id="@+id/weather_data_layout"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_marginTop="16dp"
@@ -107,13 +117,18 @@
 
                 </LinearLayout>
 
+                <com.zerodsoft.scheduleweather.common.view.CustomProgressView
+                    android:id="@+id/custom_progress_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp" />
+
                 <LinearLayout
                     android:id="@+id/weather_icons_info_layout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="24dp"
                     android:layout_marginBottom="24dp"
-
                     android:background="?attr/selectableItemBackground"
                     android:clickable="true"
                     android:orientation="horizontal">

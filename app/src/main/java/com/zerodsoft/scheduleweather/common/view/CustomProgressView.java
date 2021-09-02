@@ -13,13 +13,15 @@ import android.widget.TextView;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.interfaces.OnProgressViewListener;
+import com.zerodsoft.scheduleweather.weather.interfaces.CheckSuccess;
 
 import javax.annotation.Nonnull;
 
-public class CustomProgressView extends LinearLayout implements OnProgressViewListener {
+public class CustomProgressView extends LinearLayout implements OnProgressViewListener, CheckSuccess {
 	private TextView progressStatusTextView;
 	private CircularProgressIndicator progressView;
 	private View contentView;
+	private boolean succeed;
 
 	public CustomProgressView(Context context) {
 		super(context);
@@ -76,6 +78,7 @@ public class CustomProgressView extends LinearLayout implements OnProgressViewLi
 
 	@Override
 	public void onSuccessfulProcessingData() {
+		succeed = true;
 		progressStatusTextView.setVisibility(View.GONE);
 		progressView.setVisibility(View.GONE);
 		contentView.setVisibility(View.VISIBLE);
@@ -84,6 +87,7 @@ public class CustomProgressView extends LinearLayout implements OnProgressViewLi
 
 	@Override
 	public void onFailedProcessingData(@Nonnull String text) {
+		succeed = false;
 		progressStatusTextView.setVisibility(View.VISIBLE);
 		progressView.setVisibility(View.GONE);
 		contentView.setVisibility(View.GONE);
@@ -94,6 +98,7 @@ public class CustomProgressView extends LinearLayout implements OnProgressViewLi
 
 	@Override
 	public void onStartedProcessingData(String statusText) {
+		succeed = false;
 		progressView.setVisibility(View.VISIBLE);
 		progressStatusTextView.setVisibility(View.VISIBLE);
 		progressStatusTextView.setText(statusText);
@@ -103,10 +108,16 @@ public class CustomProgressView extends LinearLayout implements OnProgressViewLi
 
 	@Override
 	public void onStartedProcessingData() {
+		succeed = false;
 		progressView.setVisibility(View.VISIBLE);
 		progressStatusTextView.setVisibility(View.GONE);
 		progressStatusTextView.setText("");
 		contentView.setVisibility(View.GONE);
 		setVisibility(View.VISIBLE);
+	}
+
+	@Override
+	public boolean isSuccess() {
+		return succeed;
 	}
 }
