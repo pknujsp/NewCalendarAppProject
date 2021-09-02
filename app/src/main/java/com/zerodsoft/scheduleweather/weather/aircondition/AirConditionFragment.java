@@ -181,7 +181,31 @@ public class AirConditionFragment extends Fragment implements OnUpdateListener, 
 
 	@Override
 	public void onUpdatedData() {
-		init();
+		airConditionProcessing.getWeatherData(new WeatherDataCallback<AirConditionResult>() {
+			@Override
+			public void isSuccessful(AirConditionResult e) {
+				if (getActivity() != null) {
+					getActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							setData(e);
+						}
+					});
+				}
+			}
+
+			@Override
+			public void isFailure(Exception e) {
+				if (getActivity() != null) {
+					getActivity().runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							binding.customProgressView.onFailedProcessingData(getString(R.string.error));
+						}
+					});
+				}
+			}
+		});
 	}
 
 	@Override

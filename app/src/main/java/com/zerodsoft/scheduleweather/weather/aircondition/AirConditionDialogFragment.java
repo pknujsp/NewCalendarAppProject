@@ -76,7 +76,7 @@ public class AirConditionDialogFragment extends DialogFragment {
 					@Override
 					public void isSuccessful(AirConditionResult e) {
 						if (getActivity() != null) {
-							requireActivity().runOnUiThread(new Runnable() {
+							getActivity().runOnUiThread(new Runnable() {
 								@Override
 								public void run() {
 									setData(e);
