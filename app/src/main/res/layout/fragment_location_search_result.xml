@@ -10,42 +10,42 @@
         <RelativeLayout
             android:id="@+id/map_search_result_header"
             android:layout_width="match_parent"
-            android:layout_height="28dp"
+            android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:paddingLeft="8dp"
             android:paddingRight="8dp">
 
-            <TextView
-                android:id="@+id/search_around_map_center"
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/search_criteria_toggle_group"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/secondary_button"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center"
+                android:layout_centerVertical="true"
+                app:selectionRequired="true"
+                app:singleSelection="true">
 
-                android:text="@string/result_activity_map_center"
-                android:textColor="@color/gray_600" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/search_around_map_center"
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/result_activity_map_center" />
 
-            <TextView
-                android:id="@+id/search_around_current_location"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_toRightOf="@id/search_around_map_center"
-                android:background="@drawable/secondary_button"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center"
-                android:text="@string/result_activity_myloc_center"
-                android:textColor="@color/gray_600" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/search_around_current_location"
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/result_activity_myloc_center" />
+
+            </com.google.android.material.button.MaterialButtonToggleGroup>
 
             <Spinner
                 android:id="@+id/search_sort_spinner"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
                 android:gravity="center" />
 
         </RelativeLayout>
@@ -71,6 +71,12 @@
             android:nestedScrollingEnabled="false"
             android:orientation="vertical"
             tools:listitem="@layout/place_recycler_view_item" />
+
+        <com.zerodsoft.scheduleweather.common.view.CustomProgressView
+            android:id="@+id/custom_progress_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/search_result_type" />
 
     </RelativeLayout>
 </layout>

@@ -25,6 +25,7 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.naver.maps.geometry.LatLng;
 import com.zerodsoft.scheduleweather.R;
 import com.zerodsoft.scheduleweather.common.classes.AppPermission;
@@ -89,6 +90,8 @@ public class SearchResultPlaceListFragment extends Fragment implements OnExtraLi
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+		binding.customProgressView.setContentView(binding.searchResultRecyclerview);
+		binding.customProgressView.onStartedProcessingData();
 		binding.searchResultType.setText(getString(R.string.result_place));
 
 		spinnerAdapter = ArrayAdapter.createFromResource(getContext(),
@@ -102,27 +105,27 @@ public class SearchResultPlaceListFragment extends Fragment implements OnExtraLi
 		binding.searchResultRecyclerview.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
 		viewModel = new ViewModelProvider(this).get(PlacesViewModel.class);
 
-		replaceButtonStyle();
-
-		binding.searchAroundMapCenter.setOnClickListener(new View.OnClickListener() {
+		binding.searchCriteriaToggleGroup.addOnButtonCheckedListener(new MaterialButtonToggleGroup.OnButtonCheckedListener() {
 			@Override
-			public void onClick(View view) {
-				currentSearchMapPointCriteria = LocalApiPlaceParameter.SEARCH_CRITERIA_MAP_POINT_MAP_CENTER;
-				replaceButtonStyle();
-				requestPlaces(QUERY);
+			public void onButtonChecked(MaterialButtonToggleGroup group, int checkedId, boolean isChecked) {
+				if (isChecked) {
+					gps.removeUpdate();
+
+					switch (checkedId) {
+						case R.id.search_around_current_location:
+							currentSearchMapPointCriteria = LocalApiPlaceParameter.SEARCH_CRITERIA_MAP_POINT_CURRENT_LOCATION;
+							requestPlacesByGps(QUERY);
+							break;
+						case R.id.search_around_map_center:
+							currentSearchMapPointCriteria = LocalApiPlaceParameter.SEARCH_CRITERIA_MAP_POINT_MAP_CENTER;
+							requestPlaces(QUERY);
+							break;
+					}
+				}
 			}
 		});
 
-		binding.searchAroundCurrentLocation.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				currentSearchMapPointCriteria = LocalApiPlaceParameter.SEARCH_CRITERIA_MAP_POINT_CURRENT_LOCATION;
-				replaceButtonStyle();
-				requestPlacesByGps(QUERY);
-			}
-		});
-
-		requestPlaces(QUERY);
+		binding.searchCriteriaToggleGroup.check(R.id.search_around_map_center);
 	}
 
 	@Override
@@ -131,20 +134,6 @@ public class SearchResultPlaceListFragment extends Fragment implements OnExtraLi
 		requestLocationPermissionLauncher.unregister();
 		requestOnGpsLauncher.unregister();
 		gps.removeUpdate();
-	}
-
-	private void replaceButtonStyle() {
-		switch (currentSearchMapPointCriteria) {
-			case LocalApiPlaceParameter.SEARCH_CRITERIA_MAP_POINT_CURRENT_LOCATION:
-				binding.searchAroundCurrentLocation.setTextColor(getResources().getColor(R.color.black, null));
-				binding.searchAroundMapCenter.setTextColor(getResources().getColor(R.color.gray_600, null));
-				break;
-
-			case LocalApiPlaceParameter.SEARCH_CRITERIA_MAP_POINT_MAP_CENTER:
-				binding.searchAroundCurrentLocation.setTextColor(getResources().getColor(R.color.gray_600, null));
-				binding.searchAroundMapCenter.setTextColor(getResources().getColor(R.color.black, null));
-				break;
-		}
 	}
 
 	private final AdapterView.OnItemSelectedListener onItemSelectedListener = new AdapterView.OnItemSelectedListener() {
@@ -175,6 +164,7 @@ public class SearchResultPlaceListFragment extends Fragment implements OnExtraLi
 	};
 
 	private void requestPlacesByGps(String query) {
+		binding.customProgressView.onStartedProcessingData();
 		gps.runGps(requireActivity(), new DataProcessingCallback<Location>() {
 			@Override
 			public void onResultSuccessful(Location result) {
@@ -185,12 +175,13 @@ public class SearchResultPlaceListFragment extends Fragment implements OnExtraLi
 			@Override
 			public void onResultNoData() {
 				Toast.makeText(getContext(), R.string.failed_catch_current_location, Toast.LENGTH_SHORT).show();
-				binding.searchAroundMapCenter.callOnClick();
+				binding.searchCriteriaToggleGroup.check(R.id.search_around_map_center);
 			}
 		}, requestOnGpsLauncher, requestLocationPermissionLauncher);
 	}
 
 	private void requestPlaces(String query) {
+		binding.customProgressView.onStartedProcessingData();
 		String latitude = null;
 		String longitude = null;
 
@@ -221,6 +212,7 @@ public class SearchResultPlaceListFragment extends Fragment implements OnExtraLi
 				} else {
 					if (itemCount > 0) {
 						iMapData.createMarkers(adapter.getCurrentList().snapshot(), MarkerType.SEARCH_RESULT_PLACE);
+						binding.customProgressView.onSuccessfulProcessingData();
 					}
 				}
 			}
@@ -246,9 +238,9 @@ public class SearchResultPlaceListFragment extends Fragment implements OnExtraLi
 				@Override
 				public void onActivityResult(ActivityResult result) {
 					if (AppPermission.grantedPermissions(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)) {
-						binding.searchAroundCurrentLocation.callOnClick();
+						binding.searchCriteriaToggleGroup.check(R.id.search_around_current_location);
 					} else {
-						binding.searchAroundMapCenter.callOnClick();
+						binding.searchCriteriaToggleGroup.check(R.id.search_around_map_center);
 					}
 				}
 			});
@@ -259,11 +251,11 @@ public class SearchResultPlaceListFragment extends Fragment implements OnExtraLi
 				public void onActivityResult(Boolean isGranted) {
 					if (isGranted) {
 						// 권한 허용됨
-						binding.searchAroundCurrentLocation.callOnClick();
+						binding.searchCriteriaToggleGroup.check(R.id.search_around_current_location);
 					} else {
 						// 권한 거부됨
 						Toast.makeText(getContext(), R.string.message_needs_location_permission, Toast.LENGTH_SHORT).show();
-						binding.searchAroundMapCenter.callOnClick();
+						binding.searchCriteriaToggleGroup.check(R.id.search_around_map_center);
 					}
 				}
 			});

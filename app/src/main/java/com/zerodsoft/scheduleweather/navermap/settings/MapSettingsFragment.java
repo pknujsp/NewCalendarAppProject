@@ -71,6 +71,7 @@ public class MapSettingsFragment extends BottomSheetDialogFragment {
 		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
 		NaverMap.MapType currentMapType = NaverMap.MapType.valueOf(preferences.getString(getString(R.string.preference_key_map_type),
 				NaverMap.MapType.Basic.toString()));
+
 		switch (currentMapType) {
 			case Basic:
 				binding.mapTypeToggleGroup.check(R.id.map_type_basic);

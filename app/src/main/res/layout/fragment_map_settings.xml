@@ -6,7 +6,6 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/white"
         android:clickable="true"
         android:focusable="false"
         android:paddingLeft="16dp"

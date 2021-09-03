@@ -63,6 +63,8 @@ public class SearchResultAddressListFragment extends Fragment implements OnExtra
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+		binding.customProgressView.setContentView(binding.searchResultRecyclerview);
+		binding.customProgressView.onSuccessfulProcessingData();
 
 		binding.mapSearchResultHeader.setVisibility(View.GONE);
 		binding.searchResultType.setText(getString(R.string.result_address));
