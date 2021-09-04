@@ -15,6 +15,7 @@ import androidx.viewpager2.widget.CompositePageTransformer;
 import androidx.viewpager2.widget.MarginPageTransformer;
 import androidx.viewpager2.widget.ViewPager2;
 
+import android.os.Parcel;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -24,6 +25,7 @@ import android.view.Window;
 import android.widget.PopupMenu;
 
 import com.zerodsoft.scheduleweather.R;
+import com.zerodsoft.scheduleweather.activity.editevent.interfaces.OnEditEventResultListener;
 import com.zerodsoft.scheduleweather.calendar.AsyncQueryService;
 import com.zerodsoft.scheduleweather.calendar.CalendarViewModel;
 import com.zerodsoft.scheduleweather.calendar.EditEventPopupMenu;
@@ -52,6 +54,7 @@ public class InstanceListWeekDialogFragment extends DialogFragment implements On
 		, InstancesOfDayView.DeleteEventsListener {
 	private final IConnectedCalendars iConnectedCalendars;
 	private final OnEventItemClickListener onEventItemClickListener;
+	private final OnEditEventResultListener onEditEventResultListener;
 
 	private FragmentInstanceListWeekDialogBinding binding;
 
@@ -77,9 +80,10 @@ public class InstanceListWeekDialogFragment extends DialogFragment implements On
 
 	};
 
-	public InstanceListWeekDialogFragment(IConnectedCalendars iConnectedCalendars, OnEventItemClickListener onEventItemClickListener) {
+	public InstanceListWeekDialogFragment(IConnectedCalendars iConnectedCalendars, OnEventItemClickListener onEventItemClickListener, OnEditEventResultListener onEditEventResultListener) {
 		this.onEventItemClickListener = onEventItemClickListener;
 		this.iConnectedCalendars = iConnectedCalendars;
+		this.onEditEventResultListener = onEditEventResultListener;
 	}
 
 	@NonNull
@@ -117,42 +121,6 @@ public class InstanceListWeekDialogFragment extends DialogFragment implements On
 		calendarViewModel.getOnExceptedInstanceLiveData().observe(this, new Observer<Boolean>() {
 			@Override
 			public void onChanged(Boolean aBoolean) {
-				if (!initializing) {
-					refreshView();
-				}
-			}
-		});
-
-		calendarViewModel.getOnModifiedInstanceLiveData().observe(this, new Observer<Long>() {
-			@Override
-			public void onChanged(Long aLong) {
-				if (!initializing) {
-					refreshView();
-				}
-			}
-		});
-
-		calendarViewModel.getOnModifiedFutureInstancesLiveData().observe(this, new Observer<Long>() {
-			@Override
-			public void onChanged(Long aLong) {
-				if (!initializing) {
-					refreshView();
-				}
-			}
-		});
-
-		calendarViewModel.getOnModifiedEventLiveData().observe(this, new Observer<Long>() {
-			@Override
-			public void onChanged(Long aLong) {
-				if (!initializing) {
-					refreshView();
-				}
-			}
-		});
-
-		calendarViewModel.getOnAddedNewEventLiveData().observe(this, new Observer<Long>() {
-			@Override
-			public void onChanged(Long aLong) {
 				if (!initializing) {
 					refreshView();
 				}
@@ -237,7 +205,7 @@ public class InstanceListWeekDialogFragment extends DialogFragment implements On
 			public void onRemoved() {
 
 			}
-		}, calendarViewModel);
+		}, onEditEventResultListener);
 	}
 
 	@Override

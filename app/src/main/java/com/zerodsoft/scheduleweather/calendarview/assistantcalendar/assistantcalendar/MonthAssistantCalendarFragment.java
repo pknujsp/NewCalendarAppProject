@@ -62,7 +62,7 @@ public class MonthAssistantCalendarFragment extends Fragment implements IRefresh
 			}
 		});
 
-		calendarViewModel.getOnModifiedEventLiveData().observe(this, new Observer<Long>() {
+		calendarViewModel.getOnUpdatedAllEventsLiveData().observe(this, new Observer<Long>() {
 			@Override
 			public void onChanged(Long start) {
 				if (!initializing) {
@@ -71,7 +71,7 @@ public class MonthAssistantCalendarFragment extends Fragment implements IRefresh
 			}
 		});
 
-		calendarViewModel.getOnModifiedFutureInstancesLiveData().observe(this, new Observer<Long>() {
+		calendarViewModel.getOnUpdatedFollowingEventsLiveData().observe(this, new Observer<Long>() {
 			@Override
 			public void onChanged(Long begin) {
 				if (!initializing) {
@@ -80,7 +80,7 @@ public class MonthAssistantCalendarFragment extends Fragment implements IRefresh
 			}
 		});
 
-		calendarViewModel.getOnModifiedInstanceLiveData().observe(this, new Observer<Long>() {
+		calendarViewModel.getOnUpdatedOnlyThisEventLiveData().observe(this, new Observer<Long>() {
 			@Override
 			public void onChanged(Long begin) {
 				if (!initializing) {

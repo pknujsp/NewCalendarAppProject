@@ -10,7 +10,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SyncStatusObserver;
-import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcel;
@@ -25,7 +24,6 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -66,7 +64,6 @@ import com.zerodsoft.scheduleweather.event.foods.viewmodel.FoodCriteriaLocationI
 import com.zerodsoft.scheduleweather.event.main.NewInstanceMainFragment;
 import com.zerodsoft.scheduleweather.room.dto.SelectedCalendarDTO;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
-import com.zerodsoft.scheduleweather.utility.NetworkStatus;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -430,19 +427,70 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 
 		int difference = ClockUtil.calcDayDifference(new Date(viewBegin), new Date(viewEnd));
 		if (difference == -1) {
-			InstanceListOnADayDialogFragment fragment = new InstanceListOnADayDialogFragment(instanceListDialogIConnectedCalendars, this);
+			InstanceListOnADayDialogFragment fragment = new InstanceListOnADayDialogFragment(instanceListDialogIConnectedCalendars, this,
+					onEditEventResultListener);
 			fragment.setArguments(bundle);
 
-			//현재 표시중인 프래그먼트를 숨기고, 인스턴스 프래그먼트를 표시
 			fragment.show(fragmentManager, InstanceListOnADayDialogFragment.TAG);
 		} else {
-			InstanceListWeekDialogFragment fragment = new InstanceListWeekDialogFragment(instanceListDialogIConnectedCalendars, this);
+			InstanceListWeekDialogFragment fragment = new InstanceListWeekDialogFragment(instanceListDialogIConnectedCalendars, this, onEditEventResultListener);
 			fragment.setArguments(bundle);
 
 			//현재 표시중인 프래그먼트를 숨기고, 인스턴스 프래그먼트를 표시
 			fragment.show(fragmentManager, getString(R.string.tag_instance_list_week_dialog_fragment));
 		}
 	}
+
+	private final OnEditEventResultListener onEditEventResultListener = new OnEditEventResultListener() {
+		@Override
+		public void onSavedNewEvent(long dtStart) {
+			calendarViewModel.onSavedNewEvent(dtStart);
+			getParentFragmentManager().popBackStackImmediate();
+		}
+
+		@Override
+		public void onUpdatedOnlyThisEvent(long dtStart) {
+			calendarViewModel.onUpdatedOnlyThisEvent(dtStart);
+			getParentFragmentManager().popBackStackImmediate();
+		}
+
+		@Override
+		public void onUpdatedFollowingEvents(long dtStart) {
+			calendarViewModel.onUpdatedFollowingEvents(dtStart);
+			getParentFragmentManager().popBackStackImmediate();
+		}
+
+		@Override
+		public void onUpdatedAllEvents(long dtStart) {
+			calendarViewModel.onUpdatedAllEvents(dtStart);
+			getParentFragmentManager().popBackStackImmediate();
+		}
+
+		@Override
+		public void onRemovedAllEvents() {
+			calendarViewModel.onRemovedAllEvents();
+		}
+
+		@Override
+		public void onRemovedFollowingEvents() {
+			calendarViewModel.onRemovedFollowingEvents();
+		}
+
+		@Override
+		public void onRemovedOnlyThisEvents() {
+			calendarViewModel.onRemovedOnlyThisEvents();
+		}
+
+		@Override
+		public int describeContents() {
+			return 0;
+		}
+
+		@Override
+		public void writeToParcel(Parcel dest, int flags) {
+
+		}
+	};
 
 	private final IConnectedCalendars instanceListDialogIConnectedCalendars = new IConnectedCalendars() {
 		@Override
@@ -475,6 +523,10 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 	}
 
 	public void openEventInfoFragment(Bundle bundle) {
+		if (getParentFragmentManager().findFragmentByTag(getString(R.string.tag_instance_main_fragment)) != null) {
+			return;
+		}
+
 		NewInstanceMainFragment newInstanceMainFragment = new NewInstanceMainFragment();
 		newInstanceMainFragment.setArguments(bundle);
 
@@ -527,7 +579,7 @@ public class EventTransactionFragment extends Fragment implements OnEventItemCli
 					public void onRemoved() {
 
 					}
-				}, calendarViewModel);
+				}, onEditEventResultListener);
 	}
 
 	@Override

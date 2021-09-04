@@ -61,6 +61,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 	private Preference placesCategoryPreference;
 	private Preference customFoodPreference;
 	private Preference resetAppDbPreference;
+	private Preference appInfoPreference;
 
 	private FavoriteLocationViewModel favoriteLocationViewModel;
 	private WeatherDbViewModel weatherDbViewModel;
@@ -84,6 +85,7 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 		placesCategoryPreference = findPreference(getString(R.string.preference_key_places_category));
 		customFoodPreference = findPreference(getString(R.string.preference_key_custom_food_menu));
 		resetAppDbPreference = findPreference(getString(R.string.preference_key_reset_app_db_data));
+		appInfoPreference = findPreference(getString(R.string.preference_key_app_info));
 
 		initPreference();
 		initValue();
@@ -420,6 +422,21 @@ public class SettingsFragment extends PreferenceFragmentCompat implements Prefer
 
 		((PreferenceCategory) getPreferenceManager().findPreference(getString(R.string.preference_place_category_title)))
 				.addPreference(searchBuildingRangeRadiusPreference);
+
+		//앱 정보
+		appInfoPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+			@Override
+			public boolean onPreferenceClick(Preference preference) {
+				iFragmentTitle.setTitle(getString(R.string.preference_title_app_info));
+
+				AppInfoFragment appInfoFragment = new AppInfoFragment();
+				getParentFragmentManager().beginTransaction().hide(SettingsFragment.this)
+						.add(R.id.fragment_container, appInfoFragment, getString(R.string.tag_app_info_fragment))
+						.addToBackStack(getString(R.string.tag_app_info_fragment)).commit();
+
+				return true;
+			}
+		});
 	}
 
 	private final Preference.OnPreferenceChangeListener preferenceChangeListener = new Preference.OnPreferenceChangeListener() {

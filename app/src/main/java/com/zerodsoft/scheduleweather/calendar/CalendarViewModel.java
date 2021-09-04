@@ -22,9 +22,9 @@ public class CalendarViewModel extends AndroidViewModel implements ICalendarProv
 	private MutableLiveData<Boolean> onRemovedEventLiveData = new MutableLiveData<>();
 	private MutableLiveData<Boolean> onExceptedInstanceLiveData = new MutableLiveData<>();
 	private MutableLiveData<Boolean> onRemovedFutureInstancesLiveData = new MutableLiveData<>();
-	private MutableLiveData<Long> onModifiedInstanceLiveData = new MutableLiveData<>();
-	private MutableLiveData<Long> onModifiedEventLiveData = new MutableLiveData<>();
-	private MutableLiveData<Long> onModifiedFutureInstancesLiveData = new MutableLiveData<>();
+	private MutableLiveData<Long> onUpdatedOnlyThisEventLiveData = new MutableLiveData<>();
+	private MutableLiveData<Long> onUpdatedAllEventsLiveData = new MutableLiveData<>();
+	private MutableLiveData<Long> onUpdatedFollowingEventsLiveData = new MutableLiveData<>();
 
 	public CalendarViewModel(Application application) {
 		super(application);
@@ -48,16 +48,16 @@ public class CalendarViewModel extends AndroidViewModel implements ICalendarProv
 		return onRemovedFutureInstancesLiveData;
 	}
 
-	public LiveData<Long> getOnModifiedInstanceLiveData() {
-		return onModifiedInstanceLiveData;
+	public LiveData<Long> getOnUpdatedOnlyThisEventLiveData() {
+		return onUpdatedOnlyThisEventLiveData;
 	}
 
-	public LiveData<Long> getOnModifiedEventLiveData() {
-		return onModifiedEventLiveData;
+	public LiveData<Long> getOnUpdatedAllEventsLiveData() {
+		return onUpdatedAllEventsLiveData;
 	}
 
-	public LiveData<Long> getOnModifiedFutureInstancesLiveData() {
-		return onModifiedFutureInstancesLiveData;
+	public LiveData<Long> getOnUpdatedFollowingEventsLiveData() {
+		return onUpdatedFollowingEventsLiveData;
 	}
 
 
@@ -242,17 +242,17 @@ public class CalendarViewModel extends AndroidViewModel implements ICalendarProv
 
 	@Override
 	public void onUpdatedOnlyThisEvent(long dtStart) {
-		onModifiedInstanceLiveData.setValue(dtStart);
+		onUpdatedOnlyThisEventLiveData.setValue(dtStart);
 	}
 
 	@Override
 	public void onUpdatedFollowingEvents(long dtStart) {
-		onModifiedFutureInstancesLiveData.setValue(dtStart);
+		onUpdatedFollowingEventsLiveData.setValue(dtStart);
 	}
 
 	@Override
 	public void onUpdatedAllEvents(long dtStart) {
-		onModifiedEventLiveData.setValue(dtStart);
+		onUpdatedAllEventsLiveData.setValue(dtStart);
 	}
 
 	@Override

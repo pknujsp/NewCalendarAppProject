@@ -26,7 +26,6 @@ import com.zerodsoft.scheduleweather.calendarview.interfaces.IToolbar;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnDateTimeChangedListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemClickListener;
 import com.zerodsoft.scheduleweather.calendarview.interfaces.OnEventItemLongClickListener;
-import com.zerodsoft.scheduleweather.common.broadcastreceivers.DateTimeTickReceiver;
 import com.zerodsoft.scheduleweather.room.dto.SelectedCalendarDTO;
 import com.zerodsoft.scheduleweather.utility.ClockUtil;
 
@@ -76,29 +75,32 @@ public class DayFragment extends Fragment implements IRefreshView, IMoveViewpage
 			}
 		});
 
-		calendarViewModel.getOnModifiedEventLiveData().observe(this, new Observer<Long>() {
+		calendarViewModel.getOnUpdatedAllEventsLiveData().observe(this, new Observer<Long>() {
 			@Override
 			public void onChanged(Long start) {
 				if (!initializing) {
-					moveCurrentViewForBegin(start);
+					refreshView();
+
 				}
 			}
 		});
 
-		calendarViewModel.getOnModifiedFutureInstancesLiveData().observe(this, new Observer<Long>() {
+		calendarViewModel.getOnUpdatedFollowingEventsLiveData().observe(this, new Observer<Long>() {
 			@Override
 			public void onChanged(Long begin) {
 				if (!initializing) {
-					moveCurrentViewForBegin(begin);
+					refreshView();
+
 				}
 			}
 		});
 
-		calendarViewModel.getOnModifiedInstanceLiveData().observe(this, new Observer<Long>() {
+		calendarViewModel.getOnUpdatedOnlyThisEventLiveData().observe(this, new Observer<Long>() {
 			@Override
 			public void onChanged(Long begin) {
 				if (!initializing) {
-					moveCurrentViewForBegin(begin);
+					refreshView();
+
 				}
 			}
 		});

@@ -147,9 +147,9 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 							}
 
 							edited = true;
-							EventHelper eventHelper = new EventHelper(new AsyncQueryService(getActivity(), onEditEventResultListener));
+							EventHelper eventHelper = new EventHelper(getAsyncQueryService());
 							eventHelper.saveNewEvent(newEventValues, locationDTO, newReminderList, newAttendeeList, locationIntentCode);
-
+							onEditEventResultListener.onSavedNewEvent(0L);
 							return;
 						} else {
 							//	반복값을 수정한 경우 : update all/following events
@@ -717,6 +717,7 @@ public class ModifyInstanceFragment extends EventBaseFragment {
 
 		edited = true;
 		onEditEventResultListener.onUpdatedFollowingEvents(0L);
+
 	}
 
 

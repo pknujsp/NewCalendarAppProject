@@ -80,29 +80,32 @@ public class WeekFragment extends Fragment implements IRefreshView, OnDateTimeCh
 			}
 		});
 
-		calendarViewModel.getOnModifiedEventLiveData().observe(this, new Observer<Long>() {
+		calendarViewModel.getOnUpdatedAllEventsLiveData().observe(this, new Observer<Long>() {
 			@Override
 			public void onChanged(Long start) {
 				if (!initializing) {
-					moveCurrentViewForBegin(start);
+					refreshView();
+
 				}
 			}
 		});
 
-		calendarViewModel.getOnModifiedFutureInstancesLiveData().observe(this, new Observer<Long>() {
+		calendarViewModel.getOnUpdatedFollowingEventsLiveData().observe(this, new Observer<Long>() {
 			@Override
 			public void onChanged(Long begin) {
 				if (!initializing) {
-					moveCurrentViewForBegin(begin);
+					refreshView();
+
 				}
 			}
 		});
 
-		calendarViewModel.getOnModifiedInstanceLiveData().observe(this, new Observer<Long>() {
+		calendarViewModel.getOnUpdatedOnlyThisEventLiveData().observe(this, new Observer<Long>() {
 			@Override
 			public void onChanged(Long begin) {
 				if (!initializing) {
-					moveCurrentViewForBegin(begin);
+					refreshView();
+
 				}
 			}
 		});

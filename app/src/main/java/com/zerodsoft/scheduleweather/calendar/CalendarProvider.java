@@ -384,18 +384,16 @@ public class CalendarProvider implements ICalendarProvider {
 			String[] selectionArgs = {calendarId.toString()};
 			Cursor cursor = contentResolver.query(CalendarContract.Calendars.CONTENT_URI, null, CALENDARS_QUERY, selectionArgs, null);
 
-			ContentValues calendar = null;
+			ContentValues calendar = new ContentValues();
 			if (cursor != null) {
 				while (cursor.moveToNext()) {
-					calendar = new ContentValues();
+					String[] keys = cursor.getColumnNames();
 
-					calendar.put(CalendarContract.Calendars._ID, cursor.getLong(cursor.getColumnIndex(CalendarContract.Calendars._ID)));
-					calendar.put(CalendarContract.Calendars.NAME, cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.NAME)));
-					calendar.put(CalendarContract.Calendars.ACCOUNT_NAME, cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.ACCOUNT_NAME)));
-					calendar.put(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME,
-							cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME)));
-					calendar.put(CalendarContract.Calendars.OWNER_ACCOUNT, cursor.getString(cursor.getColumnIndex(CalendarContract.Calendars.OWNER_ACCOUNT)));
-					calendar.put(CalendarContract.Calendars.CALENDAR_COLOR, cursor.getInt(cursor.getColumnIndex(CalendarContract.Calendars.CALENDAR_COLOR)));
+					for (String key : keys) {
+						if (!cursor.isNull(cursor.getColumnIndex(key))) {
+							calendar.put(key, cursor.getString(cursor.getColumnIndex(key)));
+						}
+					}
 				}
 				cursor.close();
 			}
