@@ -129,4 +129,12 @@
         <item name="android:layout_marginTop">4dp</item>
     </style>
 
+    <style name="DataSourceNameTextView" parent="Widget.MaterialComponents.TextView">
+        <item name="android:textColor">@color/black</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="DataSourceDescriptionTextView" parent="Widget.MaterialComponents.TextView">
+        <item name="android:textSize">13sp</item>
+    </style>
 </resources>

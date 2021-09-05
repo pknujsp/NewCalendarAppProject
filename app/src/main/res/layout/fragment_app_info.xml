@@ -14,46 +14,87 @@
             android:paddingRight="16dp">
 
             <TextView
-                style="@style/TextAppearance.MaterialComponents.Headline6"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/app_name" />
+                android:layout_marginTop="16dp"
+                android:text="@string/data_source"
+                android:textColor="@color/black"
+                android:textSize="18sp" />
 
             <TextView
-                style="@style/TextAppearance.MaterialComponents.Headline6"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/data_source" />
-
-            <TextView
+                style="@style/DataSourceNameTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="@string/data_source_weather" />
+                android:text="@string/data_source_weather_name" />
+
 
             <TextView
+                style="@style/DataSourceDescriptionTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/data_source_buildings" />
+                android:layout_marginTop="4dp"
+                android:text="@string/data_source_weather_description" />
 
             <TextView
+                style="@style/DataSourceNameTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/data_source_air_condition" />
+                android:layout_marginTop="8dp"
+                android:text="@string/data_source_air_condition_name" />
+
 
             <TextView
+                style="@style/DataSourceDescriptionTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/data_source_map" />
+                android:layout_marginTop="4dp"
+                android:text="@string/data_source_air_condition_description" />
 
             <TextView
+                style="@style/DataSourceNameTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/data_source_search_address_and_place" />
+                android:layout_marginTop="8dp"
+                android:text="@string/data_source_map_name" />
+
+
+            <TextView
+                style="@style/DataSourceDescriptionTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/data_source_map_description" />
+
+            <TextView
+                style="@style/DataSourceNameTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/data_source_search_address_and_place_name" />
+
+
+            <TextView
+                style="@style/DataSourceDescriptionTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/data_source_search_address_and_place_description" />
+
+            <TextView
+                style="@style/DataSourceNameTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/data_source_buildings_name" />
+
+
+            <TextView
+                style="@style/DataSourceDescriptionTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/data_source_buildings_description" />
         </LinearLayout>
 
 
