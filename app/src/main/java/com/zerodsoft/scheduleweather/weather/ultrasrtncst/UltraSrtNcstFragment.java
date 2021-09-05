@@ -100,6 +100,9 @@ public class UltraSrtNcstFragment extends Fragment implements CheckSuccess {
 
 	private void setValue(UltraSrtNcstResult ultraSrtNcstResult) {
 		UltraSrtNcstFinalData ultraSrtNcstFinalData = ultraSrtNcstResult.getUltraSrtNcstFinalData();
+
+		// binding.fcstDateTime.setText(ClockUtil.weatherLastUpdatedTimeFormat.format(ultraSrtNcstResult.getDownloadedDate()));
+
 		//기온
 		binding.ultraSrtNcstTemp.setText(ultraSrtNcstFinalData.getTemperature() + getString(R.string.celcius));
 		//강수형태
@@ -155,6 +158,7 @@ public class UltraSrtNcstFragment extends Fragment implements CheckSuccess {
 	}
 
 	public void clearViews() {
+		binding.fcstDateTime.setText("");
 		binding.ultraSrtNcstTemp.setText("");
 		binding.ptyImage.setVisibility(View.GONE);
 		binding.ultraSrtNcstHumidity.setText("");
