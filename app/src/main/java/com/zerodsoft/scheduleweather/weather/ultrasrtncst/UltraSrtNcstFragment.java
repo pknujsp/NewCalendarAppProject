@@ -101,7 +101,7 @@ public class UltraSrtNcstFragment extends Fragment implements CheckSuccess {
 	private void setValue(UltraSrtNcstResult ultraSrtNcstResult) {
 		UltraSrtNcstFinalData ultraSrtNcstFinalData = ultraSrtNcstResult.getUltraSrtNcstFinalData();
 
-		// binding.fcstDateTime.setText(ClockUtil.weatherLastUpdatedTimeFormat.format(ultraSrtNcstResult.getDownloadedDate()));
+		binding.fcstDateTime.setText(ClockUtil.weatherLastUpdatedTimeFormat.format(ultraSrtNcstResult.getDownloadedDate()));
 
 		//기온
 		binding.ultraSrtNcstTemp.setText(ultraSrtNcstFinalData.getTemperature() + getString(R.string.celcius));

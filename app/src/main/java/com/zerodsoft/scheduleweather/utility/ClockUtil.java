@@ -32,7 +32,7 @@ public class ClockUtil {
 	public static final SimpleDateFormat HOURS_12 = new SimpleDateFormat("a h:mm", Locale.KOREAN);
 	public static final SimpleDateFormat HOURS_24 = new SimpleDateFormat("HH:mm", Locale.KOREAN);
 	public static final SimpleDateFormat yyyyMd = new SimpleDateFormat("yyyy/M/d", Locale.KOREAN);
-	public static final SimpleDateFormat weatherLastUpdatedTimeFormat = new SimpleDateFormat("M/d HH:mm", Locale.KOREAN);
+	public static final SimpleDateFormat weatherLastUpdatedTimeFormat = new SimpleDateFormat("M.d HH:mm", Locale.KOREAN);
 
 	public static final int MONTH = 0;
 	public static final int WEEK = 1;

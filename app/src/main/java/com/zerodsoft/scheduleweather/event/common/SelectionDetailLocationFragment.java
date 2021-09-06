@@ -303,6 +303,8 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 					}
 				});
 
+				binding.bottomNavigation.setVisibility(View.GONE);
+
 				SelectedLocationInfoFragment selectedLocationInfoFragment = new SelectedLocationInfoFragment(new View.OnClickListener() {
 					@Override
 					public void onClick(View v) {
@@ -320,6 +322,8 @@ public class SelectionDetailLocationFragment extends NaverMapFragment {
 						Toast.makeText(getContext(), R.string.canceled_location, Toast.LENGTH_SHORT).show();
 
 						mapFragment.getMapView().setOnTouchListener(null);
+						binding.bottomNavigation.setVisibility(View.VISIBLE);
+
 						binding.naverMapButtonsLayout.favoriteLocationsButton.setVisibility(View.VISIBLE);
 						binding.naverMapButtonsLayout.currentAddress.setVisibility(View.VISIBLE);
 						binding.naverMapButtonsLayout.gpsButton.setVisibility(View.VISIBLE);

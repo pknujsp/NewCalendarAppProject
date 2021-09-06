@@ -23,9 +23,10 @@ public class AirConditionResult {
 	/*
 	초단기실황 최종 데이터 생성
 	 */
-	public void setAirConditionFinalData(MsrstnAcctoRltmMesureDnstyItem msrstnAcctoRltmMesureDnstyItem, NearbyMsrstnListRoot nearbyMsrstnListRoot,
+	public void setAirConditionFinalData(MsrstnAcctoRltmMesureDnstyBody msrstnAcctoRltmMesureDnstyBody, NearbyMsrstnListRoot nearbyMsrstnListRoot,
 	                                     Date downloadedDate) {
-		this.msrstnAcctoRltmMesureDnstyItem = msrstnAcctoRltmMesureDnstyItem;
+		this.msrstnAcctoRltmMesureDnstyItem = msrstnAcctoRltmMesureDnstyBody.getItem().isEmpty() ? null :
+				msrstnAcctoRltmMesureDnstyBody.getItem().get(0);
 		this.airConditionFinalData = msrstnAcctoRltmMesureDnstyItem;
 		this.nearbyMsrstnListRoot = nearbyMsrstnListRoot;
 		this.downloadedDate = downloadedDate;

@@ -99,36 +99,48 @@ public class AirConditionFragment extends Fragment implements OnUpdateListener, 
 
 
 	private void setData(AirConditionResult airConditionResult) {
+		binding.stationAddress.setText(airConditionResult.getNearbyMsrstnListRoot().getResponse().getBody().getItems().get(0).getStationName());
 		binding.finedustStatus.setText("");
 		binding.ultraFinedustStatus.setText("");
-
-		String pm10 = "";
-		String pm25 = "";
+		binding.fcstDateTime.setText("");
 
 		MsrstnAcctoRltmMesureDnstyItem airConditionFinalData = airConditionResult.getAirConditionFinalData();
-
-		//pm10
-		if (airConditionFinalData.getPm10Flag() == null) {
-			pm10 = BarInitDataCreater.getGrade(airConditionFinalData.getPm10Grade1h(), getContext()) + ", " + airConditionFinalData.getPm10Value()
-					+ getString(R.string.finedust_unit);
-			binding.finedustStatus.setTextColor(BarInitDataCreater.getGradeColor(airConditionFinalData.getPm10Grade1h(), getContext()));
-		} else {
+		if (airConditionFinalData == null) {
+			binding.finedustStatus.setText(getString(R.string.not_data));
+			binding.ultraFinedustStatus.setText(getString(R.string.not_data));
 			binding.finedustStatus.setTextColor(Color.GRAY);
-			pm10 = airConditionFinalData.getPm10Flag();
-		}
-
-		//pm2.5
-		if (airConditionFinalData.getPm25Flag() == null) {
-			pm25 = BarInitDataCreater.getGrade(airConditionFinalData.getPm25Grade1h(), getContext()) + ", " + airConditionFinalData.getPm25Value()
-					+ getString(R.string.finedust_unit);
-			binding.ultraFinedustStatus.setTextColor(BarInitDataCreater.getGradeColor(airConditionFinalData.getPm25Grade1h(), getContext()));
-		} else {
 			binding.ultraFinedustStatus.setTextColor(Color.GRAY);
-			pm25 = airConditionFinalData.getPm25Flag();
-		}
 
-		binding.finedustStatus.setText(pm10);
-		binding.ultraFinedustStatus.setText(pm25);
+			binding.showDetailDialogButton.setClickable(false);
+		} else {
+			String pm10 = "";
+			String pm25 = "";
+
+			//pm10
+			if (airConditionFinalData.getPm10Flag() == null) {
+				pm10 = BarInitDataCreater.getGrade(airConditionFinalData.getPm10Grade1h(), getContext()) + ", " + airConditionFinalData.getPm10Value()
+						+ getString(R.string.finedust_unit);
+				binding.finedustStatus.setTextColor(BarInitDataCreater.getGradeColor(airConditionFinalData.getPm10Grade1h(), getContext()));
+			} else {
+				binding.finedustStatus.setTextColor(Color.GRAY);
+				pm10 = airConditionFinalData.getPm10Flag();
+			}
+
+			//pm2.5
+			if (airConditionFinalData.getPm25Flag() == null) {
+				pm25 = BarInitDataCreater.getGrade(airConditionFinalData.getPm25Grade1h(), getContext()) + ", " + airConditionFinalData.getPm25Value()
+						+ getString(R.string.finedust_unit);
+				binding.ultraFinedustStatus.setTextColor(BarInitDataCreater.getGradeColor(airConditionFinalData.getPm25Grade1h(), getContext()));
+			} else {
+				binding.ultraFinedustStatus.setTextColor(Color.GRAY);
+				pm25 = airConditionFinalData.getPm25Flag();
+			}
+
+			binding.finedustStatus.setText(pm10);
+			binding.ultraFinedustStatus.setText(pm25);
+			binding.fcstDateTime.setText(airConditionFinalData.getDataTime());
+			binding.showDetailDialogButton.setClickable(true);
+		}
 	}
 
 	public void refresh() {

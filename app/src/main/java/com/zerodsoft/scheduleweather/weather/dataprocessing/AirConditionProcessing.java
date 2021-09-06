@@ -52,7 +52,7 @@ public class AirConditionProcessing extends WeatherDataProcessing<AirConditionRe
 												MsrstnAcctoRltmMesureDnstyRoot.class);
 
 										AirConditionResult airConditionResult = new AirConditionResult();
-										airConditionResult.setAirConditionFinalData(root.getResponse().getBody().getItem().get(0),
+										airConditionResult.setAirConditionFinalData(root.getResponse().getBody(),
 												nearbyMsrstnListRoot,
 												new Date(Long.parseLong(resultAirConditionDto.getDownloadedDate())));
 
@@ -216,7 +216,7 @@ public class AirConditionProcessing extends WeatherDataProcessing<AirConditionRe
 
 												AirConditionResult airConditionResult = new AirConditionResult();
 												airConditionResult.setAirConditionFinalData(
-														root.getResponse().getBody().getItem().get(0),
+														root.getResponse().getBody(),
 														nearbyMsrstnListRoot, new Date(Long.parseLong(
 																msrstnAcctoRltmMesureDnstyWeatherDataDTO.getDownloadedDate())));
 
