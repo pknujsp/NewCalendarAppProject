@@ -1,0 +1,7 @@
+package com.zerodsoft.calendarplatform.navermap;
+
+public enum BottomSheetType
+{
+    SEARCH_LOCATION, BUILDING, INSTANCE_INFO, WEATHER, RESTAURANT, LOCATION_ITEM, SELECTED_PLACE_CATEGORY, FAVORITE_LOCATIONS
+    ,SELECTED_LOCATION_INFO
+}
