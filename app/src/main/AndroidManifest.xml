@@ -27,7 +27,7 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
         <activity
-            android:name=".receiver.AlarmActivity"
+            android:name=".notification.receiver.AlarmActivity"
             android:screenOrientation="portrait"></activity>
         <activity
             android:name=".activity.main.AppMainActivity"
