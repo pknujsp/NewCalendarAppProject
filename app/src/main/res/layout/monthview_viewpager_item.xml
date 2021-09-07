@@ -70,7 +70,7 @@
             android:textSize="13sp" />
     </LinearLayout>
 
-    <com.zerodsoft.scheduleweather.calendarview.month.MonthCalendarView
+    <com.zerodsoft.calendarplatform.calendarview.month.MonthCalendarView
         android:id="@+id/month_calendar_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

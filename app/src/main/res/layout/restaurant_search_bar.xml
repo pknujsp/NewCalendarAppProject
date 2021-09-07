@@ -20,7 +20,7 @@
         android:scaleType="fitXY"
         android:src="@drawable/arrow_back_icon" />
 
-    <com.zerodsoft.scheduleweather.common.view.CustomEditText
+    <com.zerodsoft.calendarplatform.common.view.CustomEditText
         android:id="@+id/search_edittext"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

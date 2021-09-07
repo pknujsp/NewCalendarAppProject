@@ -10,7 +10,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <com.zerodsoft.scheduleweather.calendarview.day.DayHeaderView
+        <com.zerodsoft.calendarplatform.calendarview.day.DayHeaderView
             android:id="@+id/dayheaderview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
@@ -20,7 +20,7 @@
             android:layout_height="0dp"
             android:layout_weight="1">
 
-            <com.zerodsoft.scheduleweather.calendarview.day.DayView
+            <com.zerodsoft.calendarplatform.calendarview.day.DayView
                 android:id="@+id/dayview"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />

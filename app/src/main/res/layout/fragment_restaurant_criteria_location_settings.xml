@@ -56,7 +56,7 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <com.zerodsoft.scheduleweather.common.view.CustomSearchView
+            <com.zerodsoft.calendarplatform.common.view.CustomSearchView
                 android:id="@+id/search_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -72,7 +72,7 @@
                 android:scrollbarStyle="insideInset"
                 tools:listitem="@layout/search_location_history_item" />
 
-            <com.zerodsoft.scheduleweather.common.view.CustomProgressView
+            <com.zerodsoft.calendarplatform.common.view.CustomProgressView
                 android:id="@+id/custom_progress_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />

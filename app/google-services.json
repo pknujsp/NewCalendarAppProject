@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:269839782849:android:d915ff2741886e2d271540",
         "android_client_info": {
-          "package_name": "com.zerodsoft.scheduleweather"
+          "package_name": "com.zerodsoft.calendarplatform"
         }
       },
       "oauth_client": [
@@ -17,7 +17,7 @@
           "client_id": "269839782849-pgndlruor2l0q49naa3pcfr8dmnuslam.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.zerodsoft.scheduleweather",
+            "package_name": "com.zerodsoft.calendarplatform",
             "certificate_hash": "e53e793cb69cb41bd99735dd4b01fda8acb15ab3"
           }
         },

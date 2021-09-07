@@ -71,7 +71,7 @@
                             android:text="@string/calendar" />
 
 
-                        <com.zerodsoft.scheduleweather.activity.main.sidenav.NotScrollExpandableListView
+                        <com.zerodsoft.calendarplatform.activity.main.sidenav.NotScrollExpandableListView
                             android:id="@+id/side_nav_calendar_list"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content" />

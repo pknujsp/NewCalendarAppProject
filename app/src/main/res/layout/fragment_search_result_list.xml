@@ -19,7 +19,7 @@
                 android:layout_height="match_parent"
                 android:orientation="horizontal" />
 
-            <com.zerodsoft.scheduleweather.etc.ViewPagerIndicator
+            <com.zerodsoft.calendarplatform.etc.ViewPagerIndicator
                 android:id="@+id/viewpager_indicator"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -31,7 +31,7 @@
 
         </FrameLayout>
 
-        <com.zerodsoft.scheduleweather.common.view.CustomProgressView
+        <com.zerodsoft.calendarplatform.common.view.CustomProgressView
             android:id="@+id/custom_progress_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />

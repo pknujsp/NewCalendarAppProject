@@ -12,7 +12,7 @@
 
         <fragment
             android:id="@+id/map_fragment"
-            android:name="com.zerodsoft.scheduleweather.navermap.NaverMapFragment"
+            android:name="com.zerodsoft.calendarplatform.navermap.NaverMapFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 

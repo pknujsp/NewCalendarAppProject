@@ -95,7 +95,7 @@
                 tools:itemCount="3"
                 tools:listitem="@layout/favorite_address_item_view" />
 
-            <com.zerodsoft.scheduleweather.common.view.CustomProgressView
+            <com.zerodsoft.calendarplatform.common.view.CustomProgressView
                 android:id="@+id/custom_progress_view_for_favorite_address_place"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />

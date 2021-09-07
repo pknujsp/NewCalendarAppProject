@@ -8,7 +8,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <com.zerodsoft.scheduleweather.common.view.CustomSearchView
+        <com.zerodsoft.calendarplatform.common.view.CustomSearchView
             android:id="@+id/search_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

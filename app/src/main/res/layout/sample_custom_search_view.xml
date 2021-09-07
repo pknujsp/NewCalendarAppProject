@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.zerodsoft.scheduleweather.common.view.CustomSearchView
+    <com.zerodsoft.calendarplatform.common.view.CustomSearchView
         style="@style/Widget.AppTheme.MyView"
         android:layout_width="300dp"
         android:layout_height="300dp"

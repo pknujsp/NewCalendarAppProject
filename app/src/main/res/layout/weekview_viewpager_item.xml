@@ -12,7 +12,7 @@
         android:background="@android:color/white"
         android:orientation="vertical">
 
-        <com.zerodsoft.scheduleweather.calendarview.week.WeekHeaderView
+        <com.zerodsoft.calendarplatform.calendarview.week.WeekHeaderView
             android:id="@+id/week_header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -24,7 +24,7 @@
             android:layout_weight="1">
 
 
-            <com.zerodsoft.scheduleweather.calendarview.week.WeekView
+            <com.zerodsoft.calendarplatform.calendarview.week.WeekView
                 android:id="@+id/week_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
