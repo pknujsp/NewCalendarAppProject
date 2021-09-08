@@ -74,7 +74,7 @@ public class UltraSrtNcstFragment extends Fragment implements CheckSuccess {
 						public void run() {
 							setValue(e);
 							binding.customProgressView.onSuccessfulProcessingData();
-							loadWeatherDataResultCallback.onResult(true);
+							loadWeatherDataResultCallback.onResult(true, null);
 						}
 					});
 				}
@@ -87,7 +87,7 @@ public class UltraSrtNcstFragment extends Fragment implements CheckSuccess {
 						@Override
 						public void run() {
 							binding.customProgressView.onFailedProcessingData(getString(R.string.error));
-							loadWeatherDataResultCallback.onResult(false);
+							loadWeatherDataResultCallback.onResult(false, e);
 							clearViews();
 						}
 					});
@@ -128,12 +128,12 @@ public class UltraSrtNcstFragment extends Fragment implements CheckSuccess {
 			@Override
 			public void isSuccessful(UltraSrtNcstResult e) {
 				if (getActivity() != null) {
-					requireActivity().runOnUiThread(new Runnable() {
+					getActivity().runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
 							setValue(e);
 							binding.customProgressView.onSuccessfulProcessingData();
-							loadWeatherDataResultCallback.onResult(true);
+							loadWeatherDataResultCallback.onResult(true, null);
 						}
 					});
 				}
@@ -146,7 +146,7 @@ public class UltraSrtNcstFragment extends Fragment implements CheckSuccess {
 						@Override
 						public void run() {
 							binding.customProgressView.onFailedProcessingData(getString(R.string.error));
-							loadWeatherDataResultCallback.onResult(false);
+							loadWeatherDataResultCallback.onResult(false, e);
 							clearViews();
 						}
 					});

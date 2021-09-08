@@ -70,7 +70,7 @@ public class MidFcstFragment extends Fragment implements CheckSuccess {
 						public void run() {
 							setTable(e);
 							binding.customProgressView.onSuccessfulProcessingData();
-							loadWeatherDataResultCallback.onResult(true);
+							loadWeatherDataResultCallback.onResult(true, null);
 						}
 					});
 				}
@@ -83,7 +83,7 @@ public class MidFcstFragment extends Fragment implements CheckSuccess {
 						@Override
 						public void run() {
 							binding.customProgressView.onFailedProcessingData(getString(R.string.error));
-							loadWeatherDataResultCallback.onResult(false);
+							loadWeatherDataResultCallback.onResult(false, e);
 							clearViews();
 						}
 					});
@@ -105,7 +105,7 @@ public class MidFcstFragment extends Fragment implements CheckSuccess {
 						public void run() {
 							setTable(e);
 							binding.customProgressView.onSuccessfulProcessingData();
-							loadWeatherDataResultCallback.onResult(true);
+							loadWeatherDataResultCallback.onResult(true, null);
 						}
 					});
 				}
@@ -118,7 +118,7 @@ public class MidFcstFragment extends Fragment implements CheckSuccess {
 						@Override
 						public void run() {
 							binding.customProgressView.onFailedProcessingData(getString(R.string.error));
-							loadWeatherDataResultCallback.onResult(false);
+							loadWeatherDataResultCallback.onResult(false, e);
 							clearViews();
 						}
 					});

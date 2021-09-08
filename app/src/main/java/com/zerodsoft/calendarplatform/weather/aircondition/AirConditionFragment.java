@@ -57,10 +57,6 @@ public class AirConditionFragment extends Fragment implements OnUpdateListener, 
 		binding.ultraFinedustStatus.setText("");
 		binding.showDetailDialogButton.setOnClickListener(onClickListener);
 
-		init();
-	}
-
-	private void init() {
 		loadWeatherDataResultCallback.onLoadStarted();
 		binding.customProgressView.onStartedProcessingData();
 
@@ -73,7 +69,7 @@ public class AirConditionFragment extends Fragment implements OnUpdateListener, 
 						public void run() {
 							setData(e);
 							binding.customProgressView.onSuccessfulProcessingData();
-							loadWeatherDataResultCallback.onResult(true);
+							loadWeatherDataResultCallback.onResult(true, null);
 						}
 					});
 				}
@@ -86,14 +82,13 @@ public class AirConditionFragment extends Fragment implements OnUpdateListener, 
 						@Override
 						public void run() {
 							binding.customProgressView.onFailedProcessingData(getString(R.string.error));
-							loadWeatherDataResultCallback.onResult(false);
+							loadWeatherDataResultCallback.onResult(false, e);
 						}
 					});
 				}
 			}
 		});
 	}
-
 
 	private void setData(AirConditionResult airConditionResult) {
 		binding.stationAddress.setText(airConditionResult.getNearbyMsrstnListRoot().getResponse().getBody().getItems().get(0).getStationName());
@@ -153,7 +148,7 @@ public class AirConditionFragment extends Fragment implements OnUpdateListener, 
 						public void run() {
 							setData(e);
 							binding.customProgressView.onSuccessfulProcessingData();
-							loadWeatherDataResultCallback.onResult(true);
+							loadWeatherDataResultCallback.onResult(true, null);
 						}
 					});
 				}
@@ -166,7 +161,7 @@ public class AirConditionFragment extends Fragment implements OnUpdateListener, 
 						@Override
 						public void run() {
 							binding.customProgressView.onFailedProcessingData(getString(R.string.error));
-							loadWeatherDataResultCallback.onResult(false);
+							loadWeatherDataResultCallback.onResult(false, e);
 						}
 					});
 				}

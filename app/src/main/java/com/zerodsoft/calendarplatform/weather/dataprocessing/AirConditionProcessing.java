@@ -110,31 +110,9 @@ public class AirConditionProcessing extends WeatherDataProcessing<AirConditionRe
 										if (isContain) {
 											weatherDbRepository.update(LATITUDE, LONGITUDE, WeatherDataDTO.NEAR_BY_MSRSTN_LIST,
 													nearbyMsrstnJsonObject.toString(), nearbyMsrstnListDTO.getDownloadedDate(),
-													nearbyMsrstnListDTO.getBaseDateTime(),
-													new DbQueryCallback<Boolean>() {
-														@Override
-														public void onResultSuccessful(Boolean result) {
-
-														}
-
-														@Override
-														public void onResultNoData() {
-
-														}
-													});
+													nearbyMsrstnListDTO.getBaseDateTime(), null);
 										} else {
-											weatherDbRepository.insert(nearbyMsrstnListDTO,
-													new DbQueryCallback<WeatherDataDTO>() {
-														@Override
-														public void onResultSuccessful(WeatherDataDTO result) {
-
-														}
-
-														@Override
-														public void onResultNoData() {
-
-														}
-													});
+											weatherDbRepository.insert(nearbyMsrstnListDTO, null);
 										}
 									}
 
@@ -143,7 +121,6 @@ public class AirConditionProcessing extends WeatherDataProcessing<AirConditionRe
 
 									}
 								});
-
 						MsrstnAcctoRltmMesureDnstyParameter msrstnAcctoRltmMesureDnstyParameter = new MsrstnAcctoRltmMesureDnstyParameter();
 						msrstnAcctoRltmMesureDnstyParameter.setDataTerm(MsrstnAcctoRltmMesureDnstyParameter.DATATERM_DAILY);
 						msrstnAcctoRltmMesureDnstyParameter.setStationName(
@@ -180,30 +157,10 @@ public class AirConditionProcessing extends WeatherDataProcessing<AirConditionRe
 																			msrstnAcctoRltmMesureDnstyWeatherDataDTO.getJson(),
 																			msrstnAcctoRltmMesureDnstyWeatherDataDTO.getDownloadedDate(),
 																			msrstnAcctoRltmMesureDnstyWeatherDataDTO.getBaseDateTime(),
-																			new DbQueryCallback<Boolean>() {
-																				@Override
-																				public void onResultSuccessful(Boolean result) {
-
-																				}
-
-																				@Override
-																				public void onResultNoData() {
-
-																				}
-																			});
+																			null);
 																} else {
 																	weatherDbRepository.insert(msrstnAcctoRltmMesureDnstyWeatherDataDTO,
-																			new DbQueryCallback<WeatherDataDTO>() {
-																				@Override
-																				public void onResultSuccessful(WeatherDataDTO result) {
-
-																				}
-
-																				@Override
-																				public void onResultNoData() {
-
-																				}
-																			});
+																			null);
 
 																}
 															}
@@ -233,7 +190,6 @@ public class AirConditionProcessing extends WeatherDataProcessing<AirConditionRe
 									@Override
 									public void onResponseFailed(Exception e) {
 										weatherDataCallback.isFailure(e);
-
 									}
 								});
 					}

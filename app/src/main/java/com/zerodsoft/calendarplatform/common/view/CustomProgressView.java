@@ -9,6 +9,8 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.core.content.ContextCompat;
+
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.zerodsoft.calendarplatform.R;
 import com.zerodsoft.calendarplatform.common.interfaces.OnProgressViewListener;
@@ -52,6 +54,7 @@ public class CustomProgressView extends LinearLayout implements OnProgressViewLi
 		progressStatusTextView.setId(R.id.progress_status_textview);
 
 		progressView = new CircularProgressIndicator(getContext());
+		progressView.setIndicatorColor(ContextCompat.getColor(getContext(), R.color.colorPrimary));
 		progressView.setIndeterminate(true);
 
 		LinearLayout.LayoutParams statusTextViewLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,

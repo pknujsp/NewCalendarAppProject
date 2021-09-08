@@ -262,7 +262,11 @@ public class WeatherMainFragment extends BottomSheetDialogFragment {
 						if (allSucceed) {
 							binding.customProgressView.onSuccessfulProcessingData();
 						} else {
-							binding.customProgressView.onFailedProcessingData(getString(R.string.error));
+							String resultStr = getString(R.string.error);
+							if (!getExceptionList().isEmpty()) {
+								resultStr = "\n" + "(" + getExceptionList().get(0).toString() + ")";
+							}
+							binding.customProgressView.onFailedProcessingData(resultStr);
 						}
 					}
 				});

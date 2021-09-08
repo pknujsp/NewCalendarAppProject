@@ -4,10 +4,7 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/white"
-        android:clickable="true"
-        android:focusable="false">
+        android:layout_height="match_parent">
 
         <androidx.core.widget.NestedScrollView
             android:id="@+id/scrollview"
@@ -15,35 +12,28 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <LinearLayout
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginLeft="8dp"
                 android:orientation="vertical">
 
                 <TextView
-                    style="@style/WeatherLastUpdatedTimeTextViewStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="right"
-                    android:text="@string/last_updated_time"
-                    android:visibility="gone" />
-
-                <TextView
                     android:id="@+id/address_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
                     android:layout_marginTop="8dp"
                     android:text="addressName"
                     android:textColor="@color/black"
                     android:textSize="20sp" />
 
-
                 <LinearLayout
                     android:id="@+id/weather_data_layout"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_marginTop="16dp"
+                    android:layout_below="@id/address_name"
+                    android:layout_marginTop="6dp"
                     android:orientation="vertical">
 
                     <TextView
@@ -115,40 +105,43 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp" />
 
+                    <LinearLayout
+                        android:id="@+id/weather_icons_info_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="16dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_gravity="center_vertical"
+                            android:src="@drawable/ic_baseline_info_24"
+                            app:tint="@color/gray_500" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginLeft="8dp"
+                            android:text="@string/weather_icons_info" />
+
+                    </LinearLayout>
+
                 </LinearLayout>
 
                 <com.zerodsoft.calendarplatform.common.view.CustomProgressView
                     android:id="@+id/custom_progress_view"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp" />
+                    android:layout_below="@id/address_name"
+                    android:layout_marginTop="6dp" />
 
-                <LinearLayout
-                    android:id="@+id/weather_icons_info_layout"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
-                    android:layout_marginBottom="24dp"
-                    android:background="?attr/selectableItemBackground"
-                    android:clickable="true"
-                    android:orientation="horizontal">
 
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_gravity="center_vertical"
-                        android:src="@drawable/ic_baseline_info_24"
-                        app:tint="@color/gray_500" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:layout_marginLeft="8dp"
-                        android:text="@string/weather_icons_info" />
-
-                </LinearLayout>
-            </LinearLayout>
+            </RelativeLayout>
 
         </androidx.core.widget.NestedScrollView>
 
