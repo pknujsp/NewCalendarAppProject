@@ -264,7 +264,7 @@ public class WeatherMainFragment extends BottomSheetDialogFragment {
 						} else {
 							String resultStr = getString(R.string.error);
 							if (!getExceptionList().isEmpty()) {
-								resultStr = "\n" + "(" + getExceptionList().get(0).toString() + ")";
+								resultStr += "\n" + "(" + getExceptionList().get(0).toString() + ")";
 							}
 							binding.customProgressView.onFailedProcessingData(resultStr);
 						}
