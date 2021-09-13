@@ -2,6 +2,8 @@ package com.zerodsoft.calendarplatform.retrofit;
 
 import android.content.Context;
 
+import androidx.annotation.Keep;
+
 import com.google.gson.Gson;
 import com.zerodsoft.calendarplatform.room.dto.PlaceCategoryDTO;
 
@@ -92,6 +94,7 @@ public class KakaoLocalApiCategoryUtil {
 		return defaultPlaceCategoryMap.get(code);
 	}
 
+	@Keep
 	class CategoryJsonItem {
 		List<PlaceCategoryDTO> categories;
 	}

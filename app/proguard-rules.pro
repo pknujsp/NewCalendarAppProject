@@ -14,8 +14,22 @@
 
 # Uncomment this to preserve the line number information for
 # debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+-keepattributes SourceFile,LineNumberTable
 
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+#keep
+-keep public class * { public protected *; }
+-keep class com.zerodsoft.calendarplatform.retrofit.queryresponse.** { *; }
+-keep class com.zerodsoft.calendarplatform.retrofit.paremeters.** { *; }
+-keep class com.zerodsoft.calendarplatform.room.dto.** { *; }
+-keepclassmembers class com.zerodsoft.calendarplatform.room.dto.** { *; }
+-keep enum com.zerodsoft.common.** { *;}
+-keep class com.zerodsoft.common.** { *;}
+-keep class com.zerodsoft.etc.** { *;}
+-keep class com.zerodsoft.navermap.** { *;}
+-keep class com.zerodsoft.sgis.** { *;}
+-keep class com.naver.** { *;}
+-keep class com.luckycatlabs.sunrisesunset.** { *;}

@@ -6,7 +6,7 @@ android {
         applicationId 'com.zerodsoft.calendarplatform'
         minSdkVersion 24
         targetSdkVersion 30
-        versionCode 5
+        versionCode 6
         versionName '1.0.0'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
@@ -16,7 +16,15 @@ android {
     }
     buildTypes {
         debug {
-            minifyEnabled false
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt')
+            proguardFile 'proguard-rules.pro'
+            proguardFile 'proguard-common.pro'
+            proguardFile 'proguard-glide.pro'
+            proguardFile 'proguard-gson.pro'
+            proguardFile 'proguard-retrofit2.pro'
+            proguardFile 'proguard-okhttp3.pro'
+            proguardFile 'proguard-room.pro'
             resValue("string", "PORT_NUMBER", "8090")
         }
         release {
@@ -28,6 +36,7 @@ android {
             proguardFile 'proguard-gson.pro'
             proguardFile 'proguard-retrofit2.pro'
             proguardFile 'proguard-okhttp3.pro'
+            proguardFile 'proguard-room.pro'
         }
     }
     viewBinding {

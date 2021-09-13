@@ -332,11 +332,13 @@ public class AppMainActivity extends AppCompatActivity implements ICalendarCheck
 			new ActivityResultCallback<Map<String, Boolean>>() {
 				@Override
 				public void onActivityResult(Map<String, Boolean> result) {
-					if (result.get(Manifest.permission.READ_CALENDAR)) {
+					if (result.containsKey(Manifest.permission.READ_CALENDAR)) {
 						// 권한 허용됨
-						sideBarCalendarListAdapter.setCalendarList(calendarViewModel.getAllCalendars());
-						selectedCalendarViewModel.getSelectedCalendarList();
-						init();
+						if (result.get(Manifest.permission.READ_CALENDAR)) {
+							sideBarCalendarListAdapter.setCalendarList(calendarViewModel.getAllCalendars());
+							selectedCalendarViewModel.getSelectedCalendarList();
+							init();
+						}
 					} else {
 						// 권한 거부됨
 						Toast.makeText(getApplicationContext(), getString(R.string.message_needs_calendar_permission), Toast.LENGTH_SHORT).show();

@@ -1,7 +1,10 @@
 package com.zerodsoft.calendarplatform.room.dto;
 
+import androidx.annotation.Keep;
+
 import java.util.Objects;
 
+@Keep
 public class PlaceCategoryDTO
 {
     private String description;

@@ -1,8 +1,11 @@
 package com.zerodsoft.calendarplatform.retrofit.queryresponse.weather.ultrasrtfcstresponse;
 
+import androidx.annotation.Keep;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+@Keep
 public class UltraSrtFcstRoot {
 	@Expose
 	@SerializedName("response")
