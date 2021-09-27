@@ -20,21 +20,24 @@ public class HourlyFcstResult {
 
 	public void setHourlyFcstFinalDataList(VilageFcstItems vilageFcstItems, UltraSrtFcstItems ultraSrtFcstItems, Date downloadedDate) {
 		this.downloadedDate = downloadedDate;
+		hourlyFcstFinalDataList.clear();
 
 		List<UltraSrtFcstItem> ultraSrtFcstItemList = ultraSrtFcstItems.getItem();
 		List<VilageFcstItem> vilageItemList = vilageFcstItems.getItem();
 
-		ArrayMap<String, List<HourlyFcstItem>> hourlyFcstArrMap = new ArrayMap<>();
-		String dateTime = null;
+		String dateTime = "";
+		String lastDateTime = "";
 		//초단기예보 마지막 데이터의 날짜 set
 
 		//데이터를 날짜별로 분류해서 map에 저장
 		for (UltraSrtFcstItem item : ultraSrtFcstItemList) {
+	
 			dateTime = item.getFcstDate() + item.getFcstTime();
 			if (!hourlyFcstArrMap.containsKey(dateTime)) {
 				hourlyFcstArrMap.put(dateTime, new ArrayList<>());
 			}
 			hourlyFcstArrMap.get(dateTime).add(item);
+			lastDateTime = dateTime;
 		}
 
 		final long lastDateTimeLongOfUltraSrtFcst = Long.parseLong(dateTime);
@@ -45,7 +48,6 @@ public class HourlyFcstResult {
 			dateTimeLong = Long.parseLong(dateTime);
 
 			if (dateTimeLong > lastDateTimeLongOfUltraSrtFcst) {
-
 				if (!hourlyFcstArrMap.containsKey(dateTime)) {
 					hourlyFcstArrMap.put(dateTime, new ArrayList<>());
 				}
@@ -53,14 +55,13 @@ public class HourlyFcstResult {
 			}
 		}
 
-		Set set = hourlyFcstArrMap.keySet();
-		Iterator iterator = set.iterator();
-
-		hourlyFcstFinalDataList.clear();
+		set = hourlyFcstArrMap.keySet();
+		iterator = set.iterator();
 
 		while (iterator.hasNext()) {
 			hourlyFcstFinalDataList.add(new HourlyFcstFinalData(hourlyFcstArrMap.get(iterator.next())));
 		}
+
 
 	}
 

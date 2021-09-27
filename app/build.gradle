@@ -16,16 +16,7 @@ android {
     }
     buildTypes {
         debug {
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android.txt')
-            proguardFile 'proguard-rules.pro'
-            proguardFile 'proguard-common.pro'
-            proguardFile 'proguard-glide.pro'
-            proguardFile 'proguard-gson.pro'
-            proguardFile 'proguard-retrofit2.pro'
-            proguardFile 'proguard-okhttp3.pro'
-            proguardFile 'proguard-room.pro'
-            resValue("string", "PORT_NUMBER", "8090")
+            minifyEnabled false
         }
         release {
             minifyEnabled true

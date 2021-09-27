@@ -268,7 +268,8 @@ public class HourlyFcstFragment extends Fragment implements CheckSuccess {
 		LinearLayout windRow = new LinearLayout(context);
 		LinearLayout windPowerRow = new LinearLayout(context);
 		LinearLayout humidityRow = new LinearLayout(context);
-		SkyView skyRow = new SkyView(context, dataList, weatherAreaCode);
+		SkyView skyRow = new SkyView(context);
+		skyRow.setSkyImgs(dataList, this.weatherAreaCode);
 
 		clockRow.setOrientation(LinearLayout.HORIZONTAL);
 		chanceOfShowerRow.setOrientation(LinearLayout.HORIZONTAL);
@@ -434,13 +435,11 @@ public class HourlyFcstFragment extends Fragment implements CheckSuccess {
 	static class SkyView extends View {
 		private List<Drawable> skyImageList = new ArrayList<>();
 
-		public SkyView(Context context, List<HourlyFcstFinalData> dataList, WeatherAreaCodeDTO weatherAreaCode) {
+		public SkyView(Context context) {
 			super(context);
-			setSkyImgs(dataList, weatherAreaCode);
-			setWillNotDraw(false);
 		}
 
-		private void setSkyImgs(List<HourlyFcstFinalData> dataList, WeatherAreaCodeDTO weatherAreaCode) {
+		public void setSkyImgs(List<HourlyFcstFinalData> dataList, WeatherAreaCodeDTO weatherAreaCode) {
 			List<SunSetRiseData> setRiseDataList = SunsetRise.getSunsetRiseList(dataList.get(0).getFcstDateTime(),
 					dataList.get(dataList.size() - 1).getFcstDateTime(), weatherAreaCode.getLatitudeSecondsDivide100()
 					, weatherAreaCode.getLongitudeSecondsDivide100());
@@ -457,15 +456,6 @@ public class HourlyFcstFragment extends Fragment implements CheckSuccess {
 			}
 		}
 
-		@Override
-		protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-			setMeasuredDimension(widthMeasureSpec, heightMeasureSpec);
-		}
-
-		@Override
-		protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-			super.onLayout(changed, left, top, right, bottom);
-		}
 
 		@Override
 		protected void onDraw(Canvas canvas) {

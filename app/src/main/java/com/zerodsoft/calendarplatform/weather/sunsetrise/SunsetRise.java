@@ -4,6 +4,7 @@ import com.luckycatlabs.sunrisesunset.SunriseSunsetCalculator;
 import com.luckycatlabs.sunrisesunset.dto.Location;
 import com.zerodsoft.calendarplatform.utility.ClockUtil;
 
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -14,7 +15,7 @@ public class SunsetRise {
 	}
 
 	public static List<SunSetRiseData> getSunsetRiseList(Date beginDate, Date endDate, String latitudeSecondsDivide100, String longitudeSecondsDivide100) {
-		Calendar calendar = Calendar.getInstance();
+		Calendar calendar = Calendar.getInstance(ClockUtil.TIME_ZONE);
 		calendar.setTime(beginDate);
 
 		List<Calendar> calendarList = new ArrayList<>();
@@ -25,7 +26,7 @@ public class SunsetRise {
 			if (ClockUtil.areSameDate(calendar.getTimeInMillis(), endDate.getTime())) {
 				break;
 			}
-			calendar.add(Calendar.DAY_OF_YEAR, 1);
+			calendar.add(Calendar.DATE, 1);
 		}
 
 		SunriseSunsetCalculator sunriseSunsetCalculator = new SunriseSunsetCalculator(new Location(latitudeSecondsDivide100,
