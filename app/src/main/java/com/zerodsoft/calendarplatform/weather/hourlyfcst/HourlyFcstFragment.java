@@ -262,13 +262,13 @@ public class HourlyFcstFragment extends Fragment implements CheckSuccess {
 		//날짜, 시각, 하늘, 기온, 강수량, 강수확률, 바람, 바람세기, 습도 순으로 행 등록
 		dateRow = null;
 		LinearLayout clockRow = new LinearLayout(context);
-		SkyView skyRow = new SkyView(context, dataList);
 		TempView tempRow = new TempView(context, dataList);
 		RainfallView rainfallRow = new RainfallView(context, dataList);
 		LinearLayout chanceOfShowerRow = new LinearLayout(context);
 		LinearLayout windRow = new LinearLayout(context);
 		LinearLayout windPowerRow = new LinearLayout(context);
 		LinearLayout humidityRow = new LinearLayout(context);
+		SkyView skyRow = new SkyView(context, dataList, weatherAreaCode);
 
 		clockRow.setOrientation(LinearLayout.HORIZONTAL);
 		chanceOfShowerRow.setOrientation(LinearLayout.HORIZONTAL);
@@ -428,20 +428,19 @@ public class HourlyFcstFragment extends Fragment implements CheckSuccess {
 	@Override
 	public boolean isSuccess() {
 		return binding.customProgressView.isSuccess();
-
 	}
 
 
-	class SkyView extends View {
+	static class SkyView extends View {
 		private List<Drawable> skyImageList = new ArrayList<>();
 
-		public SkyView(Context context, List<HourlyFcstFinalData> dataList) {
+		public SkyView(Context context, List<HourlyFcstFinalData> dataList, WeatherAreaCodeDTO weatherAreaCode) {
 			super(context);
-			setSkyImgs(dataList);
+			setSkyImgs(dataList, weatherAreaCode);
 			setWillNotDraw(false);
 		}
 
-		private void setSkyImgs(List<HourlyFcstFinalData> dataList) {
+		private void setSkyImgs(List<HourlyFcstFinalData> dataList, WeatherAreaCodeDTO weatherAreaCode) {
 			List<SunSetRiseData> setRiseDataList = SunsetRise.getSunsetRiseList(dataList.get(0).getFcstDateTime(),
 					dataList.get(dataList.size() - 1).getFcstDateTime(), weatherAreaCode.getLatitudeSecondsDivide100()
 					, weatherAreaCode.getLongitudeSecondsDivide100());
