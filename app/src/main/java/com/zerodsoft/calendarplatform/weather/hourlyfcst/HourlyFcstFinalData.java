@@ -65,7 +65,7 @@ public class HourlyFcstFinalData {
 	private static final String zero = "0";
 	private static final String mm = "mm";
 
-	public HourlyFcstFinalData(List<HourlyFcstItem> hourlyFcstItems) {
+	public void init(List<HourlyFcstItem> hourlyFcstItems) {
 		nx = hourlyFcstItems.get(0).getNx();
 		ny = hourlyFcstItems.get(0).getNy();
 		String date = hourlyFcstItems.get(0).getFcstDate();
@@ -135,6 +135,7 @@ public class HourlyFcstFinalData {
 			}
 		}
 	}
+
 
 	public String getNx() {
 		return nx;
